@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Spectrum.Framework.Physics.Dynamics
+{
+
+    // TODO: Check values, Documenation
+    // Maybe some default materials, aka Material.Soft?
+    public class Material
+    {
+        internal float kineticFriction = 0.3f;
+        internal float staticFriction = 0.6f;
+        internal float restitution = 0.0f;
+    }
+}

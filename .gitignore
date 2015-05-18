@@ -1,0 +1,5 @@
+*.cachefile
+*.zip
+*.mgfx
+bin
+obj

@@ -1,0 +1,173 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Spectrum.Framework.Physics;
+using Microsoft.Xna.Framework.Graphics;
+using Spectrum.Framework.Graphics;
+using Microsoft.Xna.Framework;
+using System.Reflection;
+using Spectrum.Framework.Network;
+
+namespace Spectrum.Framework.Entities
+{
+    public delegate void EntityMessageHandler(Guid peerID, Entity entity, NetMessage message);
+    public delegate void EntityReplicationCallback(Entity entity);
+    public delegate void FunctionReplicationcallback(Entity entity, int function, NetMessage parameters);
+    public class EntityManager
+    {
+        private float tickTenthTimer = 100;
+        private float tickOneTimer = 1000;
+        private EntityCollection ECollection;
+        public MultiplayerService mpService;
+        public bool Paused = false;
+        public EntityManager(EntityCollection ECollection, MultiplayerService mpService)
+        {
+            this.ECollection = ECollection;
+            this.mpService = mpService;
+            NetMessage.ECollection = ECollection;
+            RegisterCallbacks();
+        }
+        private void RegisterCallbacks()
+        {
+            HandshakeHandler entitySender = new HandshakeHandler(
+                    delegate(Guid peerGuid, NetMessage message)
+                    {
+                        IEnumerable<Entity> replicateable = ECollection.updateables.Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid);
+                        message.Write(replicateable.Count());
+                        foreach (Entity entity in replicateable)
+                        {
+                            new EntityData(entity).WriteTo(message);
+                        }
+                    },
+                    delegate(Guid peerGuid, NetMessage message)
+                    {
+                        int count = message.ReadInt();
+                        for (int i = 0; i < count; i++)
+                        {
+                            HandleEntityCreation(peerGuid, message);
+                        }
+                    }
+                );
+            mpService.RegisterHandshakeHandler(HandshakeStage.AckBegin, entitySender);
+            mpService.RegisterHandshakeHandler(HandshakeStage.Completed, entitySender);
+            mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, HandleEntityCreation);
+            mpService.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
+            mpService.RegisterMessageCallback(FrameworkMessages.EntityMessage, HandleEntityMessage);
+        }
+
+        #region Network Functions
+
+        public void SendEntityCreation(Entity entity, Guid peerDestination = default(Guid))
+        {
+            if (!entity.AllowReplicate) { return; }
+
+            NetMessage eData = new NetMessage();
+            new EntityData(entity).WriteTo(eData);
+            mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
+        }
+        public void HandleEntityCreation(Guid peerGuid, NetMessage message)
+        {
+            EntityData entityData = new EntityData(message);
+            if (!ECollection.Contains(entityData.guid))
+                CreateEntityFromData(entityData);
+        }
+
+        public void SendShowCreate(Guid entityID, Guid peerDestination = default(Guid))
+        {
+            NetMessage message = new NetMessage();
+            message.Write(entityID);
+            mpService.SendMessage(FrameworkMessages.ShowCreate, message, peerDestination);
+        }
+        public void HandleShowCreate(Guid peerGuid, NetMessage message)
+        {
+            Guid entityID = message.ReadGuid();
+            if (!ECollection.Contains(entityID)) { return; }
+            Entity entity = ECollection.Find(entityID);
+            SendEntityCreation(entity, peerGuid);
+        }
+
+        public void SendEntityMessage(Guid peerID, Entity entity, NetMessage message)
+        {
+            if (!entity.CanReplicate) { return; }
+            NetMessage toSend = new NetMessage();
+            toSend.Write(entity.ID);
+            toSend.Write(message);
+            mpService.SendMessage(FrameworkMessages.EntityMessage, toSend);
+        }
+        public void HandleEntityMessage(Guid peerGuid, NetMessage message)
+        {
+            Guid entityID = message.ReadGuid();
+            message = message.ReadMessage();
+            if (ECollection.Contains(entityID))
+            {
+                ECollection.Find(entityID).HandleMessage(peerGuid, message.ReadInt(), message.ReadMessage());
+            }
+            else
+            {
+                SendShowCreate(entityID, peerGuid);
+            }
+        }
+        #endregion
+
+        public void Update(GameTime gameTime)
+        {
+            ECollection.Update();
+
+            if (Paused) { return; }
+            tickTenthTimer += gameTime.ElapsedGameTime.Milliseconds;
+            tickOneTimer += gameTime.ElapsedGameTime.Milliseconds;
+
+            for (int i = 0; i < ECollection.updateables.Count; i++)
+            {
+                if (ECollection.updateables[i].Enabled)
+                {
+                    ECollection.updateables[i].Update(gameTime);
+                    if (tickOneTimer >= 1000)
+                        ECollection.updateables[i].TickOne();
+                    if (tickTenthTimer >= 100)
+                        ECollection.updateables[i].TickTenth();
+                }
+                if (ECollection.updateables[i].Dispoing)
+                    ECollection.Remove(ECollection.updateables[i]);
+            }
+            if (tickOneTimer >= 1000) tickOneTimer = 0;
+            if (tickTenthTimer >= 100) tickTenthTimer = 0;
+        }
+        public T CreateEntity<T>(params object[] args) where T : Entity
+        {
+            T output = CreateEntityType(typeof(T), args) as T;
+            return output;
+        }
+        public Entity CreateEntityFromData(EntityData data)
+        {
+            Type t = TypeHelper.Helper[data.type];
+            Entity e = CreateEntityType(t, data.guid, data.owner, data.args);
+            if (e is GameObject) { (e as GameObject).Position = data.position; }
+            return e;
+        }
+        public Entity CreateEntityType(Type t, params object[] args)
+        {
+            Entity output = CreateEntityType(t, Guid.NewGuid(), mpService.guid, args);
+            if (output != null)
+                SendEntityCreation(output);
+            return output;
+        }
+        public Entity CreateEntityType(Type t, Guid entityID, Guid ownerID, params object[] args)
+        {
+            if (t == null || (!t.IsSubclassOf(typeof(Entity)))) { return null; }
+            Entity output = (Entity)TypeHelper.Instantiate(t, args);
+            output.OwnerGuid = ownerID;
+            output.ID = entityID;
+            output.creationArgs = args;
+            ECollection.Add(output);
+            output.SendMessageCallback = SendEntityMessage;
+            return (Entity)output;
+        }
+
+        public void Draw(GameTime gameTime)
+        {
+            GraphicsEngine.Render(ECollection.gameObjects, gameTime);
+        }
+    }
+}
