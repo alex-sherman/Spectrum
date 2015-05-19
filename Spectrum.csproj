@@ -216,6 +216,9 @@
     <Content Include="Content\HLSL\SpectrumEffect.fx" />
     <Content Include="Content\HLSL\TerrainEffect.fx" />
     <Content Include="Content\HLSL\WaterEffect.fx" />
+    <Content Include="Content\Textures\blank.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">

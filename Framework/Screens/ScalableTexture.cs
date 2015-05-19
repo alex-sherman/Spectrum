@@ -23,10 +23,10 @@ namespace Spectrum.Framework.Screens
         public Rectangle BottomSource;
         public Rectangle CenterSource;
         private Rectangle rect;
-        public ScalableTexture(string texture, int borderwidth)
+        public ScalableTexture(Texture2D texture, int borderwidth)
         {
             BorderWidth = borderwidth;
-            Texture = ContentHelper.Load<Texture2D>(texture);
+            Texture = texture;
             ULCornerSource = new Rectangle(0, 0, BorderWidth, BorderWidth);
             URCornerSource = new Rectangle(Texture.Bounds.Width - BorderWidth, 0, BorderWidth, BorderWidth);
             LLCornerSource = new Rectangle(0, Texture.Bounds.Height - BorderWidth, BorderWidth, BorderWidth);
@@ -37,6 +37,8 @@ namespace Spectrum.Framework.Screens
             BottomSource = new Rectangle(BorderWidth, Texture.Bounds.Height - BorderWidth, Texture.Bounds.Width - BorderWidth * 2, BorderWidth);
             CenterSource = new Rectangle(BorderWidth, BorderWidth, Texture.Bounds.Width - 2 * BorderWidth, Texture.Bounds.Height - 2 * BorderWidth);
         }
+        public ScalableTexture(string texture, int borderwidth)
+            : this(ContentHelper.Load<Texture2D>(texture), borderwidth) { }
         public Rectangle ULCorner
         {
             get { return new Rectangle(rect.X, rect.Y, BorderWidth, BorderWidth); }
