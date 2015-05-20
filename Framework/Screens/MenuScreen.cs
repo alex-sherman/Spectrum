@@ -14,7 +14,6 @@ namespace Spectrum.Framework.Screens
         private MouseState lastMouse = Mouse.GetState();
         List<InterfaceElement> centeredElements = new List<InterfaceElement>();
         List<MenuButton> menuButtons = new List<MenuButton>();
-        int menuButtonIndex = 0;
         public string MenuTitle { get; set; }
 
         public MenuScreen(string menuTitle)
@@ -23,34 +22,6 @@ namespace Spectrum.Framework.Screens
 
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
-        }
-        public void CenterElement(InterfaceElement element)
-        {
-            int x = Manager.Viewport.Width / 2 - element.Rect.Width / 2;
-            int y = 150;
-            foreach (InterfaceElement centeredElement in centeredElements)
-            {
-                y += centeredElement.Rect.Height + 10;
-            }
-            element.Position = new Vector2(x, y);
-            centeredElements.Add(element);
-        }
-        public override void AddElement(InterfaceElement element)
-        {
-            base.AddElement(element);
-            if (element is MenuButton)
-            {
-                menuButtons.Add(element as MenuButton);
-            }
-        }
-        public override void RemoveElement(InterfaceElement element)
-        {
-            base.RemoveElement(element);
-            if (element is MenuButton)
-            {
-                if (menuButtonIndex > menuButtons.IndexOf(element as MenuButton)) { menuButtonIndex--; }
-                menuButtons.Remove(element as MenuButton);
-            }
         }
         public override void Draw(GameTime gameTime, float layer)
         {

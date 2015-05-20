@@ -32,23 +32,20 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         {
             get
             {
-                int height = this._rect.Height * options.Count();
+                int height = Rect.Height * options.Count();
                 return new Rectangle(Rect.X, Rect.Y + Rect.Height, Rect.Width, height);
             }
         }
         private Rectangle optionRect(int i)
         {
-            return new Rectangle(Rect.X, Rect.Y+Rect.Height*(i+1), Rect.Width, Rect.Height);
+            return new Rectangle(Rect.X, Rect.Y + Rect.Height * (i + 1), Rect.Width, Rect.Height);
         }
-        public Dropdown(InGameScreen parent, int x, int y, params DropdownOption[] options)
-            : base(parent,new Rectangle())
+        public Dropdown(InGameScreen parent, params DropdownOption[] options)
+            : base(parent)
         {
             SetOptions(options);
-            this.parent = parent;
-            this._rect.X = x;
-            this._rect.Y = y;
-            this._rect.Width = 100;
-            this._rect.Height = (int)Font.LineSpacing + Texture.BorderWidth * 2;
+            FlatWidth = 100;
+            FlatHeight = (int)Font.LineSpacing + Texture.BorderWidth * 2;
         }
         public void SetOptions(params DropdownOption[] options)
         {

@@ -22,6 +22,20 @@ namespace Spectrum.Framework.Content
     }
     class AnimationParser : CachedContentParser<AnimationData, AnimationPlayer>
     {
+        public override string Prefix
+        {
+            get
+            {
+                return @"Models\";
+            }
+        }
+        public override string Suffix
+        {
+            get
+            {
+                return ".g3dj";
+            }
+        }
         public Dictionary<string, AnimationClip> GetAnimations(JObject jobj)
         {
             Dictionary<string, AnimationClip> output = new Dictionary<string, AnimationClip>();

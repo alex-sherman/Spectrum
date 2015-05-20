@@ -9,18 +9,11 @@ namespace Spectrum.Framework.Screens.InterfaceElements
     public class ListOption : InterfaceElement
     {
         public string text;
-        public ListOption(GameScreen parent, Rectangle rect, object tag, string text) : base(parent, rect)
+        public ListOption(Element parent, object tag, string text)
+            : base(parent)
         {
-            this._rect = rect;
             this.text = text;
             this.Tag = tag;
-        }
-        public override Rectangle Rect
-        {
-            get
-            {
-                return _rect;
-            }
         }
         public override void Draw(GameTime time, float layer)
         {

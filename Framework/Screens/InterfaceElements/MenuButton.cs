@@ -14,10 +14,9 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public MenuButton(MenuScreen parent, string text)
             : base(parent)
         {
-            this._rect.Width = (int)this.Font.MeasureString(text).X + 2 * Texture.BorderWidth;
-            this._rect.Height = (int)(this.Font.MeasureString(text).Y) + 2 * Texture.BorderWidth;
+            FlatWidth = (int)this.Font.MeasureString(text).X + 2 * Texture.BorderWidth;
+            FlatHeight = (int)(this.Font.MeasureString(text).Y) + 2 * Texture.BorderWidth;
             this.Text = text;
-            parent.CenterElement(this);
         }
         public override void Draw(GameTime time, float layer)
         {

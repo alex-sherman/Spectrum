@@ -9,6 +9,13 @@ namespace Spectrum.Framework.Content
 {
     class ImageParser : CachedContentParser<Texture2D, Texture2D>
     {
+        public override string Prefix
+        {
+            get
+            {
+                return @"Textures\";
+            }
+        }
         protected override Texture2D LoadData(string path)
         {
             if (!System.IO.File.Exists(path))

@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Graphics.Animation;
+using Spectrum.Framework.Screens;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -22,8 +23,8 @@ namespace Spectrum.Framework.Content
     {
         private static ContentHelper single;
         public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game.Content); } return single; } }
-        public static Texture2D Blank { get { return SpectrumGame.Game.Content.Load<Texture2D>("Textures\\blank"); } }
-        private Dictionary<Type, ContentParser> parserCache = new Dictionary<Type, ContentParser>()
+        public static Texture2D Blank { get { return ContentHelper.Load<Texture2D>("blank"); } }
+        private Dictionary<Type, ICachedContentParser> parserCache = new Dictionary<Type, ICachedContentParser>()
             {
                 {typeof(SpecModel), new ModelParser()},
                 {typeof(AnimationPlayer), new AnimationParser()},
@@ -65,16 +66,16 @@ namespace Spectrum.Framework.Content
         {
             try
             {
+                if (parserCache.ContainsKey(typeof(T)))
+                {
+                    ICachedContentParser parser = parserCache[typeof(T)];
+                    path = parser.Prefix + path + parser.Suffix;
+                    return (T)parserCache[typeof(T)].Load(Content.RootDirectory + "\\" + path);
+                }
                 if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
-                if (typeof(T) == typeof(Texture2D)) { path = @"Textures\" + path; }
                 if (typeof(T) == typeof(Effect))
                 {
                     path = @"HLSL\" + path + ".mgfx";
-                }
-                if (typeof(T) == typeof(SpecModel) || typeof(T) == typeof(AnimationPlayer)) { path = @"Models\" + path + ".g3dj"; }
-                if(parserCache.ContainsKey(typeof(T)))
-                {
-                    return (T)parserCache[typeof(T)].Load(Content.RootDirectory + "\\" + path);
                 }
                 return Content.Load<T>(path);
             }

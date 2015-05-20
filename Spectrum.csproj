@@ -109,6 +109,7 @@
     <Compile Include="Framework\Content\ImageParser.cs" />
     <Compile Include="Framework\Content\ModelParser.cs" />
     <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
+    <Compile Include="Framework\Content\ScreenParser.cs" />
     <Compile Include="Framework\DebugPrinter.cs" />
     <Compile Include="Framework\Entities\EntityData.cs" />
     <Compile Include="Framework\Entities\ReplicateAttribute.cs" />
@@ -159,6 +160,7 @@
     <Compile Include="Framework\Physics\ThreadManager.cs" />
     <Compile Include="Framework\Physics\World.cs" />
     <Compile Include="Framework\Screens\BackgroundScreen.cs" />
+    <Compile Include="Framework\Screens\Element.cs" />
     <Compile Include="Framework\Screens\GameScreen.cs" />
     <Compile Include="Framework\Screens\InGameScreen.cs" />
     <Compile Include="Framework\Input\InputState.cs" />
@@ -169,8 +171,10 @@
     <Compile Include="Framework\Screens\InterfaceElements\ListSelector.cs" />
     <Compile Include="Framework\Screens\InterfaceElements\MenuButton.cs" />
     <Compile Include="Framework\Screens\InterfaceElements\TextBox.cs" />
+    <Compile Include="Framework\Screens\InterfaceElements\TextElement.cs" />
     <Compile Include="Framework\Screens\MenuScreen.cs" />
     <Compile Include="Framework\Screens\MessageBoxScreen.cs" />
+    <Compile Include="Framework\Screens\RectOffset.cs" />
     <Compile Include="Framework\Screens\ScalableTexture.cs" />
     <Compile Include="Framework\Screens\ScreenManager.cs" />
     <Compile Include="Framework\Content\ContentHelper.cs" />

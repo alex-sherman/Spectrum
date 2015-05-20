@@ -40,15 +40,12 @@ namespace Spectrum.Framework.Screens
     /// want to quit" message box, and the main game itself are all implemented
     /// as screens.
     /// </summary>
-    public abstract class GameScreen
+    public abstract class GameScreen : Element
     {
 
         protected SpriteFont font;
-        protected List<InterfaceElement> elements = new List<InterfaceElement>();
 
         #region Properties
-
-        public virtual Rectangle Rect { get { return Manager.Viewport.Bounds; } }
 
         public virtual bool MouseInside(int x, int y)
         {
@@ -107,23 +104,15 @@ namespace Spectrum.Framework.Screens
 
         #endregion
 
-        public GameScreen()
-        {
-            font = ScreenManager.Font;
-        }
+        public GameScreen() : this(ScreenManager.Font) { }
 
         public GameScreen(SpriteFont font)
+            : base(null)
         {
             this.font = font;
-        }
-
-        public virtual void AddElement(InterfaceElement element)
-        {
-            elements.Add(element);
-        }
-        public virtual void RemoveElement(InterfaceElement element)
-        {
-            elements.Remove(element);
+            RelativeHeight = 1;
+            RelativeWidth = 1;
+            Positioning = PositionType.Absolute;
         }
 
         public virtual void LoadContent()
@@ -194,36 +183,22 @@ namespace Spectrum.Framework.Screens
         }
 
 
-        public bool HandleElementInput(InputState input)
+        public bool HandleElementInput(bool otherTookInput, InputState input)
         {
-            bool inputTaken = false;
-            List<InterfaceElement> toUpdate = elements.ToList();
+            List<Element> toUpdate = Children.ToList();
             toUpdate.Reverse();
             foreach (InterfaceElement element in toUpdate)
             {
-                inputTaken |= element.HandleInput(inputTaken, input);
+                otherTookInput |= element.HandleInput(otherTookInput, input);
             }
-            return inputTaken;
+            return otherTookInput;
         }
-        public virtual bool HandleInput(InputState input)
+        public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            HandleElementInput(input);
+            HandleElementInput(otherTookInput, input);
             return true;
         }
 
-
-
-        protected void DrawElements(GameTime gameTime, float layer)
-        {
-            foreach (InterfaceElement element in elements)
-            {
-                element.Draw(gameTime, ScreenManager.Layer(1, layer));
-            }
-        }
-        public virtual void Draw(GameTime gameTime, float layer)
-        {
-            DrawElements(gameTime, layer);
-        }
         public virtual void FocusChanged(bool gainFocus)
         {
             HasFocus = gainFocus;

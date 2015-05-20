@@ -160,7 +160,8 @@ namespace Spectrum.Framework.Screens
                 {
                     if (IsActive && !consumedInput)
                     {
-                        consumedInput = screen.HandleInput(input);
+                        screen.PositionUpdate();
+                        consumedInput = screen.HandleInput(false, input);
 
                         if (consumedInput && screen.IsOverlay && !screen.IsExiting && screen != screens[screens.Count - 1])
                         {
@@ -200,7 +201,7 @@ namespace Spectrum.Framework.Screens
                 if (screen.ScreenState == ScreenState.Hidden)
                     continue;
 
-                screen.Draw(gameTime, currentDepth);
+                screen.DrawWithChildren(gameTime, currentDepth);
                 currentDepth -= DepthDiff;
             }
             if (Grabbed != null)

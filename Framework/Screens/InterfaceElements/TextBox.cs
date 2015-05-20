@@ -17,13 +17,11 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public TextBox NextBox = null;
         public TextBox PrevBox = null;
         public InterfaceEventHandler OnContinue;
-        public TextBox(GameScreen parent, int x, int y, SpriteFont font = null, ScalableTexture texture = null)
-            : base(parent, new Rectangle(), font, texture)
+        public TextBox(GameScreen parent, SpriteFont font = null, ScalableTexture texture = null)
+            : base(parent, font, texture)
         {
-            _rect.X = x;
-            _rect.Y = y;
-            _rect.Width = (int)Font.MeasureString("a").X * 20 + 2 * Texture.BorderWidth;
-            _rect.Height = Font.LineSpacing + 2 * Texture.BorderWidth;
+            FlatWidth = (int)Font.MeasureString("a").X * 20 + 2 * Texture.BorderWidth;
+            FlatHeight = Font.LineSpacing + 2 * Texture.BorderWidth;
             OnClick += TextBox_OnClick;
         }
 

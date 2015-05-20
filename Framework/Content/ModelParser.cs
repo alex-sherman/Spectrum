@@ -26,8 +26,20 @@ namespace Spectrum.Framework.Content
     }
     class ModelParser : CachedContentParser<ModelParserCache, SpecModel>
     {
-
-
+        public override string Prefix
+        {
+            get
+            {
+                return @"Models\";
+            }
+        }
+        public override string Suffix
+        {
+            get
+            {
+                return ".g3dj";
+            }
+        }
         protected override ModelParserCache LoadData(string path)
         {
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));

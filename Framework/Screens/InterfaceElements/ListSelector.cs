@@ -17,18 +17,17 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         private int stringHeight;
         //The list selector's _rect is in absolute coordinates unlike other interface elements
         public ListSelector(InGameScreen parent, int x, int y)
-            : base(parent, new Rectangle(x, y, 100, 0))
+            : base(parent)
         {
             stringHeight = (int)Font.LineSpacing;
         }
         public void AddOption(object tag, string text)
         {
             int optionHeight = stringHeight + Texture.BorderWidth * 2;
-            ListOption option = new ListOption(parent, new Rectangle(_rect.X, _rect.Y - optionHeight, _rect.Width, optionHeight), tag, text);
+            ListOption option = new ListOption(this, tag, text);
             option.OnClick += new InterfaceEventHandler(optionClicked);
             this.options.Add(option);
-            this._rect.Height += optionHeight;
-            this._rect.Y -= optionHeight;
+            FlatHeight += optionHeight;
         }
         private void optionClicked(InterfaceElement clicked)
         {
@@ -37,7 +36,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            if (input.IsNewMousePress(0) && !_rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
+            if (input.IsNewMousePress(0) && !Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 Close();
             }
@@ -47,9 +46,9 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         {
             foreach (ListOption option in options)
             {
-                parent.RemoveElement(option);
+                Parent.RemoveElement(option);
             }
-            parent.RemoveElement(this);
+            Parent.RemoveElement(this);
         }
     }
 }

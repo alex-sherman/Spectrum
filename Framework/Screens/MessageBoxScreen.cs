@@ -32,11 +32,12 @@ namespace Spectrum.Framework.Screens
         /// usage text prompt.
         /// </summary>
         public MessageBoxScreen(string message, string option1, string option2)
+            : base("")
         {
-            rect.Width = 400;
-            rect.Height = 100;
-            rect.X = Manager.Viewport.Width / 2 - rect.Width / 2;
-            rect.Y = Manager.Viewport.Height / 2 - rect.Height / 2;
+            FlatWidth = 400;
+            FlatHeight = 100;
+            X = Manager.Viewport.Width / 2 - Width / 2;
+            Y = Manager.Viewport.Height / 2 - Height / 2;
             new Button(this, 320, 60, option1).OnClick += (InterfaceElement clicked) => { Option1(this, null); };
             new Button(this, 320, 80, option2).OnClick += (InterfaceElement clicked) => { Option2(this, null); };
             font = ScreenManager.Font;
@@ -50,7 +51,7 @@ namespace Spectrum.Framework.Screens
         public override void Draw(GameTime gameTime, float layer)
         {
             base.Draw(gameTime, layer);
-            Manager.DrawString(font, _message, new Vector2(rect.X + 10, rect.Y + 10), Color.White, ScreenManager.Layer(1, layer));
+            Manager.DrawString(font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, ScreenManager.Layer(1, layer));
         }
     }
 }
