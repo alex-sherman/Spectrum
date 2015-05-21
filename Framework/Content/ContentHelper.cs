@@ -45,7 +45,7 @@ namespace Spectrum.Framework.Content
 
         public static T Load<T>(string path) where T : class
         {
-            return (T)single._load<T>(path);
+            return (T)Single._load<T>(path);
         }
 
         public static object LoadType(Type type, string path, string plugin)

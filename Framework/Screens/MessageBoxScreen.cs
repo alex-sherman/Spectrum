@@ -38,16 +38,12 @@ namespace Spectrum.Framework.Screens
             FlatHeight = 100;
             X = Manager.Viewport.Width / 2 - Width / 2;
             Y = Manager.Viewport.Height / 2 - Height / 2;
-            new Button(this, 320, 60, option1).OnClick += (InterfaceElement clicked) => { Option1(this, null); };
-            new Button(this, 320, 80, option2).OnClick += (InterfaceElement clicked) => { Option2(this, null); };
+            new Button(this, option1).OnClick += (InterfaceElement clicked) => { Option1(this, null); };
+            new Button(this, option2).OnClick += (InterfaceElement clicked) => { Option2(this, null); };
             font = ScreenManager.Font;
             _message = message;
         }
 
-        public override void LoadContent()
-        {
-            //background = Manager.TextureLoader.Texture("gradient.png");
-        }
         public override void Draw(GameTime gameTime, float layer)
         {
             base.Draw(gameTime, layer);

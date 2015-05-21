@@ -99,32 +99,6 @@ namespace Spectrum.Framework.Screens
         }
 
 
-        /// <summary>
-        /// Load your graphics content.
-        /// </summary>
-        protected override void LoadContent()
-        {
-            // Tell each of the screens to load their content.
-            foreach (GameScreen screen in screens)
-            {
-                screen.LoadContent();
-            }
-        }
-
-
-        /// <summary>
-        /// Unload your graphics content.
-        /// </summary>
-        protected override void UnloadContent()
-        {
-            // Tell each of the screens to unload their content.
-            foreach (GameScreen screen in screens)
-            {
-                screen.UnloadContent();
-            }
-        }
-
-
         #endregion
 
         #region Update and Draw
@@ -156,14 +130,18 @@ namespace Spectrum.Framework.Screens
                 screensToUpdate.RemoveAt(screensToUpdate.Count - 1);
 
 
-                if (screen.ScreenState == ScreenState.Active || screen.ScreenState == ScreenState.TransitionOn)
+                if (screen.Display == ElementDisplay.Visible)
                 {
                     if (IsActive && !consumedInput)
                     {
-                        screen.PositionUpdate();
                         consumedInput = screen.HandleInput(false, input);
+                        if (screen.IsExiting)
+                        {
+                            screens.Remove(screen);
+                            continue;
+                        }
 
-                        if (consumedInput && screen.IsOverlay && !screen.IsExiting && screen != screens[screens.Count - 1])
+                        if (consumedInput && screen.IsOverlay && screen != screens[screens.Count - 1])
                         {
                             screens[screens.Count - 1].FocusChanged(false);
                             screens.Remove(screen);
@@ -182,7 +160,6 @@ namespace Spectrum.Framework.Screens
 
                 // Update the screen.
                 screen.Update(gameTime);
-
             }
         }
 
@@ -198,9 +175,10 @@ namespace Spectrum.Framework.Screens
             float currentDepth = ScreenDepth;
             foreach (GameScreen screen in screens)
             {
-                if (screen.ScreenState == ScreenState.Hidden)
+                if (screen.Display == ElementDisplay.Hidden)
                     continue;
 
+                screen.PositionUpdate();
                 screen.DrawWithChildren(gameTime, currentDepth);
                 currentDepth -= DepthDiff;
             }
@@ -230,12 +208,6 @@ namespace Spectrum.Framework.Screens
         {
             screens.Add(screen);
 
-            // If we have a graphics device, tell the screen to load content.
-            if (isInitialized)
-            {
-                screen.LoadContent();
-            }
-
         }
 
 
@@ -247,12 +219,6 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public void RemoveScreen(GameScreen screen)
         {
-            // If we have a graphics device, tell the screen to unload content.
-            if (isInitialized)
-            {
-                screen.UnloadContent();
-            }
-
             screens.Remove(screen);
             screensToUpdate.Remove(screen);
         }

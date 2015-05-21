@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Screens
 {
     public enum ElementDisplay
     {
-        Visisble,
+        Visible,
         Hidden
     }
     public enum PositionType
@@ -17,7 +17,26 @@ namespace Spectrum.Framework.Screens
         Inline,
         Absolute
     }
-    public class Element
+    public class RootElement : Element
+    {
+        public ScreenManager Manager { get; private set; }
+        public RootElement(ScreenManager manager) : base(null) { Manager = manager; }
+        public override int Width
+        {
+            get
+            {
+                return Manager.Viewport.Width;
+            }
+        }
+        public override int Height
+        {
+            get
+            {
+                return Manager.Viewport.Height;
+            }
+        }
+    }
+    public class Element : IDisposable
     {
         public Element Parent { get; private set; }
         public List<Element> Children { get; private set; }
@@ -27,25 +46,38 @@ namespace Spectrum.Framework.Screens
         public Element(Element parent)
         {
             Parent = parent;
-            Display = ElementDisplay.Visisble;
+            Display = ElementDisplay.Visible;
             Positioning = PositionType.Inline;
             Children = new List<Element>();
         }
 
+        public virtual void Dispose()
+        {
+            foreach (Element child in Children)
+            {
+                child.Dispose();
+            }
+        }
+
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
-            return false;
+            foreach (Element child in Children)
+            {
+                if (child.Display == ElementDisplay.Visible)
+                    otherTookInput |= child.HandleInput(otherTookInput, input);
+            }
+            return otherTookInput;
         }
 
         public RectOffset Margin;
 
         public float RelativeWidth;
         public int FlatWidth;
-        public int Width { get { return (int)((Parent == null ?  ScreenManager.CurrentManager.Viewport.Width : Parent.Width) * RelativeWidth) + FlatWidth; } }
+        public virtual int Width { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Width : Parent.Width) * RelativeWidth) + FlatWidth; } }
 
         public float RelativeHeight;
         public int FlatHeight;
-        public int Height { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.Height) * RelativeHeight) + FlatHeight; } }
+        public virtual int Height { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.Height) * RelativeHeight) + FlatHeight; } }
 
         public int X;
         public int Y;
@@ -55,6 +87,15 @@ namespace Spectrum.Framework.Screens
             get { return new Rectangle((int)X, (int)Y, (int)Width, (int)Height); }
         }
 
+        public virtual void Update(GameTime gameTime)
+        {
+            foreach (Element child in Children)
+            {
+                if (child.Display == ElementDisplay.Visible)
+                    child.Update(gameTime);
+            }
+        }
+
         public virtual void PositionUpdate()
         {
             int XOffset = 0;
@@ -62,16 +103,17 @@ namespace Spectrum.Framework.Screens
             int MaxRowHeight = 0;
             foreach (Element child in Children)
             {
-                child.X = XOffset + X + child.Margin.Left(Width - child.Width);
-                child.Y = YOffset + Y + child.Margin.Top(Height - child.Height);
-                MaxRowHeight = Math.Max(MaxRowHeight, child.Height);
-                XOffset += child.Width + child.Margin.Left(Width - child.Width) + child.Margin.Right(Width - child.Width);
-                if (XOffset > Width)
+                MaxRowHeight = Math.Max(MaxRowHeight, child.Height + child.Margin.Top(Height) + child.Margin.Bottom(Width));
+                if (XOffset > 0 && XOffset + child.Width + child.Margin.Left(Width) > Width)
                 {
                     XOffset = 0;
                     YOffset += MaxRowHeight;
                     MaxRowHeight = 0;
                 }
+                child.X = XOffset + X + child.Margin.Left(Width);
+                child.Y = YOffset + Y + child.Margin.Top(Height);
+                child.PositionUpdate();
+                XOffset += child.Width + child.Margin.Left(Width) + child.Margin.Right(Width);
             }
         }
 
@@ -82,7 +124,8 @@ namespace Spectrum.Framework.Screens
             Draw(gameTime, layer);
             foreach (Element child in Children)
             {
-                child.DrawWithChildren(gameTime, ScreenManager.Layer(1, layer));
+                if (child.Display == ElementDisplay.Visible)
+                    child.DrawWithChildren(gameTime, ScreenManager.Layer(1, layer));
             }
         }
 
@@ -93,6 +136,12 @@ namespace Spectrum.Framework.Screens
         public virtual void RemoveElement(Element element)
         {
             Children.Remove(element);
+        }
+
+        public virtual ElementDisplay Toggle()
+        {
+            Display = Display == ElementDisplay.Visible ? ElementDisplay.Hidden : ElementDisplay.Visible;
+            return Display;
         }
     }
 }

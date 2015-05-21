@@ -13,6 +13,9 @@ namespace Spectrum.Framework.Screens
 {
     public class InGameScreen : GameScreen
     {
+        public static ScalableTexture DefaultBackground = new ScalableTexture(ContentHelper.Blank, 0);
+        public static ScalableTexture DefaultTopBar = new ScalableTexture(ContentHelper.Blank, 0);
+        public static ScalableTexture DefaultCloseButton = new ScalableTexture(ContentHelper.Blank, 0);
         protected ScalableTexture Background;
         protected ScalableTexture TopBar;
         protected ScalableTexture CloseButton;
@@ -23,9 +26,9 @@ namespace Spectrum.Framework.Screens
         public string Title;
         public InGameScreen(string title, ScalableTexture background = null, ScalableTexture topBar = null, ScalableTexture closeButton = null)
         {
-            Background = background ?? new ScalableTexture(ContentHelper.Blank, 0);
-            TopBar = topBar ?? new ScalableTexture(ContentHelper.Blank, 0);
-            CloseButton = closeButton ?? new ScalableTexture(ContentHelper.Blank, 0);
+            Background = background ?? DefaultBackground;
+            TopBar = topBar ?? DefaultTopBar;
+            CloseButton = closeButton ?? DefaultCloseButton;
             RelativeHeight = 0;
             RelativeWidth = 0;
             FlatHeight = 100;
@@ -34,26 +37,11 @@ namespace Spectrum.Framework.Screens
             this.Title = title;
             this.IsOverlay = true;
         }
-        public override void LoadContent()
-        {
-
-            base.LoadContent();
-        }
         public override bool MouseInside(int x, int y)
         {
-            return Rect.Contains(x, y) || TopBarRect.Contains(x, y);
+            return Rect.Contains(x, y);
         }
-        public virtual void Toggle()
-        {
-            if (ScreenState == ScreenState.Active)
-            {
-                ScreenState = ScreenState.Hidden;
-            }
-            else if (ScreenState == ScreenState.Hidden)
-            {
-                ScreenState = ScreenState.Active;
-            }
-        }
+
         public Rectangle CloseButtonRect
         {
             get { return new Rectangle(Rect.X + Rect.Width - TopBarHeight, Rect.Y + TopBarRect.Height / 2 - 18, 38, 36); }
@@ -71,11 +59,11 @@ namespace Spectrum.Framework.Screens
             }
             if (CloseButton != null)
             {
-                CloseButton.Draw(CloseButtonRect, Manager.SpriteBatch, layer);
+                CloseButton.Draw(CloseButtonRect, Manager.SpriteBatch, ScreenManager.Layer(1, layer));
             }
             if (TopBar != null)
             {
-                TopBar.Draw(TopBarRect, Manager.SpriteBatch, ScreenManager.Layer(-1, layer));
+                TopBar.Draw(TopBarRect, Manager.SpriteBatch, ScreenManager.Layer(1, layer));
             }
             Color borderColor = Color.Black;
             borderColor.A = 100;
@@ -84,7 +72,7 @@ namespace Spectrum.Framework.Screens
                 Manager.DrawString(font, Title, 
                     new Vector2(
                         TopBarRect.X + TopBarRect.Width/2 - font.MeasureString(Title).X/2,
-                        TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, ScreenManager.Layer(1, layer));
+                        TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, ScreenManager.Layer(2, layer));
             }
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
@@ -93,16 +81,16 @@ namespace Spectrum.Framework.Screens
             if (input.IsNewKeyPress("GoBack"))
             {
                 input.Update();
-                ScreenState = ScreenState.Hidden;
+                Display = ElementDisplay.Hidden;
                 tookInput = true;
             }
-            tookInput |= HandleElementInput(otherTookInput, input);
+            tookInput |= base.HandleInput(otherTookInput, input);
             if (input.IsNewMousePress(0))
             {
                 if (Rect.Contains(input.MouseState.X, input.MouseState.Y)) { tookInput = true; }
                 if (CloseButtonRect.Contains(input.MouseState.X, input.MouseState.Y))
                 {
-                    ScreenState = ScreenState.Hidden;
+                    Display = ElementDisplay.Hidden;
                 }
                 if (TopBarRect.Contains(input.MouseState.X, input.MouseState.Y))
                 {

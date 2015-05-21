@@ -19,9 +19,6 @@ namespace Spectrum.Framework.Screens
         public MenuScreen(string menuTitle)
         {
             this.MenuTitle = menuTitle;
-
-            TransitionOnTime = TimeSpan.FromSeconds(0.5);
-            TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
         public override void Draw(GameTime gameTime, float layer)
         {
@@ -29,16 +26,11 @@ namespace Spectrum.Framework.Screens
 
             SpriteFont font = ScreenManager.Font;
 
-            // be fancy
-            float transitionOffset = (float)Math.Pow(TransitionPosition, 2);
-
             // title!
             Vector2 titlePosition = new Vector2(Manager.GraphicsDevice.Viewport.Width / 2, 80);
             Vector2 titleOrigin = font.MeasureString(MenuTitle) / 2;
-            Color col = Color.DarkRed * TransitionAlpha;
+            Color col = Color.DarkRed;
             float titleScale = 1.5f;
-
-            titlePosition.Y -= transitionOffset * 100;
 
             ScreenManager.CurrentManager.DrawString(font, MenuTitle, titlePosition, col, 0,
                                    titleOrigin, titleScale, SpriteEffects.None, 0);
