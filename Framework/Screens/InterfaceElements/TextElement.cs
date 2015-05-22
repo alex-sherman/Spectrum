@@ -10,18 +10,18 @@ namespace Spectrum.Framework.Screens.InterfaceElements
     {
         public string Text { get; protected set; }
 
-        public TextElement(Element parent, string text)
-            : base(parent)
+        public TextElement(string text)
+            : base()
         {
             Text = text;
         }
 
-        public override void Draw(GameTime time, float layer)
+        public override void Draw(GameTime time)
         {
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;
-                ScreenManager.CurrentManager.DrawString(Font, Text, pos, Color.Black, ScreenManager.Layer(2, layer));
+                ScreenManager.CurrentManager.DrawString(Font, Text, pos, Color.Black, Layer(1));
             }
         }
     }

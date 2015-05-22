@@ -38,16 +38,20 @@ namespace Spectrum.Framework.Screens
             FlatHeight = 100;
             X = Manager.Viewport.Width / 2 - Width / 2;
             Y = Manager.Viewport.Height / 2 - Height / 2;
-            new Button(this, option1).OnClick += (InterfaceElement clicked) => { Option1(this, null); };
-            new Button(this, option2).OnClick += (InterfaceElement clicked) => { Option2(this, null); };
+            Button button = new Button(option1);
+            button.OnClick += (InterfaceElement clicked) => { Option1(this, null); };
+            AddElement(button);
+            button = new Button(option2);
+            button.OnClick += (InterfaceElement clicked) => { Option2(this, null); };
+            AddElement(button);
             font = ScreenManager.Font;
             _message = message;
         }
 
-        public override void Draw(GameTime gameTime, float layer)
+        public override void Draw(GameTime gameTime)
         {
-            base.Draw(gameTime, layer);
-            Manager.DrawString(font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, ScreenManager.Layer(1, layer));
+            base.Draw(gameTime);
+            Manager.DrawString(font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, Z);
         }
     }
 }

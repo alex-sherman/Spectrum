@@ -16,15 +16,14 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         private List<ListOption> options = new List<ListOption>();
         private int stringHeight;
         //The list selector's _rect is in absolute coordinates unlike other interface elements
-        public ListSelector(InGameScreen parent, int x, int y)
-            : base(parent)
+        public ListSelector(Element parent, int x, int y)
         {
             stringHeight = (int)Font.LineSpacing;
         }
         public void AddOption(object tag, string text)
         {
             int optionHeight = stringHeight + Texture.BorderWidth * 2;
-            ListOption option = new ListOption(this, tag, text);
+            ListOption option = new ListOption(tag, text);
             option.OnClick += new InterfaceEventHandler(optionClicked);
             this.options.Add(option);
             FlatHeight += optionHeight;

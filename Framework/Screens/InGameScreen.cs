@@ -33,6 +33,8 @@ namespace Spectrum.Framework.Screens
             RelativeWidth = 0;
             FlatHeight = 100;
             FlatWidth = 100;
+            X = 0;
+            Y = 0;
 
             this.Title = title;
             this.IsOverlay = true;
@@ -50,71 +52,85 @@ namespace Spectrum.Framework.Screens
         {
             get { return new Rectangle(Rect.X, Rect.Y, Rect.Width, TopBarHeight + TopBar.BorderWidth); }
         }
-        public override void Draw(GameTime gameTime, float layer)
+        public override void Draw(GameTime gameTime)
         {
-            base.Draw(gameTime, layer);
+            base.Draw(gameTime);
             if (Background != null)
             {
-                Background.Draw(Rect, Manager.SpriteBatch, layer);
-            }
-            if (CloseButton != null)
-            {
-                CloseButton.Draw(CloseButtonRect, Manager.SpriteBatch, ScreenManager.Layer(1, layer));
+                Background.Draw(Rect, Manager.SpriteBatch, Z);
             }
             if (TopBar != null)
             {
-                TopBar.Draw(TopBarRect, Manager.SpriteBatch, ScreenManager.Layer(1, layer));
+                TopBar.Draw(TopBarRect, Manager.SpriteBatch, Layer(1));
+            }
+            if (CloseButton != null)
+            {
+                CloseButton.Draw(CloseButtonRect, Manager.SpriteBatch, Layer(2));
             }
             Color borderColor = Color.Black;
             borderColor.A = 100;
             if (Title != "")
             {
-                Manager.DrawString(font, Title, 
+                Title = Z.ToString();
+                Manager.DrawString(font, Title,
                     new Vector2(
-                        TopBarRect.X + TopBarRect.Width/2 - font.MeasureString(Title).X/2,
-                        TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, ScreenManager.Layer(2, layer));
+                        TopBarRect.X + TopBarRect.Width / 2 - font.MeasureString(Title).X / 2,
+                        TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, Layer(2));
             }
         }
+
+        public override ElementDisplay Toggle()
+        {
+            Parent.MoveElement(this, 0);
+            return base.Toggle();
+        }
+
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            bool tookInput = false;
-            if (input.IsNewKeyPress("GoBack"))
+            otherTookInput |= base.HandleInput(otherTookInput, input);
+            if (!otherTookInput)
             {
-                input.Update();
-                Display = ElementDisplay.Hidden;
-                tookInput = true;
-            }
-            tookInput |= base.HandleInput(otherTookInput, input);
-            if (input.IsNewMousePress(0))
-            {
-                if (Rect.Contains(input.MouseState.X, input.MouseState.Y)) { tookInput = true; }
-                if (CloseButtonRect.Contains(input.MouseState.X, input.MouseState.Y))
+                if (input.IsNewKeyPress("GoBack"))
                 {
+                    input.Update();
                     Display = ElementDisplay.Hidden;
+                    otherTookInput = true;
                 }
-                if (TopBarRect.Contains(input.MouseState.X, input.MouseState.Y))
+                if (input.IsNewMousePress(0))
                 {
-                    dragging = true;
-                    dragMouseBegin.X = input.MouseState.X;
-                    dragMouseBegin.Y = input.MouseState.Y;
-                    dragBegin.X = Rect.X;
-                    dragBegin.Y = Rect.Y;
-                    tookInput = true;
+                    if (Rect.Contains(input.MouseState.X, input.MouseState.Y))
+                    {
+                        otherTookInput = true;
+                        Parent.MoveElement(this, 0);
+                    }
+                    if (CloseButtonRect.Contains(input.MouseState.X, input.MouseState.Y))
+                    {
+                        Display = ElementDisplay.Hidden;
+                    }
+                    if (TopBarRect.Contains(input.MouseState.X, input.MouseState.Y))
+                    {
+                        dragging = true;
+                        dragMouseBegin.X = input.MouseState.X;
+                        dragMouseBegin.Y = input.MouseState.Y;
+                        dragBegin.X = Rect.X;
+                        dragBegin.Y = Rect.Y;
+                        otherTookInput = true;
+                    }
+                }
+                if (input.MouseState.LeftButton == ButtonState.Released)
+                {
+                    dragging = false;
+                }
+                if (dragging)
+                {
+                    otherTookInput = true;
+                    Vector2 newPos = new Vector2(input.MouseState.X, input.MouseState.Y) - dragMouseBegin + dragBegin;
+
+                    X = (int)newPos.X;
+                    Y = (int)newPos.Y;
                 }
             }
-            if (input.MouseState.LeftButton == ButtonState.Released)
-            {
-                dragging = false;
-            }
-            if (dragging)
-            {
-                tookInput = true;
-                Vector2 newPos = new Vector2(input.MouseState.X, input.MouseState.Y) - dragMouseBegin + dragBegin;
-
-                X = (int)newPos.X;
-                Y = (int)newPos.Y;
-            }
-            return tookInput;
+            return otherTookInput;
         }
     }
 }

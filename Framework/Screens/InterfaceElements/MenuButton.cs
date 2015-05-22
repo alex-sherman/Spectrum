@@ -11,17 +11,17 @@ namespace Spectrum.Framework.Screens.InterfaceElements
     {
         public string Text;
 
-        public MenuButton(MenuScreen parent, string text)
-            : base(parent)
+        public MenuButton(string text)
+            : base()
         {
             FlatWidth = (int)this.Font.MeasureString(text).X + 2 * Texture.BorderWidth;
             FlatHeight = (int)(this.Font.MeasureString(text).Y) + 2 * Texture.BorderWidth;
             this.Text = text;
         }
-        public override void Draw(GameTime time, float layer)
+        public override void Draw(GameTime time)
         {
-            base.Draw(time, layer);
-            ScreenManager.CurrentManager.DrawString(Font, Text,new Vector2(InsideRect.X, InsideRect.Y), Color.Gray, ScreenManager.TopLayer(layer));
+            base.Draw(time);
+            ScreenManager.CurrentManager.DrawString(Font, Text,new Vector2(InsideRect.X, InsideRect.Y), Color.Gray, Layer(ZLayers - 1));
         }
     }
 }

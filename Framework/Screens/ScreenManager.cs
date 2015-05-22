@@ -31,19 +31,6 @@ namespace Spectrum.Framework.Screens
     {
         #region Fields
 
-        public const float DepthDiff = .01f;
-        public const float ScreenDepth = .4f;
-        public static float Layer(int layer, float currentLayer)
-        {
-            return currentLayer - layer * DepthDiff / 10;
-        }
-        public static float TopLayer(float currentLayer)
-        {
-            return Layer(9, currentLayer);
-        }
-        List<GameScreen> screens = new List<GameScreen>();
-        List<GameScreen> screensToUpdate = new List<GameScreen>();
-
         InputState input = new InputState();
 
         public SpriteBatch SpriteBatch;
@@ -53,11 +40,11 @@ namespace Spectrum.Framework.Screens
         private Texture2D grabbedTexture;
         public Viewport Viewport;
         public ContentHelper TextureLoader { get; private set; }
-        bool isInitialized;
 
         #endregion
 
         #region Properties
+        public RootElement Root { get; private set; }
         public bool IsActive
         {
             get { return Game.IsActive; }
@@ -75,6 +62,7 @@ namespace Spectrum.Framework.Screens
         public ScreenManager(SpectrumGame game, ContentHelper textureLoader)
             : base(game)
         {
+            Root = new RootElement(this);
             TextureLoader = textureLoader;
             CurrentManager = this;
             Game.Services.AddService(typeof(ScreenManager), this);
@@ -95,7 +83,6 @@ namespace Spectrum.Framework.Screens
         {
             base.Initialize();
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            isInitialized = true;
         }
 
 
@@ -111,56 +98,8 @@ namespace Spectrum.Framework.Screens
         {
             // Read the keyboard and gamepad.
             input.Update();
-
-            // Make a copy of the master screen list, to avoid confusion if
-            // the process of updating one screen adds or removes others.
-            screensToUpdate.Clear();
-
-            foreach (GameScreen screen in screens)
-                screensToUpdate.Add(screen);
-
-            bool consumedInput = false;
-            bool hasFocus = true;
-            // Loop as long as there are screens waiting to be updated.
-            while (screensToUpdate.Count > 0)
-            {
-                // Pop the topmost screen off the waiting list.
-                GameScreen screen = screensToUpdate[screensToUpdate.Count - 1];
-
-                screensToUpdate.RemoveAt(screensToUpdate.Count - 1);
-
-
-                if (screen.Display == ElementDisplay.Visible)
-                {
-                    if (IsActive && !consumedInput)
-                    {
-                        consumedInput = screen.HandleInput(false, input);
-                        if (screen.IsExiting)
-                        {
-                            screens.Remove(screen);
-                            continue;
-                        }
-
-                        if (consumedInput && screen.IsOverlay && screen != screens[screens.Count - 1])
-                        {
-                            screens[screens.Count - 1].FocusChanged(false);
-                            screens.Remove(screen);
-                            screens.Add(screen);
-                            screen.FocusChanged(true);
-                        }
-                    }
-
-                    if (screen.Focusable)
-                    {
-                        if (screen.HasFocus != hasFocus)
-                            screen.FocusChanged(hasFocus);
-                        hasFocus = false;
-                    }
-                }
-
-                // Update the screen.
-                screen.Update(gameTime);
-            }
+            Root.Update(gameTime);
+            Root.HandleInput(false, input);
         }
 
 
@@ -172,16 +111,8 @@ namespace Spectrum.Framework.Screens
             GraphicsDevice.Clear(Color.Black);
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
-            float currentDepth = ScreenDepth;
-            foreach (GameScreen screen in screens)
-            {
-                if (screen.Display == ElementDisplay.Hidden)
-                    continue;
-
-                screen.PositionUpdate();
-                screen.DrawWithChildren(gameTime, currentDepth);
-                currentDepth -= DepthDiff;
-            }
+            Root.PositionUpdate();
+            Root.DrawWithChildren(gameTime, 1.0f);
             if (Grabbed != null)
             {
                 Draw(grabbedTexture, new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 64, 64), Color.White, 0);
@@ -194,22 +125,13 @@ namespace Spectrum.Framework.Screens
 
         #region Public Methods
 
-
-        public void MoveScreen(GameScreen screen, int newIndex)
-        {
-            screens.Remove(screen);
-            screens.Insert(newIndex, screen);
-        }
-
         /// <summary>
         /// Adds a new screen to the screen manager.
         /// </summary>
         public void AddScreen(GameScreen screen)
         {
-            screens.Add(screen);
-
+            Root.AddElement(screen);
         }
-
 
         /// <summary>
         /// Removes a screen from the screen manager. You should normally
@@ -219,21 +141,8 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public void RemoveScreen(GameScreen screen)
         {
-            screens.Remove(screen);
-            screensToUpdate.Remove(screen);
+            Root.RemoveElement(screen);
         }
-
-
-        /// <summary>
-        /// Expose an array holding all the screens. We return a copy rather
-        /// than the real master list, because screens should only ever be added
-        /// or removed using the AddScreen and RemoveScreen methods.
-        /// </summary>
-        public GameScreen[] GetScreens()
-        {
-            return screens.ToArray();
-        }
-
 
         /// <summary>
         /// Helper draws a translucent black fullscreen sprite, used for fading

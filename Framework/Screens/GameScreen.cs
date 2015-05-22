@@ -40,20 +40,13 @@ namespace Spectrum.Framework.Screens
         }
         public bool IsOverlay = false;
         public bool HasFocus { get; protected set; }
-        public bool Focusable = true;
         public bool IsExiting = false;
-
-        /// <summary>
-        /// Gets the manager that this screen belongs to.
-        /// </summary>
-        public ScreenManager Manager { get { return ScreenManager.CurrentManager; } }
 
         #endregion
 
         public GameScreen() : this(ScreenManager.Font) { }
 
         public GameScreen(SpriteFont font)
-            : base(null)
         {
             this.font = font;
             RelativeHeight = 1;
@@ -64,11 +57,6 @@ namespace Spectrum.Framework.Screens
         public virtual void FocusChanged(bool gainFocus)
         {
             HasFocus = gainFocus;
-        }
-
-        public void ExitScreen()
-        {
-            IsExiting = true;
         }
     }
 }

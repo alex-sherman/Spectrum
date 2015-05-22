@@ -20,7 +20,7 @@ namespace Spectrum.Framework.Screens
         {
             this.MenuTitle = menuTitle;
         }
-        public override void Draw(GameTime gameTime, float layer)
+        public override void Draw(GameTime gameTime)
         {
             //UpdateMenuItemLocations();
 
@@ -34,7 +34,7 @@ namespace Spectrum.Framework.Screens
 
             ScreenManager.CurrentManager.DrawString(font, MenuTitle, titlePosition, col, 0,
                                    titleOrigin, titleScale, SpriteEffects.None, 0);
-            base.Draw(gameTime, layer);
+            base.Draw(gameTime);
         }
     }
 }

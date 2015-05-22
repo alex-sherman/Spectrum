@@ -17,10 +17,9 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public ScalableTexture Texture { get; protected set; }
         public event InterfaceEventHandler OnClick;
         public object Tag;
-        public int layer = 0;
         public SpriteFont Font { get; protected set; }
-        public InterfaceElement(Element parent, SpriteFont font = null, ScalableTexture texture = null)
-            : base(parent)
+        public InterfaceElement(SpriteFont font = null, ScalableTexture texture = null)
+            : base()
         {
             Font = font ?? DefaultFont;
             Texture = texture ?? DefaultTexture;
@@ -34,15 +33,15 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         {
             return Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y);
         }
-        public override void Draw(GameTime time, float layer)
+        public override void Draw(GameTime time)
         {
             if (MouseInside() && MouseOverText != null)
             {
-                ScreenManager.CurrentManager.DrawString(Font, MouseOverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, ScreenManager.TopLayer(layer));
+                ScreenManager.CurrentManager.DrawString(Font, MouseOverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, Layer(ZLayers - 1));
             }
             if(Texture != null)
             {
-                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, layer);
+                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z);
             }
         }
         public override bool HandleInput(bool otherTookInput, InputState input)

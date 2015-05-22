@@ -19,8 +19,7 @@ namespace Spectrum.Framework.Screens
     }
     public class RootElement : Element
     {
-        public ScreenManager Manager { get; private set; }
-        public RootElement(ScreenManager manager) : base(null) { Manager = manager; }
+        public RootElement(ScreenManager manager) : base(manager) { }
         public override int Width
         {
             get
@@ -36,27 +35,21 @@ namespace Spectrum.Framework.Screens
             }
         }
     }
-    public class Element : IDisposable
+    public class Element
     {
+        public ScreenManager Manager { get; private set; }
         public Element Parent { get; private set; }
-        public List<Element> Children { get; private set; }
+        private List<Element> _children = new List<Element>();
+        public List<Element> Children { get { return _children.ToList(); } }
         public ElementDisplay Display { get; set; }
         public PositionType Positioning { get; set; }
 
-        public Element(Element parent)
+        protected Element(ScreenManager manager) : this() { Manager = manager; }
+
+        public Element()
         {
-            Parent = parent;
             Display = ElementDisplay.Visible;
             Positioning = PositionType.Inline;
-            Children = new List<Element>();
-        }
-
-        public virtual void Dispose()
-        {
-            foreach (Element child in Children)
-            {
-                child.Dispose();
-            }
         }
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
@@ -81,6 +74,13 @@ namespace Spectrum.Framework.Screens
 
         public int X;
         public int Y;
+        protected const float ZDiff = 0.00001f;
+        protected const int ZLayers = 10;
+        public float Z { get; private set; }
+        protected float Layer(int layer)
+        {
+            return Z - ZDiff * layer / ZLayers;
+        }
 
         public Rectangle Rect
         {
@@ -91,6 +91,8 @@ namespace Spectrum.Framework.Screens
         {
             foreach (Element child in Children)
             {
+                child.Parent = this;
+                child.Manager = Manager;
                 if (child.Display == ElementDisplay.Visible)
                     child.Update(gameTime);
             }
@@ -103,39 +105,53 @@ namespace Spectrum.Framework.Screens
             int MaxRowHeight = 0;
             foreach (Element child in Children)
             {
-                MaxRowHeight = Math.Max(MaxRowHeight, child.Height + child.Margin.Top(Height) + child.Margin.Bottom(Width));
-                if (XOffset > 0 && XOffset + child.Width + child.Margin.Left(Width) > Width)
+                if (child.Positioning == PositionType.Inline)
                 {
-                    XOffset = 0;
-                    YOffset += MaxRowHeight;
-                    MaxRowHeight = 0;
+                    MaxRowHeight = Math.Max(MaxRowHeight, child.Height + child.Margin.Top(Height) + child.Margin.Bottom(Width));
+                    if (XOffset > 0 && XOffset + child.Width + child.Margin.Left(Width) > Width)
+                    {
+                        XOffset = 0;
+                        YOffset += MaxRowHeight;
+                        MaxRowHeight = 0;
+                    }
+                    child.X = XOffset + X + child.Margin.Left(Width);
+                    child.Y = YOffset + Y + child.Margin.Top(Height);
+                    XOffset += child.Width + child.Margin.Left(Width) + child.Margin.Right(Width);
                 }
-                child.X = XOffset + X + child.Margin.Left(Width);
-                child.Y = YOffset + Y + child.Margin.Top(Height);
                 child.PositionUpdate();
-                XOffset += child.Width + child.Margin.Left(Width) + child.Margin.Right(Width);
             }
         }
 
-        public virtual void Draw(GameTime gameTime, float layer) { }
+        public virtual void Draw(GameTime gameTime) { }
 
-        public virtual void DrawWithChildren(GameTime gameTime, float layer)
+        public virtual float DrawWithChildren(GameTime gameTime, float layer)
         {
-            Draw(gameTime, layer);
-            foreach (Element child in Children)
+            Z = layer;
+            Draw(gameTime);
+            List<Element> drawChildren = Children;
+            drawChildren.Reverse();
+            foreach (Element child in drawChildren)
             {
                 if (child.Display == ElementDisplay.Visible)
-                    child.DrawWithChildren(gameTime, ScreenManager.Layer(1, layer));
+                    layer = child.DrawWithChildren(gameTime, layer * .9999f);
             }
+            return layer * .9999f;
         }
-
-        public virtual void AddElement(Element element)
+        public void MoveElement(Element child, int newIndex)
         {
-            Children.Add(element);
+            _children.Remove(child);
+            _children.Insert(newIndex, child);
+        }
+        public virtual void AddElement(Element element, int? index = null)
+        {
+            element.Parent = this;
+            element.Manager = Manager;
+            _children.Insert(index ?? _children.Count, element);
         }
         public virtual void RemoveElement(Element element)
         {
-            Children.Remove(element);
+            element.Parent = null;
+            _children.Remove(element);
         }
 
         public virtual ElementDisplay Toggle()

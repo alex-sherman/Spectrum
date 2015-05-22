@@ -40,8 +40,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         {
             return new Rectangle(Rect.X, Rect.Y + Rect.Height * (i + 1), Rect.Width, Rect.Height);
         }
-        public Dropdown(InGameScreen parent, params DropdownOption[] options)
-            : base(parent)
+        public Dropdown(params DropdownOption[] options)
         {
             SetOptions(options);
             FlatWidth = 100;
@@ -95,13 +94,13 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             }
             return false;
         }
-        public override void Draw(GameTime time, float layer)
+        public override void Draw(GameTime time)
         {
-            base.Draw(time, layer);
+            base.Draw(time);
             if (selected != null)
             {
                 ScreenManager.CurrentManager.DrawString(Font, selected.text, new Vector2(InsideRect.X, InsideRect.Y), 
-                    Color.Black, ScreenManager.Layer(3, layer));
+                    Color.Black, Layer(3));
             }
             if (expanded)
             {
@@ -109,9 +108,9 @@ namespace Spectrum.Framework.Screens.InterfaceElements
                 {
                     Rectangle rect = optionRect(i);
                     Rectangle insideRect = new Rectangle(rect.X + Texture.BorderWidth, rect.Y + Texture.BorderWidth, rect.Width - 2 * Texture.BorderWidth, Texture.BorderWidth);
-                    Texture.Draw(rect, ScreenManager.CurrentManager.SpriteBatch, ScreenManager.Layer(1, layer));
+                    Texture.Draw(rect, ScreenManager.CurrentManager.SpriteBatch, Layer(1));
                     ScreenManager.CurrentManager.DrawString(Font, options[i].text, insideRect,
-                        Color.Black, ScreenManager.Layer(2, layer));
+                        Color.Black, Layer(2));
                 }
             }
         }
