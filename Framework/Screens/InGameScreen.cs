@@ -71,7 +71,6 @@ namespace Spectrum.Framework.Screens
             borderColor.A = 100;
             if (Title != "")
             {
-                Title = Z.ToString();
                 Manager.DrawString(font, Title,
                     new Vector2(
                         TopBarRect.X + TopBarRect.Width / 2 - font.MeasureString(Title).X / 2,
