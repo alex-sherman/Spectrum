@@ -22,13 +22,13 @@ namespace Spectrum.Framework.Graphics
         public static bool wireFrame = false;
         public static SpriteBatch spriteBatch;
         public static Color clearColor = Color.CornflowerBlue;
-        private static Camera _camera;
-        public static Camera Camera { get { return _camera; } set { _camera = value; } }
+        public static Camera Camera { get; private set; }
         private static RenderTarget2D shadowMap;
         private static RenderTarget2D AATarget;
         //TODO: Add a settings thing for multisample count
-        public static void Initialize()
+        public static void Initialize(Camera camera)
         {
+            Camera = camera;
             GraphicsEngine.device = SpectrumGame.Game.GraphicsDevice;
             Settings.Init(device);
             PostProcessEffect.Initialize();
