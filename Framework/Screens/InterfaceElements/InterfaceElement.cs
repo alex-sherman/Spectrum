@@ -13,18 +13,9 @@ namespace Spectrum.Framework.Screens.InterfaceElements
     public class InterfaceElement : Element
     {
         public static ScalableTexture DefaultTexture;
-        public ScalableTexture Texture { get; protected set; }
         public event InterfaceEventHandler OnClick;
         public object Tag;
-        public InterfaceElement(ScalableTexture texture = null)
-            : base()
-        {
-            Texture = texture ?? DefaultTexture;
-        }
-        public virtual Rectangle InsideRect
-        {
-            get { return new Rectangle(Rect.X + Texture.BorderWidth, Rect.Y + Texture.BorderWidth, Rect.Width - 2 * Texture.BorderWidth, Rect.Height - 2 * Texture.BorderWidth); }
-        }
+
         public string MouseOverText;
         public bool MouseInside()
         {
@@ -32,13 +23,10 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         }
         public override void Draw(GameTime time)
         {
+            base.Draw(time);
             if (MouseInside() && MouseOverText != null)
             {
                 ScreenManager.CurrentManager.DrawString(Font, MouseOverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, Layer(ZLayers - 1));
-            }
-            if(Texture != null)
-            {
-                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z);
             }
         }
         public override bool HandleInput(bool otherTookInput, InputState input)

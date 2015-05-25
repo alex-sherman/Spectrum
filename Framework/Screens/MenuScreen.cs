@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Screens
     {
         private MouseState lastMouse = Mouse.GetState();
         List<InterfaceElement> centeredElements = new List<InterfaceElement>();
-        List<MenuButton> menuButtons = new List<MenuButton>();
+        List<Button> menuButtons = new List<Button>();
         public string MenuTitle { get; set; }
 
         public MenuScreen(string menuTitle)

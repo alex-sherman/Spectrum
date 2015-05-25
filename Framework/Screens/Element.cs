@@ -49,6 +49,7 @@ namespace Spectrum.Framework.Screens
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
+        public ScalableTexture Texture { get { return Fields["image"].ObjValue as ScalableTexture; } }
 
         protected Element(ScreenManager manager) : this() { Manager = manager; }
 
@@ -60,10 +61,21 @@ namespace Spectrum.Framework.Screens
 
         public virtual void Initialize()
         {
+            Type tagType = GetType();
+            while(tagType != typeof(Element))
+            {
+                this.Tags.Add(tagType.Name.ToLower());
+                tagType = tagType.BaseType;
+            }
             this.Fields["font"] = new ElementField(
                 this,
                 "font",
-                ElementField.FontSetter
+                ElementField.ContentSetter<SpriteFont>
+                );
+            this.Fields["image"] = new ElementField(
+                this,
+                "image",
+                ElementField.ContentSetter<ScalableTexture>
                 ); 
             Initialized = true;
         }
@@ -85,6 +97,7 @@ namespace Spectrum.Framework.Screens
         }
 
         public RectOffset Margin;
+        public RectOffset Padding;
 
         public float RelativeWidth;
         public int FlatWidth;
@@ -99,7 +112,7 @@ namespace Spectrum.Framework.Screens
         protected const float ZDiff = 0.00001f;
         protected const int ZLayers = 10;
         public float Z { get; private set; }
-        protected float Layer(int layer)
+        public float Layer(int layer)
         {
             return Z - ZDiff * layer / ZLayers;
         }
@@ -144,7 +157,13 @@ namespace Spectrum.Framework.Screens
             }
         }
 
-        public virtual void Draw(GameTime gameTime) { }
+        public virtual void Draw(GameTime gameTime)
+        {
+            if (Texture != null)
+            {
+                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z);
+            }
+        }
 
         public virtual float DrawWithChildren(GameTime gameTime, float layer)
         {

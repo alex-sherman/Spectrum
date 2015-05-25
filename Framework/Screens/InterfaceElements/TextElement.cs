@@ -32,5 +32,9 @@ namespace Spectrum.Framework.Screens.InterfaceElements
                 ScreenManager.CurrentManager.DrawString(Font, Text, pos, Color.Black, Layer(1));
             }
         }
+        public override bool HandleInput(bool otherTookInput, Input.InputState input)
+        {
+            return otherTookInput;
+        }
     }
 }

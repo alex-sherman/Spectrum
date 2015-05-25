@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    class ImageParser : CachedContentParser<Texture2D, Texture2D>
+    class Texture2DParser : CachedContentParser<Texture2D, Texture2D>
     {
         public override string Prefix
         {

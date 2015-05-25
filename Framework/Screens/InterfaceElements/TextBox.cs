@@ -17,11 +17,11 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public TextBox NextBox = null;
         public TextBox PrevBox = null;
         public InterfaceEventHandler OnContinue;
-        public TextBox(ScalableTexture texture = null)
-            : base(texture)
+        public override void Initialize()
         {
-            FlatWidth = (int)Font.MeasureString("a").X * 20 + 2 * Texture.BorderWidth;
-            FlatHeight = Font.LineSpacing + 2 * Texture.BorderWidth;
+            base.Initialize();
+            FlatWidth = (int)Font.MeasureString("a").X * 20;
+            FlatHeight = Font.LineSpacing;
             OnClick += TextBox_OnClick;
         }
 
@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             Selected = true;
             textPosition = 0;
             int mouseX = Mouse.GetState().X;
-            while (textPosition < Text.Count() && Font.MeasureString(Text.Substring(0, textPosition + 1)).X + InsideRect.X - Font.Spacing < mouseX)
+            while (textPosition < Text.Count() && Font.MeasureString(Text.Substring(0, textPosition + 1)).X + X - Font.Spacing < mouseX)
             {
                 textPosition++;
             }
@@ -77,10 +77,10 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         }
         public override void Draw(GameTime time)
         {
-            ScreenManager.CurrentManager.DrawString(Font, Text, new Vector2(Rect.X + Font.Spacing + Texture.BorderWidth, Rect.Y + Texture.BorderWidth), Color.Black, Layer(3));
+            ScreenManager.CurrentManager.DrawString(Font, Text, new Vector2(Rect.X + Font.Spacing, Rect.Y), Color.Black, Layer(3));
             if (Selected)
             {
-                ScreenManager.CurrentManager.DrawString(Font, "|", new Vector2(InsideRect.X + Font.MeasureString(Text.Substring(0, textPosition)).X, InsideRect.Y), Color.Black, Layer(3));
+                ScreenManager.CurrentManager.DrawString(Font, "|", new Vector2(X + Font.MeasureString(Text.Substring(0, textPosition)).X, Y), Color.Black, Layer(3));
             }
             base.Draw(time);
         }

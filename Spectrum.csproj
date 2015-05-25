@@ -106,7 +106,8 @@
   <ItemGroup>
     <Compile Include="Framework\Content\AnimationParser.cs" />
     <Compile Include="Framework\Content\ContentParser.cs" />
-    <Compile Include="Framework\Content\ImageParser.cs" />
+    <Compile Include="Framework\Content\ScalableTextureParser.cs" />
+    <Compile Include="Framework\Content\Texture2DParser.cs" />
     <Compile Include="Framework\Content\ModelParser.cs" />
     <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
     <Compile Include="Framework\Content\ScreenParser.cs" />
@@ -170,7 +171,6 @@
     <Compile Include="Framework\Screens\InterfaceElements\InterfaceElement.cs" />
     <Compile Include="Framework\Screens\InterfaceElements\ListOption.cs" />
     <Compile Include="Framework\Screens\InterfaceElements\ListSelector.cs" />
-    <Compile Include="Framework\Screens\InterfaceElements\MenuButton.cs" />
     <Compile Include="Framework\Screens\InterfaceElements\TextBox.cs" />
     <Compile Include="Framework\Screens\InterfaceElements\TextElement.cs" />
     <Compile Include="Framework\Screens\MenuScreen.cs" />

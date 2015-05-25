@@ -18,11 +18,18 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         //The list selector's _rect is in absolute coordinates unlike other interface elements
         public ListSelector(Element parent, int x, int y)
         {
+            Positioning = PositionType.Absolute;
+            X = x;
+            Y = y;
+        }
+        public override void Initialize()
+        {
+            base.Initialize();
             stringHeight = (int)Font.LineSpacing;
         }
         public void AddOption(object tag, string text)
         {
-            int optionHeight = stringHeight + Texture.BorderWidth * 2;
+            int optionHeight = stringHeight;
             ListOption option = new ListOption(tag, text);
             option.OnClick += new InterfaceEventHandler(optionClicked);
             this.options.Add(option);

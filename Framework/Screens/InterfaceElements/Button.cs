@@ -13,15 +13,13 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public object DrawObject;
         public string Text;
 
-        public Button(int width, int height, ScalableTexture texture = null)
-            : base(texture: texture)
+        public Button(int width, int height)
         {
             FlatWidth = width;
             FlatHeight = height;
         }
 
-        public Button(string text, ScalableTexture texture = null)
-            : base(texture: texture)
+        public Button(string text)
         {
             Text = text;
         }
@@ -31,23 +29,23 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             base.Initialize();
             if (Text != null)
             {
-                FlatWidth = (int)Font.MeasureString(Text).X + 2 * Texture.BorderWidth;
-                FlatHeight = (int)Font.LineSpacing + 2 * Texture.BorderWidth;
+                FlatWidth = (int)Font.MeasureString(Text).X;
+                FlatHeight = (int)Font.LineSpacing;
             }
         }
 
         public override void Draw(GameTime time)
         {
+            base.Draw(time);
             if (DrawObject != null)
             {
-                ScreenManager.CurrentManager.Draw(ScreenManager.CurrentManager.TextureLoader.ObjectTexture(DrawObject), InsideRect, Color.White, Z);
+                ScreenManager.CurrentManager.Draw(ScreenManager.CurrentManager.TextureLoader.ObjectTexture(DrawObject), Rect, Color.White, Layer(1));
             }
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;
                 ScreenManager.CurrentManager.DrawString(Font, Text, pos, Color.Black, Layer(2));
             }
-            base.Draw(time);
         }
     }
 }

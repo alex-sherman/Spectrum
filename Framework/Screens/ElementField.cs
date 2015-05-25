@@ -10,19 +10,17 @@ namespace Spectrum.Framework.Screens
     public delegate object ElementFieldSetter(Element element, string value);
     public class ElementField
     {
-        #region Setters
-        public static object FontSetter(Element element, string value)
+        public static object ContentSetter<T>(Element element, string value) where T : class
         {
             try
             {
-                return ContentHelper.Load<SpriteFont>(value);
+                return ContentHelper.Load<T>(value);
             }
             catch (ContentLoadException)
             {
                 return null;
             }
         }
-        #endregion
 
         public static List<Tuple<string, string, string>> TagOverrides = new List<Tuple<string, string, string>>();
         private static string FindTagOverride(Element element, string fieldName)
@@ -68,7 +66,7 @@ namespace Spectrum.Framework.Screens
                 _strValue = overrideValue;
                 _value = setter(element, overrideValue);
             }
-            else if(element.Parent != null && inherited)
+            else if (element.Parent != null && inherited && element.Parent.Fields.ContainsKey(fieldName))
             {
                 _strValue = element.Parent.Fields[fieldName].StrValue;
                 _value = element.Parent.Fields[fieldName].ObjValue;

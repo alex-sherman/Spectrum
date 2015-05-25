@@ -28,7 +28,8 @@ namespace Spectrum.Framework.Content
             {
                 {typeof(SpecModel), new ModelParser()},
                 {typeof(AnimationPlayer), new AnimationParser()},
-                {typeof(Texture2D), new ImageParser()}
+                {typeof(Texture2D), new Texture2DParser()},
+                {typeof(ScalableTexture), new ScalableTextureParser()}
             };
         public ContentManager Content { get; private set; }
         public ContentHelper(ContentManager content)

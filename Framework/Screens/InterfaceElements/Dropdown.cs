@@ -48,7 +48,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         {
             base.Initialize();
             FlatWidth = 100;
-            FlatHeight = (int)Font.LineSpacing + Texture.BorderWidth * 2;
+            FlatHeight = (int)Font.LineSpacing;
         }
         public void SetOptions(params DropdownOption[] options)
         {
@@ -103,17 +103,14 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             base.Draw(time);
             if (selected != null)
             {
-                ScreenManager.CurrentManager.DrawString(Font, selected.text, new Vector2(InsideRect.X, InsideRect.Y),
+                ScreenManager.CurrentManager.DrawString(Font, selected.text, new Vector2(X, Y),
                     Color.Black, Layer(3));
             }
             if (expanded)
             {
                 for (int i = 0; i < options.Count(); i++)
                 {
-                    Rectangle rect = optionRect(i);
-                    Rectangle insideRect = new Rectangle(rect.X + Texture.BorderWidth, rect.Y + Texture.BorderWidth, rect.Width - 2 * Texture.BorderWidth, Texture.BorderWidth);
-                    Texture.Draw(rect, ScreenManager.CurrentManager.SpriteBatch, Layer(1));
-                    ScreenManager.CurrentManager.DrawString(Font, options[i].text, insideRect,
+                    ScreenManager.CurrentManager.DrawString(Font, options[i].text, Rect,
                         Color.Black, Layer(2));
                 }
             }
