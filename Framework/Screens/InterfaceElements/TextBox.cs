@@ -17,8 +17,8 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public TextBox NextBox = null;
         public TextBox PrevBox = null;
         public InterfaceEventHandler OnContinue;
-        public TextBox(SpriteFont font = null, ScalableTexture texture = null)
-            : base(font, texture)
+        public TextBox(ScalableTexture texture = null)
+            : base(texture)
         {
             FlatWidth = (int)Font.MeasureString("a").X * 20 + 2 * Texture.BorderWidth;
             FlatHeight = Font.LineSpacing + 2 * Texture.BorderWidth;

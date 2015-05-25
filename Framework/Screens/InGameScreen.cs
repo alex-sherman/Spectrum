@@ -29,15 +29,25 @@ namespace Spectrum.Framework.Screens
             Background = background ?? DefaultBackground;
             TopBar = topBar ?? DefaultTopBar;
             CloseButton = closeButton ?? DefaultCloseButton;
+            this.Title = title;
+        }
+        public override void Initialize()
+        {
+            base.Initialize();
             RelativeHeight = 0;
             RelativeWidth = 0;
             FlatHeight = 100;
             FlatWidth = 100;
             X = 0;
             Y = 0;
-
-            this.Title = title;
-            this.IsOverlay = true;
+            if (Title != null)
+            {
+                TextElement titleElement = new TextElement(Title);
+                titleElement.Tags.Add("ingame-window-title");
+                titleElement.Margin.LeftRelative = .5f;
+                AddElement(titleElement);
+                titleElement.Margin.LeftOffset = -titleElement.Width / 2;
+            }
         }
         public override bool MouseInside(int x, int y)
         {
@@ -69,13 +79,13 @@ namespace Spectrum.Framework.Screens
             }
             Color borderColor = Color.Black;
             borderColor.A = 100;
-            if (Title != "")
-            {
-                Manager.DrawString(font, Title,
-                    new Vector2(
-                        TopBarRect.X + TopBarRect.Width / 2 - font.MeasureString(Title).X / 2,
-                        TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, Layer(2));
-            }
+            //if (Title != "")
+            //{
+            //    Manager.DrawString(font, Title,
+            //        new Vector2(
+            //            TopBarRect.X + TopBarRect.Width / 2 - font.MeasureString(Title).X / 2,
+            //            TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, Layer(2));
+            //}
         }
 
         public override ElementDisplay Toggle()

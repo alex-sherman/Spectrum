@@ -161,6 +161,7 @@
     <Compile Include="Framework\Physics\World.cs" />
     <Compile Include="Framework\Screens\BackgroundScreen.cs" />
     <Compile Include="Framework\Screens\Element.cs" />
+    <Compile Include="Framework\Screens\ElementField.cs" />
     <Compile Include="Framework\Screens\GameScreen.cs" />
     <Compile Include="Framework\Screens\InGameScreen.cs" />
     <Compile Include="Framework\Input\InputState.cs" />

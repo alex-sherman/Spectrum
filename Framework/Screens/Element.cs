@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Spectrum.Framework.Content;
 using Spectrum.Framework.Input;
 using System;
 using System.Collections.Generic;
@@ -39,10 +41,14 @@ namespace Spectrum.Framework.Screens
     {
         public ScreenManager Manager { get; private set; }
         public Element Parent { get; private set; }
+        public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
         public List<Element> Children { get { return _children.ToList(); } }
         public ElementDisplay Display { get; set; }
         public PositionType Positioning { get; set; }
+        private bool Initialized = false;
+        public List<string> Tags = new List<string>();
+        public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
 
         protected Element(ScreenManager manager) : this() { Manager = manager; }
 
@@ -50,6 +56,22 @@ namespace Spectrum.Framework.Screens
         {
             Display = ElementDisplay.Visible;
             Positioning = PositionType.Inline;
+        }
+
+        public virtual void Initialize()
+        {
+            this.Fields["font"] = new ElementField(
+                this,
+                "font",
+                ElementField.FontSetter
+                ); 
+            Initialized = true;
+        }
+
+        public string this[string key]
+        {
+            get { return Fields[key].StrValue; }
+            set { Fields[key].StrValue = value; }
         }
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
@@ -107,13 +129,13 @@ namespace Spectrum.Framework.Screens
             {
                 if (child.Positioning == PositionType.Inline)
                 {
-                    MaxRowHeight = Math.Max(MaxRowHeight, child.Height + child.Margin.Top(Height) + child.Margin.Bottom(Width));
                     if (XOffset > 0 && XOffset + child.Width + child.Margin.Left(Width) > Width)
                     {
                         XOffset = 0;
                         YOffset += MaxRowHeight;
                         MaxRowHeight = 0;
                     }
+                    MaxRowHeight = Math.Max(MaxRowHeight, child.Height + child.Margin.Top(Height) + child.Margin.Bottom(Width));
                     child.X = XOffset + X + child.Margin.Left(Width);
                     child.Y = YOffset + Y + child.Margin.Top(Height);
                     XOffset += child.Width + child.Margin.Left(Width) + child.Margin.Right(Width);
@@ -144,9 +166,12 @@ namespace Spectrum.Framework.Screens
         }
         public virtual void AddElement(Element element, int? index = null)
         {
+            if (element.Initialized)
+                throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
             element.Manager = Manager;
             _children.Insert(index ?? _children.Count, element);
+            element.Initialize();
         }
         public virtual void RemoveElement(Element element)
         {

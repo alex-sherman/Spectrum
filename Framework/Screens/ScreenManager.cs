@@ -63,6 +63,7 @@ namespace Spectrum.Framework.Screens
             : base(game)
         {
             Root = new RootElement(this);
+            Root.Initialize();
             TextureLoader = textureLoader;
             CurrentManager = this;
             Game.Services.AddService(typeof(ScreenManager), this);

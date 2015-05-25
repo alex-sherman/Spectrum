@@ -44,14 +44,13 @@ namespace Spectrum.Framework.Screens
             button = new Button(option2);
             button.OnClick += (InterfaceElement clicked) => { Option2(this, null); };
             AddElement(button);
-            font = ScreenManager.Font;
             _message = message;
         }
 
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-            Manager.DrawString(font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, Z);
+            Manager.DrawString(Font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, Z);
         }
     }
 }

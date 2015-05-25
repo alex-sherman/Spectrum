@@ -9,7 +9,7 @@ using System.Text;
 namespace Spectrum.Framework.Screens.InterfaceElements
 {
     public delegate void ChangedEventHandler(object sender, EventArgs e);
-    
+
 
     public class DropdownOption
     {
@@ -43,6 +43,10 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public Dropdown(params DropdownOption[] options)
         {
             SetOptions(options);
+        }
+        public override void Initialize()
+        {
+            base.Initialize();
             FlatWidth = 100;
             FlatHeight = (int)Font.LineSpacing + Texture.BorderWidth * 2;
         }
@@ -65,7 +69,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             if (otherTookInput) { expanded = false; return false; }
             if (input.IsNewMousePress(0))
             {
-                if (expanded && expandedRect.Contains(input.MouseState.X,input.MouseState.Y))
+                if (expanded && expandedRect.Contains(input.MouseState.X, input.MouseState.Y))
                 {
                     for (int i = 0; i < options.Count(); i++)
                     {
@@ -99,7 +103,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             base.Draw(time);
             if (selected != null)
             {
-                ScreenManager.CurrentManager.DrawString(Font, selected.text, new Vector2(InsideRect.X, InsideRect.Y), 
+                ScreenManager.CurrentManager.DrawString(Font, selected.text, new Vector2(InsideRect.X, InsideRect.Y),
                     Color.Black, Layer(3));
             }
             if (expanded)

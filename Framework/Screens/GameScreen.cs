@@ -30,33 +30,22 @@ namespace Spectrum.Framework.Screens
     public abstract class GameScreen : Element
     {
 
-        protected SpriteFont font;
-
         #region Properties
 
         public virtual bool MouseInside(int x, int y)
         {
             return false;
         }
-        public bool IsOverlay = false;
-        public bool HasFocus { get; protected set; }
+
         public bool IsExiting = false;
 
         #endregion
 
-        public GameScreen() : this(ScreenManager.Font) { }
-
-        public GameScreen(SpriteFont font)
+        public GameScreen()
         {
-            this.font = font;
             RelativeHeight = 1;
             RelativeWidth = 1;
             Positioning = PositionType.Absolute;
-        }
-
-        public virtual void FocusChanged(bool gainFocus)
-        {
-            HasFocus = gainFocus;
         }
     }
 }

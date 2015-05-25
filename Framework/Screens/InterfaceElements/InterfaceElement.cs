@@ -13,15 +13,12 @@ namespace Spectrum.Framework.Screens.InterfaceElements
     public class InterfaceElement : Element
     {
         public static ScalableTexture DefaultTexture;
-        public static SpriteFont DefaultFont;
         public ScalableTexture Texture { get; protected set; }
         public event InterfaceEventHandler OnClick;
         public object Tag;
-        public SpriteFont Font { get; protected set; }
-        public InterfaceElement(SpriteFont font = null, ScalableTexture texture = null)
+        public InterfaceElement(ScalableTexture texture = null)
             : base()
         {
-            Font = font ?? DefaultFont;
             Texture = texture ?? DefaultTexture;
         }
         public virtual Rectangle InsideRect

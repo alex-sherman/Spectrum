@@ -28,7 +28,7 @@ namespace Spectrum
 
         public bool UseAuthSave = true;
 
-        public bool Offline = false;
+        public bool Offline = true;
 
         public event EventHandler OnScreenResize;
         public static SpectrumGame Game { get; private set; }

@@ -13,20 +13,29 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         public object DrawObject;
         public string Text;
 
-        public Button(int width, int height, SpriteFont font = null, ScalableTexture texture = null)
-            : base(font: font, texture: texture)
+        public Button(int width, int height, ScalableTexture texture = null)
+            : base(texture: texture)
         {
             FlatWidth = width;
             FlatHeight = height;
         }
 
-        public Button(string text, SpriteFont font = null, ScalableTexture texture = null)
-            : base(font: font, texture: texture)
+        public Button(string text, ScalableTexture texture = null)
+            : base(texture: texture)
         {
-            this.Text = text;
-            FlatWidth = (int)Font.MeasureString(text).X + 2 * Texture.BorderWidth;
-            FlatHeight = (int)Font.LineSpacing + 2 * Texture.BorderWidth;
+            Text = text;
         }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            if (Text != null)
+            {
+                FlatWidth = (int)Font.MeasureString(Text).X + 2 * Texture.BorderWidth;
+                FlatHeight = (int)Font.LineSpacing + 2 * Texture.BorderWidth;
+            }
+        }
+
         public override void Draw(GameTime time)
         {
             if (DrawObject != null)
