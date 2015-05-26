@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spectrum.Framework.Screens.InterfaceElements
+namespace Spectrum.Framework.Screens.InputElements
 {
-    public class ListOption : InterfaceElement
+    public class ListOption : InputElement
     {
         public string text;
         public ListOption(object tag, string text)

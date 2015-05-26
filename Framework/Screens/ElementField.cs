@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Content;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,19 @@ namespace Spectrum.Framework.Screens
     public delegate object ElementFieldSetter(Element element, string value);
     public class ElementField
     {
+        public static object ColorSetter(Element element, string value)
+        {
+            try
+            {
+                System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(value);
+                return Color.FromNonPremultiplied(color.R, color.G, color.B, color.A);
+            }
+            catch(Exception)
+            {
+                return Color.Black;
+            }
+        }
+
         public static object ContentSetter<T>(Element element, string value) where T : class
         {
             try
@@ -54,23 +68,31 @@ namespace Spectrum.Framework.Screens
         private string fieldName;
         private bool inherited;
         private Element element;
+        private bool initialized = false;
         public ElementField(Element element, string fieldName, ElementFieldSetter setter, bool inherited = true)
         {
             this.element = element;
             this.fieldName = fieldName;
             this.setter = setter;
             this.inherited = inherited;
-            string overrideValue = ElementField.FindTagOverride(element, fieldName);
-            if (overrideValue != null)
+        }
+        public void Initialize()
+        {
+            if (!initialized)
             {
-                _strValue = overrideValue;
-                _value = setter(element, overrideValue);
+                string overrideValue = ElementField.FindTagOverride(element, fieldName);
+                if (overrideValue != null)
+                {
+                    _strValue = overrideValue;
+                    _value = setter(element, overrideValue);
+                }
+                else if (element.Parent != null && inherited && element.Parent.Fields.ContainsKey(fieldName))
+                {
+                    _strValue = element.Parent.Fields[fieldName].StrValue;
+                    _value = element.Parent.Fields[fieldName].ObjValue;
+                }
             }
-            else if (element.Parent != null && inherited && element.Parent.Fields.ContainsKey(fieldName))
-            {
-                _strValue = element.Parent.Fields[fieldName].StrValue;
-                _value = element.Parent.Fields[fieldName].ObjValue;
-            }
+            initialized = true;
         }
         public string StrValue
         {
@@ -80,6 +102,7 @@ namespace Spectrum.Framework.Screens
             }
             set
             {
+                initialized = true;
                 _strValue = value;
                 _value = setter(element, value);
             }

@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework;
 using System.Linq;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
-using Spectrum.Framework.Screens.InterfaceElements;
+using Spectrum.Framework.Screens.InputElements;
 using System.Collections.Generic;
 using Spectrum.Framework.Input;
 #endregion
@@ -29,23 +29,15 @@ namespace Spectrum.Framework.Screens
     /// </summary>
     public abstract class GameScreen : Element
     {
-
-        #region Properties
-
-        public virtual bool MouseInside(int x, int y)
-        {
-            return false;
-        }
-
-        public bool IsExiting = false;
-
-        #endregion
-
         public GameScreen()
         {
             RelativeHeight = 1;
             RelativeWidth = 1;
             Positioning = PositionType.Absolute;
+        }
+        public virtual void Exit()
+        {
+            Parent.RemoveElement(this);
         }
     }
 }

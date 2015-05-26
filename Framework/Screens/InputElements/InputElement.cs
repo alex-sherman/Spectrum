@@ -7,12 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spectrum.Framework.Screens.InterfaceElements
+namespace Spectrum.Framework.Screens.InputElements
 {
-    public delegate void InterfaceEventHandler(InterfaceElement clicked);
-    public class InterfaceElement : Element
+    public delegate void InterfaceEventHandler(InputElement clicked);
+    public class InputElement : Element
     {
-        public static ScalableTexture DefaultTexture;
         public event InterfaceEventHandler OnClick;
         public object Tag;
 
@@ -31,7 +30,8 @@ namespace Spectrum.Framework.Screens.InterfaceElements
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            if (otherTookInput) { return false; }
+            otherTookInput |= base.HandleInput(otherTookInput, input);
+            if (otherTookInput) { return true; }
             if (input.IsNewMousePress(0))
             {
                 if (MouseInside())

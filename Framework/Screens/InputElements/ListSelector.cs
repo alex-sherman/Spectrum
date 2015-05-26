@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spectrum.Framework.Screens.InterfaceElements
+namespace Spectrum.Framework.Screens.InputElements
 {
     public delegate void PickedEventHandler(object picked);
-    public class ListSelector : InterfaceElement
+    public class ListSelector : InputElement
     {
         public event PickedEventHandler OnPick;
         private List<ListOption> options = new List<ListOption>();
@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             this.options.Add(option);
             FlatHeight += optionHeight;
         }
-        private void optionClicked(InterfaceElement clicked)
+        private void optionClicked(InputElement clicked)
         {
             OnPick((clicked as ListOption).Tag);
             Close();

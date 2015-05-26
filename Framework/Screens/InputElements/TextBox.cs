@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spectrum.Framework.Screens.InterfaceElements
+namespace Spectrum.Framework.Screens.InputElements
 {
-    public class TextBox : InterfaceElement
+    public class TextBox : InputElement
     {
         public bool Selected { get; private set; }
         public string Text = "";
@@ -25,7 +25,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             OnClick += TextBox_OnClick;
         }
 
-        void TextBox_OnClick(InterfaceElement clicked)
+        void TextBox_OnClick(InputElement clicked)
         {
             Selected = true;
             textPosition = 0;

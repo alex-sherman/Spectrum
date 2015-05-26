@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spectrum.Framework.Screens.InterfaceElements
+namespace Spectrum.Framework.Screens.InputElements
 {
-    public class TextElement : InterfaceElement
+    public class TextElement : Element
     {
         public string Text { get; protected set; }
 
@@ -29,12 +29,8 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y);
-                ScreenManager.CurrentManager.DrawString(Font, Text, pos, Color.Black, Layer(1));
+                ScreenManager.CurrentManager.DrawString(Font, Text, pos, FontColor, Layer(1));
             }
-        }
-        public override bool HandleInput(bool otherTookInput, Input.InputState input)
-        {
-            return otherTookInput;
         }
     }
 }

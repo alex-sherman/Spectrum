@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spectrum.Framework.Screens.InterfaceElements
+namespace Spectrum.Framework.Screens.InputElements
 {
-    public class Button : InterfaceElement
+    public class Button : InputElement
     {
         public object DrawObject;
         public string Text;
@@ -44,7 +44,7 @@ namespace Spectrum.Framework.Screens.InterfaceElements
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;
-                ScreenManager.CurrentManager.DrawString(Font, Text, pos, Color.Black, Layer(2));
+                ScreenManager.CurrentManager.DrawString(Font, Text, pos, FontColor, Layer(2));
             }
         }
     }

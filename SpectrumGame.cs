@@ -21,29 +21,60 @@ namespace Spectrum
 {
     public class SpectrumGame : Game
     {
+        private static System.Drawing.Point PointToPoint(Point point)
+        {
+            return new System.Drawing.Point(point.X, point.Y);
+        }
+        private static Point PointToPoint(System.Drawing.Point point)
+        {
+            return new Point(point.X, point.Y);
+        }
+        public static SpectrumGame Game { get; private set; }
 
         public bool Debug = false;
-
         public bool DebugDraw = false;
-
         public bool UseAuthSave = true;
-
         public bool Offline = true;
 
+        #region Window Properties
         public event EventHandler OnScreenResize;
-        public static SpectrumGame Game { get; private set; }
+        public Form WindowForm { get; private set; }
+        public bool WindowMaximized
+        {
+            get { return WindowForm.WindowState == FormWindowState.Maximized; }
+            set
+            {
+                if (value)
+                {
+                    WindowForm.WindowState = FormWindowState.Maximized;
+                }
+                else
+                {
+                    WindowForm.WindowState = FormWindowState.Normal;
+                }
+            }
+        }
+        public Point WindowLocation
+        {
+            get { return PointToPoint(WindowForm.Location); }
+            set { WindowForm.Location = PointToPoint(value); }
+        }
+        public int ResolutionWidth
+        {
+            get { return graphics.PreferredBackBufferWidth; }
+            set { graphics.PreferredBackBufferWidth = value; }
+        }
+        public int ResolutionHeight
+        {
+            get { return graphics.PreferredBackBufferHeight; }
+            set { graphics.PreferredBackBufferHeight = value; }
+        }
+        #endregion
+
         public RealDict<string, Plugin> Plugins = new RealDict<string, Plugin>();
         GraphicsDeviceManager graphics;
         public ScreenManager ScreenManager { get; private set; }
-        int adapterNum = 0;
-        int windowedWidth;
-        int windowedHeight;
         bool newResize = false;
-        bool resetLocation = true;
-        bool maximized = false;
-        bool setMaximized = false;
-        System.Drawing.Point newP = new System.Drawing.Point();
-        System.Drawing.Point p = new System.Drawing.Point();
         private Point mousePosition;
         public Guid ID { get; private set; }
         public MultiplayerService MP { get; private set; }
@@ -62,11 +93,10 @@ namespace Spectrum
             PhysicsEngine.Init(ECollection);
             MP = new MultiplayerService(ID);
             NetworkMutex.Init(MP);
-            DebugPrinter.display(MP);
             EntityManager = new EntityManager(ECollection, MP);
             this.Window.AllowUserResizing = true;
             this.Window.ClientSizeChanged += WindowSizeChange;
-            ((Form)Form.FromHandle(Window.Handle)).LocationChanged += WindowLocationChange;
+            WindowForm = (Form)Form.FromHandle(Window.Handle);
             IsFixedTimeStep = false;
             string path = "save.dat";
             if (File.Exists(path))
@@ -80,14 +110,21 @@ namespace Spectrum
 
         private void LoadSettings(FileStream stream)
         {
-            adapterNum = stream.ReadByte();
             byte[] buffer = new byte[32];
             stream.Read(buffer, 0, 4);
             graphics.PreferredBackBufferWidth = BitConverter.ToInt32(buffer, 0);
-            windowedWidth = graphics.PreferredBackBufferWidth;
             stream.Read(buffer, 0, 4);
             graphics.PreferredBackBufferHeight = BitConverter.ToInt32(buffer, 0);
-            windowedHeight = graphics.PreferredBackBufferHeight;
+
+            stream.Read(buffer, 0, 4);
+            Point newP;
+            newP.X = BitConverter.ToInt32(buffer, 0);
+            stream.Read(buffer, 0, 4);
+            newP.Y = BitConverter.ToInt32(buffer, 0);
+            WindowLocation = newP;
+
+            stream.Read(buffer, 0, 1);
+            WindowMaximized = BitConverter.ToBoolean(buffer, 0);
 
             stream.Read(buffer, 0, 1);
             if (BitConverter.ToBoolean(buffer, 0))
@@ -95,72 +132,42 @@ namespace Spectrum
                 graphics.IsFullScreen = true;
             }
 
-            stream.Read(buffer, 0, 1);
-            setMaximized = BitConverter.ToBoolean(buffer, 0);
-
-            stream.Read(buffer, 0, 4);
-            newP.X = BitConverter.ToInt32(buffer, 0);
-            stream.Read(buffer, 0, 4);
-            newP.Y = BitConverter.ToInt32(buffer, 0);
-
             graphics.ApplyChanges();
             stream.Close();
         }
         private void SaveSettings(FileStream stream)
         {
             byte[] buffer;
-            stream.WriteByte((byte)adapterNum);
             buffer = BitConverter.GetBytes(graphics.PreferredBackBufferWidth);
             stream.Write(buffer, 0, 4);
             buffer = BitConverter.GetBytes(graphics.PreferredBackBufferHeight);
             stream.Write(buffer, 0, 4);
+            buffer = BitConverter.GetBytes(WindowLocation.X);
+            stream.Write(buffer, 0, 4);
+            buffer = BitConverter.GetBytes(WindowLocation.Y);
+            stream.Write(buffer, 0, 4);
+            buffer = BitConverter.GetBytes(WindowMaximized);
+            stream.Write(buffer, 0, 1);
             buffer = BitConverter.GetBytes(graphics.IsFullScreen);
             stream.Write(buffer, 0, 1);
-            buffer = BitConverter.GetBytes(maximized);
-            stream.Write(buffer, 0, 1);
-            buffer = BitConverter.GetBytes(p.X);
-            stream.Write(buffer, 0, 4);
-            buffer = BitConverter.GetBytes(p.Y);
-            stream.Write(buffer, 0, 4);
             stream.Close();
         }
-        public void SetResolution(Tuple<int, int> res)
+        public void SetResolution(Tuple<int, int> res, bool borderless = false)
         {
             if (!graphics.IsFullScreen)
             {
-                windowedHeight = res.Item2;
-                windowedWidth = res.Item1;
-                this.GraphicsDeviceManager.PreferredBackBufferWidth = res.Item1;
-                this.GraphicsDeviceManager.PreferredBackBufferHeight = res.Item2;
-                this.GraphicsDeviceManager.ApplyChanges();
+                WindowForm.WindowState = FormWindowState.Normal;
+                Window.IsBorderless = borderless;
+                GraphicsDeviceManager.PreferredBackBufferWidth = res.Item1;
+                GraphicsDeviceManager.PreferredBackBufferHeight = res.Item2;
             }
             newResize = true;
-        }
-        public void ToggleFullScreen()
-        {
-            if (!graphics.IsFullScreen)
-            {
-                graphics.PreferredBackBufferWidth = graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Width;
-                graphics.PreferredBackBufferHeight = graphics.GraphicsDevice.Adapter.CurrentDisplayMode.Height;
-                graphics.IsFullScreen = true;
-            }
-            else
-            {
-                graphics.PreferredBackBufferWidth = windowedWidth;
-                graphics.PreferredBackBufferHeight = windowedHeight;
-                graphics.IsFullScreen = false;
-            }
-            graphics.ApplyChanges();
         }
         private void WindowSizeChange(object sender, EventArgs e)
         {
             newResize = true;
-        }
-        private void WindowLocationChange(object sender, EventArgs e)
-        {
-            Form f = sender as Form;
-            p = f.Location;
-            maximized = f.WindowState == FormWindowState.Maximized;
+            graphics.PreferredBackBufferHeight = WindowForm.ClientRectangle.Height;
+            graphics.PreferredBackBufferWidth = WindowForm.ClientRectangle.Width;
         }
 
         protected override void LoadContent()
@@ -188,28 +195,12 @@ namespace Spectrum
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            Form form = (Form)Form.FromHandle(Window.Handle);
-            if (resetLocation)
-            {
-                form.Location = newP;
-                resetLocation = false;
-            }
-            if (setMaximized)
-            {
-                form.WindowState = FormWindowState.Maximized;
-                maximized = true;
-                setMaximized = false;
-            }
             if (newResize)
             {
-                if (form.ClientRectangle.Height > 0 && form.ClientRectangle.Width > 0)
+                graphics.ApplyChanges();
+                if (OnScreenResize != null)
                 {
-                    //Setting the resolution updates the prefered back buffer for saving the settings back to disk
-                    SetResolution(new Tuple<int, int>(form.ClientRectangle.Width, form.ClientRectangle.Height));
-                    if(OnScreenResize != null)
-                    {
-                        OnScreenResize(this, EventArgs.Empty);
-                    }
+                    OnScreenResize(this, EventArgs.Empty);
                 }
                 newResize = false;
             }

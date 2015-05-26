@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-using Spectrum.Framework.Screens.InterfaceElements;
+using Spectrum.Framework.Screens.InputElements;
 using Spectrum.Framework.Input;
 using Spectrum.Framework.Content;
 
@@ -48,10 +48,6 @@ namespace Spectrum.Framework.Screens
                 AddElement(titleElement);
                 titleElement.Margin.LeftOffset = -titleElement.Width / 2;
             }
-        }
-        public override bool MouseInside(int x, int y)
-        {
-            return Rect.Contains(x, y);
         }
 
         public Rectangle CloseButtonRect

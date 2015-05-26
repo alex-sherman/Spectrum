@@ -9,6 +9,7 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens
 {
+    #region DataTypes
     public enum ElementDisplay
     {
         Visible,
@@ -37,6 +38,8 @@ namespace Spectrum.Framework.Screens
             }
         }
     }
+    #endregion
+
     public class Element
     {
         public ScreenManager Manager { get; private set; }
@@ -50,6 +53,7 @@ namespace Spectrum.Framework.Screens
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
         public ScalableTexture Texture { get { return Fields["image"].ObjValue as ScalableTexture; } }
+        public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
 
         protected Element(ScreenManager manager) : this() { Manager = manager; }
 
@@ -57,26 +61,35 @@ namespace Spectrum.Framework.Screens
         {
             Display = ElementDisplay.Visible;
             Positioning = PositionType.Inline;
-        }
-
-        public virtual void Initialize()
-        {
-            Type tagType = GetType();
-            while(tagType != typeof(Element))
-            {
-                this.Tags.Add(tagType.Name.ToLower());
-                tagType = tagType.BaseType;
-            }
             this.Fields["font"] = new ElementField(
                 this,
                 "font",
                 ElementField.ContentSetter<SpriteFont>
                 );
+            this.Fields["font-color"] = new ElementField(
+                this,
+                "font-color",
+                ElementField.ColorSetter
+                );
             this.Fields["image"] = new ElementField(
                 this,
                 "image",
                 ElementField.ContentSetter<ScalableTexture>
-                ); 
+                );
+        }
+
+        public virtual void Initialize()
+        {
+            Type tagType = GetType();
+            while (tagType != typeof(Element))
+            {
+                this.Tags.Add(tagType.Name.ToLower());
+                tagType = tagType.BaseType;
+            }
+            foreach (ElementField field in Fields.Values)
+            {
+                field.Initialize();
+            }
             Initialized = true;
         }
 
@@ -106,6 +119,14 @@ namespace Spectrum.Framework.Screens
         public float RelativeHeight;
         public int FlatHeight;
         public virtual int Height { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.Height) * RelativeHeight) + FlatHeight; } }
+
+        public void Center()
+        {
+            Margin.LeftRelative = .5f;
+            Margin.RightRelative = .5f;
+            Margin.LeftOffset = -Width / 2;
+            Margin.RightOffset = Width / 2;
+        }
 
         public int X;
         public int Y;
@@ -189,12 +210,12 @@ namespace Spectrum.Framework.Screens
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
             element.Manager = Manager;
-            _children.Insert(index ?? _children.Count, element);
             element.Initialize();
+            _children.Insert(index ?? _children.Count, element);
+            PositionUpdate();
         }
         public virtual void RemoveElement(Element element)
         {
-            element.Parent = null;
             _children.Remove(element);
         }
 

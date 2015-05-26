@@ -5,36 +5,39 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
-using Spectrum.Framework.Screens.InterfaceElements;
+using Spectrum.Framework.Screens.InputElements;
+using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.Screens
 {
     public class MenuScreen : GameScreen
     {
-        private MouseState lastMouse = Mouse.GetState();
-        List<InterfaceElement> centeredElements = new List<InterfaceElement>();
-        List<Button> menuButtons = new List<Button>();
-        public string MenuTitle { get; set; }
+        private string MenuTitle;
 
         public MenuScreen(string menuTitle)
         {
-            this.MenuTitle = menuTitle;
+            MenuTitle = menuTitle;
         }
-        public override void Draw(GameTime gameTime)
+        public override void Initialize()
         {
-            //UpdateMenuItemLocations();
+            base.Initialize();
+            TextElement Title = new TextElement(MenuTitle);
+            AddElement(Title);
+            Title.Center();
+        }
 
-            SpriteFont font = ScreenManager.Font;
-
-            // title!
-            Vector2 titlePosition = new Vector2(Manager.GraphicsDevice.Viewport.Width / 2, 80);
-            Vector2 titleOrigin = font.MeasureString(MenuTitle) / 2;
-            Color col = Color.DarkRed;
-            float titleScale = 1.5f;
-
-            ScreenManager.CurrentManager.DrawString(font, MenuTitle, titlePosition, col, 0,
-                                   titleOrigin, titleScale, SpriteEffects.None, 0);
-            base.Draw(gameTime);
+        public override bool HandleInput(bool otherTookInput, InputState input)
+        {
+            otherTookInput |= base.HandleInput(otherTookInput, input);
+            if (!otherTookInput)
+            {
+                if (input.IsNewKeyPress("GoBack"))
+                {
+                    otherTookInput = true;
+                    Exit();
+                }
+            }
+            return true;
         }
     }
 }

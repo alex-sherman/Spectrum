@@ -50,7 +50,6 @@ namespace Spectrum.Framework.Screens
             get { return Game.IsActive; }
         }
 
-        public static SpriteFont Font { get; set; }
         public object Grabbed
         { get { return grabbed; } set { grabbed = value; grabbedTexture = TextureLoader.ObjectTexture(value); } }
 
@@ -100,7 +99,8 @@ namespace Spectrum.Framework.Screens
             // Read the keyboard and gamepad.
             input.Update();
             Root.Update(gameTime);
-            Root.HandleInput(false, input);
+            if (IsActive)
+                Root.HandleInput(false, input);
         }
 
 
@@ -109,7 +109,7 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
+            GraphicsDevice.Clear(Color.White);
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             Root.PositionUpdate();
@@ -131,7 +131,7 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public void AddScreen(GameScreen screen)
         {
-            Root.AddElement(screen);
+            Root.AddElement(screen, 0);
         }
 
         /// <summary>
@@ -234,7 +234,7 @@ namespace Spectrum.Framework.Screens
         {
             while (font.MeasureString(text).X > rect.Width)
                 text = text.Substring(0, text.Length - 1);
-            DrawString(font, text, new Vector2(rect.X,rect.Y), textColor, 0, Vector2.Zero, 1, SpriteEffects.None, layer);
+            DrawString(font, text, new Vector2(rect.X, rect.Y), textColor, 0, Vector2.Zero, 1, SpriteEffects.None, layer);
         }
         public void DrawString(SpriteFont font, string text, Vector2 pos, Color textColor, float layer)
         {

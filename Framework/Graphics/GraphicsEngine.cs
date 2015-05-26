@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Graphics
         public static bool wireFrame = false;
         public static SpriteBatch spriteBatch;
         public static Color clearColor = Color.CornflowerBlue;
-        public static Camera Camera { get; private set; }
+        public static Camera Camera { get; set; }
         private static RenderTarget2D shadowMap;
         private static RenderTarget2D AATarget;
         //TODO: Add a settings thing for multisample count
