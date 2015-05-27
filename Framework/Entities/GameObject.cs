@@ -240,7 +240,7 @@ namespace Spectrum.Framework.Entities
             {
                 if (arbiter.ContactList.Count > 0)
                 {
-                    output += "\n" + arbiter.ContactList[0].Penetration + " " + arbiter.ContactList[0].slip + " " + arbiter.ContactList[0].Normal;
+                    output += "\n" + arbiter.ContactList[0].Penetration.ToString("0.00") + " " + arbiter.ContactList[0].slip.ToString("0.00") + " " + arbiter.ContactList[0].Normal;
                 }
             }
             return output;

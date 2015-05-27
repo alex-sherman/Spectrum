@@ -253,6 +253,8 @@ namespace Spectrum.Framework.Physics.Collision
             bool collisionDetected = false;
             ISupportMappable s1 = ms1 == null ? body1.Shape : ms1;
             ISupportMappable s2 = ms2 == null ? body2.Shape : ms2;
+            Vector3 tempPoint, tempNormal;
+            float tempPenetration;
             for (int i = 0; i < shape1count; i++)
             {
                 if (ms1 != null)
@@ -263,14 +265,17 @@ namespace Spectrum.Framework.Physics.Collision
                         ms2.SetCurrentShape(j);
                     if (XenoCollide.Detect(s1, s2, body1.Orientation,
                         body2.Orientation, body1.Position, body2.Position,
-                        out point, out normal, out penetration))
+                        out tempPoint, out tempNormal, out tempPenetration))
                     {
+                        if(tempPenetration > penetration)
+                        {
+                            point = tempPoint;
+                            normal = tempNormal;
+                            penetration = tempPenetration;
+                        }
                         collisionDetected = true;
-                        break;
                     }
                 }
-                if (collisionDetected == true)
-                    break;
             }
 
             if (ms1 != null)

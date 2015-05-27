@@ -313,7 +313,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// The points in wolrd space gets recalculated by transforming the
         /// local coordinates. Also new penetration depth is estimated.
         /// </summary>
-        public void UpdatePosition(bool forceAccurate = true)
+        public void UpdatePosition()
         {
             Vector3.Transform(ref realRelPos1, ref body1.orientation, out p1);
             Vector3.Add(ref p1, ref body1.position, out p1);
@@ -323,25 +323,6 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             Vector3 dist; Vector3.Subtract(ref p1, ref p2, out dist);
             penetration = Vector3.Dot(dist, normal);
-            slip = (dist - normal * penetration).Length();
-            if (slip > 1.0f || forceAccurate)
-            {
-                Vector3 point;
-                if (system.GetContact(body1, body2, out point, out normal, out penetration))
-                {
-                    normal.Normalize();
-                    Vector3.Subtract(ref point, ref body1.position, out realRelPos1);
-                    Vector3.Transform(ref realRelPos1, ref body1.invOrientation, out realRelPos1);
-
-                    Vector3.Subtract(ref point, ref body2.position, out realRelPos2);
-                    Vector3.Transform(ref realRelPos2, ref body2.invOrientation, out realRelPos2);
-                }
-                else
-                {
-                    penetration = -1;
-                }
-
-            }
         }
 
         /// <summary>
