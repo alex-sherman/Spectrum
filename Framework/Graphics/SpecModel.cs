@@ -13,6 +13,7 @@ namespace Spectrum.Framework.Graphics
     {
         public AnimationPlayer AnimationPlayer { get; set; }
         public SkinningData SkinningData { get; protected set; }
+        public Dictionary<string, DrawablePart> MeshParts { get; private set; }
         public string CurrentAnimation
         {
             get
@@ -28,6 +29,7 @@ namespace Spectrum.Framework.Graphics
         }
         public SpecModel(Dictionary<string, DrawablePart> meshParts, SkinningData skinningData)
         {
+            MeshParts = meshParts;
             this.AddRange(meshParts.Values);
             foreach (DrawablePart part in this)
             {

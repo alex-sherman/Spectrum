@@ -11,17 +11,10 @@ using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework
 {
-    public class DebugPrinter : Entity
+    public class DebugPrinter : Element
     {
         private static List<string> strings = new List<string>();
-        private SpriteFont font;
         private static List<IDebug> objects = new List<IDebug>();
-        private ScreenManager screenManager;
-        public DebugPrinter(ScreenManager manager, SpriteFont font)
-        {
-            screenManager = manager;
-            this.font = font;
-        }
         //TODO: Randomly can't get a filename and throws exception causing a crash
         public static void print(string msg)
         {
@@ -58,9 +51,9 @@ namespace Spectrum.Framework
         {
             print(String.Format(msg, args));
         }
-
-        public void GUIDraw(GameTime gameTime, float layer)
+        public override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
             //base.Draw(gameTime);
 
             if (SpectrumGame.Game.Debug)
@@ -69,22 +62,22 @@ namespace Spectrum.Framework
                 {
                     if (strings.Count > 0)
                     {
-                        float strSize = font.MeasureString(strings[0]).Y;
+                        float strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            screenManager.DrawString(font, strings[i], new Vector2(0, i * strSize), Color.White, layer);
+                            Manager.DrawString(Font, strings[i], new Vector2(0, i * strSize), Color.White, Z);
                         }
                     }
                 }
                 float curPos = 0;
                 if (objects.Count > 0)
                 {
-                    float strSize = font.MeasureString("foo").Y;
+                    float strSize = Font.MeasureString("foo").Y;
                     for (int i = 0; i < objects.Count; i++)
                     {
                         string toPrint = objects[i].Debug();
-                        screenManager.DrawString(font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, layer);
-                        curPos += font.MeasureString(toPrint.ToString()).Y;
+                        Manager.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
+                        curPos += Font.MeasureString(toPrint.ToString()).Y;
                     }
                 }
             }
@@ -92,7 +85,7 @@ namespace Spectrum.Framework
             {
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    objects[i].DebugDraw(gameTime, screenManager.SpriteBatch);
+                    objects[i].DebugDraw(gameTime, Manager.SpriteBatch);
                 }
             }
         }

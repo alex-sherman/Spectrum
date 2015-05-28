@@ -235,7 +235,7 @@ namespace Spectrum.Framework.Entities
 
         public virtual string Debug()
         {
-            string output = this.GetType().ToString() + ": " + Position;
+            string output = this.GetType().ToString() + ": " + Position.X.ToString("000.00") + " " + Position.Y.ToString("000.00") + " " + Position.Z.ToString("000.00");
             foreach (Arbiter arbiter in arbiters)
             {
                 if (arbiter.ContactList.Count > 0)
