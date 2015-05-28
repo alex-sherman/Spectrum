@@ -582,28 +582,11 @@ namespace Spectrum.Framework.Physics
                 Contact c = arbiter.contactList[i];
                 c.UpdatePosition();
 
-                if (c.penetration < -contactSettings.breakThreshold)
+                if (c.penetration < -contactSettings.breakThreshold || (c.p1 - c.p2).LengthSquared() > contactSettings.slipThresholdSquared)
                 {
                     Contact.Pool.GiveBack(c);
                     arbiter.contactList.RemoveAt(i);
                     continue;
-                }
-                else
-                {
-                    //Vector3 diff; Vector3.Subtract(ref c.p1, ref c.p2, out diff);
-                    //float distance = Vector3.Dot(diff, c.normal);
-
-                    //diff = diff - distance * c.normal;
-                    //distance = diff.LengthSquared();
-
-                    //// hack (multiplication by factor 100) in the
-                    //// following line.
-                    //if (distance > contactSettings.breakThreshold * contactSettings.breakThreshold * 100)
-                    //{
-                    //    Contact.Pool.GiveBack(c);
-                    //    arbiter.contactList.RemoveAt(i);
-                    //    continue;
-                    //}
                 }
 
             }

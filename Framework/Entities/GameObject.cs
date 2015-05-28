@@ -259,18 +259,6 @@ namespace Spectrum.Framework.Entities
             DebugPrinter.undisplay(this);
             base.Dispose();
         }
-        public bool Move(Vector3 direction, float speed, GameTime time)
-        {
-            if (time.ElapsedGameTime == TimeSpan.Zero) { return false; }
-            if (CanMove && direction.LengthSquared() > 0)
-            {
-                direction.Normalize();
-                position += direction * speed * (float)time.ElapsedGameTime.TotalMilliseconds;
-                return true;
-            }
-            return false;
-
-        }
 
         public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)
         {
