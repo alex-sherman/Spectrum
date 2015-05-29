@@ -12,17 +12,18 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    class ModelParserCache
+    public struct MaterialTexture
+    {
+        public string Id;
+        public string Filename;
+        public string Type;
+    }
+    struct ModelParserCache
     {
         public JObject jobj;
-        public VertexBuffer VBuffer;
+        public VertexBuffer vBuffer;
         public Dictionary<string, IndexBuffer> indices;
-        public ModelParserCache(JObject jobj, VertexBuffer vbuffer, Dictionary<string, IndexBuffer> indices)
-        {
-            this.jobj = jobj;
-            this.VBuffer = vbuffer;
-            this.indices = indices;
-        }
+        public Dictionary<string, List<MaterialTexture>> materials;
     }
     class ModelParser : CachedContentParser<ModelParserCache, SpecModel>
     {
@@ -42,12 +43,13 @@ namespace Spectrum.Framework.Content
         }
         protected override ModelParserCache LoadData(string path)
         {
+            ModelParserCache modelData = new ModelParserCache();
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
-            JObject jobj = JObject.Load(reader);
-            if (jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
+            modelData.jobj = JObject.Load(reader);
+            if (modelData.jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
 
 
-            JObject mesh = (JObject)jobj["meshes"][0];
+            JObject mesh = (JObject)modelData.jobj["meshes"][0];
             List<string> attributes = new List<string>();
             foreach (string attribute in mesh["attributes"])
             {
@@ -94,17 +96,43 @@ namespace Spectrum.Framework.Content
                 }
                 vertices.Add(vertex);
             }
-            VertexBuffer vBuffer = VertexHelper.MakeVertexBuffer(vertices);
-            Dictionary<string, IndexBuffer> partsIndices = new Dictionary<string, IndexBuffer>();
+            modelData.vBuffer = VertexHelper.MakeVertexBuffer(vertices);
+
+            modelData.indices = new Dictionary<string, IndexBuffer>();
             foreach (JObject meshPart in mesh["parts"])
             {
                 List<uint> indices = ((JArray)meshPart["indices"]).ToList().ConvertAll(x => (uint)x);
                 IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(indices);
-                partsIndices[(string)meshPart["id"]] = iBuffer;
+                modelData.indices[(string)meshPart["id"]] = iBuffer;
             }
 
+            modelData.materials = ReadMaterials(modelData.jobj);
+            return modelData;
+        }
 
-            return new ModelParserCache(jobj, vBuffer, partsIndices);
+        public Dictionary<string, List<MaterialTexture>> ReadMaterials(JObject jobj)
+        {
+            Dictionary<string, List<MaterialTexture>> output = new Dictionary<string,List<MaterialTexture>>();
+            if (jobj["materials"] != null)
+            {
+                foreach (JObject material in jobj["materials"])
+                {
+                    List<MaterialTexture> textures = new List<MaterialTexture>();
+                    output[(string)material["id"]] = textures;
+                    if (material["textures"] != null)
+                    {
+                        foreach (JObject texture in material["textures"])
+                        {
+                            MaterialTexture materialTexture = new MaterialTexture();
+                            materialTexture.Id = (string)texture["id"];
+                            materialTexture.Filename = (string)texture["filename"];
+                            materialTexture.Type = (string)texture["type"];
+                            textures.Add(materialTexture);
+                        }
+                    }
+                }
+            }
+            return output;
         }
 
         public SkinningData GetSkinningData(JObject jobj)
@@ -160,14 +188,27 @@ namespace Spectrum.Framework.Content
             Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
             foreach (KeyValuePair<string, IndexBuffer> partIbuffer in data.indices)
             {
-                parts[partIbuffer.Key] = new DrawablePart(data.VBuffer, partIbuffer.Value);
+                parts[partIbuffer.Key] = new DrawablePart(data.vBuffer, partIbuffer.Value);
             }
             foreach (JToken nodePart in ((JArray)data.jobj["nodes"])[0]["parts"])
             {
+                DrawablePart part = parts[(string)nodePart["meshpartid"]];
                 if (nodePart["bones"] != null)
-                    parts[(string)nodePart["meshpartid"]].effect = new CustomSkinnedEffect((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
+                    part.effect = new CustomSkinnedEffect((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
                 else
-                    parts[(string)nodePart["meshpartid"]].effect = new SpectrumEffect();
+                    part.effect = new SpectrumEffect();
+
+                if(nodePart["materialid"] != null)
+                {
+                    List<MaterialTexture> materialTextures = data.materials[(string)nodePart["materialid"]];
+                    foreach (MaterialTexture texture in materialTextures)
+                    {
+                        if(texture.Type == "NONE")
+                        {
+                            part.effect.Texture = ContentHelper.Load<Texture2D>(texture.Filename);
+                        }
+                    }
+                }
             }
             return new SpecModel(parts, GetSkinningData(data.jobj));
         }
