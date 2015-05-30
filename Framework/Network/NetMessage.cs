@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;
@@ -25,7 +27,8 @@ namespace Spectrum.Framework.Network
         BYTE = 5,
         GUID = 6,
         MATRIX = 7,
-        ENTITY = 8
+        ENTITY = 8,
+        JSON = 9
     }
     public class NetMessage : ISerializable
     {
@@ -255,6 +258,17 @@ namespace Spectrum.Framework.Network
             return (byte)stream.ReadByte();
         }
 
+        public void Write(JToken jobj)
+        {
+            string json = JsonConvert.SerializeObject(jobj);
+            Write(json);
+        }
+        public JToken ReadJSON()
+        {
+            string json = ReadString();
+            return JToken.Parse(json);
+        }
+
         public void WritePrimitive(object p)
         {
             Type t = p.GetType();
@@ -298,6 +312,11 @@ namespace Spectrum.Framework.Network
                 Write((byte)ObjectType.ENTITY);
                 Write(((Entity)p).ID);
             }
+            else if(t.IsSubclassOf(typeof(JToken)))
+            {
+                Write((byte)ObjectType.JSON);
+                Write(((JToken)p));
+            }
             else
             {
                 throw new SerializationException("Uknown primitive type");
@@ -326,6 +345,8 @@ namespace Spectrum.Framework.Network
                     Guid id = ReadGuid();
                     try { return ECollection.Find(id); }
                     catch { throw new SerializationException("Couldn't find entity"); }
+                case ObjectType.JSON:
+                    return ReadJSON();
                 default:
                     throw new SerializationException("Uknown primitive type");
             }
