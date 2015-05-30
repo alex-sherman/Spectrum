@@ -11,8 +11,44 @@ using Spectrum.Framework.Graphics;
 
 namespace Spectrum.Framework
 {
+    [AttributeUsage(AttributeTargets.Class)]
+    public class LoadableType : System.Attribute
+    { }
+
     public class LoadHelper
     {
+        public static void LoadTypes(IEnumerable<Type> types)
+        {
+            foreach (Type type in types)
+            {
+                if (type.GetCustomAttributes(true).Any((object attribute) => attribute is LoadableType))
+                {
+                    TypeHelper.Helper[type.Name] = type;
+                    #region PreloadContent
+                    foreach (object attribute in type.GetCustomAttributes(true).ToList())
+                    {
+                        PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
+                        if (preload != null)
+                        {
+                            ContentHelper.LoadType(preload.Type, preload.Path, preload.Plugin);
+                        }
+                    }
+                    foreach (FieldInfo field in type.GetFields())
+                    {
+                        foreach (object attribute in field.GetCustomAttributes(true).ToList())
+                        {
+                            PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
+                            if (preload != null)
+                            {
+                                ContentHelper.LoadType(field.FieldType, preload.Path, preload.Plugin);
+                            }
+                        }
+                    }
+                }
+                #endregion
+
+            }
+        }
         public static TypeHelper LoadTypes(string LocalDir = null)
         {
             string path = "Plugins";
@@ -30,10 +66,14 @@ namespace Spectrum.Framework
                 string pluginName = Path.GetFileName(pluginPath);
                 SpectrumGame.Game.Plugins[pluginName] = new Plugin(pluginName, pluginPath);
             }
+
+            LoadHelper.LoadTypes(Assembly.GetEntryAssembly().GetTypes());
+            LoadHelper.LoadTypes(Assembly.GetExecutingAssembly().GetTypes());
             //TypeHelper.Helper["StatModifier"] = typeof(StatModifier);
             //TypeHelper.Helper["Player"] = typeof(Player);
-            TypeHelper.Helper["Water"] = typeof(Water);
+            //TypeHelper.Helper["Water"] = typeof(Water);
             return TypeHelper.Helper;
         }
     }
+
 }

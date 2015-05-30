@@ -62,6 +62,9 @@ namespace Spectrum.Framework.Entities
                 }
             }
         }
+
+        public virtual void Initialize() { }
+
         public virtual bool Enabled { get; private set; }
         public bool Dispoing { get; private set; }
 

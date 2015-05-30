@@ -80,8 +80,9 @@ namespace Spectrum.Framework.Network
             handshakeData.Write((int)stage);
             handshakeData.Write(mpService.ID);
             handshakeData.Write((int)mpService.ListenPort);
-            if (mpService.HasNat)
-                handshakeData.Write(new NetMessage(mpService.GetNATIP().GetAddressBytes()));
+            IPAddress NATAddress = mpService.GetNATIP();
+            if (NATAddress != null)
+                handshakeData.Write(new NetMessage(NATAddress.GetAddressBytes()));
             else
                 handshakeData.Write(new NetMessage());
             switch (stage)

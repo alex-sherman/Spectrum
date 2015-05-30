@@ -11,7 +11,6 @@ namespace Spectrum.Framework.Content
 {
     public class Plugin
     {
-        public static RealDict<string, Type> Types = new RealDict<string, Type>();
         public ContentHelper Content { get; private set; }
 
         public Plugin(string name, string path)
@@ -25,32 +24,7 @@ namespace Spectrum.Framework.Content
             {
                 Assembly coreAsm = Assembly.LoadFile(Path.Combine(path, filename));
                 List<Type> coreTypes = coreAsm.GetTypes().ToList();
-                foreach (Type type in coreTypes)
-                {
-                    #region PreloadContent
-                    foreach (object attribute in type.GetCustomAttributes(true).ToList())
-                    {
-                        PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
-                        if (preload != null)
-                        {
-                            ContentHelper.LoadType(preload.Type, preload.Path, preload.Plugin);
-                        }
-                    }
-                    foreach (FieldInfo field in type.GetFields())
-                    {
-                        foreach (object attribute in field.GetCustomAttributes(true).ToList())
-                        {
-                            PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
-                            if (preload != null)
-                            {
-                                ContentHelper.LoadType(field.FieldType, preload.Path, preload.Plugin);
-                            }
-                        }
-                    }
-                    #endregion
-
-                    TypeHelper.Helper[type.Name] = type;
-                }
+                LoadHelper.LoadTypes(coreTypes);
             }
             try
             {

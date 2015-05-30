@@ -59,6 +59,12 @@ namespace Spectrum.Framework.Entities
             get { return position; }
             set { position = value; PhysicsUpdate(); }
         }
+        [Replicate]
+        public Vector3 LinearVelocity
+        {
+            get { return linearVelocity; }
+            set { linearVelocity = value; }
+        }
         public Vector3 linearVelocity;
         public Vector3 angularVelocity;
         public bool IgnoreRotation = false;

@@ -162,6 +162,7 @@ namespace Spectrum.Framework.Entities
             output.creationArgs = args;
             ECollection.Add(output);
             output.SendMessageCallback = SendEntityMessage;
+            output.Initialize();
             return (Entity)output;
         }
 

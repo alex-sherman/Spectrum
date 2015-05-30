@@ -12,6 +12,7 @@ using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework.Graphics
 {
+    [LoadableType]
     public class Water : GameObject
     {
         public const float waterHeight = 0;
