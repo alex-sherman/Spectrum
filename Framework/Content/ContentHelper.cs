@@ -24,7 +24,7 @@ namespace Spectrum.Framework.Content
         private static ContentHelper single;
         public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game.Content); } return single; } }
         public static Texture2D Blank { get { return ContentHelper.Load<Texture2D>("blank"); } }
-        private Dictionary<Type, ICachedContentParser> parserCache = new Dictionary<Type, ICachedContentParser>()
+        public static Dictionary<Type, ICachedContentParser> ContentParsers = new Dictionary<Type, ICachedContentParser>()
             {
                 {typeof(SpecModel), new ModelParser()},
                 {typeof(AnimationPlayer), new AnimationParser()},
@@ -67,11 +67,11 @@ namespace Spectrum.Framework.Content
         {
             try
             {
-                if (parserCache.ContainsKey(typeof(T)))
+                if (ContentParsers.ContainsKey(typeof(T)))
                 {
-                    ICachedContentParser parser = parserCache[typeof(T)];
+                    ICachedContentParser parser = ContentParsers[typeof(T)];
                     path = parser.Prefix + path + parser.Suffix;
-                    return (T)parserCache[typeof(T)].Load(Content.RootDirectory + "\\" + path);
+                    return (T)ContentParsers[typeof(T)].Load(Content.RootDirectory + "\\" + path);
                 }
                 if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
                 if (typeof(T) == typeof(Effect))

@@ -89,11 +89,10 @@ namespace Spectrum.Framework.Network
             {
                 case HandshakeStage.Begin:
                     List<NetMessage> hashMessages = new List<NetMessage>();
-                    foreach (KeyValuePair<string, Guid> typeHash in TypeHelper.Helper.GetAssemblyHashes())
+                    foreach (string type in TypeHelper.Helper.GetTypes())
                     {
                         NetMessage hashMessage = new NetMessage();
-                        hashMessage.Write(typeHash.Key);
-                        hashMessage.Write(typeHash.Value);
+                        hashMessage.Write(type);
                         hashMessages.Add(hashMessage);
                     }
                     handshakeData.Write(hashMessages);
@@ -131,13 +130,12 @@ namespace Spectrum.Framework.Network
             switch (ConnectionStage)
             {
                 case HandshakeStage.Begin:
-                    Dictionary<string, Guid> types = TypeHelper.Helper.GetAssemblyHashes();
+                    List<string> types = TypeHelper.Helper.GetTypes();
                     List<NetMessage> hashMessages = message.ReadList<NetMessage>().ToList();
                     foreach (NetMessage hashMessage in hashMessages)
                     {
                         string name = hashMessage.ReadString();
-                        Guid hash = hashMessage.ReadGuid();
-                        if (types.ContainsKey(name) && types[name] == hash)
+                        if (types.Contains(name))
                         {
                             types.Remove(name);
                         }

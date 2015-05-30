@@ -76,14 +76,5 @@ namespace Spectrum.Framework
                 return null;
             }
         }
-        public Dictionary<string, Guid> GetAssemblyHashes()
-        {
-            Dictionary<string, Guid> output = new Dictionary<string, Guid>();
-            foreach (Type type in Types.Values)
-            {
-                output[type.Name] = type.Assembly.ManifestModule.ModuleVersionId;
-            }
-            return output;
-        }
     }
 }
