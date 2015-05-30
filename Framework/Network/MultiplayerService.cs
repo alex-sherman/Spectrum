@@ -91,11 +91,11 @@ namespace Spectrum.Framework.Network
         public bool HasNat { get { return NatDevice != null; } }
         private int listenPort = -1;
         public int ListenPort { get { return listenPort; } }
-        public Guid guid { get; private set; }
+        public Guid ID { get { return SpectrumGame.Game.ID; } }
 
         public MultiplayerService(Guid mpid)
         {
-            guid = mpid;
+            NetworkMutex.Init(this);
             NatUtility.DeviceFound += DeviceFound;
             NatUtility.StartDiscovery();
         }
@@ -113,7 +113,7 @@ namespace Spectrum.Framework.Network
         {
             udpClient = new UdpClient(port);
             listenPort = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
-            udpSender = new UDPSender(guid, udpClient);
+            udpSender = new UDPSender(ID, udpClient);
             udpReceiver = new UDPReceiver(this, udpClient);
             bool natSuccess = false;
             if (HasNat)

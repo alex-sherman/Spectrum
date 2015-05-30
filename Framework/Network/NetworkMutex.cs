@@ -68,7 +68,7 @@ namespace Spectrum.Framework.Network
             {
                 counter++;
                 if (localRequest != null) { throw new Exception("Tried to request the same network mutex twice"); }
-                localRequest = new QEntry(counter, MPService.guid, MPService.connectedPeers.Keys.ToArray());
+                localRequest = new QEntry(counter, MPService.ID, MPService.connectedPeers.Keys.ToArray());
                 SendRequest(name, counter);
             }
             localRequest.replyWaiter.WaitReplies();

@@ -78,7 +78,7 @@ namespace Spectrum.Framework.Network
             ConnectionStage = stage;
             NetMessage handshakeData = new NetMessage();
             handshakeData.Write((int)stage);
-            handshakeData.Write(mpService.guid);
+            handshakeData.Write(mpService.ID);
             handshakeData.Write((int)mpService.ListenPort);
             if (mpService.HasNat)
                 handshakeData.Write(new NetMessage(mpService.GetNATIP().GetAddressBytes()));

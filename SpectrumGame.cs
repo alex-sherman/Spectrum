@@ -11,7 +11,6 @@ using Spectrum.Framework.Graphics;
 using System.Windows.Forms;
 using Spectrum.Framework;
 using Spectrum.Framework.Network;
-using Spectrum.Framework.Network.Directory;
 using Spectrum.Framework.Physics;
 using Spectrum.Framework.Screens;
 using Spectrum.Framework.Entities;
@@ -33,8 +32,6 @@ namespace Spectrum
 
         public bool Debug = false;
         public bool DebugDraw = false;
-        public bool UseAuthSave = true;
-        public bool Offline = true;
 
         #region Window Properties
         public event EventHandler OnScreenResize;
@@ -77,23 +74,12 @@ namespace Spectrum
         bool newResize = false;
         private Point mousePosition;
         public Guid ID { get; private set; }
-        public MultiplayerService MP { get; private set; }
-        public EntityManager EntityManager { get; private set; }
-        public DirectoryHelper AuthManager;
 
-        public SpectrumGame()
+        public SpectrumGame(Guid id)
         {
-            if (!Offline)
-                AuthManager = new DirectoryHelper();
-            ID = Guid.NewGuid();
+            ID = id;
             Game = this;
             graphics = new GraphicsDeviceManager(this);
-
-            EntityCollection ECollection = new EntityCollection();
-            PhysicsEngine.Init(ECollection);
-            MP = new MultiplayerService(ID);
-            NetworkMutex.Init(MP);
-            EntityManager = new EntityManager(ECollection, MP);
             this.Window.AllowUserResizing = true;
             this.Window.ClientSizeChanged += WindowSizeChange;
             WindowForm = (Form)Form.FromHandle(Window.Handle);

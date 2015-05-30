@@ -148,7 +148,7 @@ namespace Spectrum.Framework.Entities
         }
         public Entity CreateEntityType(Type t, params object[] args)
         {
-            Entity output = CreateEntityType(t, Guid.NewGuid(), mpService.guid, args);
+            Entity output = CreateEntityType(t, Guid.NewGuid(), mpService.ID, args);
             if (output != null)
                 SendEntityCreation(output);
             return output;

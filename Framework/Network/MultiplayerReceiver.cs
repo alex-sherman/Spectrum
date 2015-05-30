@@ -56,7 +56,7 @@ namespace Spectrum.Framework.Network
                                 peerGuids.Add(message.ReadGuid());
                             }
                             List<Guid> missingPeers = peerGuids.ToList();
-                            missingPeers.Remove(mpService.guid);
+                            missingPeers.Remove(mpService.ID);
                             foreach (Guid knownPeer in mpService.connectedPeers.Keys)
                             {
                                 missingPeers.Remove(knownPeer);

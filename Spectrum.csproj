@@ -125,9 +125,6 @@
     <Compile Include="Framework\LSystem\LNode.cs" />
     <Compile Include="Framework\LSystem\LTree.cs" />
     <Compile Include="Framework\MatrixHelper.cs" />
-    <Compile Include="Framework\Network\Directory\DirectoryHelper.cs" />
-    <Compile Include="Framework\Network\Directory\DirectoryUser.cs" />
-    <Compile Include="Framework\Network\Directory\StringPasswordFinder.cs" />
     <Compile Include="Framework\Network\ISerializable.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionIsland.cs" />
