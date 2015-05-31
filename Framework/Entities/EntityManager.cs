@@ -164,11 +164,12 @@ namespace Spectrum.Framework.Entities
             output.Initialize();
             return (Entity)output;
         }
-        public void ClearEntities()
+        public void ClearEntities(Func<Entity, bool> predicate = null)
         {
             foreach (Entity entity in ECollection.updateables)
             {
-                RemoveEntity(entity.ID);
+                if (predicate == null || predicate(entity))
+                    RemoveEntity(entity.ID);
             }
         }
         public void RemoveEntity(Guid entityID)
