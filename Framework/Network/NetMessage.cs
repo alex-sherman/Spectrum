@@ -30,6 +30,7 @@ namespace Spectrum.Framework.Network
         ENTITY = 8,
         JSON = 9,
         FLOATARRAY = 10,
+        BOOL = 11,
     }
     public class NetMessage : ISerializable
     {
@@ -259,6 +260,17 @@ namespace Spectrum.Framework.Network
             return (byte)stream.ReadByte();
         }
 
+        // Bool
+        public void Write(bool b)
+        {
+            stream.WriteByte((byte)(b ? 1 : 0));
+        }
+        public bool ReadBool()
+        {
+            if (stream.Position == stream.Length) throw new EndOfStreamException();
+            return stream.ReadByte() == 1;
+        }
+
         public void Write(JToken jobj)
         {
             string json = JsonConvert.SerializeObject(jobj);
@@ -303,17 +315,17 @@ namespace Spectrum.Framework.Network
                 Write((byte)ObjectType.BYTE);
                 Write((byte)p);
             }
-            else if(t==typeof(Matrix))
+            else if (t == typeof(Matrix))
             {
                 Write((byte)ObjectType.MATRIX);
                 Write((Matrix)p);
             }
-            else if(t.IsSubclassOf(typeof(Entity)))
+            else if (t.IsSubclassOf(typeof(Entity)))
             {
                 Write((byte)ObjectType.ENTITY);
                 Write(((Entity)p).ID);
             }
-            else if(t.IsSubclassOf(typeof(JToken)))
+            else if (t.IsSubclassOf(typeof(JToken)))
             {
                 Write((byte)ObjectType.JSON);
                 Write(((JToken)p));
@@ -322,6 +334,11 @@ namespace Spectrum.Framework.Network
             {
                 Write((byte)ObjectType.FLOATARRAY);
                 Write((float[,])p);
+            }
+            else if (t == typeof(bool))
+            {
+                Write((byte)ObjectType.BOOL);
+                Write((bool)p);
             }
             else
             {
@@ -355,6 +372,8 @@ namespace Spectrum.Framework.Network
                     return ReadJSON();
                 case ObjectType.FLOATARRAY:
                     return Read2DFloatArray();
+                case ObjectType.BOOL:
+                    return ReadBool();
                 default:
                     throw new SerializationException("Uknown primitive type");
             }
