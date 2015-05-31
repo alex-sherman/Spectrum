@@ -122,7 +122,7 @@ namespace Spectrum.Framework.Screens
                         otherTookInput = true;
                     }
                 }
-                if (input.MouseState.LeftButton == ButtonState.Released)
+                if (!input.MouseState.buttons[0])
                 {
                     dragging = false;
                 }

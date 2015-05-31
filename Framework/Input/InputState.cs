@@ -25,26 +25,26 @@ namespace Spectrum.Framework.Input
     public class InputState
     {
         public static float MouseSensitivity = 0.003f;
+        private static SpectrumMouse SpecMouse = new SpectrumMouse();
 
         #region Fields
 
         public KeyboardState KeyboardState;
-        public MouseState MouseState;
+        public SpectrumMouseState MouseState;
         private InputState LastInputState;
+
 
         #endregion
 
         #region Initialization
 
 
-        public InputState()
-            : this(new KeyboardState(), new MouseState(), new InputState(new KeyboardState(), new MouseState(), null)) { }
 
-        private InputState(KeyboardState keyboardState, MouseState mouseState, InputState lastInputState)
+        public InputState()
         {
-            KeyboardState = keyboardState;
-            MouseState = mouseState;
-            LastInputState = lastInputState;
+            KeyboardState = Keyboard.GetState();
+            MouseState = SpecMouse.GetCurrentState();
+            LastInputState = null;
         }
 
 
@@ -54,10 +54,12 @@ namespace Spectrum.Framework.Input
 
         public void Update()
         {
+            if (LastInputState == null)
+                LastInputState = new InputState();
             LastInputState.KeyboardState = KeyboardState;
             KeyboardState = Keyboard.GetState();
             LastInputState.MouseState = MouseState;
-            MouseState = Mouse.GetState();
+            MouseState = SpecMouse.GetCurrentState();
         }
         public bool IsKeyDown(string bindingName)
         {
@@ -116,21 +118,7 @@ namespace Spectrum.Framework.Input
 
         public bool IsMouseDown(int button)
         {
-            switch (button)
-            {
-                case 0:
-                    return MouseState.LeftButton == ButtonState.Pressed;
-                case 1:
-                    return MouseState.MiddleButton == ButtonState.Pressed;
-                case 2:
-                    return MouseState.RightButton == ButtonState.Pressed;
-                case 3:
-                    return MouseState.XButton1 == ButtonState.Pressed;
-                case 4:
-                    return MouseState.XButton2 == ButtonState.Pressed;
-                default:
-                    return false;
-            }
+            return MouseState.buttons[button];
         }
 
         public bool IsNewMousePress(int button)
@@ -145,7 +133,7 @@ namespace Spectrum.Framework.Input
 
         public int MouseWheelDistance()
         {
-            return MouseState.ScrollWheelValue - LastInputState.MouseState.ScrollWheelValue;
+            return MouseState.Scroll;
         }
 
 
