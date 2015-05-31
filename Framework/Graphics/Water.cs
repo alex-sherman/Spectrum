@@ -39,7 +39,7 @@ namespace Spectrum.Framework.Graphics
                 }
             }
             waterV.SetData(verts);
-            IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(VertexHelper.getIndexList(numVertices, 1, 1).ToList());
+            IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(VertexHelper.getIndexList(numVertices).ToList());
             DrawablePart p = new DrawablePart(waterV, iBuffer);
             p.effect = new WaterEffect(waterBump1, waterBump2);
             Parts.Add(p);
@@ -51,7 +51,7 @@ namespace Spectrum.Framework.Graphics
             reflectionRenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, (int)(2048.0 / Math.Pow(2, Settings.waterQuality)),
                 (int)(2048.0 / Math.Pow(2, Settings.waterQuality)), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
         }
-        private static IVertexType Constructor(VertexArgs args)
+        private static VertexPositionTexture Constructor(VertexArgs args)
         {
             return new VertexPositionTexture(args.pos + Vector3.Up * waterHeight, args.texturePos);
         }

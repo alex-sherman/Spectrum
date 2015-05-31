@@ -8,14 +8,11 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    class ScalableTextureParser : CachedContentParser<ScalableTexture, ScalableTexture>
+    public class ScalableTextureParser : CachedContentParser<ScalableTexture, ScalableTexture>
     {
-        public override string Prefix
+        public ScalableTextureParser()
         {
-            get
-            {
-                return @"Textures\";
-            }
+            Prefix = @"Textures\";
         }
         protected override ScalableTexture LoadData(string path)
         {

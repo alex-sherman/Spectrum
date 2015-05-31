@@ -7,14 +7,12 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    class Texture2DParser : CachedContentParser<Texture2D, Texture2D>
+    public class Texture2DParser : CachedContentParser<Texture2D, Texture2D>
     {
-        public override string Prefix
+        public Texture2DParser()
         {
-            get
-            {
-                return @"Textures\";
-            }
+
+            Prefix = @"Textures\";
         }
         protected override Texture2D LoadData(string path)
         {

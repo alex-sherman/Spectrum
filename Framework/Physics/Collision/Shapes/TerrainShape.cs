@@ -51,7 +51,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
     public class TerrainShape : Multishape
     {
         public Float2DLerp heights;
-        private float scaleX, scaleZ;
+        private float scaleXZ;
         private int heightsLength0, heightsLength1;
 
         private int minX, maxX;
@@ -78,7 +78,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="heights">An array containing the heights of the terrain surface.</param>
         /// <param name="scaleX">The x-scale factor. (The x-space between neighbour heights)</param>
         /// <param name="scaleZ">The y-scale factor. (The y-space between neighbour heights)</param>
-        public TerrainShape(float[,] heights, float scaleX, float scaleZ)
+        public TerrainShape(float[,] heights, float scaleXZ)
         {
             heightsLength0 = heights.GetLength(0);
             heightsLength1 = heights.GetLength(1);
@@ -86,8 +86,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
 
             this.heights = new Float2DLerp(heights);
-            this.scaleX = scaleX;
-            this.scaleZ = scaleZ;
+            this.scaleXZ = scaleXZ;
 
             UpdateShape();
         }
@@ -99,8 +98,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         {
             TerrainShape clone = new TerrainShape();
             clone.heights = this.heights;
-            clone.scaleX = this.scaleX;
-            clone.scaleZ = this.scaleZ;
+            clone.scaleXZ = this.scaleXZ;
             clone.boundings = this.boundings;
             clone.heightsLength0 = this.heightsLength0;
             clone.heightsLength1 = this.heightsLength1;
@@ -133,15 +131,15 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             // each quad has two triangles, called 'leftTriangle' and !'leftTriangle'
             if (leftTriangle)
             {
-                points[0] = new Vector3((minX + quadIndexX + 0) * scaleX + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 0], (minZ + quadIndexZ + 0) * scaleZ + boundings.Min.Z);
-                points[1] = new Vector3((minX + quadIndexX + 1) * scaleX + boundings.Min.X, heights[minX + quadIndexX + 1, minZ + quadIndexZ + 0], (minZ + quadIndexZ + 0) * scaleZ + boundings.Min.Z);
-                points[2] = new Vector3((minX + quadIndexX + 0) * scaleX + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleZ + boundings.Min.Z);
+                points[0] = new Vector3((minX + quadIndexX + 0) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 0], (minZ + quadIndexZ + 0) * scaleXZ + boundings.Min.Z);
+                points[1] = new Vector3((minX + quadIndexX + 1) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 1, minZ + quadIndexZ + 0], (minZ + quadIndexZ + 0) * scaleXZ + boundings.Min.Z);
+                points[2] = new Vector3((minX + quadIndexX + 0) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleXZ + boundings.Min.Z);
             }
             else
             {
-                points[0] = new Vector3((minX + quadIndexX + 1) * scaleX + boundings.Min.X, heights[minX + quadIndexX + 1, minZ + quadIndexZ + 0], (minZ + quadIndexZ + 0) * scaleZ + boundings.Min.Z);
-                points[1] = new Vector3((minX + quadIndexX + 1) * scaleX + boundings.Min.X, heights[minX + quadIndexX + 1, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleZ + boundings.Min.Z);
-                points[2] = new Vector3((minX + quadIndexX + 0) * scaleX + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleZ + boundings.Min.Z);
+                points[0] = new Vector3((minX + quadIndexX + 1) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 1, minZ + quadIndexZ + 0], (minZ + quadIndexZ + 0) * scaleXZ + boundings.Min.Z);
+                points[1] = new Vector3((minX + quadIndexX + 1) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 1, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleXZ + boundings.Min.Z);
+                points[2] = new Vector3((minX + quadIndexX + 0) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleXZ + boundings.Min.Z);
             }
 
             Vector3 sum = points[0];
@@ -179,28 +177,28 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             if (box.Min.X < boundings.Min.X) minX = 0;
             else
             {
-                minX = (int)Math.Floor((float)((box.Min.X - sphericalExpansion - boundings.Min.X) / scaleX));
+                minX = (int)Math.Floor((float)((box.Min.X - sphericalExpansion - boundings.Min.X) / scaleXZ));
                 minX = Math.Max(minX, 0);
             }
 
             if (box.Max.X > boundings.Max.X) maxX = heightsLength0 - 1;
             else
             {
-                maxX = (int)Math.Ceiling((float)((box.Max.X + sphericalExpansion - boundings.Min.X) / scaleX));
+                maxX = (int)Math.Ceiling((float)((box.Max.X + sphericalExpansion - boundings.Min.X) / scaleXZ));
                 maxX = Math.Min(maxX, heightsLength0 - 1);
             }
 
             if (box.Min.Z < boundings.Min.Z) minZ = 0;
             else
             {
-                minZ = (int)Math.Floor((float)((box.Min.Z - sphericalExpansion - boundings.Min.Z) / scaleZ));
+                minZ = (int)Math.Floor((float)((box.Min.Z - sphericalExpansion - boundings.Min.Z) / scaleXZ));
                 minZ = Math.Max(minZ, 0);
             }
 
             if (box.Max.Z > boundings.Max.Z) maxZ = heightsLength1 - 1;
             else
             {
-                maxZ = (int)Math.Ceiling((float)((box.Max.Z + sphericalExpansion - boundings.Min.Z) / scaleZ));
+                maxZ = (int)Math.Ceiling((float)((box.Max.Z + sphericalExpansion - boundings.Min.Z) / scaleXZ));
                 maxZ = Math.Min(maxZ, heightsLength1 - 1);
             }
 
@@ -249,13 +247,13 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 int quadIndexX = index % (heightsLength0 - 1);
                 int quadIndexZ = index / (heightsLength0 - 1);
 
-                triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleX, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleZ));
-                triangleList.Add(new Vector3((0 + quadIndexX + 1) * scaleX, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleZ));
-                triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleX, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleZ));
+                triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleXZ, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleXZ));
+                triangleList.Add(new Vector3((0 + quadIndexX + 1) * scaleXZ, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleXZ));
+                triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleXZ, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleXZ));
 
-                triangleList.Add(new Vector3((0 + quadIndexX + 1) * scaleX, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleZ));
-                triangleList.Add(new Vector3((0 + quadIndexX + 1) * scaleX, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleZ));
-                triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleX, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleZ));
+                triangleList.Add(new Vector3((0 + quadIndexX + 1) * scaleXZ, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 0], (0 + quadIndexZ + 0) * scaleXZ));
+                triangleList.Add(new Vector3((0 + quadIndexX + 1) * scaleXZ, heights[0 + quadIndexX + 1, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleXZ));
+                triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleXZ, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleXZ));
             }
         }
 
@@ -335,8 +333,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             boundings.Min.X = 0;
             boundings.Min.Z = 0;
 
-            boundings.Max.X = checked(heightsLength0 * scaleX);
-            boundings.Max.Z = checked(heightsLength1 * scaleZ);
+            boundings.Max.X = checked(heightsLength0 * scaleXZ);
+            boundings.Max.Z = checked(heightsLength1 * scaleXZ);
 
             #endregion
 

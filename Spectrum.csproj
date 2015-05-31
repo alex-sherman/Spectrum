@@ -106,6 +106,7 @@
   <ItemGroup>
     <Compile Include="Framework\Content\AnimationParser.cs" />
     <Compile Include="Framework\Content\ContentParser.cs" />
+    <Compile Include="Framework\Content\HeightmapParser.cs" />
     <Compile Include="Framework\Content\ScalableTextureParser.cs" />
     <Compile Include="Framework\Content\Texture2DParser.cs" />
     <Compile Include="Framework\Content\ModelParser.cs" />

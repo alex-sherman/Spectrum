@@ -7,8 +7,8 @@ namespace Spectrum.Framework.Content
 {
     public interface ICachedContentParser
     {
-        string Prefix { get; }
-        string Suffix { get; }
+        string Prefix { get; set; }
+        string Suffix { get; set; }
         void Cache(string path);
         object Load(string path);
     }
@@ -17,8 +17,8 @@ namespace Spectrum.Framework.Content
         protected Dictionary<string, T> cachedData = new Dictionary<string, T>();
         protected abstract T LoadData(string path);
         protected abstract U SafeCopy(T data);
-        public virtual string Prefix { get { return ""; } }
-        public virtual string Suffix { get { return ""; } }
+        public string Prefix { get; set; }
+        public string Suffix { get; set; }
         public U Load(string path)
         {
             if (!cachedData.ContainsKey(path)) { Cache(path); }
