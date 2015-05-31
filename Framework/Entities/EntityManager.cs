@@ -112,24 +112,23 @@ namespace Spectrum.Framework.Entities
 
         public void Update(GameTime gameTime)
         {
-            ECollection.Update();
-
             if (Paused) { return; }
             tickTenthTimer += gameTime.ElapsedGameTime.Milliseconds;
             tickOneTimer += gameTime.ElapsedGameTime.Milliseconds;
 
-            for (int i = 0; i < ECollection.updateables.Count; i++)
+            List<Entity> updateables = ECollection.updateables;
+            for (int i = 0; i < updateables.Count; i++)
             {
-                if (ECollection.updateables[i].Enabled)
+                if (updateables[i].Enabled)
                 {
-                    ECollection.updateables[i].Update(gameTime);
+                    updateables[i].Update(gameTime);
                     if (tickOneTimer >= 1000)
-                        ECollection.updateables[i].TickOne();
+                        updateables[i].TickOne();
                     if (tickTenthTimer >= 100)
-                        ECollection.updateables[i].TickTenth();
+                        updateables[i].TickTenth();
                 }
-                if (ECollection.updateables[i].Dispoing)
-                    ECollection.Remove(ECollection.updateables[i]);
+                if (updateables[i].Disposing)
+                    ECollection.Remove(updateables[i].ID);
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;
@@ -164,6 +163,17 @@ namespace Spectrum.Framework.Entities
             output.SendMessageCallback = SendEntityMessage;
             output.Initialize();
             return (Entity)output;
+        }
+        public void ClearEntities()
+        {
+            foreach (Entity entity in ECollection.updateables)
+            {
+                RemoveEntity(entity.ID);
+            }
+        }
+        public void RemoveEntity(Guid entityID)
+        {
+            ECollection.Remove(entityID);
         }
 
         public void Draw(GameTime gameTime)

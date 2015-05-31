@@ -20,7 +20,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Initialize()
         {
             base.Initialize();
-            FlatWidth = (int)Font.MeasureString("a").X * 20;
+            FlatWidth = (int)Font.MeasureString("a").X * 10;
             FlatHeight = Font.LineSpacing;
             OnClick += TextBox_OnClick;
         }

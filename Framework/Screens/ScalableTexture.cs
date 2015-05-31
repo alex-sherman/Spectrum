@@ -76,18 +76,19 @@ namespace Spectrum.Framework.Screens
             get { return new Rectangle(rect.X + BorderWidth, rect.Y + BorderWidth, rect.Width - 2 * BorderWidth, rect.Height - 2 * BorderWidth); }
         }
 
-        public void Draw(Rectangle destination, SpriteBatch spriteBatch, float layer)
+        public void Draw(Rectangle destination, SpriteBatch spriteBatch, float layer, Color? color = null)
         {
+            Color _color = color ?? Color.White;
             rect = destination;
-            spriteBatch.Draw(Texture, ULCorner, ULCornerSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, URCorner, URCornerSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, LLCorner, LLCornerSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, LRCorner, LRCornerSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, Left, LeftSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, Right, RightSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, Top, TopSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, Bottom, BottomSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
-            spriteBatch.Draw(Texture, Center, CenterSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, ULCorner, ULCornerSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, URCorner, URCornerSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, LLCorner, LLCornerSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, LRCorner, LRCornerSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, Left, LeftSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, Right, RightSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, Top, TopSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, Bottom, BottomSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
+            spriteBatch.Draw(Texture, Center, CenterSource, _color, 0, Vector2.Zero, SpriteEffects.None, layer);
         }
     }
 }

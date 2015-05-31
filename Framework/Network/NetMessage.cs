@@ -28,7 +28,8 @@ namespace Spectrum.Framework.Network
         GUID = 6,
         MATRIX = 7,
         ENTITY = 8,
-        JSON = 9
+        JSON = 9,
+        FLOATARRAY = 10,
     }
     public class NetMessage : ISerializable
     {
@@ -317,6 +318,11 @@ namespace Spectrum.Framework.Network
                 Write((byte)ObjectType.JSON);
                 Write(((JToken)p));
             }
+            else if (t == typeof(float[,]))
+            {
+                Write((byte)ObjectType.FLOATARRAY);
+                Write((float[,])p);
+            }
             else
             {
                 throw new SerializationException("Uknown primitive type");
@@ -347,6 +353,8 @@ namespace Spectrum.Framework.Network
                     catch { throw new SerializationException("Couldn't find entity"); }
                 case ObjectType.JSON:
                     return ReadJSON();
+                case ObjectType.FLOATARRAY:
+                    return Read2DFloatArray();
                 default:
                     throw new SerializationException("Uknown primitive type");
             }

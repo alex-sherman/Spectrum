@@ -8,83 +8,54 @@ using System.Text;
 namespace Spectrum.Framework.Entities
 {
     public delegate void EntityCollectionUpdated(Entity updated);
-    enum EntityCollectionAction
-    {
-        Remove,
-        Add
-    }
-    struct ActionQueueItem
-    {
-        public Entity entity;
-        public EntityCollectionAction action;
-        public ActionQueueItem(EntityCollectionAction action, Entity entity)
-        {
-            this.entity = entity;
-            this.action = action;
-        }
-    }
+
     public class EntityCollection
     {
         Dictionary<Guid, Entity> entities = new Dictionary<Guid, Entity>();
-        public List<Entity> updateables = new List<Entity>();
-        public List<GameObject> gameObjects = new List<GameObject>();
-        private List<ActionQueueItem> actionQueue = new List<ActionQueueItem>();
+        private List<Entity> _updateables = new List<Entity>();
+        public List<Entity> updateables { get { lock (this) { return _updateables.ToList(); } } }
+        public List<GameObject> gameObjects
+        {
+            get
+            {
+                lock (this)
+                {
+                    return _updateables.ToList()
+                        .Where((Entity entity) => (entity is GameObject))
+                        .ToList()
+                        .ConvertAll((Entity entity) => (entity as GameObject));
+                }
+            }
+        }
 
         public void Add(Entity entity)
         {
-            lock (this)
+            if (OnEntityAdded != null) { OnEntityAdded(entity); }
+            entities[entity.ID] = entity;
+            int i = 0;
+            while (i < _updateables.Count - 1 && _updateables[i].UpdateOrder < entity.UpdateOrder) { i++; }
+            _updateables.Insert(i, entity);
+            if (entity is GameObject)
             {
-                actionQueue.Add(new ActionQueueItem(EntityCollectionAction.Add, entity));
+                gameObjects.Add(entity as GameObject);
             }
         }
         public event EntityCollectionUpdated OnEntityAdded;
-        public void Remove(Entity entity)
+        public void Remove(Guid entityID)
         {
-            lock (this)
+            if (entities.ContainsKey(entityID))
             {
-                actionQueue.Add(new ActionQueueItem(EntityCollectionAction.Remove, entity));
+                Entity entity = entities[entityID];
+                if (OnEntityRemoved != null) { OnEntityRemoved(entity); }
+                entities.Remove(entityID);
+                _updateables.Remove(entity);
+                if (entity is GameObject)
+                {
+                    gameObjects.Remove(entity as GameObject);
+                }
             }
         }
         public event EntityCollectionUpdated OnEntityRemoved;
-        public void Update()
-        {
-            lock (this)
-            {
-                foreach (ActionQueueItem actionItem in actionQueue)
-                {
-                    Entity entity = actionItem.entity;
-                    switch (actionItem.action)
-                    {
-                        case EntityCollectionAction.Remove:
-                            if (entities.ContainsKey(entity.ID))
-                            {
-                                if (OnEntityRemoved != null) { OnEntityRemoved(entity); }
-                                entities.Remove(entity.ID);
-                                updateables.Remove(entity);
-                                if (entity is GameObject)
-                                {
-                                    gameObjects.Remove(entity as GameObject);
-                                }
-                            }
-                            break;
-                        case EntityCollectionAction.Add:
-                            if (OnEntityAdded != null) { OnEntityAdded(entity); }
-                            entities[entity.ID] = entity;
-                            int i = 0;
-                            while (i < updateables.Count - 1 && updateables[i].UpdateOrder < entity.UpdateOrder) { i++; }
-                            updateables.Insert(i, entity);
-                            if (entity is GameObject)
-                            {
-                                gameObjects.Add(entity as GameObject);
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                actionQueue = new List<ActionQueueItem>();
-            }
-        }
 
         public Entity Find(Guid key)
         {

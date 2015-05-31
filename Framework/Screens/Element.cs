@@ -52,8 +52,9 @@ namespace Spectrum.Framework.Screens
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
-        public ScalableTexture Texture { get { return Fields["image"].ObjValue as ScalableTexture; } }
         public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
+        public ScalableTexture Texture { get { return Fields["image"].ObjValue as ScalableTexture; } }
+        public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
 
         protected Element(ScreenManager manager) : this() { Manager = manager; }
 
@@ -74,7 +75,14 @@ namespace Spectrum.Framework.Screens
             this.Fields["image"] = new ElementField(
                 this,
                 "image",
-                ElementField.ContentSetter<ScalableTexture>
+                ElementField.ContentSetter<ScalableTexture>,
+                false
+                );
+            this.Fields["image-color"] = new ElementField(
+                this,
+                "image-color",
+                ElementField.ColorSetter,
+                false
                 );
         }
 
@@ -182,7 +190,7 @@ namespace Spectrum.Framework.Screens
         {
             if (Texture != null)
             {
-                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z);
+                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z, color: TextureColor);
             }
         }
 

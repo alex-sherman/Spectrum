@@ -66,14 +66,14 @@ namespace Spectrum.Framework.Entities
         public virtual void Initialize() { }
 
         public virtual bool Enabled { get; private set; }
-        public bool Dispoing { get; private set; }
+        public bool Disposing { get; private set; }
 
         [Replicate]
         public virtual void Dispose()
         {
             RPC("Dispose");
             Enabled = false;
-            Dispoing = true;
+            Disposing = true;
         }
 
         protected virtual void getData(NetMessage output)
