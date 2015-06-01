@@ -175,6 +175,7 @@ namespace Spectrum.Framework.Entities
         }
         public IEnumerable<T> FindEntities<T>(Func<T, bool> predicate = null) where T : Entity
         {
+            predicate = predicate ?? new Func<T, bool>((T f) => (true));
             if (typeof(T) == typeof(Entity))
                 return ECollection.updateables.Where(predicate as Func<Entity, bool>).ToList() as List<T>;
 
