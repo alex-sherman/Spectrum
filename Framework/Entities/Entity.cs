@@ -41,6 +41,7 @@ namespace Spectrum.Framework.Entities
         public EntityMessageHandler SendMessageCallback;
         public Guid OwnerGuid;
         public object[] creationArgs = new object[0];
+        public EntityManager Manager;
         public Entity()
         {
             Enabled = true;

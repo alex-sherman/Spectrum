@@ -340,7 +340,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// which start at rayOrigin and end in rayOrigin + rayDirection.
         /// </summary>
         #region public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, out Vector3 normal,out float fraction)
-        public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, RaycastCallback raycast, out GameObject body, out Vector3 normal, out float fraction)
+        public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, Func<GameObject, Vector3, float, bool> raycast, out GameObject body, out Vector3 normal, out float fraction)
         {
             body = null; normal = Vector3.Zero; fraction = float.MaxValue;
 

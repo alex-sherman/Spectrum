@@ -325,7 +325,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// against rays (rays are of infinite length). They are checked against segments
         /// which start at rayOrigin and end in rayOrigin + rayDirection.
         /// </summary>
-        public abstract bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, RaycastCallback raycast, out GameObject body, out Vector3 normal, out float fraction);
+        public abstract bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, Func<GameObject, Vector3, float, bool> rayCast, out GameObject body, out Vector3 normal, out float fraction);
 
         /// <summary>
         /// Raycasts a single body. NOTE: For performance reasons terrain and trianglemeshshape aren't checked

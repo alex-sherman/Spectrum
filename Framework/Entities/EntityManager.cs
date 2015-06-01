@@ -159,6 +159,7 @@ namespace Spectrum.Framework.Entities
             output.OwnerGuid = ownerID;
             output.ID = entityID;
             output.creationArgs = args;
+            output.Manager = this;
             ECollection.Add(output);
             output.SendMessageCallback = SendEntityMessage;
             output.Initialize();
@@ -171,6 +172,16 @@ namespace Spectrum.Framework.Entities
                 if (predicate == null || predicate(entity))
                     RemoveEntity(entity.ID);
             }
+        }
+        public IEnumerable<T> FindEntities<T>(Func<T, bool> predicate = null) where T : Entity
+        {
+            if (typeof(T) == typeof(Entity))
+                return ECollection.updateables.Where(predicate as Func<Entity, bool>).ToList() as List<T>;
+
+            return ECollection.updateables
+                .Where((Entity entity) => (entity is T))
+                .Cast<T>()
+                .Where(predicate);
         }
         public void RemoveEntity(Guid entityID)
         {
