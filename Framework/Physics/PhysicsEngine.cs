@@ -49,10 +49,10 @@ namespace Spectrum.Framework.Physics
                 world.AddBody(updated as GameObject);
         }
 
-        void worldEvents_bodiesBeginCollide(GameObject body1, GameObject body2)
+        void worldEvents_bodiesBeginCollide(GameObject body1, GameObject body2, Vector3 normal)
         {
-            body1.OnCollide(body2);
-            body2.OnCollide(body1);
+            body1.OnCollide(body2, normal);
+            body2.OnCollide(body1, normal);
         }
         void worldEvents_bodiesEndCollide(GameObject body1, GameObject body2)
         {

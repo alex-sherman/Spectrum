@@ -158,7 +158,7 @@ namespace Spectrum.Framework.Entities
                 PhysicsUpdate();
             }
         }
-        public virtual void OnCollide(GameObject other) { }
+        public virtual void OnCollide(GameObject other, Vector3 normal) { }
         public virtual void OnEndCollide(GameObject other) { }
 
 

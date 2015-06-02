@@ -58,7 +58,7 @@ namespace Spectrum.Framework.Physics
             //public event Action<SoftBody> RemovedSoftBody;
 
             // Collision
-            public event Action<GameObject, GameObject> BodiesBeginCollide;
+            public event Action<GameObject, GameObject, Vector3> BodiesBeginCollide;
             public event Action<GameObject, GameObject> BodiesEndCollide;
             public event Action<Contact> ContactCreated;
 
@@ -102,7 +102,7 @@ namespace Spectrum.Framework.Physics
 
             internal void RaiseBodiesBeginCollide(GameObject body1, GameObject body2, Vector3 normal)
             {
-                if (BodiesBeginCollide != null) BodiesBeginCollide(body1, body2);
+                if (BodiesBeginCollide != null) BodiesBeginCollide(body1, body2, normal);
             }
 
             internal void RaiseBodiesEndCollide(GameObject body1, GameObject body2)
