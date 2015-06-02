@@ -24,6 +24,7 @@ namespace Spectrum.Framework.Content
         public VertexBuffer vBuffer;
         public Dictionary<string, IndexBuffer> indices;
         public Dictionary<string, List<MaterialTexture>> materials;
+        public string Directory;
     }
     class ModelParser : CachedContentParser<ModelParserCache, SpecModel>
     {
@@ -34,7 +35,9 @@ namespace Spectrum.Framework.Content
         }
         protected override ModelParserCache LoadData(string path)
         {
+            
             ModelParserCache modelData = new ModelParserCache();
+            modelData.Directory = Path.GetDirectoryName(path);
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             modelData.jobj = JObject.Load(reader);
             if (modelData.jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
@@ -196,7 +199,7 @@ namespace Spectrum.Framework.Content
                     {
                         if(texture.Type == "NONE")
                         {
-                            part.effect.Texture = ContentHelper.Load<Texture2D>(texture.Filename);
+                            part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false);
                         }
                     }
                 }

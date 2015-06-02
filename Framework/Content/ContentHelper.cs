@@ -42,12 +42,12 @@ namespace Spectrum.Framework.Content
         {
             Plugin p = SpectrumGame.Game.Plugins[plugin];
             if (p == null) { return null; }
-            return p.Content._load<T>(path);
+            return p.Content._load<T>(path, true);
         }
 
-        public static T Load<T>(string path) where T : class
+        public static T Load<T>(string path, bool usePrefix = true) where T : class
         {
-            return (T)Single._load<T>(path);
+            return (T)Single._load<T>(path, usePrefix);
         }
 
         public static object LoadType(Type type, string path, string plugin)
@@ -64,15 +64,17 @@ namespace Spectrum.Framework.Content
                 return load.Invoke(null, new object[] { plugin, path });
         }
 
-        private T _load<T>(string path) where T : class
+        private T _load<T>(string path, bool usePrefix) where T : class
         {
             try
             {
                 if (ContentParsers.ContainsKey(typeof(T)))
                 {
                     ICachedContentParser parser = ContentParsers[typeof(T)];
-                    path = parser.Prefix + path + parser.Suffix;
-                    return (T)ContentParsers[typeof(T)].Load(Content.RootDirectory + "\\" + path);
+                    if (usePrefix)
+                        path = Content.RootDirectory + "\\" + parser.Prefix + path;
+                    path += parser.Suffix;
+                    return (T)ContentParsers[typeof(T)].Load(path);
                 }
                 if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
                 if (typeof(T) == typeof(Effect))
