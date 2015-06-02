@@ -138,16 +138,27 @@ namespace Spectrum
             stream.Write(buffer, 0, 1);
             stream.Close();
         }
-        public void SetResolution(Tuple<int, int> res, bool borderless = false)
+        public bool FullScreen
         {
-            if (!graphics.IsFullScreen)
+            get { return Window.IsBorderless; }
+            set
             {
+                bool lastBorderless = Window.IsBorderless;
                 WindowForm.WindowState = FormWindowState.Normal;
-                Window.IsBorderless = borderless;
-                GraphicsDeviceManager.PreferredBackBufferWidth = res.Item1;
-                GraphicsDeviceManager.PreferredBackBufferHeight = res.Item2;
+                Window.IsBorderless = value;
+                if (value)
+                {
+                    var bounds = Screen.FromControl(WindowForm).Bounds;
+                    WindowForm.DesktopLocation = new System.Drawing.Point(bounds.X, bounds.Y);
+                    WindowForm.ClientSize = new System.Drawing.Size(bounds.Width, bounds.Height);
+                }
+                else
+                {
+                    if (lastBorderless)
+                        WindowForm.WindowState = FormWindowState.Maximized;
+                }
+                newResize = true;
             }
-            newResize = true;
         }
         private void WindowSizeChange(object sender, EventArgs e)
         {
