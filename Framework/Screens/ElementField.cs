@@ -8,10 +8,9 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens
 {
-    public delegate object ElementFieldSetter(Element element, string value);
     public class ElementField
     {
-        public static object ColorSetter(Element element, string value)
+        public static object ColorSetter(string value)
         {
             try
             {
@@ -24,7 +23,7 @@ namespace Spectrum.Framework.Screens
             }
         }
 
-        public static object ContentSetter<T>(Element element, string value) where T : class
+        public static object ContentSetter<T>(string value) where T : class
         {
             try
             {
@@ -55,7 +54,7 @@ namespace Spectrum.Framework.Screens
             return output;
         }
 
-        private ElementFieldSetter setter;
+        private Func<string, object> setter;
         private string _strValue;
         private object _value;
         public object ObjValue
@@ -69,7 +68,7 @@ namespace Spectrum.Framework.Screens
         private bool inherited;
         private Element element;
         private bool initialized = false;
-        public ElementField(Element element, string fieldName, ElementFieldSetter setter, bool inherited = true)
+        public ElementField(Element element, string fieldName, Func<string, object> setter, bool inherited = true)
         {
             this.element = element;
             this.fieldName = fieldName;
@@ -84,7 +83,7 @@ namespace Spectrum.Framework.Screens
                 if (overrideValue != null)
                 {
                     _strValue = overrideValue;
-                    _value = setter(element, overrideValue);
+                    _value = setter(overrideValue);
                 }
                 else if (element.Parent != null && inherited && element.Parent.Fields.ContainsKey(fieldName))
                 {
@@ -104,7 +103,7 @@ namespace Spectrum.Framework.Screens
             {
                 initialized = true;
                 _strValue = value;
-                _value = setter(element, value);
+                _value = setter(value);
             }
         }
     }
