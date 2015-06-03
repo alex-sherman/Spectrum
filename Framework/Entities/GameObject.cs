@@ -180,14 +180,12 @@ namespace Spectrum.Framework.Entities
 
         #endregion
 
-        public DepthStencilState DepthStencil { get; protected set; }
         public List<DrawablePart> Parts;
         public SpecModel Model { get { return Parts as SpecModel; } }
 
         public GameObject()
             : base()
         {
-            DepthStencil = DepthStencilState.Default;
             this.Parts = new List<DrawablePart>();
             IsActive = true;
 

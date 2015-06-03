@@ -72,17 +72,7 @@ namespace Spectrum.Framework.Graphics
             direction.Normalize();
             return new Ray(nearPoint, direction);
         }
-        public static void UpdateShadowMap(List<GameObject> scene)
-        {
-            device.SetRenderTarget(shadowMap);
-            GraphicsEngine.device.Clear(Color.White);
-            foreach (GameObject drawable in scene)
-            {
-                Render(Camera.View, Camera.Projection, drawable, true);
-            }
-            device.SetRenderTarget(null);
-            PostProcessEffect.ShadowMap = shadowMap;
-        }
+
         public static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer)
         {
             device.SetVertexBuffer(vertexBuffer);
@@ -98,7 +88,7 @@ namespace Spectrum.Framework.Graphics
                 if (drawable.GetType() != typeof(Water))
                 {
                     drawable.Draw(time, batch, true);
-                    Render(Camera.View, Camera.ReflectionProjection, drawable, false);
+                    Render(drawable, Camera.View, Camera.ReflectionProjection);
                 }
             }
             device.SetRenderTarget(Water.reflectionRenderTarget);
@@ -110,7 +100,7 @@ namespace Spectrum.Framework.Graphics
                 if (drawable.GetType() != typeof(Water))
                 {
                     drawable.Draw(time, batch, true);
-                    Render(Camera.ReflectionView, Camera.ReflectionProjection, drawable, false);
+                    Render(drawable, Camera.ReflectionView, Camera.ReflectionProjection);
                 }
             }
             SpectrumEffect.Clip = false;
@@ -139,12 +129,12 @@ namespace Spectrum.Framework.Graphics
             DepthStencilState poo = new DepthStencilState();
             device.DepthStencilState = poo;
         }
-        public static void Render(Matrix View, Matrix world, Matrix projection, DrawablePart part)
+        public static void Render(DrawablePart part, Matrix world, Matrix? View = null, Matrix? projection = null)
         {
             if (part.effect != null)
             {
-                part.effect.View = View;
-                part.effect.Projection = projection;
+                part.effect.View = View ?? Camera.View;
+                part.effect.Projection = projection ?? Camera.Projection;
                 part.effect.World = part.transform * world;
                 //Draw vertex component
                 if (part.VBuffer != null)
@@ -176,18 +166,17 @@ namespace Spectrum.Framework.Graphics
                 }
             }
         }
-        static void Render(Matrix View, Matrix Projection, GameObject drawable, bool DoShadowMap)
+        static void Render(GameObject drawable, Matrix? View = null, Matrix? Projection = null)
         {
             if (drawable != null && drawable.Parts != null)
             {
-                device.DepthStencilState = drawable.DepthStencil;
                 foreach (DrawablePart part in drawable.Parts)
                 {
                     //if (drawable.Model != null && (part.effect as CustomSkinnedEffect) != null)
                     //{
                     //    (part.effect as CustomSkinnedEffect).Bones = drawable.Model.AnimationPlayer.GetSkinTransforms();
                     //}
-                    GraphicsEngine.Render(View, drawable.World, Projection, part);
+                    GraphicsEngine.Render(part, drawable.World, View, Projection);
                 }
             }
         }
@@ -275,7 +264,7 @@ namespace Spectrum.Framework.Graphics
             foreach (GameObject drawable in drawables)
             {
                 drawable.Draw(gameTime, spriteBatch, false);
-                Render(Camera.View, Camera.Projection, drawable, false);
+                Render(drawable);
             }
             spriteBatch.End();
             //Clear the screen and perform anti aliasing
