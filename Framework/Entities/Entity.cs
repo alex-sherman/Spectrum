@@ -112,7 +112,7 @@ namespace Spectrum.Framework.Entities
             {
                 setData(message);
             }
-            else if(type == FunctionReplicationMessage)
+            else if (type == FunctionReplicationMessage)
             {
                 string method = message.ReadString();
                 object[] args = message.ReadPrimitiveArray();
@@ -134,9 +134,9 @@ namespace Spectrum.Framework.Entities
                 SendMessage(default(Guid), FunctionReplicationMessage, replicationMessage);
             }
         }
-        public void Replicate()
+        public void Replicate(bool force = false)
         {
-            if (replicateCounter <= 0 && CanReplicate)
+            if ((force || replicateCounter <= 0) && CanReplicate)
             {
                 replicateCounter = minReplicationPeriod;
                 NetMessage replicationMessage = new NetMessage();
