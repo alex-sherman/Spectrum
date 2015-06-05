@@ -73,11 +73,22 @@ namespace Spectrum
         public ScreenManager ScreenManager { get; private set; }
         bool newResize = false;
         private Point mousePosition;
-        public Guid ID { get; private set; }
+        public NetID ID { get; private set; }
+        public bool UsingSteam { get; private set; }
 
-        public SpectrumGame(Guid id)
+        public SpectrumGame(bool usesSteam)
         {
-            ID = id;
+            UsingSteam = usesSteam;
+            if(usesSteam)
+            {
+                if (!Steamworks.SteamAPI.Init())
+                    throw new Exception("Steam init failed!");
+                ID = new NetID(Steamworks.SteamUser.GetSteamID().m_SteamID);
+            }
+            else
+            {
+                ID = new NetID(Guid.NewGuid());
+            }
             Game = this;
             graphics = new GraphicsDeviceManager(this);
             this.Window.AllowUserResizing = true;
@@ -183,6 +194,10 @@ namespace Spectrum
         protected override void UnloadContent()
         {
             SaveSettings(File.OpenWrite("save.dat"));
+            if(UsingSteam)
+            {
+                Steamworks.SteamAPI.Shutdown();
+            }
         }
 
         /// <summary>
@@ -192,6 +207,11 @@ namespace Spectrum
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (UsingSteam)
+            {
+                Steamworks.SteamAPI.RunCallbacks();
+                Steamworks.SteamUtils.RunFrame();
+            }
             if (newResize)
             {
                 graphics.ApplyChanges();

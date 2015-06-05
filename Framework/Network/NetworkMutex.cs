@@ -9,8 +9,8 @@ namespace Spectrum.Framework.Network
     public class QEntry : IComparable
     {
         public volatile int time;
-        public readonly Guid id;
-        public QEntry(int time, Guid id, Guid[] requiredReplies)
+        public readonly NetID id;
+        public QEntry(int time, NetID id, NetID[] requiredReplies)
         {
             this.time = time;
             this.id = id;
@@ -94,9 +94,9 @@ namespace Spectrum.Framework.Network
             request.Write(counter);
             MPService.SendMessage(FrameworkMessages.RequestMutex, request);
         }
-        public static void ReceiveRequest(Guid peerGuid, NetMessage message)
+        public static void ReceiveRequest(NetID peerGuid, NetMessage message)
         {
-            Guid id = peerGuid;
+            NetID id = peerGuid;
             string name = message.ReadString();
             int time = message.ReadInt();
             NetworkMutex mut;
@@ -105,7 +105,7 @@ namespace Spectrum.Framework.Network
                 if (Mutexes[name] == null) { Mutexes[name] = new NetworkMutex(name); }
                 mut = Mutexes[name];
             }
-            mut.ReceiveRequest(new QEntry(time, id, new Guid[] { }));
+            mut.ReceiveRequest(new QEntry(time, id, new NetID[] { }));
         }
         private void ReceiveRequest(QEntry request)
         {
@@ -122,16 +122,16 @@ namespace Spectrum.Framework.Network
             }
         }
 
-        private static void SendReply(Guid peerDestination, string name, int counter)
+        private static void SendReply(NetID peerDestination, string name, int counter)
         {
             NetMessage reply = new NetMessage();
             reply.Write(name);
             reply.Write(counter);
             MPService.SendMessage(FrameworkMessages.ReplyMutex, reply, peerDestination);
         }
-        public static void ReceiveReply(Guid peerGuid, NetMessage message)
+        public static void ReceiveReply(NetID peerGuid, NetMessage message)
         {
-            Guid id = peerGuid;
+            NetID id = peerGuid;
             string name = message.ReadString();
             int time = message.ReadInt();
             QEntry reply = new QEntry(time, id, MPService.connectedPeers.Keys.ToArray());

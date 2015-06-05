@@ -11,16 +11,16 @@ namespace Spectrum.Framework.Network
     /// </summary>
     public class ReplyWaiter
     {
-        private volatile List<Guid> replies = new List<Guid>();
-        private List<Guid> requiredReplies = new List<Guid>();
+        private volatile List<NetID> replies = new List<NetID>();
+        private List<NetID> requiredReplies = new List<NetID>();
         private static List<ReplyWaiter> waiters = new List<ReplyWaiter>();
-        
-        public ReplyWaiter(params Guid[] requiredGuids)
+
+        public ReplyWaiter(params NetID[] requiredGuids)
         {
             requiredReplies = requiredGuids.ToList();
             lock (waiters) { waiters.Add(this); }
         }
-        public void AddReply(Guid id)
+        public void AddReply(NetID id)
         {
             lock (this)
             {
@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Network
         {
             get
             {
-                foreach (Guid peer in requiredReplies)
+                foreach (NetID peer in requiredReplies)
                 {
                     if (!replies.Contains(peer))
                     {
@@ -56,7 +56,7 @@ namespace Spectrum.Framework.Network
             }
             lock (waiters) { waiters.Remove(this); }
         }
-        public static void PeerRemoved(Guid removedPeer)
+        public static void PeerRemoved(NetID removedPeer)
         {
             lock (waiters)
             {

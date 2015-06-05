@@ -37,7 +37,7 @@
     <WarningLevel>4</WarningLevel>
     <NoStdLib>true</NoStdLib>
     <UseVSHostingProcess>false</UseVSHostingProcess>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -66,6 +66,13 @@
     <StartupObject />
   </PropertyGroup>
   <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Steam-Debug|x86'">
+    <OutputPath>bin\x86\Steam-Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\Dependencies\BouncyCastle.Crypto.dll</HintPath>
@@ -91,6 +98,10 @@
     <Reference Include="SharpDX.DirectInput, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Dependencies\SharpDX.DirectInput.dll</HintPath>
+    </Reference>
+    <Reference Include="Steamworks.NET, Version=6.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\Steamworks\Steamworks.NET.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
@@ -136,6 +147,7 @@
     <Compile Include="Framework\LSystem\LTree.cs" />
     <Compile Include="Framework\MatrixHelper.cs" />
     <Compile Include="Framework\Network\ISerializable.cs" />
+    <Compile Include="Framework\Network\NetID.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionIsland.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystem.cs" />
@@ -219,6 +231,18 @@
     <Compile Include="Framework\Graphics\Water.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Dependencies\Steamworks\CSteamworks.dll">
+      <Link>CSteamworks.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Dependencies\Steamworks\steam_api.dll">
+      <Link>steam_api.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Dependencies\Steamworks\steam_appid.txt">
+      <Link>steam_appid.txt</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content\HLSL\build.py" />
     <Content Include="Content\HLSL\CustomSkinnedEffect.fx" />
     <Content Include="Content\HLSL\CustomSkinnedEffect.mgfx">
@@ -274,7 +298,6 @@
     </Content>
     <Content Include="Content\HLSL\Common.fxh" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

@@ -49,15 +49,15 @@ namespace Spectrum.Framework.Network
                         //TODO: Handle the case where one peer drops a connection to a single other peer
                         //Everyone should probably just panic and drop all connections
                         case FrameworkMessages.KeepAlive:
-                            List<Guid> peerGuids = new List<Guid>();
+                            List<NetID> peerGuids = new List<NetID>();
                             int count = message.ReadInt();
                             for(int i = 0; i < count; i ++)
                             {
-                                peerGuids.Add(message.ReadGuid());
+                                peerGuids.Add(message.ReadNetID());
                             }
-                            List<Guid> missingPeers = peerGuids.ToList();
+                            List<NetID> missingPeers = peerGuids.ToList();
                             missingPeers.Remove(mpService.ID);
-                            foreach (Guid knownPeer in mpService.connectedPeers.Keys)
+                            foreach (NetID knownPeer in mpService.connectedPeers.Keys)
                             {
                                 missingPeers.Remove(knownPeer);
                             }

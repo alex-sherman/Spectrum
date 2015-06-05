@@ -20,9 +20,9 @@ namespace Spectrum.Framework.Network
         private Semaphore writeSem = new Semaphore(0, 10);
         private UdpClient client;
         private Queue<QueueItem> dataQueue;
-        private Guid mpID;
+        private NetID mpID;
 
-        public UDPSender(Guid mpID, UdpClient client)
+        public UDPSender(NetID mpID, UdpClient client)
         {
             this.mpID = mpID;
             dataQueue = new Queue<QueueItem>();

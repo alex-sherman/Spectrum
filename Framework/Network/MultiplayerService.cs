@@ -35,8 +35,8 @@ namespace Spectrum.Framework.Network
 
     public class PeerEventArgs : EventArgs
     {
-        public Guid PeerID { get; private set; }
-        public PeerEventArgs(Guid peerID)
+        public NetID PeerID { get; private set; }
+        public PeerEventArgs(NetID peerID)
         {
             PeerID = peerID;
         }
@@ -44,22 +44,22 @@ namespace Spectrum.Framework.Network
 
     public struct HandshakeHandler
     {
-        public Action<Guid, NetMessage> Receive;
-        public Action<Guid, NetMessage> Write;
-        public HandshakeHandler(Action<Guid, NetMessage> write, Action<Guid, NetMessage> receive)
+        public Action<NetID, NetMessage> Receive;
+        public Action<NetID, NetMessage> Write;
+        public HandshakeHandler(Action<NetID, NetMessage> write, Action<NetID, NetMessage> receive)
         {
             Write = write;
             Receive = receive;
         }
     }
 
-    public delegate void NetMessageHandler(Guid peerID, NetMessage message);
+    public delegate void NetMessageHandler(NetID peerID, NetMessage message);
     struct MultiplayerMessage
     {
         public byte MessageType;
-        public Guid PeerGuid;
+        public NetID PeerGuid;
         public NetMessage Message;
-        public MultiplayerMessage(byte messageType, Guid peerGuid, NetMessage message)
+        public MultiplayerMessage(byte messageType, NetID peerGuid, NetMessage message)
         {
             MessageType = messageType;
             PeerGuid = peerGuid;
@@ -68,12 +68,15 @@ namespace Spectrum.Framework.Network
     }
     public class MultiplayerService : IDebug
     {
+        #region Steam Callbacks
+        public static Steamworks.CallResult<Steamworks.LobbyCreated_t> lobbyCreated;
+        #endregion
         private Dictionary<byte, NetMessageHandler> userMessageHandlers = new Dictionary<byte, NetMessageHandler>();
         private Dictionary<HandshakeStage, List<HandshakeHandler>> handshakeHandlers = new Dictionary<HandshakeStage, List<HandshakeHandler>>();
         private List<MultiplayerMessage> receivedMessages = new List<MultiplayerMessage>();
         private List<Connection> allConnections = new List<Connection>();
-        private RealDict<Guid, Connection> _connectedPeers = new RealDict<Guid, Connection>();
-        public RealDict<Guid, Connection> connectedPeers
+        private RealDict<NetID, Connection> _connectedPeers = new RealDict<NetID, Connection>();
+        public RealDict<NetID, Connection> connectedPeers
         {
             get { lock (this) { return _connectedPeers.Copy(); } }
         }
@@ -91,13 +94,15 @@ namespace Spectrum.Framework.Network
         public bool HasNat { get { return NatDevice != null; } }
         private int listenPort = -1;
         public int ListenPort { get { return listenPort; } }
-        public Guid ID { get { return SpectrumGame.Game.ID; } }
+        public NetID ID { get { return SpectrumGame.Game.ID; } }
 
-        public MultiplayerService(Guid mpid)
+        public MultiplayerService()
         {
             NetworkMutex.Init(this);
             NatUtility.DeviceFound += DeviceFound;
             NatUtility.StartDiscovery();
+            if (SpectrumGame.Game.UsingSteam)
+                lobbyCreated = Steamworks.CallResult<Steamworks.LobbyCreated_t>.Create(_lobbyCreatedCallback);
         }
         private void DeviceFound(object sender, DeviceEventArgs args)
         {
@@ -107,6 +112,11 @@ namespace Spectrum.Framework.Network
         }
         public void BeginListening(int port = 27007)
         {
+            if (SpectrumGame.Game.UsingSteam)
+            {
+                var output = Steamworks.SteamMatchmaking.CreateLobby(Steamworks.ELobbyType.k_ELobbyTypeFriendsOnly, 4);
+                lobbyCreated.Set(output, _lobbyCreatedCallback);
+            }
             new AsyncAcceptConnect(_beginListening).BeginInvoke(port, null, this);
         }
         private void _beginListening(int port)
@@ -155,6 +165,12 @@ namespace Spectrum.Framework.Network
                 catch { }
             }
         }
+
+        public static void _lobbyCreatedCallback(Steamworks.LobbyCreated_t lobbyCreated, bool failed)
+        {
+
+        }
+
         public void StopListening()
         {
             if (Listening)
@@ -228,7 +244,7 @@ namespace Spectrum.Framework.Network
             if (!handshakeHandlers.ContainsKey(stage)) { handshakeHandlers[stage] = new List<HandshakeHandler>(); }
             handshakeHandlers[stage].Add(handler);
         }
-        public void WriteHandshake(HandshakeStage stage, Guid peer, NetMessage message)
+        public void WriteHandshake(HandshakeStage stage, NetID peer, NetMessage message)
         {
             List<HandshakeHandler> handlers;
             if (!handshakeHandlers.TryGetValue(stage, out handlers)) { return; }
@@ -237,7 +253,7 @@ namespace Spectrum.Framework.Network
                 handler.Write(peer, message);
             }
         }
-        public void ReadHandshake(HandshakeStage stage, Guid peer, NetMessage message)
+        public void ReadHandshake(HandshakeStage stage, NetID peer, NetMessage message)
         {
             List<HandshakeHandler> handlers;
             if (!handshakeHandlers.TryGetValue(stage, out handlers)) { return; }
@@ -246,11 +262,11 @@ namespace Spectrum.Framework.Network
                 handler.Receive(peer, message);
             }
         }
-        public void SendMessage(byte userType, NetMessage message, Guid peerDestination = default(Guid))
+        public void SendMessage(byte userType, NetMessage message, NetID peerDestination = default(NetID))
         {
             lock (this)
             {
-                if (peerDestination == default(Guid))
+                if (peerDestination == default(NetID))
                 {
                     foreach (Connection conn in connectedPeers.Values)
                     {
@@ -264,11 +280,11 @@ namespace Spectrum.Framework.Network
                 }
             }
         }
-        public void SendUnreliableMessage(byte userType, NetMessage message, Guid peerDestination = default(Guid))
+        public void SendUnreliableMessage(byte userType, NetMessage message, NetID peerDestination = default(NetID))
         {
             lock (this)
             {
-                if (peerDestination == default(Guid))
+                if (peerDestination == default(NetID))
                 {
                     foreach (Connection conn in connectedPeers.Values)
                     {
@@ -333,7 +349,7 @@ namespace Spectrum.Framework.Network
                 }
             }
         }
-        public void ReceiveMessage(byte messageType, Guid peerGuid, NetMessage message)
+        public void ReceiveMessage(byte messageType, NetID peerGuid, NetMessage message)
         {
             lock (this) { receivedMessages.Add(new MultiplayerMessage(messageType, peerGuid, message)); }
         }
@@ -355,7 +371,7 @@ namespace Spectrum.Framework.Network
         {
             lock (this)
             {
-                if (conn.ClientID == new Guid())
+                if (conn.ClientID == new NetID())
                 {
                     DebugPrinter.print("Attempted to add a connection that hasn't handshaken yet");
                     return false;

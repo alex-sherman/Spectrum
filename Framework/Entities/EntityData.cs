@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Entities
     {
         public string type;
         public Guid guid;
-        public Guid owner;
+        public NetID owner;
         public object[] args;
         public Vector3 position;
         private EntityData() { }
@@ -22,11 +22,11 @@ namespace Spectrum.Framework.Entities
             byte[] guidBuffer = new byte[16];
             args = stream.ReadPrimitiveArray();
             guid = stream.ReadGuid();
-            owner = stream.ReadGuid();
+            owner = stream.ReadNetID();
             position = stream.ReadVector();
             type = stream.ReadString();
         }
-        public EntityData(string type, Guid guid, Guid owner, Vector3 position, object[] args)
+        public EntityData(string type, Guid guid, NetID owner, Vector3 position, object[] args)
         {
             this.type = type;
             this.guid = guid;

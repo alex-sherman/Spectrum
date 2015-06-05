@@ -11,7 +11,7 @@ using Spectrum.Framework.Network;
 
 namespace Spectrum.Framework.Entities
 {
-    public delegate void EntityMessageHandler(Guid peerID, Entity entity, NetMessage message);
+    public delegate void EntityMessageHandler(NetID peerID, Entity entity, NetMessage message);
     public delegate void EntityReplicationCallback(Entity entity);
     public delegate void FunctionReplicationcallback(Entity entity, int function, NetMessage parameters);
     public class EntityManager
@@ -31,7 +31,7 @@ namespace Spectrum.Framework.Entities
         private void RegisterCallbacks()
         {
             HandshakeHandler entitySender = new HandshakeHandler(
-                    delegate(Guid peerGuid, NetMessage message)
+                    delegate(NetID peerGuid, NetMessage message)
                     {
                         IEnumerable<Entity> replicateable = ECollection.updateables.Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid);
                         message.Write(replicateable.Count());
@@ -40,7 +40,7 @@ namespace Spectrum.Framework.Entities
                             new EntityData(entity).WriteTo(message);
                         }
                     },
-                    delegate(Guid peerGuid, NetMessage message)
+                    delegate(NetID peerGuid, NetMessage message)
                     {
                         int count = message.ReadInt();
                         for (int i = 0; i < count; i++)
@@ -58,7 +58,7 @@ namespace Spectrum.Framework.Entities
 
         #region Network Functions
 
-        public void SendEntityCreation(Entity entity, Guid peerDestination = default(Guid))
+        public void SendEntityCreation(Entity entity, NetID peerDestination = default(NetID))
         {
             if (!entity.AllowReplicate) { return; }
 
@@ -66,20 +66,20 @@ namespace Spectrum.Framework.Entities
             new EntityData(entity).WriteTo(eData);
             mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
         }
-        public void HandleEntityCreation(Guid peerGuid, NetMessage message)
+        public void HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
             EntityData entityData = new EntityData(message);
             if (!ECollection.Contains(entityData.guid))
                 CreateEntityFromData(entityData);
         }
 
-        public void SendShowCreate(Guid entityID, Guid peerDestination = default(Guid))
+        public void SendShowCreate(Guid entityID, NetID peerDestination = default(NetID))
         {
             NetMessage message = new NetMessage();
             message.Write(entityID);
             mpService.SendMessage(FrameworkMessages.ShowCreate, message, peerDestination);
         }
-        public void HandleShowCreate(Guid peerGuid, NetMessage message)
+        public void HandleShowCreate(NetID peerGuid, NetMessage message)
         {
             Guid entityID = message.ReadGuid();
             if (!ECollection.Contains(entityID)) { return; }
@@ -87,7 +87,7 @@ namespace Spectrum.Framework.Entities
             SendEntityCreation(entity, peerGuid);
         }
 
-        public void SendEntityMessage(Guid peerID, Entity entity, NetMessage message)
+        public void SendEntityMessage(NetID peerID, Entity entity, NetMessage message)
         {
             if (!entity.CanReplicate) { return; }
             NetMessage toSend = new NetMessage();
@@ -95,7 +95,7 @@ namespace Spectrum.Framework.Entities
             toSend.Write(message);
             mpService.SendMessage(FrameworkMessages.EntityMessage, toSend);
         }
-        public void HandleEntityMessage(Guid peerGuid, NetMessage message)
+        public void HandleEntityMessage(NetID peerGuid, NetMessage message)
         {
             Guid entityID = message.ReadGuid();
             message = message.ReadMessage();
@@ -152,7 +152,7 @@ namespace Spectrum.Framework.Entities
                 SendEntityCreation(output);
             return output;
         }
-        public Entity CreateEntityType(Type t, Guid entityID, Guid ownerID, params object[] args)
+        public Entity CreateEntityType(Type t, Guid entityID, NetID ownerID, params object[] args)
         {
             if (t == null || (!t.IsSubclassOf(typeof(Entity)))) { return null; }
             Entity output = (Entity)TypeHelper.Instantiate(t, args);

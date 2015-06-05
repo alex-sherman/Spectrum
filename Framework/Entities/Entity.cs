@@ -39,7 +39,7 @@ namespace Spectrum.Framework.Entities
         public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.ID; } }
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
-        public Guid OwnerGuid;
+        public NetID OwnerGuid;
         public object[] creationArgs = new object[0];
         public EntityManager Manager;
         public Entity()
@@ -96,7 +96,7 @@ namespace Spectrum.Framework.Entities
             return messageTypeTracker++;
         }
 
-        public void SendMessage(Guid peer, int type, NetMessage message)
+        public void SendMessage(NetID peer, int type, NetMessage message)
         {
             if (SendMessageCallback != null)
             {
@@ -106,7 +106,7 @@ namespace Spectrum.Framework.Entities
                 SendMessageCallback(peer, this, toSend);
             }
         }
-        public virtual void HandleMessage(Guid peer, int type, NetMessage message)
+        public virtual void HandleMessage(NetID peer, int type, NetMessage message)
         {
             if (type == StateReplicationMessage)
             {
@@ -131,7 +131,7 @@ namespace Spectrum.Framework.Entities
                 NetMessage replicationMessage = new NetMessage();
                 replicationMessage.Write(method);
                 replicationMessage.WritePrimitiveArray(args);
-                SendMessage(default(Guid), FunctionReplicationMessage, replicationMessage);
+                SendMessage(default(NetID), FunctionReplicationMessage, replicationMessage);
             }
         }
         public void Replicate(bool force = false)
@@ -141,7 +141,7 @@ namespace Spectrum.Framework.Entities
                 replicateCounter = minReplicationPeriod;
                 NetMessage replicationMessage = new NetMessage();
                 getData(replicationMessage);
-                SendMessage(default(Guid), StateReplicationMessage, replicationMessage);
+                SendMessage(default(NetID), StateReplicationMessage, replicationMessage);
             }
         }
 

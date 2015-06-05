@@ -82,12 +82,12 @@ namespace Spectrum.Framework.Network
         }
         private void SendKeepAlive(object state)
         {
-            List<Guid> peerGuids = mpService.connectedPeers.Keys.ToList();
+            List<NetID> peerGuids = mpService.connectedPeers.Keys.ToList();
             NetMessage message = new NetMessage();
             message.Write(peerGuids.Count);
-            foreach (Guid guid in peerGuids)
+            foreach (NetID guid in peerGuids)
             {
-                if (guid != new Guid())
+                if (guid != new NetID())
                 {
                     message.Write(guid);
                 }

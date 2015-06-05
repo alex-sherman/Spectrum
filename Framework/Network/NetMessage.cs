@@ -109,6 +109,30 @@ namespace Spectrum.Framework.Network
             return new NetMessage(bytes);
         }
 
+        //Net ID
+        public void Write(NetID netid)
+        {
+            if (netid.Guid != null)
+            {
+                Write(true);
+                Write((Guid)netid.Guid);
+            }
+            else
+            {
+                Write(false);
+                Write((long)netid.SteamID.Value);
+            }
+
+        }
+        public NetID ReadNetID()
+        {
+            bool usesGuid = ReadBool();
+            if(usesGuid)
+                return new NetID(ReadGuid());
+            else
+                return new NetID((ulong)ReadLong());
+        }
+
         // Guid
         public void Write(Guid guid)
         {
@@ -195,6 +219,7 @@ namespace Spectrum.Framework.Network
             return BitConverter.ToSingle(ReadBytes(4), 0);
         }
 
+        //Matrix
         public void Write(Matrix matrix)
         {
             WritePrimitiveArray(Matrix.ToFloatArray(matrix).ToList().ConvertAll(x => (object)x).ToArray());
@@ -247,6 +272,15 @@ namespace Spectrum.Framework.Network
         public int ReadInt()
         {
             return BitConverter.ToInt32(ReadBytes(4), 0);
+        }
+
+        public void Write(long number)
+        {
+            stream.Write(BitConverter.GetBytes(number), 0, 8);
+        }
+        public long ReadLong()
+        {
+            return BitConverter.ToInt64(ReadBytes(8), 0);
         }
 
         // Byte

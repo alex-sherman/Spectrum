@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Network
     {
         public IPAddress ip;
         public int port;
-        public Guid id;
+        public NetID id;
     }
     public enum HandshakeStage
     {
@@ -31,8 +31,8 @@ namespace Spectrum.Framework.Network
         public float PeerSyncTimeout = 5.0f;
         public volatile int RemoteDataPort;
         public volatile IPAddress RemoteIP;
-        private Guid _clientID;
-        public Guid ClientID
+        private NetID _clientID;
+        public NetID ClientID
         {
             get { lock (this) { return _clientID; } }
             set { lock (this) { _clientID = value; } }
@@ -119,7 +119,7 @@ namespace Spectrum.Framework.Network
         {
             HandshakeStage ReceivedStage = (HandshakeStage)message.ReadInt();
             ConnectionStage = ReceivedStage;
-            ClientID = message.ReadGuid();
+            ClientID = message.ReadNetID();
             RemoteDataPort = message.ReadInt();
             RemoteIP = (client.Client.RemoteEndPoint as IPEndPoint).Address;
             NetMessage ipMessage = message.ReadMessage();
@@ -154,12 +154,12 @@ namespace Spectrum.Framework.Network
                     break;
                 case HandshakeStage.AckBegin:
                     List<PeerInformation> peerInfo = new List<PeerInformation>();
-                    List<Guid> waitOn = new List<Guid>();
+                    List<NetID> waitOn = new List<NetID>();
                     List<NetMessage> peerMessages = message.ReadList<NetMessage>().ToList();
                     foreach (NetMessage peerMessage in peerMessages)
                     {
                         PeerInformation pi = new PeerInformation();
-                        pi.id = peerMessage.ReadGuid();
+                        pi.id = peerMessage.ReadNetID();
                         //First response is our peer, don't wait for him
                         waitOn.Add(pi.id);
                         pi.port = peerMessage.ReadInt();
