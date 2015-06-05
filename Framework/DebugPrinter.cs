@@ -65,7 +65,7 @@ namespace Spectrum.Framework
                         float strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            Manager.DrawString(Font, strings[i], new Vector2(0, i * strSize), Color.White, Z);
+                            Manager.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, Z);
                         }
                     }
                 }

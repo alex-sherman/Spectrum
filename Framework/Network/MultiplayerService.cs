@@ -68,20 +68,56 @@ namespace Spectrum.Framework.Network
     }
     public class MultiplayerService : IDebug
     {
-        #region Steam Callbacks
-        public static Steamworks.CallResult<Steamworks.LobbyCreated_t> lobbyCreated;
+        public const uint MAX_MSG_SIZE = 70000;
+
+        #region Steam Stuff
+        private Steamworks.CallResult<Steamworks.LobbyCreated_t> lobbyCreated;
+        private void _lobbyCreatedCallback(Steamworks.LobbyCreated_t lobbyCreated, bool failed)
+        {
+
+        }
+        private Steamworks.Callback<Steamworks.GameLobbyJoinRequested_t> lobbyJoinRequested;
+        private void _lobbyJoinRequestedCallback(Steamworks.GameLobbyJoinRequested_t lobbyCreated)
+        {
+            new Action<ulong>(_connectStean).BeginInvoke(lobbyCreated.m_steamIDFriend.m_SteamID, null, this);
+        }
+        private Steamworks.Callback<Steamworks.P2PSessionRequest_t> p2pSessionRequest;
+        private void _p2pSessionRequestCallback(Steamworks.P2PSessionRequest_t sessionRequest)
+        {
+            Steamworks.SteamNetworking.AcceptP2PSessionWithUser(sessionRequest.m_steamIDRemote);
+        }
+        private SteamP2PReceiver steamReceiver;
         #endregion
+
         private Dictionary<byte, NetMessageHandler> userMessageHandlers = new Dictionary<byte, NetMessageHandler>();
         private Dictionary<HandshakeStage, List<HandshakeHandler>> handshakeHandlers = new Dictionary<HandshakeStage, List<HandshakeHandler>>();
         private List<MultiplayerMessage> receivedMessages = new List<MultiplayerMessage>();
         private List<Connection> allConnections = new List<Connection>();
-        private RealDict<NetID, Connection> _connectedPeers = new RealDict<NetID, Connection>();
-        public RealDict<NetID, Connection> connectedPeers
+        private Dictionary<NetID, Connection> _connectedPeers = new Dictionary<NetID, Connection>();
+        public Dictionary<NetID, Connection> connectedPeers
         {
-            get { lock (this) { return _connectedPeers.Copy(); } }
+            get { lock (this) { return _connectedPeers.ToDictionary(entry => entry.Key,
+                                               entry => entry.Value); } }
+        }
+
+        #region Events
+        /// <summary>
+        /// If no event handler is specified, all connections will be dropped!
+        /// </summary>
+        public event Action<Connection, PeerEventArgs> OnPeerJoinRequested;
+        public void PeerJoinRequested(Connection connection, PeerEventArgs args)
+        {
+            if (OnPeerJoinRequested != null)
+                OnPeerJoinRequested(connection, args);
+            else
+                connection.Terminate();
         }
         public EventHandler<PeerEventArgs> OnPeerAdded;
         public EventHandler<PeerEventArgs> OnPeerRemoved;
+        public EventHandler<PeerEventArgs> OnGroupJoined;
+        public EventHandler<PeerEventArgs> OnGroupLeft;
+        #endregion
+
         private UDPReceiver udpReceiver;
         private UDPSender udpSender;
         private UdpClient udpClient;
@@ -101,8 +137,18 @@ namespace Spectrum.Framework.Network
             NetworkMutex.Init(this);
             NatUtility.DeviceFound += DeviceFound;
             NatUtility.StartDiscovery();
+            RegisterMessageCallback(FrameworkMessages.Handshake, HandleHandshake);
+            RegisterMessageCallback(FrameworkMessages.Termination, HandleTermination);
+            RegisterMessageCallback(FrameworkMessages.KeepAlive, HandleKeepAlive);
             if (SpectrumGame.Game.UsingSteam)
+            {
+                steamReceiver = new SteamP2PReceiver(this);
                 lobbyCreated = Steamworks.CallResult<Steamworks.LobbyCreated_t>.Create(_lobbyCreatedCallback);
+                lobbyJoinRequested = Steamworks.Callback<Steamworks.GameLobbyJoinRequested_t>.Create(_lobbyJoinRequestedCallback);
+                lobbyJoinRequested.Register(_lobbyJoinRequestedCallback);
+                p2pSessionRequest = Steamworks.Callback<Steamworks.P2PSessionRequest_t>.Create(_p2pSessionRequestCallback);
+                p2pSessionRequest.Register(_p2pSessionRequestCallback);
+            }
         }
         private void DeviceFound(object sender, DeviceEventArgs args)
         {
@@ -117,7 +163,7 @@ namespace Spectrum.Framework.Network
                 var output = Steamworks.SteamMatchmaking.CreateLobby(Steamworks.ELobbyType.k_ELobbyTypeFriendsOnly, 4);
                 lobbyCreated.Set(output, _lobbyCreatedCallback);
             }
-            new AsyncAcceptConnect(_beginListening).BeginInvoke(port, null, this);
+            new Action<int>(_beginListening).BeginInvoke(port, null, this);
         }
         private void _beginListening(int port)
         {
@@ -166,11 +212,6 @@ namespace Spectrum.Framework.Network
             }
         }
 
-        public static void _lobbyCreatedCallback(Steamworks.LobbyCreated_t lobbyCreated, bool failed)
-        {
-
-        }
-
         public void StopListening()
         {
             if (Listening)
@@ -183,13 +224,11 @@ namespace Spectrum.Framework.Network
                 }
             }
         }
-        private delegate void AsyncConnect(string hostname, int port);
-        private delegate void AsyncAcceptConnect(int port);
 
         public void Connect(string hostname, int port)
         {
             if (!Listening) { throw new Exception("Can't connect to anyone unless you're listening for connections"); }
-            new AsyncConnect(_connect).BeginInvoke(hostname, port, null, this);
+            new Action<string, int>(_connect).BeginInvoke(hostname, port, null, this);
         }
         private void _connect(string hostname, int port)
         {
@@ -204,6 +243,19 @@ namespace Spectrum.Framework.Network
                 return;
             }
             DebugPrinter.print("Connected to " + hostname + ":" + port);
+        }
+        private void _connectStean(ulong steamID)
+        {
+            try
+            {
+                lock (allConnections)
+                    allConnections.Add(new Connection(this, steamID, HandshakeStage.Begin));
+            }
+            catch (SocketException e)
+            {
+                DebugPrinter.print(e.Message);
+                return;
+            }
         }
 
         public static List<IPAddress> GetLocalIP()
@@ -225,15 +277,48 @@ namespace Spectrum.Framework.Network
             return _natIP;
         }
 
-        public Dictionary<string, Guid> GetAssemblyHashes()
+        #region Framework Message Handlers
+        private void HandleHandshake(NetID peer, NetMessage message)
         {
-            Dictionary<string, Guid> output = new Dictionary<string, Guid>();
-            //foreach (Type type in Types.Values)
-            //{
-            //    output[type.Name] = type.Assembly.ManifestModule.ModuleVersionId;
-            //}
-            return output;
+            Connection conn = allConnections.Find((Connection other) => (other.ClientID == peer));
+            if(conn == null && peer.SteamID != null)
+            {
+                conn = new Connection(this, peer.SteamID.Value, HandshakeStage.Wait);
+                lock (allConnections)
+                {
+                    allConnections.Add(conn);
+                }
+            }
+            if (conn != null)
+                conn.HandleHandshake(message);
         }
+        private void HandleTermination(NetID peer, NetMessage message)
+        {
+            connectedPeers.Remove(peer);
+        }
+        private void HandleKeepAlive(NetID peer, NetMessage message)
+        {
+            //TODO: Handle the case where one peer drops a connection to a single other peer
+            //Everyone should probably just panic and drop all connections
+            List<NetID> peerGuids = new List<NetID>();
+            int count = message.ReadInt();
+            for (int i = 0; i < count; i++)
+            {
+                peerGuids.Add(message.ReadNetID());
+            }
+            List<NetID> missingPeers = peerGuids.ToList();
+            missingPeers.Remove(ID);
+            foreach (NetID knownPeer in connectedPeers.Keys)
+            {
+                missingPeers.Remove(knownPeer);
+            }
+            if (missingPeers.Count() != 0)
+            {
+                DebugPrinter.print("Clients mismatched");
+                //TODO: Start a timer or something
+            }
+        }
+        #endregion
 
         public void RegisterMessageCallback(byte userType, NetMessageHandler callback)
         {
@@ -317,7 +402,7 @@ namespace Spectrum.Framework.Network
                     RemoveClient(peer);
                 }
                 if (peer.ConnectionStage == HandshakeStage.Completed) { continue; }
-                else
+                else if(peer.ConnectionStage != HandshakeStage.Begin)
                 {
                     peer.PeerSyncTimeout -= time.ElapsedGameTime.Milliseconds / 1000.0f;
                     if (peer.PeerSyncTimeout <= 0)
@@ -333,6 +418,8 @@ namespace Spectrum.Framework.Network
                 {
                     MultiplayerMessage received = receivedMessages[0];
                     receivedMessages.RemoveAt(0);
+                    if(received.MessageType != FrameworkMessages.Handshake && !allConnections.Any(conn => conn.ClientID == received.PeerGuid))
+                        continue;
 
                     NetMessageHandler handler;
                     if (userMessageHandlers.TryGetValue(received.MessageType, out handler))
@@ -376,7 +463,7 @@ namespace Spectrum.Framework.Network
                     DebugPrinter.print("Attempted to add a connection that hasn't handshaken yet");
                     return false;
                 }
-                if (_connectedPeers[conn.ClientID] == null)
+                if (!_connectedPeers.ContainsKey(conn.ClientID))
                 {
                     _connectedPeers[conn.ClientID] = conn;
                     if (OnPeerAdded != null) { OnPeerAdded(this, new PeerEventArgs(conn.ClientID)); }
@@ -391,6 +478,8 @@ namespace Spectrum.Framework.Network
         }
         public void Dispose()
         {
+            if (steamReceiver != null)
+                steamReceiver.Terminate();
             StopListening();
             foreach (Connection conn in connectedPeers.Values)
             {

@@ -149,6 +149,7 @@
     <Compile Include="Framework\Network\ISerializable.cs" />
     <Compile Include="Framework\Network\NetID.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />
+    <Compile Include="Framework\Network\SteamP2PReceiver.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionIsland.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystem.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystemPersistentSAP.cs" />

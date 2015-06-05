@@ -39,23 +39,20 @@ namespace Spectrum.Framework.Network
         }
         public bool Running
         {
-            get { return Sender != null && Sender.Running && Receiver != null && Receiver.Running; }
+            get { return Sender != null && Sender.Running && (Receiver == null || Receiver.Running); }
         }
         public TcpClient client;
-        private MultiplayerService mpService;
+        public MultiplayerService MPService;
         private MultiplayerSender Sender;
         private MultiplayerReceiver Receiver;
         public HandshakeStage ConnectionStage { get; private set; }
 
-        public Connection(MultiplayerService mp, TcpClient client, HandshakeStage stage)
+        private void Init(MultiplayerService mp, HandshakeStage stage)
         {
-            mpService = mp;
-            if (client == null) { throw new ArgumentNullException(); }
-            this.client = client;
+            MPService = mp;
             lock (this)
             {
-                Receiver = new MultiplayerReceiver(mp, this);
-                Sender = new MultiplayerSender(mp, this);
+                Sender = new MultiplayerSender(this);
             }
             ConnectionStage = stage;
             switch (stage)
@@ -73,14 +70,31 @@ namespace Spectrum.Framework.Network
             }
         }
 
+        public Connection(MultiplayerService mp, ulong steamID, HandshakeStage stage)
+        {
+            Init(mp, stage);
+            ClientID = new NetID(steamID);
+        }
+
+        public Connection(MultiplayerService mp, TcpClient client, HandshakeStage stage)
+        {
+            if (client == null) { throw new ArgumentNullException(); }
+            this.client = client;
+            lock (this)
+            {
+                Receiver = new MultiplayerReceiver(this);
+            }
+            Init(mp, stage);
+        }
+
         private void SendHandshake(HandshakeStage stage)
         {
             ConnectionStage = stage;
             NetMessage handshakeData = new NetMessage();
             handshakeData.Write((int)stage);
-            handshakeData.Write(mpService.ID);
-            handshakeData.Write((int)mpService.ListenPort);
-            IPAddress NATAddress = mpService.GetNATIP();
+            handshakeData.Write(MPService.ID);
+            handshakeData.Write((int)MPService.ListenPort);
+            IPAddress NATAddress = MPService.GetNATIP();
             if (NATAddress != null)
                 handshakeData.Write(new NetMessage(NATAddress.GetAddressBytes()));
             else
@@ -99,7 +113,7 @@ namespace Spectrum.Framework.Network
                     break;
                 case HandshakeStage.AckBegin:
                     List<NetMessage> peerMessages = new List<NetMessage>();
-                    foreach (Connection conn in mpService.connectedPeers.Values)
+                    foreach (Connection conn in MPService.connectedPeers.Values)
                     {
                         NetMessage peerMessage = new NetMessage();
                         peerMessage.Write(conn.ClientID);
@@ -112,8 +126,14 @@ namespace Spectrum.Framework.Network
                 default:
                     break;
             }
-            mpService.WriteHandshake(stage, ClientID, handshakeData);
+            MPService.WriteHandshake(stage, ClientID, handshakeData);
             Sender.WriteToStream(FrameworkMessages.Handshake, handshakeData);
+        }
+
+        public void Allow()
+        {
+            if (ConnectionStage == HandshakeStage.Begin)
+                SendHandshake(HandshakeStage.AckBegin);
         }
         public void HandleHandshake(NetMessage message)
         {
@@ -121,7 +141,8 @@ namespace Spectrum.Framework.Network
             ConnectionStage = ReceivedStage;
             ClientID = message.ReadNetID();
             RemoteDataPort = message.ReadInt();
-            RemoteIP = (client.Client.RemoteEndPoint as IPEndPoint).Address;
+            if (client != null)
+                RemoteIP = (client.Client.RemoteEndPoint as IPEndPoint).Address;
             NetMessage ipMessage = message.ReadMessage();
             if (ipMessage != null)
             {
@@ -142,9 +163,9 @@ namespace Spectrum.Framework.Network
                     }
                     if (types.Count == 0)
                     {
-                        mpService.HandshakeWaiter = new ReplyWaiter(ClientID);
+                        MPService.HandshakeWaiter = new ReplyWaiter(ClientID);
                         new EmptyAsyncDelegate(AsyncAddPeer).BeginInvoke(null, this);
-                        SendHandshake(HandshakeStage.AckBegin);
+                        MPService.PeerJoinRequested(this, new PeerEventArgs(ClientID));
                     }
                     else
                     {
@@ -166,7 +187,7 @@ namespace Spectrum.Framework.Network
                         pi.ip = new IPAddress(peerMessage.ReadBytes(4));
                         peerInfo.Add(pi);
                     }
-                    mpService.HandshakeWaiter = new ReplyWaiter(waitOn.ToArray());
+                    MPService.HandshakeWaiter = new ReplyWaiter(waitOn.ToArray());
                     foreach (PeerInformation pi in peerInfo)
                     {
                         new AsyncConnectDelegate(AsyncConnect).BeginInvoke(pi, null, this);
@@ -176,15 +197,15 @@ namespace Spectrum.Framework.Network
                 case HandshakeStage.PartialRequest:
                     SendHandshake(HandshakeStage.PartialResponse);
                     ConnectionStage = HandshakeStage.Completed;
-                    mpService.AddClient(this);
+                    MPService.AddClient(this);
                     break;
                 case HandshakeStage.PartialResponse:
-                    mpService.HandshakeWaiter.AddReply(ClientID);
+                    MPService.HandshakeWaiter.AddReply(ClientID);
                     ConnectionStage = HandshakeStage.Completed;
-                    mpService.AddClient(this);
+                    MPService.AddClient(this);
                     break;
                 case HandshakeStage.Completed:
-                    mpService.HandshakeWaiter.AddReply(ClientID);
+                    MPService.HandshakeWaiter.AddReply(ClientID);
                     break;
                 case HandshakeStage.Terminate:
                     Terminate();
@@ -192,27 +213,39 @@ namespace Spectrum.Framework.Network
                 default:
                     break;
             }
-            mpService.ReadHandshake(ReceivedStage, ClientID, message);
+            MPService.ReadHandshake(ReceivedStage, ClientID, message);
         }
 
         delegate void AsyncConnectDelegate(PeerInformation pi);
         void AsyncConnect(PeerInformation pi)
         {
-            Connection newConn = new Connection(mpService, new TcpClient(pi.ip.ToString(), pi.port), HandshakeStage.PartialRequest);
+            Connection newConn = new Connection(MPService, new TcpClient(pi.ip.ToString(), pi.port), HandshakeStage.PartialRequest);
         }
 
         delegate void EmptyAsyncDelegate();
         void AsyncAddPeer()
         {
-            mpService.HandshakeWaiter.WaitReplies();
-            mpService.AddClient(this);
+            if (Running)
+            {
+                MPService.HandshakeWaiter.WaitReplies();
+                if (ConnectionStage == HandshakeStage.Completed)
+                    MPService.AddClient(this);
+                else
+                    Terminate();
+            }
         }
 
         void AsyncWaitResponses()
         {
-            mpService.HandshakeWaiter.WaitReplies();
-            SendHandshake(HandshakeStage.Completed);
-            mpService.AddClient(this);
+            if (Running)
+            {
+                MPService.HandshakeWaiter.WaitReplies();
+                SendHandshake(HandshakeStage.Completed);
+                if (ConnectionStage == HandshakeStage.Completed)
+                    MPService.AddClient(this);
+                else
+                    Terminate();
+            }
         }
 
         public void SendMessage(byte userType, NetMessage message)

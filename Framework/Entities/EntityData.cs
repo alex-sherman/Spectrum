@@ -20,11 +20,11 @@ namespace Spectrum.Framework.Entities
         public EntityData(NetMessage stream)
         {
             byte[] guidBuffer = new byte[16];
-            args = stream.ReadPrimitiveArray();
             guid = stream.ReadGuid();
             owner = stream.ReadNetID();
             position = stream.ReadVector();
             type = stream.ReadString();
+            args = stream.ReadPrimitiveArray();
         }
         public EntityData(string type, Guid guid, NetID owner, Vector3 position, object[] args)
         {
@@ -48,11 +48,11 @@ namespace Spectrum.Framework.Entities
         public void WriteTo(NetMessage output)
         {
             //Serializer.ConvertToStream(args).WriteTo(output);
-            output.WritePrimitiveArray(args);
             output.Write(guid);
             output.Write(owner);
             output.Write(position);
             output.Write(type);
+            output.WritePrimitiveArray(args);
         }
 
         public ISerializable Copy()

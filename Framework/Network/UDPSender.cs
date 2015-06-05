@@ -27,7 +27,6 @@ namespace Spectrum.Framework.Network
             this.mpID = mpID;
             dataQueue = new Queue<QueueItem>();
             this.client = client;
-            List<MemoryStream> typeHashes = new List<MemoryStream>();
             new AsyncSendData(SendData).BeginInvoke(null, this);
         }
         private delegate void AsyncSendData();

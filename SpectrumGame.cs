@@ -76,10 +76,10 @@ namespace Spectrum
         public NetID ID { get; private set; }
         public bool UsingSteam { get; private set; }
 
-        public SpectrumGame(bool usesSteam)
+        public SpectrumGame(Guid? guid = null)
         {
-            UsingSteam = usesSteam;
-            if(usesSteam)
+            UsingSteam = guid == null;
+            if (UsingSteam)
             {
                 if (!Steamworks.SteamAPI.Init())
                     throw new Exception("Steam init failed!");
@@ -87,7 +87,7 @@ namespace Spectrum
             }
             else
             {
-                ID = new NetID(Guid.NewGuid());
+                ID = new NetID(guid.Value);
             }
             Game = this;
             graphics = new GraphicsDeviceManager(this);

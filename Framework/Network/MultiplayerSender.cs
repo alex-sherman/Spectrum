@@ -22,43 +22,62 @@ namespace Spectrum.Framework.Network
         private Queue<QueueItem> dataQueue;
         private Timer timer;
         private Connection conn;
-        private MultiplayerService mpService;
         public bool Running { get; private set; }
-        public MultiplayerSender(MultiplayerService mpService, Connection conn)
+        public MultiplayerSender(Connection conn)
         {
-            this.mpService = mpService;
             this.conn = conn;
             timer = new Timer(new TimerCallback(SendKeepAlive), null, 1000, 1000);
             dataQueue = new Queue<QueueItem>();
             this.client = conn.client;
-            this.netStream = client.GetStream();
+            if (client != null)
+                this.netStream = client.GetStream();
             Running = true;
-            new AsyncSendData(SendData).BeginInvoke(null, this);
+            new Action(SendData).BeginInvoke(null, this);
         }
-        private delegate void AsyncSendData();
+
         private void SendData()
         {
             try
             {
+                byte[] buffer = new byte[MultiplayerService.MAX_MSG_SIZE];
                 while (Running)
                 {
-                    if (!writeSem.WaitOne()) { continue; };
+                    if (!writeSem.WaitOne())
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    };
                     QueueItem item;
                     lock (dataQueue)
                     {
                         if (dataQueue.Count == 0) { throw new Exception("Write semaphore was signaled without anything to dequeue"); }
                         item = dataQueue.Dequeue();
                     }
-                    lock (client)
+                    MemoryStream toWrite = new MemoryStream();
+                    toWrite.WriteByte((byte)item.EventType);
+                    NetMessage header = new NetMessage();
+                    header.Write(conn.MPService.ID);
+                    header.WriteTo(toWrite);
+                    item.toWrite.WriteTo(toWrite);
+                    toWrite.WriteByte(255);
+
+                    if (netStream != null)
                     {
-                        netStream.WriteByte((byte)item.EventType);
-                        item.toWrite.WriteTo(netStream);
-                        netStream.WriteByte(255);
+                        lock (client)
+                        {
+                            toWrite.WriteTo(netStream);
+                        }
+                    }
+                    else if (conn.ClientID.SteamID != null)
+                    {
+                        Steamworks.CSteamID steamID = new Steamworks.CSteamID(conn.ClientID.SteamID.Value);
+                        Steamworks.SteamNetworking.SendP2PPacket(steamID, toWrite.GetBuffer(), (uint)toWrite.Length, Steamworks.EP2PSend.k_EP2PSendReliable);
                     }
                 }
             }
             catch (IOException) { }
             catch (ObjectDisposedException) { }
+            catch (InvalidOperationException) { }
             finally { Running = false; }
         }
         public void WriteToStream(byte messageType, NetMessage toWrite)
@@ -82,7 +101,8 @@ namespace Spectrum.Framework.Network
         }
         private void SendKeepAlive(object state)
         {
-            List<NetID> peerGuids = mpService.connectedPeers.Keys.ToList();
+            if (conn.ConnectionStage != HandshakeStage.Completed) return;
+            List<NetID> peerGuids = conn.MPService.connectedPeers.Keys.ToList();
             NetMessage message = new NetMessage();
             message.Write(peerGuids.Count);
             foreach (NetID guid in peerGuids)
