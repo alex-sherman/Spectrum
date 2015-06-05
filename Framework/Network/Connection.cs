@@ -31,6 +31,7 @@ namespace Spectrum.Framework.Network
         public float PeerSyncTimeout = 5.0f;
         public volatile int RemoteDataPort;
         public volatile IPAddress RemoteIP;
+        private List<Connection> partialConnectionWaitOn;
         private NetID _clientID;
         public NetID ClientID
         {
@@ -176,36 +177,37 @@ namespace Spectrum.Framework.Network
                 case HandshakeStage.AckBegin:
                     List<PeerInformation> peerInfo = new List<PeerInformation>();
                     List<NetID> waitOn = new List<NetID>();
+                    waitOn.Add(ClientID);
                     List<NetMessage> peerMessages = message.ReadList<NetMessage>().ToList();
                     foreach (NetMessage peerMessage in peerMessages)
                     {
                         PeerInformation pi = new PeerInformation();
                         pi.id = peerMessage.ReadNetID();
-                        //First response is our peer, don't wait for him
                         waitOn.Add(pi.id);
                         pi.port = peerMessage.ReadInt();
                         pi.ip = new IPAddress(peerMessage.ReadBytes(4));
                         peerInfo.Add(pi);
                     }
                     MPService.HandshakeWaiter = new ReplyWaiter(waitOn.ToArray());
+                    new EmptyAsyncDelegate(AsyncWaitResponses).BeginInvoke(null, this);
+                    partialConnectionWaitOn = new List<Connection>();
+                    partialConnectionWaitOn.Add(this);
                     foreach (PeerInformation pi in peerInfo)
                     {
                         new AsyncConnectDelegate(AsyncConnect).BeginInvoke(pi, null, this);
                     }
-                    new EmptyAsyncDelegate(AsyncWaitResponses).BeginInvoke(null, this);
+                    SendHandshake(HandshakeStage.PartialRequest);
                     break;
                 case HandshakeStage.PartialRequest:
                     SendHandshake(HandshakeStage.PartialResponse);
                     ConnectionStage = HandshakeStage.Completed;
-                    MPService.AddClient(this);
                     break;
                 case HandshakeStage.PartialResponse:
                     MPService.HandshakeWaiter.AddReply(ClientID);
                     ConnectionStage = HandshakeStage.Completed;
-                    MPService.AddClient(this);
                     break;
                 case HandshakeStage.Completed:
-                    MPService.HandshakeWaiter.AddReply(ClientID);
+                    MPService.AddClient(this);
                     break;
                 case HandshakeStage.Terminate:
                     Terminate();
@@ -219,7 +221,7 @@ namespace Spectrum.Framework.Network
         delegate void AsyncConnectDelegate(PeerInformation pi);
         void AsyncConnect(PeerInformation pi)
         {
-            Connection newConn = new Connection(MPService, new TcpClient(pi.ip.ToString(), pi.port), HandshakeStage.PartialRequest);
+            partialConnectionWaitOn.Add(new Connection(MPService, new TcpClient(pi.ip.ToString(), pi.port), HandshakeStage.PartialRequest));
         }
 
         delegate void EmptyAsyncDelegate();
@@ -228,10 +230,11 @@ namespace Spectrum.Framework.Network
             if (Running)
             {
                 MPService.HandshakeWaiter.WaitReplies();
-                if (ConnectionStage == HandshakeStage.Completed)
-                    MPService.AddClient(this);
-                else
-                    Terminate();
+                foreach (Connection pi in partialConnectionWaitOn)
+                {
+                    pi.SendHandshake(HandshakeStage.Completed);
+                }
+                MPService.AddClient(this);
             }
         }
 
@@ -241,10 +244,7 @@ namespace Spectrum.Framework.Network
             {
                 MPService.HandshakeWaiter.WaitReplies();
                 SendHandshake(HandshakeStage.Completed);
-                if (ConnectionStage == HandshakeStage.Completed)
-                    MPService.AddClient(this);
-                else
-                    Terminate();
+                MPService.AddClient(this);
             }
         }
 
