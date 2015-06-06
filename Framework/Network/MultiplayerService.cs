@@ -57,12 +57,12 @@ namespace Spectrum.Framework.Network
     struct MultiplayerMessage
     {
         public byte MessageType;
-        public NetID PeerGuid;
+        public NetID PeerID;
         public NetMessage Message;
         public MultiplayerMessage(byte messageType, NetID peerGuid, NetMessage message)
         {
             MessageType = messageType;
-            PeerGuid = peerGuid;
+            PeerID = peerGuid;
             Message = message;
         }
     }
@@ -89,15 +89,21 @@ namespace Spectrum.Framework.Network
         private SteamP2PReceiver steamReceiver;
         #endregion
 
-        private Dictionary<byte, NetMessageHandler> userMessageHandlers = new Dictionary<byte, NetMessageHandler>();
+        private Dictionary<byte, List<NetMessageHandler>> userMessageHandlers = new Dictionary<byte, List<NetMessageHandler>>();
         private Dictionary<HandshakeStage, List<HandshakeHandler>> handshakeHandlers = new Dictionary<HandshakeStage, List<HandshakeHandler>>();
         private List<MultiplayerMessage> receivedMessages = new List<MultiplayerMessage>();
-        private List<Connection> allConnections = new List<Connection>();
+        internal List<Connection> allConnections = new List<Connection>();
         private Dictionary<NetID, Connection> _connectedPeers = new Dictionary<NetID, Connection>();
         public Dictionary<NetID, Connection> connectedPeers
         {
-            get { lock (this) { return _connectedPeers.ToDictionary(entry => entry.Key,
-                                               entry => entry.Value); } }
+            get
+            {
+                lock (this)
+                {
+                    return _connectedPeers.ToDictionary(entry => entry.Key,
+                                   entry => entry.Value);
+                }
+            }
         }
 
         #region Events
@@ -112,10 +118,6 @@ namespace Spectrum.Framework.Network
             else
                 connection.Terminate();
         }
-        public EventHandler<PeerEventArgs> OnPeerAdded;
-        public EventHandler<PeerEventArgs> OnPeerRemoved;
-        public EventHandler<PeerEventArgs> OnGroupJoined;
-        public EventHandler<PeerEventArgs> OnGroupLeft;
         #endregion
 
         private UDPReceiver udpReceiver;
@@ -281,7 +283,7 @@ namespace Spectrum.Framework.Network
         private void HandleHandshake(NetID peer, NetMessage message)
         {
             Connection conn = allConnections.Find((Connection other) => (other.ClientID == peer));
-            if(conn == null && peer.SteamID != null)
+            if (conn == null && peer.SteamID != null)
             {
                 conn = new Connection(this, peer.SteamID.Value, HandshakeStage.Wait);
                 lock (allConnections)
@@ -294,7 +296,10 @@ namespace Spectrum.Framework.Network
         }
         private void HandleTermination(NetID peer, NetMessage message)
         {
-            connectedPeers.Remove(peer);
+            lock(_connectedPeers)
+            {
+                _connectedPeers.Remove(peer);
+            }
         }
         private void HandleKeepAlive(NetID peer, NetMessage message)
         {
@@ -322,7 +327,9 @@ namespace Spectrum.Framework.Network
 
         public void RegisterMessageCallback(byte userType, NetMessageHandler callback)
         {
-            userMessageHandlers[userType] = callback;
+            if (!userMessageHandlers.ContainsKey(userType))
+                userMessageHandlers[userType] = new List<NetMessageHandler>();
+            userMessageHandlers[userType].Add(callback);
         }
         public void RegisterHandshakeHandler(HandshakeStage stage, HandshakeHandler handler)
         {
@@ -397,40 +404,38 @@ namespace Spectrum.Framework.Network
             //the client in question
             foreach (Connection peer in allConnections.ToList())
             {
+                peer.Update(time);
                 if (!peer.Running)
                 {
                     RemoveClient(peer);
                 }
-                if (peer.ConnectionStage == HandshakeStage.Completed) { continue; }
-                else if(peer.ConnectionStage != HandshakeStage.Begin)
-                {
-                    peer.PeerSyncTimeout -= time.ElapsedGameTime.Milliseconds / 1000.0f;
-                    if (peer.PeerSyncTimeout <= 0)
-                    {
-                        DebugPrinter.print("Dropping client who couldn't connect to all of the already connected peers");
-                        RemoveClient(peer);
-                    }
-                }
             }
-            lock (this)
+            lock (receivedMessages)
             {
                 while (receivedMessages.Count > 0)
                 {
                     MultiplayerMessage received = receivedMessages[0];
                     receivedMessages.RemoveAt(0);
-                    if(received.MessageType != FrameworkMessages.Handshake && !allConnections.Any(conn => conn.ClientID == received.PeerGuid))
+                    if (received.MessageType != FrameworkMessages.Handshake && !allConnections.Any(conn => conn.ClientID == received.PeerID))
                         continue;
 
-                    NetMessageHandler handler;
-                    if (userMessageHandlers.TryGetValue(received.MessageType, out handler))
+                    Connection connection = allConnections.Find((Connection other) => (other.ClientID == received.PeerID));
+                    if (connection != null)
+                        connection.ResetTimeout();
+
+                    List<NetMessageHandler> handlers;
+                    if (userMessageHandlers.TryGetValue(received.MessageType, out handlers))
                     {
-                        try
+                        foreach (NetMessageHandler handler in handlers)
                         {
-                            handler(received.PeerGuid, received.Message);
-                        }
-                        catch (Exception e)
-                        {
-                            DebugPrinter.print("Message handler " + received.MessageType + " failed: " + e.Message);
+                            try
+                            {
+                                handler(received.PeerID, (NetMessage)received.Message.Copy());
+                            }
+                            catch (Exception e)
+                            {
+                                DebugPrinter.print("Message handler " + received.MessageType + " failed: " + e.Message);
+                            }
                         }
                     }
                 }
@@ -438,7 +443,7 @@ namespace Spectrum.Framework.Network
         }
         public void ReceiveMessage(byte messageType, NetID peerGuid, NetMessage message)
         {
-            lock (this) { receivedMessages.Add(new MultiplayerMessage(messageType, peerGuid, message)); }
+            lock (receivedMessages) { receivedMessages.Add(new MultiplayerMessage(messageType, peerGuid, message)); }
         }
 
         public void RemoveClient(Connection conn)
@@ -449,7 +454,6 @@ namespace Spectrum.Framework.Network
                 _connectedPeers.Remove(conn.ClientID);
                 lock (allConnections)
                     allConnections.Remove(conn);
-                if (OnPeerRemoved != null) { OnPeerRemoved(this, new PeerEventArgs(conn.ClientID)); }
                 conn.Terminate();
                 ReplyWaiter.PeerRemoved(conn.ClientID);
             }
@@ -466,7 +470,6 @@ namespace Spectrum.Framework.Network
                 if (!_connectedPeers.ContainsKey(conn.ClientID))
                 {
                     _connectedPeers[conn.ClientID] = conn;
-                    if (OnPeerAdded != null) { OnPeerAdded(this, new PeerEventArgs(conn.ClientID)); }
                     return true;
                 }
                 else

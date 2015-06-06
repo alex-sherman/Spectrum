@@ -10,6 +10,15 @@ namespace Spectrum.Framework.Network
         public ulong? SteamID;
         public Guid? Guid;
 
+        public static bool operator >(NetID lhs, NetID rhs)
+        {
+            return lhs.CompareTo(rhs) > 0;
+        }
+        public static bool operator <(NetID lhs, NetID rhs)
+        {
+            return lhs.CompareTo(rhs) < 0;
+        }
+
         public static bool operator ==(NetID lhs, NetID rhs)
         {
             return lhs.Equals(rhs);
@@ -48,7 +57,6 @@ namespace Spectrum.Framework.Network
                 return SteamID.GetHashCode();
             return Guid.GetHashCode();
         }
-
 
         public int CompareTo(object obj)
         {

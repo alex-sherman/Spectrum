@@ -11,15 +11,21 @@ namespace Spectrum.Framework.Network
     /// </summary>
     public class ReplyWaiter
     {
+        private bool noUpdateOnRemove;
         private volatile List<NetID> replies = new List<NetID>();
         private List<NetID> requiredReplies = new List<NetID>();
         private static List<ReplyWaiter> waiters = new List<ReplyWaiter>();
 
-        public ReplyWaiter(params NetID[] requiredGuids)
+        public ReplyWaiter(bool noUpdateOnRemove, params NetID[] requiredGuids)
         {
+            this.noUpdateOnRemove = noUpdateOnRemove;
             requiredReplies = requiredGuids.ToList();
             lock (waiters) { waiters.Add(this); }
         }
+
+        public ReplyWaiter(params NetID[] requiredGuids)
+            : this(false, requiredGuids) { }
+
         public void AddReply(NetID id)
         {
             lock (this)
@@ -64,6 +70,8 @@ namespace Spectrum.Framework.Network
                 {
                     lock (waiter)
                     {
+                        if (waiter.noUpdateOnRemove)
+                            continue;
                         waiter.requiredReplies.Remove(removedPeer);
                         Monitor.Pulse(waiter);
                     }

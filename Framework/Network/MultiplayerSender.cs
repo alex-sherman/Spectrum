@@ -42,9 +42,10 @@ namespace Spectrum.Framework.Network
                 byte[] buffer = new byte[MultiplayerService.MAX_MSG_SIZE];
                 while (Running)
                 {
-                    if (!writeSem.WaitOne())
+                    if (!writeSem.WaitOne(100))
                     {
                         Thread.Sleep(1);
+                        Running = !conn.TimedOut;
                         continue;
                     };
                     QueueItem item;
@@ -53,36 +54,39 @@ namespace Spectrum.Framework.Network
                         if (dataQueue.Count == 0) { throw new Exception("Write semaphore was signaled without anything to dequeue"); }
                         item = dataQueue.Dequeue();
                     }
-                    MemoryStream toWrite = new MemoryStream();
-                    toWrite.WriteByte((byte)item.EventType);
-                    NetMessage header = new NetMessage();
-                    header.Write(conn.MPService.ID);
-                    header.WriteTo(toWrite);
-                    item.toWrite.WriteTo(toWrite);
-                    toWrite.WriteByte(255);
-
-                    if (netStream != null)
-                    {
-                        lock (client)
-                        {
-                            toWrite.WriteTo(netStream);
-                        }
-                    }
-                    else if (conn.ClientID.SteamID != null)
-                    {
-                        Steamworks.CSteamID steamID = new Steamworks.CSteamID(conn.ClientID.SteamID.Value);
-                        Steamworks.SteamNetworking.SendP2PPacket(steamID, toWrite.GetBuffer(), (uint)toWrite.Length, Steamworks.EP2PSend.k_EP2PSendReliable);
-                    }
+                    WriteToStreamImmediately(item.EventType, item.toWrite);
                 }
             }
             catch (IOException) { }
             catch (ObjectDisposedException) { }
             catch (InvalidOperationException) { }
-            finally { Running = false; }
+            finally { conn.Terminate(); }
+        }
+        public void WriteToStreamImmediately(byte messageType, NetMessage toWrite)
+        {
+            MemoryStream memStream = new MemoryStream();
+            memStream.WriteByte(messageType);
+            NetMessage header = new NetMessage();
+            header.Write(conn.MPService.ID);
+            header.WriteTo(memStream);
+            (toWrite ?? new NetMessage()).WriteTo(memStream);
+            memStream.WriteByte(255);
+
+            if (netStream != null)
+            {
+                lock (client)
+                {
+                    memStream.WriteTo(netStream);
+                }
+            }
+            else if (conn.ClientID.SteamID != null)
+            {
+                Steamworks.CSteamID steamID = new Steamworks.CSteamID(conn.ClientID.SteamID.Value);
+                Steamworks.SteamNetworking.SendP2PPacket(steamID, memStream.GetBuffer(), (uint)memStream.Length, Steamworks.EP2PSend.k_EP2PSendReliable);
+            }
         }
         public void WriteToStream(byte messageType, NetMessage toWrite)
         {
-            if (toWrite == null) { toWrite = new NetMessage(); }
             QueueItem item = new QueueItem();
             item.EventType = messageType;
             item.toWrite = toWrite;
@@ -117,7 +121,6 @@ namespace Spectrum.Framework.Network
         public void Terminate()
         {
             timer.Dispose();
-            WriteToStream(FrameworkMessages.Termination, null);
         }
     }
 }

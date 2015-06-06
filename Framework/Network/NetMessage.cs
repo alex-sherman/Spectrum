@@ -507,9 +507,9 @@ namespace Spectrum.Framework.Network
 
         public ISerializable Copy()
         {
-            NetMessage temp = new NetMessage();
-            this.WriteTo(temp);
-            return new NetMessage(temp);
+            NetMessage temp = new NetMessage(stream.ToArray());
+            temp.stream.Position = stream.Position;
+            return temp;
         }
     }
 }

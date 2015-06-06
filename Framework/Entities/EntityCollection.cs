@@ -53,6 +53,7 @@ namespace Spectrum.Framework.Entities
                 {
                     gameObjects.Remove(entity as GameObject);
                 }
+                entity.Dispose();
             }
         }
         public event EntityCollectionUpdated OnEntityRemoved;
