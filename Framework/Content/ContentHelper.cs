@@ -45,14 +45,19 @@ namespace Spectrum.Framework.Content
             return p.Content._load<T>(path, true);
         }
 
-        public static T Load<T>(string path, bool usePrefix = true) where T : class
+        public static T Load<T>(string path, bool usePrefix) where T : class
         {
             return (T)Single._load<T>(path, usePrefix);
         }
 
+        public static T Load<T>(string path) where T : class
+        {
+            return Load<T>(path, true);
+        }
+
         public static object LoadType(Type type, string path, string plugin)
         {
-            MethodInfo load;
+            MethodInfo load = null;
             if (plugin == null)
                 load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string) });
             else
