@@ -15,6 +15,7 @@ using Spectrum.Framework.Physics;
 using Spectrum.Framework.Screens;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Content;
+using Spectrum.Framework.Audio;
 
 namespace Spectrum
 {
@@ -70,14 +71,16 @@ namespace Spectrum
 
         public RealDict<string, Plugin> Plugins = new RealDict<string, Plugin>();
         GraphicsDeviceManager graphics;
+        public EntityManager EntityManager { get; set; }
+        public MultiplayerService MP { get; set; }
         public ScreenManager ScreenManager { get; private set; }
         bool newResize = false;
         private Point mousePosition;
-        public NetID ID { get; private set; }
         public bool UsingSteam { get; private set; }
 
         public SpectrumGame(Guid? guid = null)
         {
+            NetID ID;
             UsingSteam = guid == null;
             if (UsingSteam)
             {
@@ -90,7 +93,12 @@ namespace Spectrum
                 ID = new NetID(guid.Value);
             }
             Game = this;
+            EntityCollection ECollection = new EntityCollection();
+            PhysicsEngine.Init(ECollection);
+            MP = new MultiplayerService(ID);
+            EntityManager = new EntityManager(ECollection, MP);
             graphics = new GraphicsDeviceManager(this);
+            AudioManager.Init();
             this.Window.AllowUserResizing = true;
             this.Window.ClientSizeChanged += WindowSizeChange;
             WindowForm = (Form)Form.FromHandle(Window.Handle);
@@ -193,6 +201,7 @@ namespace Spectrum
         /// </summary>
         protected override void UnloadContent()
         {
+            AudioManager.Shutdown();
             SaveSettings(File.OpenWrite("save.dat"));
             if(UsingSteam)
             {

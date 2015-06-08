@@ -36,7 +36,7 @@ namespace Spectrum.Framework.Entities
 
         public Guid ID;
         public bool AllowReplicate { get; protected set; }
-        public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.ID; } }
+        public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
         public NetID OwnerGuid;

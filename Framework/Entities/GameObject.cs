@@ -230,14 +230,11 @@ namespace Spectrum.Framework.Entities
 
         protected List<SoundEffect> Sounds = new List<SoundEffect>();
         protected Emitter Emitter = new Emitter();
-        public void PlaySound(SoundEffect sound, bool loop = false)
+        public void PlaySound(SoundEffect sound)
         {
-            ///TODO: Copy the X3DAudio example from cscore
+            Emitter.RegisterSoundEffect(sound);
+            Emitter.Update();
             sound.Play();
-            //soundInstance.IsLooped = loop;
-            //soundInstance.Apply3D(Audio.AudioManager.Listener, Emitter);
-            //soundInstance.Play();
-            //Sounds.Add(soundInstance);
         }
 
         public bool Equals(GameObject other)
@@ -269,11 +266,7 @@ namespace Spectrum.Framework.Entities
             Emitter.Up = Vector3.Up;
             Emitter.Forward = Vector3.Forward;
             if (Model != null) { Model.Update(gameTime); }
-            Sounds.RemoveAll((SoundEffect sound) => (!sound.Playing));
-            foreach (var sound in Sounds)
-            {
-                //sound.Apply3D(Audio.AudioManager.Listener, Emitter);
-            }
+            Emitter.Update();
         }
         public override void Dispose()
         {

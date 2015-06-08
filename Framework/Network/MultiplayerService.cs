@@ -132,10 +132,11 @@ namespace Spectrum.Framework.Network
         public bool HasNat { get { return NatDevice != null; } }
         private int listenPort = -1;
         public int ListenPort { get { return listenPort; } }
-        public NetID ID { get { return SpectrumGame.Game.ID; } }
+        public NetID ID { get; private set; }
 
-        public MultiplayerService()
+        public MultiplayerService(NetID ID)
         {
+            this.ID = ID;
             NetworkMutex.Init(this);
             NatUtility.DeviceFound += DeviceFound;
             NatUtility.StartDiscovery();
