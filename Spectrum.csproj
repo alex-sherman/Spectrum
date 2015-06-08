@@ -75,37 +75,37 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto">
-      <HintPath>..\Dependencies\BouncyCastle.Crypto.dll</HintPath>
+      <HintPath>Dependencies\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Mono.Nat">
-      <HintPath>..\Dependencies\Mono.Nat.dll</HintPath>
+      <HintPath>Dependencies\Mono.Nat.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Framework, Version=3.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\MonoGame.Framework.dll</HintPath>
+      <HintPath>Dependencies\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\Dependencies\Newtonsoft.Json.dll</HintPath>
+      <HintPath>Dependencies\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\SharpDX.dll</HintPath>
+      <HintPath>Dependencies\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.DirectInput, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\SharpDX.DirectInput.dll</HintPath>
+      <HintPath>Dependencies\SharpDX.DirectInput.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.XAudio2, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\SharpDX.XAudio2.dll</HintPath>
+      <HintPath>Dependencies\SharpDX.XAudio2.dll</HintPath>
     </Reference>
     <Reference Include="Steamworks.NET, Version=6.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\Steamworks\Steamworks.NET.dll</HintPath>
+      <HintPath>Dependencies\Steamworks\Steamworks.NET.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
@@ -240,15 +240,15 @@
     <Compile Include="Framework\Graphics\Water.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Dependencies\Steamworks\CSteamworks.dll">
+    <Content Include="Dependencies\Steamworks\CSteamworks.dll">
       <Link>CSteamworks.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Dependencies\Steamworks\steam_api.dll">
+    <Content Include="Dependencies\Steamworks\steam_api.dll">
       <Link>steam_api.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\Dependencies\Steamworks\steam_appid.txt">
+    <Content Include="Dependencies\Steamworks\steam_appid.txt">
       <Link>steam_appid.txt</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -317,7 +317,7 @@
     <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>python $(ProjectDir)Content\HLSL\build.py $(ProjectDir)\Content\HLSL $(ProjectDir)..\Dependencies\Utils\2MGFX.exe $(ProjectDir)\Content\HLSL\</PreBuildEvent>
+    <PreBuildEvent>python $(ProjectDir)Content\HLSL\build.py $(ProjectDir)\Content\HLSL $(ProjectDir)\Dependencies\Utils\2MGFX.exe $(ProjectDir)\Content\HLSL\</PreBuildEvent>
   </PropertyGroup>
   <!--
       To modify your build process, add your task inside one of the targets below and uncomment it. 
