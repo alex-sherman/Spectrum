@@ -15,6 +15,7 @@ using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Dynamics.Constraints;
 using Spectrum.Framework.Entities;
+using Spectrum.Framework.Audio;
 
 namespace Spectrum.Framework.Entities
 {
@@ -227,6 +228,18 @@ namespace Spectrum.Framework.Entities
         public virtual void PostStep(float step) { }
         #endregion
 
+        protected List<SoundEffect> Sounds = new List<SoundEffect>();
+        protected Emitter Emitter = new Emitter();
+        public void PlaySound(SoundEffect sound, bool loop = false)
+        {
+            ///TODO: Copy the X3DAudio example from cscore
+            sound.Play();
+            //soundInstance.IsLooped = loop;
+            //soundInstance.Apply3D(Audio.AudioManager.Listener, Emitter);
+            //soundInstance.Play();
+            //Sounds.Add(soundInstance);
+        }
+
         public bool Equals(GameObject other)
         {
             return (other.ID == this.ID);
@@ -252,11 +265,15 @@ namespace Spectrum.Framework.Entities
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+            Emitter.Position = position;
+            Emitter.Up = Vector3.Up;
+            Emitter.Forward = Vector3.Forward;
             if (Model != null) { Model.Update(gameTime); }
-            //if (!required && !(PhysicsEngine.Single.Terrain.IsOnHeightmap(Pose.Position)))
-            //{
-            //    this.Dispose();
-            //}
+            Sounds.RemoveAll((SoundEffect sound) => (!sound.Playing));
+            foreach (var sound in Sounds)
+            {
+                //sound.Apply3D(Audio.AudioManager.Listener, Emitter);
+            }
         }
         public override void Dispose()
         {

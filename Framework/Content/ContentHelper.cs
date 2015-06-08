@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Spectrum.Framework.Audio;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Graphics.Animation;
 using Spectrum.Framework.Screens;
@@ -30,7 +31,8 @@ namespace Spectrum.Framework.Content
                 {typeof(AnimationPlayer), new AnimationParser()},
                 {typeof(Texture2D), new Texture2DParser()},
                 {typeof(ScalableTexture), new ScalableTextureParser()},
-                {typeof(float[,]), new HeightmapParser()}
+                {typeof(float[,]), new HeightmapParser()},
+                {typeof(SoundEffect), new SoundParser()}
             };
         public ContentManager Content { get; private set; }
         public ContentHelper(ContentManager content)

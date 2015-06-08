@@ -36,7 +36,7 @@ namespace Spectrum.Framework.Network
             {
                 while (true)
                 {
-                    if (!writeSem.WaitOne()) { continue; };
+                    if (!writeSem.WaitOne(100)) { continue; };
                     QueueItem item;
                     lock (dataQueue)
                     {

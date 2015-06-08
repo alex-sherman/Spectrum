@@ -77,6 +77,10 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>..\Dependencies\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="CSCore, Version=1.0.0.2, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\CSCore.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Mono.Nat">
       <HintPath>..\Dependencies\Mono.Nat.dll</HintPath>
@@ -123,10 +127,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Framework\Audio\Emitter.cs" />
+    <Compile Include="Framework\Audio\AudioManager.cs" />
+    <Compile Include="Framework\Audio\SoundEffect.cs" />
     <Compile Include="Framework\Content\AnimationParser.cs" />
     <Compile Include="Framework\Content\ContentParser.cs" />
     <Compile Include="Framework\Content\HeightmapParser.cs" />
     <Compile Include="Framework\Content\ScalableTextureParser.cs" />
+    <Compile Include="Framework\Content\SoundParser.cs" />
     <Compile Include="Framework\Content\Texture2DParser.cs" />
     <Compile Include="Framework\Content\ModelParser.cs" />
     <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
