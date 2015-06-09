@@ -171,6 +171,7 @@
     <Compile Include="Framework\Physics\Collision\Shapes\ConeShape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\ConvexHullShape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\CylinderShape.cs" />
+    <Compile Include="Framework\Physics\Collision\Shapes\ListMultishape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\Multishape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\Shape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\SphereShape.cs" />
@@ -223,6 +224,7 @@
     <Compile Include="Framework\Content\Plugin.cs" />
     <Compile Include="Framework\RealDict.cs" />
     <Compile Include="Framework\LoadHelper.cs" />
+    <Compile Include="Framework\JConvert.cs" />
     <Compile Include="Framework\TypeHelper.cs" />
     <Compile Include="Framework\Graphics\DrawablePart.cs" />
     <Compile Include="Framework\Graphics\Effects\PostProcessEffect.cs" />

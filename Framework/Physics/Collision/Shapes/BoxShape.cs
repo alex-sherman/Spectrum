@@ -36,6 +36,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
     public class BoxShape : Shape
     {
         private Vector3 size = Vector3.Zero;
+        private Vector3 position = Vector3.Zero;
 
         /// <summary>
         /// The sidelength of the box.
@@ -49,9 +50,10 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// Creates a new instance of the BoxShape class.
         /// </summary>
         /// <param name="size">The size of the box.</param>
-        public BoxShape(Vector3 size)
+        public BoxShape(Vector3 size, Vector3? position = null)
         {
             this.size = size;
+            this.position = position ?? Vector3.Zero;
             this.UpdateShape();
         }
 
@@ -125,9 +127,9 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="result">The result.</param>
         public override void SupportMapping(ref Vector3 direction, out Vector3 result)
         {
-            result.X = (float)Math.Sign(direction.X) * halfSize.X;
-            result.Y = (float)Math.Sign(direction.Y) * halfSize.Y;
-            result.Z = (float)Math.Sign(direction.Z) * halfSize.Z;
+            result.X = (float)Math.Sign(direction.X) * halfSize.X + position.X;
+            result.Y = (float)Math.Sign(direction.Y) * halfSize.Y + position.Y;
+            result.Z = (float)Math.Sign(direction.Z) * halfSize.Z + position.Z;
         }
     }
 }
