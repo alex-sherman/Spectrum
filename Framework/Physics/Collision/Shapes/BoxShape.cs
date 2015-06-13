@@ -93,11 +93,14 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         public override void GetBoundingBox(ref Matrix orientation, out JBBox box)
         {
             Matrix abs; JMath.Absolute(ref orientation, out abs);
-            Vector3 temp;
-            Vector3.Transform(ref halfSize, ref abs, out temp);
-
+            Vector3 temp = halfSize + position;
+            Vector3.Transform(ref temp, ref abs, out temp);
             box.Max = temp;
-            Vector3.Negate(ref temp, out box.Min);
+
+            temp = -halfSize + position;
+            Vector3.Transform(ref temp, ref abs, out temp);
+            box.Min = temp;
+
         }
 
         /// <summary>

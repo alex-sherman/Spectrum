@@ -40,6 +40,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         {
             ListMultishape output = new ListMultishape();
             output.shapes = shapes;
+            output.currentShape = currentShape;
 
             return output;
         }
