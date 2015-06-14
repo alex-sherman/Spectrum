@@ -72,9 +72,9 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="position">The position of the shape.</param>
         /// <param name="point">The point to check.</param>
         /// <returns>Returns true if the point is within the shape, otherwise false.</returns>
-        public static bool Pointcast(ISupportMappable support, ref Matrix orientation,ref Vector3 position,ref Vector3 point)
+        public static bool Pointcast(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 point)
         {
-            Vector3 arbitraryPoint; 
+            Vector3 arbitraryPoint;
 
             SupportMapTransformed(support, ref orientation, ref position, ref point, out arbitraryPoint);
             Vector3.Subtract(ref point, ref arbitraryPoint, out arbitraryPoint);
@@ -138,7 +138,7 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 w, v;
 
             Vector3 supVertexA;
-            Vector3 rn,vn;
+            Vector3 rn, vn;
 
             rn = Vector3.Negate(r);
 
@@ -335,68 +335,25 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 acd = Vector3.Cross(ad, ac);
             Vector3 abd = Vector3.Cross(ab, ad);
             Vector3 abc = Vector3.Cross(ac, ab);
+            //No need to check BCD since A was the last added point, it certainly must be in
+            //the direction of the origin from BCD
 
             Vector3 aO = -a;
 
             if (abc.IsInSameDirection(aO))
             {
-                if (Vector3.Cross(abc, ac).IsInSameDirection(aO))
-                {
-                    simplex.Remove(b);
-                    simplex.Remove(d);
-                    direction = Vector3.Cross(Vector3.Cross(ac, aO), ac);
-                }
-                else if (Vector3.Cross(ab, abc).IsInSameDirection(aO))
-                {
-                    simplex.Remove(c);
-                    simplex.Remove(d);
-                    direction = Vector3.Cross(Vector3.Cross(ab, aO), ab);
-                }
-                else
-                {
-                    simplex.Remove(d);
-                    direction = abc;
-                }
+                simplex.Remove(d);
+                direction = abc;
             }
             else if (acd.IsInSameDirection(aO))
             {
-                if (Vector3.Cross(acd, ad).IsInSameDirection(aO))
-                {
-                    simplex.Remove(b);
-                    simplex.Remove(c);
-                    direction = Vector3.Cross(Vector3.Cross(ad, aO), ad);
-                }
-                else if (Vector3.Cross(ac, acd).IsInSameDirection(aO))
-                {
-                    simplex.Remove(b);
-                    simplex.Remove(d);
-                    direction = Vector3.Cross(Vector3.Cross(ac, aO), ac);
-                }
-                else
-                {
-                    simplex.Remove(b);
-                    direction = acd;
-                }
+                simplex.Remove(b);
+                direction = acd;
             }
             else if (abd.IsInSameDirection(aO))
             {
-                if (Vector3.Cross(abd, ab).IsInSameDirection(aO))
-                {
-                    simplex.Remove(c);
-                    simplex.Remove(d);
-                    direction = Vector3.Cross(Vector3.Cross(ab, aO), ab);
-                }
-                else if (Vector3.Cross(ad, abd).IsInSameDirection(aO))
-                {
-                    simplex.Remove(b);
-                    simplex.Remove(c);
-                    direction = Vector3.Cross(Vector3.Cross(ad, aO), ad);
-                }
-                else
-                {
-                    simplex.Remove(c);
-                    direction = abd;
-                }
+                simplex.Remove(c);
+                direction = abd;
             }
             else
             {
@@ -421,7 +378,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="normal">The normal from the ray collision.</param>
         /// <returns>Returns true if the ray hit the shape, false otherwise.</returns>
         public static bool Raycast(ISupportMappable support, ref Matrix orientation, ref Matrix invOrientation,
-            ref Vector3 position,ref Vector3 origin,ref Vector3 direction, out float fraction, out Vector3 normal)
+            ref Vector3 position, ref Vector3 origin, ref Vector3 direction, out float fraction, out Vector3 normal)
         {
             VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
             simplexSolver.Reset();
@@ -435,7 +392,7 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 x = origin;
             Vector3 w, p, v;
 
-            Vector3 arbitraryPoint; 
+            Vector3 arbitraryPoint;
             SupportMapTransformed(support, ref orientation, ref position, ref r, out arbitraryPoint);
             Vector3.Subtract(ref x, ref arbitraryPoint, out v);
 
@@ -472,7 +429,7 @@ namespace Spectrum.Framework.Physics.Collision
                     }
                 }
                 if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, x, p);
-                if (simplexSolver.Closest(out v)) { distSq = v.LengthSquared();  }
+                if (simplexSolver.Closest(out v)) { distSq = v.LengthSquared(); }
                 else distSq = 0.0f;
             }
 
@@ -734,7 +691,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             public void RemoveVertex(int index)
             {
-                 _numVertices--;
+                _numVertices--;
                 _simplexVectorW[index] = _simplexVectorW[_numVertices];
                 _simplexPointsP[index] = _simplexPointsP[_numVertices];
                 _simplexPointsQ[index] = _simplexPointsQ[_numVertices];
@@ -830,7 +787,7 @@ namespace Spectrum.Framework.Physics.Collision
 
                             _cachedPB = _simplexPointsQ[0] * _cachedBC.BarycentricCoords[0] +
                                             _simplexPointsQ[1] * _cachedBC.BarycentricCoords[1] +
-                                            _simplexPointsQ[2] * _cachedBC.BarycentricCoords[2]+
+                                            _simplexPointsQ[2] * _cachedBC.BarycentricCoords[2] +
                                             _simplexPointsQ[3] * _cachedBC.BarycentricCoords[3];
 
                             _cachedV = _cachedPA - _cachedPB;
@@ -998,7 +955,7 @@ namespace Spectrum.Framework.Physics.Collision
                 float signd = Vector3.Dot(d - a, normal); // [AD AB AC]
 
                 //if (CatchDegenerateTetrahedron)
-                    if (signd * signd < (1e-4f * 1e-4f)) return -1;
+                if (signd * signd < (1e-4f * 1e-4f)) return -1;
 
                 // Points on opposite sides if expression signs are opposite
                 return signp * signd < 0f ? 1 : 0;
