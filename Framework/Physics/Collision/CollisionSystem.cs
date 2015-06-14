@@ -176,40 +176,12 @@ namespace Spectrum.Framework.Physics.Collision
             foreach (ICollidable other in bodyList)
             {
                 if (!CheckBoundingBoxes(entity, other)) continue;
-                if(Detect(entity, other))
+                if (Detect(entity, other))
                 {
                     output.Add(other);
                 }
             }
             return output;
-        }
-
-        private bool GetContact(ISupportMappable s1, ISupportMappable s2, ICollidable b1, ICollidable b2,
-            out Vector3 point, out Vector3 normal, out float penetration)
-        {
-            return XenoCollide.Detect(s1, s2, b1.Orientation,
-                    b2.Orientation, b1.Position, b2.Position,
-                    out point, out normal, out penetration);
-            //else if (speculative)
-            //{
-            //    Vector3 hit1, hit2;
-
-            //    if (GJKCollide.ClosestPoints(s1, s2, b1.Orientation, b2.Orientation,
-            //        b1.Position, b2.Position, out hit1, out hit2, out normal))
-            //    {
-            //        Vector3 delta = hit2 - hit1;
-
-            //        if (delta.LengthSquared() < (body1.SweptDirection - body2.SweptDirection).LengthSquared())
-            //        {
-            //            penetration = Vector3.Dot(delta, normal);
-
-            //            if (penetration < 0.0f)
-            //            {
-            //                RaiseCollisionDetected(b1, b2, ref hit1, ref hit2, ref normal, penetration);
-            //            }
-            //        }
-            //    }
-            //}
         }
 
         public bool GetContact(ICollidable body1, ICollidable body2, out Vector3 point, out Vector3 normal, out float penetration)
@@ -263,17 +235,21 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     if (ms2 != null)
                         ms2.SetCurrentShape(j);
-                    if (XenoCollide.Detect(s1, s2, body1.Orientation,
-                        body2.Orientation, body1.Position, body2.Position,
-                        out tempPoint, out tempNormal, out tempPenetration))
+                    List<Vector3> simplex;
+                    if (GJKCollide.Detect(s1, s2, body1.Orientation, body2.Orientation, body1.Position, body2.Position, out simplex))
                     {
-                        if(tempPenetration > penetration)
+                        if (XenoCollide.Detect(s1, s2, body1.Orientation,
+                            body2.Orientation, body1.Position, body2.Position,
+                            out tempPoint, out tempNormal, out tempPenetration))
                         {
-                            point = tempPoint;
-                            normal = tempNormal;
-                            penetration = tempPenetration;
+                            if (tempPenetration > penetration)
+                            {
+                                point = tempPoint;
+                                normal = tempNormal;
+                                penetration = tempPenetration;
+                            }
+                            collisionDetected = true;
                         }
-                        collisionDetected = true;
                     }
                 }
             }

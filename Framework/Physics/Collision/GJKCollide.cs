@@ -20,7 +20,7 @@
 #region Using Statements
 using System;
 using System.Collections.Generic;
-
+using Spectrum.Framework;
 using Spectrum.Framework.Physics.Dynamics;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Collision.Shapes;
@@ -183,110 +183,228 @@ namespace Spectrum.Framework.Physics.Collision
             return true;
 
         }
+        /// <summary>
+        /// Checks two shapes for collisions.
+        /// </summary>
+        /// <param name="support1">The SupportMappable implementation of the first shape to test.</param>
+        /// <param name="support2">The SupportMappable implementation of the seconds shape to test.</param>
+        /// <param name="orientation1">The orientation of the first shape.</param>
+        /// <param name="orientation2">The orientation of the second shape.</param>
+        /// <param name="position1">The position of the first shape.</param>
+        /// <param name="position2">The position of the second shape</param>
+        /// <param name="point">The pointin world coordinates, where collision occur.</param>
+        /// <param name="normal">The normal pointing from body2 to body1.</param>
+        /// <param name="penetration">Estimated penetration depth of the collision.</param>
+        /// <returns>Returns true if there is a collision, false otherwise.</returns>
+        public static bool Detect(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
+             Matrix orientation2, Vector3 position1, Vector3 position2,
+             out List<Vector3> simplex)
+        {
+            simplex = new List<Vector3>();
 
-        #region TimeOfImpact Conservative Advancement - Depricated
-    //    public static bool TimeOfImpact(ISupportMappable support1, ISupportMappable support2, ref Matrix orientation1,
-    //ref Matrix orientation2, ref Vector3 position1, ref Vector3 position2, ref Vector3 sweptA, ref Vector3 sweptB,
-    //out Vector3 p1, out Vector3 p2, out Vector3 normal)
-    //    {
+            Vector3 s, s1, s2;
+            Vector3 direction = Vector3.One;
+            Vector3 negativeDirection = -direction;
+            //Get an initial point on the Minkowski difference.
+            SupportMapTransformed(support1, ref orientation1, ref position1, ref negativeDirection, out s1);
+            SupportMapTransformed(support2, ref orientation2, ref position2, ref direction, out s2);
+            s = s2 - s1;
 
-    //        VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
-    //        simplexSolver.Reset();
+            simplex.Add(s);
 
-    //        float lambda = 0.0f;
+            //Choose an initial direction toward the origin.
+            direction = -s;
 
-    //        p1 = p2 = Vector3.Zero;
+            //Choose a maximim number of iterations to avoid an 
+            //infinite loop during a non-convergent search.
+            int maxIterations = 50;
 
-    //        Vector3 x1 = position1;
-    //        Vector3 x2 = position2;
+            for (int i = 0; i < maxIterations; i++)
+            {
+                //Get our next simplex point toward the origin.
+                direction.Normalize();
+                negativeDirection = -direction;
+                SupportMapTransformed(support1, ref orientation1, ref position1, ref negativeDirection, out s1);
+                SupportMapTransformed(support2, ref orientation2, ref position2, ref direction, out s2);
+                Vector3 a = s2 - s1;
 
-    //        Vector3 r = sweptA - sweptB;
-    //        Vector3 w, v;
+                //If we move toward the origin and didn't pass it 
+                //then we never will and there's no intersection.
+                if (a.IsInOppositeDirection(direction))
+                {
+                    return false;
+                }
+                //otherwise we add the new
+                //point to the simplex and
+                //process it.
+                simplex.Add(a);
+                //Here we either find a collision or we find the closest feature of
+                //the simplex to the origin, make that the new simplex and update the direction
+                //to move toward the origin from that feature.
+                if (ProcessSimplex(simplex, ref direction))
+                {
+                    return true;
+                }
+            }
+            //If we still couldn't find a simplex 
+            //that contains the origin then we
+            //"probably" have an intersection.
+            return false;
+        }
 
-    //        Vector3 supVertexA;
-    //        Vector3 rn = Vector3.Negate(r);
-    //        SupportMapTransformed(support1, ref orientation1, ref x1, ref rn, out supVertexA);
+        /// <summary>
+        ///Either finds a collision or the closest feature of the simplex to the origin, 
+        ///and updates the simplex and direction.
+        /// </summary>
+        static bool ProcessSimplex(List<Vector3> simplex, ref Vector3 direction)
+        {
+            if (simplex.Count == 2)
+            {
+                return ProcessLine(simplex, ref direction);
+            }
+            else if (simplex.Count == 3)
+            {
+                return ProcessTriangle(simplex, ref direction);
+            }
+            else
+            {
+                return ProcessTetrehedron(simplex, ref direction);
+            }
+        }
 
-    //        Vector3 supVertexB;
-    //        SupportMapTransformed(support2, ref orientation2, ref x2, ref r, out supVertexB);
+        /// <summary>
+        /// Determines which Veronoi region of a line segment 
+        /// the origin is in, utilizing the preserved winding
+        /// of the simplex to eliminate certain regions.
+        /// </summary>
+        static bool ProcessLine(List<Vector3> simplex, ref Vector3 direction)
+        {
+            Vector3 a = simplex[1];
+            Vector3 b = simplex[0];
+            Vector3 ab = b - a;
+            Vector3 aO = -a;
 
-    //        v = supVertexA - supVertexB;
+            direction = Vector3.Cross(Vector3.Cross(ab, aO), ab);
+            return false;
+        }
 
-    //        bool hasResult = false;
+        /// <summary>
+        /// Determines which Veronoi region of a triangle 
+        /// the origin is in, utilizing the preserved winding
+        /// of the simplex to eliminate certain regions.
+        /// </summary>
+        static bool ProcessTriangle(List<Vector3> simplex, ref Vector3 direction)
+        {
+            Vector3 a = simplex[2];
+            Vector3 b = simplex[1];
+            Vector3 c = simplex[0];
+            Vector3 ab = b - a;
+            Vector3 ac = c - a;
+            Vector3 abc = Vector3.Cross(ab, ac);
+            Vector3 aO = -a;
 
-    //        normal = Vector3.Zero;
+            if (!abc.IsInSameDirection(aO))
+            {
+                Vector3.Negate(ref abc, out abc);
+            }
+            else
+            {
+                simplex.Reverse();
+            }
+            direction = abc;
+            return false;
+        }
 
+        /// <summary>
+        /// Determines which Veronoi region of a tetrahedron
+        /// the origin is in, utilizing the preserved winding
+        /// of the simplex to eliminate certain regions.
+        /// </summary>
+        static bool ProcessTetrehedron(List<Vector3> simplex, ref Vector3 direction)
+        {
+            Vector3 a = simplex[3];
+            Vector3 b = simplex[2];
+            Vector3 c = simplex[1];
+            Vector3 d = simplex[0];
+            Vector3 ac = c - a;
+            Vector3 ad = d - a;
+            Vector3 ab = b - a;
+            Vector3 bc = c - b;
+            Vector3 bd = d - b;
 
-    //        float lastLambda = lambda;
+            Vector3 acd = Vector3.Cross(ad, ac);
+            Vector3 abd = Vector3.Cross(ab, ad);
+            Vector3 abc = Vector3.Cross(ac, ab);
 
-    //        int maxIter = MaxIterations;
+            Vector3 aO = -a;
 
-    //        float distSq = v.LengthSquared();
-    //        float epsilon = 0.00001f;
+            if (abc.IsInSameDirection(aO))
+            {
+                if (Vector3.Cross(abc, ac).IsInSameDirection(aO))
+                {
+                    simplex.Remove(b);
+                    simplex.Remove(d);
+                    direction = Vector3.Cross(Vector3.Cross(ac, aO), ac);
+                }
+                else if (Vector3.Cross(ab, abc).IsInSameDirection(aO))
+                {
+                    simplex.Remove(c);
+                    simplex.Remove(d);
+                    direction = Vector3.Cross(Vector3.Cross(ab, aO), ab);
+                }
+                else
+                {
+                    simplex.Remove(d);
+                    direction = abc;
+                }
+            }
+            else if (acd.IsInSameDirection(aO))
+            {
+                if (Vector3.Cross(acd, ad).IsInSameDirection(aO))
+                {
+                    simplex.Remove(b);
+                    simplex.Remove(c);
+                    direction = Vector3.Cross(Vector3.Cross(ad, aO), ad);
+                }
+                else if (Vector3.Cross(ac, acd).IsInSameDirection(aO))
+                {
+                    simplex.Remove(b);
+                    simplex.Remove(d);
+                    direction = Vector3.Cross(Vector3.Cross(ac, aO), ac);
+                }
+                else
+                {
+                    simplex.Remove(b);
+                    direction = acd;
+                }
+            }
+            else if (abd.IsInSameDirection(aO))
+            {
+                if (Vector3.Cross(abd, ab).IsInSameDirection(aO))
+                {
+                    simplex.Remove(c);
+                    simplex.Remove(d);
+                    direction = Vector3.Cross(Vector3.Cross(ab, aO), ab);
+                }
+                else if (Vector3.Cross(ad, abd).IsInSameDirection(aO))
+                {
+                    simplex.Remove(b);
+                    simplex.Remove(c);
+                    direction = Vector3.Cross(Vector3.Cross(ad, aO), ad);
+                }
+                else
+                {
+                    simplex.Remove(c);
+                    direction = abd;
+                }
+            }
+            else
+            {
+                return true;
+            }
 
-    //        float VdotR;
-
-    //        while ((distSq > epsilon) && (maxIter-- != 0))
-    //        {
-
-    //            Vector3 vn = Vector3.Negate(v);
-    //            SupportMapTransformed(support1, ref orientation1, ref x1, ref vn, out supVertexA);
-    //            SupportMapTransformed(support2, ref orientation2, ref x2, ref v, out supVertexB);
-    //            w = supVertexA - supVertexB;
-
-    //            float VdotW = Vector3.Dot(ref v, ref w);
-
-    //            if (VdotW > 0.0f)
-    //            {
-    //                VdotR = Vector3.Dot(ref v, ref r);
-
-    //                if (VdotR >= -JMath.Epsilon)
-    //                {
-    //                    simplexSolverPool.GiveBack(simplexSolver);
-    //                    return false;
-    //                }
-    //                else
-    //                {
-    //                    lambda = lambda - VdotW / VdotR;
-
-
-    //                    x1 = position1 + lambda * sweptA;
-    //                    x2 = position2 + lambda * sweptB;
-
-    //                    w = supVertexA - supVertexB;
-
-    //                    normal = v;
-    //                    hasResult = true;
-    //                }
-    //            }
-    //            if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, supVertexA, supVertexB);
-    //            if (simplexSolver.Closest(out v))
-    //            {
-    //                distSq = v.LengthSquared();
-    //                normal = v;
-    //                hasResult = true;
-    //            }
-    //            else distSq = 0.0f;
-    //        }
-
-
-    //        simplexSolver.ComputePoints(out p1, out p2);
-
-
-    //        if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
-    //            normal.Normalize();
-
-    //        p1 = p1 - lambda * sweptA;
-    //        p2 = p2 - lambda * sweptB;
-
-    //        simplexSolverPool.GiveBack(simplexSolver);
-
-    //        return true;
-
-    //    }
-        #endregion
-
-        // see: btSubSimplexConvexCast.cpp
+            return false;
+        }
 
         /// <summary>
         /// Checks if a ray definied through it's origin and direction collides
