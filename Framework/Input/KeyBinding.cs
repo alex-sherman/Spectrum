@@ -6,31 +6,32 @@ using System.Text;
 
 namespace Spectrum.Framework.Input
 {
-    public class KeyBinding
+    public struct BindingOption
     {
-        public static Dictionary<string, KeyBinding> KeyBindings = new Dictionary<string, KeyBinding>()
+        public Keys? key;
+        public Keys? keyModifier;
+        public int? mouseButton;
+        public GamepadButton? button;
+        public GamepadButton? buttonModifier;
+        public BindingOption(Keys? key = null, Keys? keyModifier = null, int? mouseButton = null, GamepadButton? button = null, GamepadButton? buttonModifier = null)
         {
-            {"MenuLeft", new KeyBinding(Keys.Left)},
-            {"MenuRight", new KeyBinding(Keys.Right)},
-            {"MenuUp", new KeyBinding(Keys.Up)},
-            {"MenuDown", new KeyBinding(Keys.Down)},
-            {"MenuCycleF", new KeyBinding(Keys.Tab)},
-            {"MenuCycleB", new KeyBinding(Keys.Tab, modifier: Keys.LeftShift)},
-            {"GoBack", new KeyBinding(Keys.Escape)},
-            {"Continue", new KeyBinding(Keys.Enter)},
-        };
-
-
-        public Keys? key1 { get; set; }
-        public Keys? key2 { get; set; }
-        public Keys? modifier { get; set; }
-        public int? mouseButton { get; set; }
-        public KeyBinding(Keys? key1 = null, Keys? key2 = null, int? mouseButton = null, Keys? modifier = null)
-        {
-            this.key1 = key1;
-            this.key2 = key2;
-            this.modifier = modifier;
+            this.key = key;
+            this.keyModifier = keyModifier;
             this.mouseButton = mouseButton;
+            this.button = button;
+            this.buttonModifier = buttonModifier;
+        }
+    }
+    public struct KeyBinding
+    {
+        public List<BindingOption> Options;
+        public KeyBinding(Keys? key = null, Keys? keyModifier = null, int? mouseButton = null, GamepadButton? button = null, GamepadButton? buttonModifier = null)
+            : this(new BindingOption(key, keyModifier, mouseButton, button, buttonModifier)) { }
+
+        public KeyBinding(BindingOption info)
+        {
+            Options = new List<BindingOption>();
+            Options.Add(info);
         }
     }
 }

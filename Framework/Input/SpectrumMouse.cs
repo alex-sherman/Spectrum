@@ -23,11 +23,9 @@ namespace Spectrum.Framework.Input
 
     class SpectrumMouse
     {
-        private DirectInput di;
         private Mouse mouse;
-        public SpectrumMouse()
+        public SpectrumMouse(DirectInput di)
         {
-            di = new DirectInput();
             mouse = new Mouse(di);
             mouse.Acquire();
         }

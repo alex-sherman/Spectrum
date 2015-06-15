@@ -222,7 +222,8 @@ namespace Spectrum.Framework.Physics.Collision
             for (int i = 0; i < maxIterations; i++)
             {
                 //Get our next simplex point toward the origin.
-                direction.Normalize();
+                if (direction.LengthSquared() > 0)
+                    direction.Normalize();
                 negativeDirection = -direction;
                 SupportMapTransformed(support1, ref orientation1, ref position1, ref negativeDirection, out s1);
                 SupportMapTransformed(support2, ref orientation2, ref position2, ref direction, out s2);

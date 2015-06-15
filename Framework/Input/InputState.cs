@@ -10,6 +10,7 @@
 #region Using Statements
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SharpDX.DirectInput;
 using System;
 using System.Collections.Generic;
 #endregion
@@ -25,12 +26,14 @@ namespace Spectrum.Framework.Input
     public class InputState
     {
         public static float MouseSensitivity = 0.003f;
-        private static SpectrumMouse SpecMouse = new SpectrumMouse();
+        private static DirectInput di = new DirectInput();
+        private static SpectrumMouse SpecMouse = new SpectrumMouse(di);
 
         #region Fields
 
-        public KeyboardState KeyboardState;
+        public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
         public SpectrumMouseState MouseState;
+        public Gamepad[] Gamepads = new Gamepad[4];
         private InputState LastInputState;
 
 
@@ -42,9 +45,13 @@ namespace Spectrum.Framework.Input
 
         public InputState()
         {
-            KeyboardState = Keyboard.GetState();
+            KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
             MouseState = SpecMouse.GetCurrentState();
             LastInputState = null;
+            for (int i = 0; i < 4; i++)
+            {
+                Gamepads[i] = new Gamepad(new SharpDX.XInput.Controller((SharpDX.XInput.UserIndex)i));
+            }
         }
 
 
@@ -57,40 +64,57 @@ namespace Spectrum.Framework.Input
             if (LastInputState == null)
                 LastInputState = new InputState();
             LastInputState.KeyboardState = KeyboardState;
-            KeyboardState = Keyboard.GetState();
+            KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
             LastInputState.MouseState = MouseState;
             MouseState = SpecMouse.GetCurrentState();
+            for (int i = 0; i < 4; i++)
+            {
+                LastInputState.Gamepads[i] = Gamepads[i];
+                Gamepads[i].Update();
+            }
         }
         public bool IsKeyDown(string bindingName)
         {
-            KeyBinding binding;
-            if (!KeyBinding.KeyBindings.TryGetValue(bindingName, out binding)) throw new KeyNotFoundException("Binding not found");
-            return IsKeyDown(binding);
-
+            return IsKeyDown(bindingName, PlayerInformation.Default);
         }
-        public bool IsKeyDown(KeyBinding binding)
+        public bool IsKeyDown(string bindingName, PlayerInformation playerInfo)
         {
-            if (binding.modifier != null && !IsKeyDown((Keys)binding.modifier)) { return false; }
-            if (binding.key1 != null) { if (IsKeyDown((Keys)binding.key1)) return true; }
-            if (binding.key2 != null) { if (IsKeyDown((Keys)binding.key2)) return true; }
-            if (binding.mouseButton != null) { if (IsMouseDown((int)binding.mouseButton)) return true; }
+            InputLayout layout = playerInfo.Layout;
+            KeyBinding binding;
+            if (!layout.KeyBindings.TryGetValue(bindingName, out binding)) throw new KeyNotFoundException("Binding not found");
+            foreach (var bindingInfo in binding.Options)
+            {
+                if (playerInfo.UsesKeyboard)
+                {
+                    if (bindingInfo.keyModifier != null && !IsKeyDown((Keys)bindingInfo.keyModifier)) { continue; }
+                    if (bindingInfo.key != null) { if (IsKeyDown((Keys)bindingInfo.key)) return true; }
+                    if (bindingInfo.mouseButton != null) { if (IsMouseDown((int)bindingInfo.mouseButton)) return true; }
+                }
+                foreach (int gamepadIndex in playerInfo.UsedGamepads)
+                {
+                    if (bindingInfo.buttonModifier != null && !IsButtonDown((GamepadButton)bindingInfo.buttonModifier, gamepadIndex)) { continue; }
+                    if (bindingInfo.button != null && IsButtonDown((GamepadButton)bindingInfo.button, gamepadIndex)) { return true; }
+                }
+            }
             return false;
         }
         public bool IsKeyDown(Keys key)
         {
             return KeyboardState.IsKeyDown(key);
         }
+        private bool IsButtonDown(GamepadButton button, int gamepadIndex)
+        {
+            return Gamepads[gamepadIndex].IsButtonPressed(button);
+        }
 
         public bool IsNewKeyPress(string bindingName)
         {
-            KeyBinding binding;
-            if (!KeyBinding.KeyBindings.TryGetValue(bindingName, out binding)) throw new KeyNotFoundException("Binding not found");
-            return IsNewKeyPress(binding);
-
+            return IsNewKeyPress(bindingName, PlayerInformation.Default);
         }
-        public bool IsNewKeyPress(KeyBinding binding)
+        public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo)
         {
-            return IsKeyDown(binding) && !LastInputState.IsKeyDown(binding);
+            return IsKeyDown(bindingName, playerInfo) && !LastInputState.IsKeyDown(bindingName, playerInfo);
+
         }
         public bool IsNewKeyPress(Keys key)
         {
@@ -100,14 +124,12 @@ namespace Spectrum.Framework.Input
 
         public bool IsNewKeyRelease(string bindingName)
         {
-            KeyBinding binding;
-            if (!KeyBinding.KeyBindings.TryGetValue(bindingName, out binding)) throw new KeyNotFoundException("Binding not found");
-            return IsNewKeyRelease(binding);
-
+            return IsNewKeyRelease(bindingName, PlayerInformation.Default);
         }
-        public bool IsNewKeyRelease(KeyBinding binding)
+        public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo)
         {
-            return !IsKeyDown(binding) && LastInputState.IsKeyDown(binding);
+            return !IsKeyDown(bindingName, playerInfo) && LastInputState.IsKeyDown(bindingName, playerInfo);
+
         }
         public bool IsNewKeyRelease(Keys key)
         {
@@ -115,22 +137,42 @@ namespace Spectrum.Framework.Input
                     LastInputState.IsKeyDown(key));
         }
 
+        public float GetAxis1D(string axisName)
+        {
+            return GetAxis1D(axisName, PlayerInformation.Default);
+        }
+        public float GetAxis1D(string axisName, PlayerInformation playerInfo)
+        {
+            InputLayout layout = playerInfo.Layout;
+            Axis1 axis;
+            if (!layout.Axes1.TryGetValue(axisName, out axis)) throw new KeyNotFoundException("Axis not found");
+            return axis.Value(this, playerInfo);
+        }
+
+        public Vector2 GetAxis2D(string horizontal, string vertical, bool limitToOne = false)
+        {
+            return GetAxis2D(horizontal, vertical, PlayerInformation.Default, limitToOne);
+        }
+        public Vector2 GetAxis2D(string horizontal, string vertical, PlayerInformation playerInfo, bool limitToOne)
+        {
+            Vector2 output = new Vector2(GetAxis1D(horizontal, playerInfo), GetAxis1D(vertical, playerInfo));
+            if (limitToOne && output.LengthSquared() > 1)
+                output.Normalize();
+            return output;
+        }
 
         public bool IsMouseDown(int button)
         {
             return MouseState.buttons[button];
         }
-
         public bool IsNewMousePress(int button)
         {
             return IsMouseDown(button) && !LastInputState.IsMouseDown(button);
         }
-
         public bool IsNewMouseRelease(int button)
         {
             return !IsMouseDown(button) && LastInputState.IsMouseDown(button);
         }
-
         public int MouseWheelDistance()
         {
             return MouseState.Scroll;

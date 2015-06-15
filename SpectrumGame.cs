@@ -16,6 +16,7 @@ using Spectrum.Framework.Screens;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Audio;
+using Spectrum.Framework.Input;
 
 namespace Spectrum
 {
@@ -93,6 +94,7 @@ namespace Spectrum
                 ID = new NetID(guid.Value);
             }
             Game = this;
+            InputLayout.Init();
             EntityCollection ECollection = new EntityCollection();
             PhysicsEngine.Init(ECollection);
             MP = new MultiplayerService(ID);

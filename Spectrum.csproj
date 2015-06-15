@@ -103,6 +103,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\SharpDX.XAudio2.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.XInput, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Dependencies\SharpDX.XInput.dll</HintPath>
+    </Reference>
     <Reference Include="Steamworks.NET, Version=6.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\Steamworks\Steamworks.NET.dll</HintPath>
@@ -149,7 +153,11 @@
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\IDebug.cs" />
     <Compile Include="Framework\Graphics\Camera.cs" />
+    <Compile Include="Framework\Input\Axis.cs" />
+    <Compile Include="Framework\Input\Gamepad.cs" />
     <Compile Include="Framework\Input\KeyBinding.cs" />
+    <Compile Include="Framework\Input\InputLayout.cs" />
+    <Compile Include="Framework\Input\PlayerInformation.cs" />
     <Compile Include="Framework\Input\SpectrumMouse.cs" />
     <Compile Include="Framework\LSystem\LNode.cs" />
     <Compile Include="Framework\LSystem\LTree.cs" />
