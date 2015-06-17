@@ -205,6 +205,7 @@ namespace Spectrum
         {
             AudioManager.Shutdown();
             SaveSettings(File.OpenWrite("save.dat"));
+            MP.Dispose();
             if(UsingSteam)
             {
                 Steamworks.SteamAPI.Shutdown();
@@ -226,7 +227,7 @@ namespace Spectrum
             if (newResize)
             {
                 graphics.ApplyChanges();
-                if (OnScreenResize != null)
+                if (OnScreenResize != null && graphics.GraphicsDevice.Viewport.Height > 0 && graphics.GraphicsDevice.Viewport.Width > 0)
                 {
                     OnScreenResize(this, EventArgs.Empty);
                 }

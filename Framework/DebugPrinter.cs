@@ -28,7 +28,8 @@ namespace Spectrum.Framework
                 string[] msgStrings = msg.Split('\n');
                 for (int i = 0; i < msgStrings.Length; i++)
                 {
-                    strings.Add(String.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], sf.GetFileName().Split('\\').Last()));
+                    string filename = sf.GetFileName();
+                    strings.Add(String.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last()));
                 }
             }
         }
