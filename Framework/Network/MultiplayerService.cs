@@ -118,6 +118,8 @@ namespace Spectrum.Framework.Network
             else
                 connection.Terminate();
         }
+        public event Action<PeerEventArgs> OnPeerJoined;
+        public event Action<PeerEventArgs> OnPeerLeft;
         #endregion
 
         private UDPReceiver udpReceiver;
@@ -453,6 +455,8 @@ namespace Spectrum.Framework.Network
             {
                 DebugPrinter.print("Peer disconnected " + conn.RemoteIP);
                 _connectedPeers.Remove(conn.ClientID);
+                if (OnPeerLeft != null)
+                    OnPeerLeft(new PeerEventArgs(conn.ClientID));
                 lock (allConnections)
                     allConnections.Remove(conn);
                 conn.Terminate();
@@ -471,6 +475,8 @@ namespace Spectrum.Framework.Network
                 if (!_connectedPeers.ContainsKey(conn.ClientID))
                 {
                     _connectedPeers[conn.ClientID] = conn;
+                    if (OnPeerJoined != null)
+                        OnPeerJoined(new PeerEventArgs(conn.ClientID));
                     return true;
                 }
                 else

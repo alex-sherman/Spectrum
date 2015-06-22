@@ -9,6 +9,7 @@ namespace Spectrum.Framework.Network
     {
         public ulong? SteamID;
         public Guid? Guid;
+        public string Name;
 
         public static bool operator >(NetID lhs, NetID rhs)
         {
@@ -33,12 +34,14 @@ namespace Spectrum.Framework.Network
         {
             this.Guid = guid;
             SteamID = null;
+            Name = "";
         }
 
         public NetID(ulong steamID)
         {
             SteamID = steamID;
             Guid = null;
+            Name = "";
         }
 
         public override bool Equals(object obj)

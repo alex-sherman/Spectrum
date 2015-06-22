@@ -183,6 +183,9 @@ namespace Spectrum.Framework.Physics.Collision
             return true;
 
         }
+
+
+        #region GJK Detect
         /// <summary>
         /// Checks two shapes for collisions.
         /// </summary>
@@ -273,11 +276,6 @@ namespace Spectrum.Framework.Physics.Collision
             }
         }
 
-        /// <summary>
-        /// Determines which Veronoi region of a line segment 
-        /// the origin is in, utilizing the preserved winding
-        /// of the simplex to eliminate certain regions.
-        /// </summary>
         static bool ProcessLine(List<Vector3> simplex, ref Vector3 direction)
         {
             Vector3 a = simplex[1];
@@ -289,11 +287,6 @@ namespace Spectrum.Framework.Physics.Collision
             return false;
         }
 
-        /// <summary>
-        /// Determines which Veronoi region of a triangle 
-        /// the origin is in, utilizing the preserved winding
-        /// of the simplex to eliminate certain regions.
-        /// </summary>
         static bool ProcessTriangle(List<Vector3> simplex, ref Vector3 direction)
         {
             Vector3 a = simplex[2];
@@ -316,11 +309,6 @@ namespace Spectrum.Framework.Physics.Collision
             return false;
         }
 
-        /// <summary>
-        /// Determines which Veronoi region of a tetrahedron
-        /// the origin is in, utilizing the preserved winding
-        /// of the simplex to eliminate certain regions.
-        /// </summary>
         static bool ProcessTetrehedron(List<Vector3> simplex, ref Vector3 direction)
         {
             Vector3 a = simplex[3];
@@ -363,7 +351,9 @@ namespace Spectrum.Framework.Physics.Collision
 
             return false;
         }
+        #endregion
 
+        #region GJK Raycast
         /// <summary>
         /// Checks if a ray definied through it's origin and direction collides
         /// with a shape.
@@ -455,6 +445,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             return true;
         }
+        #endregion
 
         // see: btVoronoiSimplexSolver.cpp
         #region private class VoronoiSimplexSolver - Bullet

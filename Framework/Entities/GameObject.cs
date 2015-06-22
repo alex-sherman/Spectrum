@@ -268,6 +268,10 @@ namespace Spectrum.Framework.Entities
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
         }
+        public override void Draw3D(GameTime gameTime, SpriteBatch spriteBatch, Matrix View, Matrix Projection)
+        {
+            GraphicsEngine.Render(this, View, Projection);
+        }
         public override void Dispose()
         {
             DebugPrinter.undisplay(this);

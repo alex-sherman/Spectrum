@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class TextElement : Element
     {
-        public string Text { get; protected set; }
+        public string Text { get; set; }
 
         public TextElement(string text)
             : base()

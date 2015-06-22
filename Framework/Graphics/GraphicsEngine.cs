@@ -78,29 +78,26 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        public static void UpdateWater(List<GameObject> scene, GameTime time, SpriteBatch batch)
+        public static void UpdateWater(List<Entity> scene, GameTime time, SpriteBatch batch)
         {
             Color transparentClear = clearColor;
             device.SetRenderTarget(Water.refractionRenderTarget);
             GraphicsEngine.device.Clear(transparentClear);
-            foreach (GameObject drawable in scene)
+            foreach (Entity drawable in scene)
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    drawable.Draw(time, batch, true);
-                    Render(drawable, Camera.View, Camera.ReflectionProjection);
                 }
             }
             device.SetRenderTarget(Water.reflectionRenderTarget);
             GraphicsEngine.device.Clear(transparentClear);
             SpectrumEffect.Clip = true;
             SpectrumEffect.ClipPlane = new Vector4(0, 1, 0, -Water.waterHeight);
-            foreach (GameObject drawable in scene)
+            foreach (Entity drawable in scene)
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    drawable.Draw(time, batch, true);
-                    Render(drawable, Camera.ReflectionView, Camera.ReflectionProjection);
+                    drawable.Draw3D(time, batch, Camera.ReflectionView, Camera.Projection);
                 }
             }
             SpectrumEffect.Clip = false;
@@ -166,7 +163,7 @@ namespace Spectrum.Framework.Graphics
                 }
             }
         }
-        static void Render(GameObject drawable, Matrix? View = null, Matrix? Projection = null)
+        public static void Render(GameObject drawable, Matrix View, Matrix Projection)
         {
             if (drawable != null && drawable.Parts != null)
             {
@@ -241,7 +238,7 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
-        public static void Render(List<GameObject> drawables, GameTime gameTime)
+        public static void Render(List<Entity> drawables, GameTime gameTime)
         {
             BeginRender(gameTime);
             WaterEffect.ReflectionView = Camera.ReflectionView;
@@ -261,10 +258,10 @@ namespace Spectrum.Framework.Graphics
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTarget(AATarget);
             GraphicsEngine.device.Clear(clearColor);
-            foreach (GameObject drawable in drawables)
+            foreach (Entity drawable in drawables)
             {
-                drawable.Draw(gameTime, spriteBatch, false);
-                Render(drawable);
+                drawable.Draw(gameTime, spriteBatch);
+                drawable.Draw3D(gameTime, spriteBatch, Camera.View, Camera.Projection);
             }
             spriteBatch.End();
             //Clear the screen and perform anti aliasing

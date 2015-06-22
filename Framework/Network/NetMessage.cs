@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Entities;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,6 +32,9 @@ namespace Spectrum.Framework.Network
         JSON = 9,
         FLOATARRAY = 10,
         BOOL = 11,
+        LIST = 12,
+        DICTIONARY = 13,
+        NETID = 14,
     }
     public class NetMessage : ISerializable
     {
@@ -127,7 +131,7 @@ namespace Spectrum.Framework.Network
         public NetID ReadNetID()
         {
             bool usesGuid = ReadBool();
-            if(usesGuid)
+            if (usesGuid)
                 return new NetID(ReadGuid());
             else
                 return new NetID((ulong)ReadLong());
@@ -316,72 +320,148 @@ namespace Spectrum.Framework.Network
             return JToken.Parse(json);
         }
 
+        ObjectType GetPrimitiveType(Type t)
+        {
+            if (t == typeof(int))
+                return ObjectType.INT;
+            else if (t == typeof(float))
+                return ObjectType.FLOAT;
+            else if (t == typeof(string))
+                return ObjectType.STRING;
+            else if (t == typeof(Guid))
+                return ObjectType.GUID;
+            else if (t == typeof(Vector3))
+                return ObjectType.VECTOR3;
+            else if (t == typeof(byte))
+                return ObjectType.BYTE;
+            else if (t == typeof(Matrix))
+                return ObjectType.MATRIX;
+            else if (t.IsSubclassOf(typeof(Entity)))
+                return ObjectType.ENTITY;
+            else if (t.IsSubclassOf(typeof(JToken)))
+                return ObjectType.JSON;
+            else if (t == typeof(float[,]))
+                return ObjectType.FLOATARRAY;
+            else if (t == typeof(bool))
+                return ObjectType.BOOL;
+            else if (t == typeof(NetID))
+                return ObjectType.NETID;
+            else if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>))
+                return ObjectType.DICTIONARY;
+            throw new SerializationException("Uknown primitive type");
+        }
+        Type GetPrimitiveType(ObjectType t)
+        {
+            switch (t)
+            {
+                case ObjectType.INT:
+                    return typeof(int);
+                case ObjectType.STRING:
+                    return typeof(string);
+                case ObjectType.FLOAT:
+                    return typeof(float);
+                case ObjectType.VECTOR3:
+                    return typeof(Vector3);
+                case ObjectType.POINT:
+                    return typeof(Point);
+                case ObjectType.BYTE:
+                    return typeof(byte);
+                case ObjectType.GUID:
+                    return typeof(Guid);
+                case ObjectType.MATRIX:
+                    return typeof(Matrix);
+                case ObjectType.ENTITY:
+                    return typeof(Entity);
+                case ObjectType.JSON:
+                    return typeof(JToken);
+                case ObjectType.FLOATARRAY:
+                    return typeof(float[,]);
+                case ObjectType.BOOL:
+                    return typeof(bool);
+                case ObjectType.LIST:
+                    return typeof(List<>);
+                case ObjectType.DICTIONARY:
+                    return typeof(Dictionary<,>);
+                case ObjectType.NETID:
+                    return typeof(NetID);
+                default:
+                    throw new SerializationException("Uknown primitive type");
+            }
+        }
+        void _WritePrimitive(ObjectType primType, object p)
+        {
+            switch (primType)
+            {
+                case ObjectType.INT:
+                    Write((int)p);
+                    break;
+                case ObjectType.STRING:
+                    Write((string)p);
+                    break;
+                case ObjectType.FLOAT:
+                    Write((float)p);
+                    break;
+                case ObjectType.VECTOR3:
+                    Write((Vector3)p);
+                    break;
+                case ObjectType.POINT:
+                    Write((Point)p);
+                    break;
+                case ObjectType.BYTE:
+                    Write((byte)p);
+                    break;
+                case ObjectType.GUID:
+                    Write((Guid)p);
+                    break;
+                case ObjectType.MATRIX:
+                    Write((Matrix)p);
+                    break;
+                case ObjectType.ENTITY:
+                    Write(((Entity)p).ID);
+                    break;
+                case ObjectType.JSON:
+                    Write(((JToken)p));
+                    break;
+                case ObjectType.FLOATARRAY:
+                    Write((float[,])p);
+                    break;
+                case ObjectType.BOOL:
+                    Write((bool)p);
+                    break;
+                case ObjectType.NETID:
+                    Write((NetID)p);
+                    break;
+                case ObjectType.DICTIONARY:
+                    Type t = p.GetType();
+                    ObjectType keyType = GetPrimitiveType(t.GetGenericArguments()[0]);
+                    ObjectType valueType = GetPrimitiveType(t.GetGenericArguments()[1]);
+                    Write((byte)keyType);
+                    Write((byte)valueType);
+                    IDictionary herp = p as IDictionary;
+                    Write((int)herp.Count);
+                    object[] keys = new object[herp.Count];
+                    herp.Keys.CopyTo(keys, 0);
+                    object[] values = new object[herp.Count];
+                    herp.Values.CopyTo(values, 0);
+                    for (int i = 0; i < herp.Count; i++)
+                    {
+                        _WritePrimitive(keyType, keys[i]);
+                        _WritePrimitive(valueType, values[i]);
+                    }
+                    break;
+                default:
+                    throw new SerializationException("Uknown primitive type");
+            }
+        }
         public void WritePrimitive(object p)
         {
             Type t = p.GetType();
-            if (t == typeof(int))
-            {
-                Write((byte)ObjectType.INT);
-                Write((int)p);
-            }
-            else if (t == typeof(float))
-            {
-                Write((byte)ObjectType.FLOAT);
-                Write((float)p);
-            }
-            else if (t == typeof(string))
-            {
-                Write((byte)ObjectType.STRING);
-                Write((string)p);
-            }
-            else if (t == typeof(Guid))
-            {
-                Write((byte)ObjectType.GUID);
-                Write((Guid)p);
-            }
-            else if (t == typeof(Vector3))
-            {
-                Write((byte)ObjectType.VECTOR3);
-                Write((Vector3)p);
-            }
-            else if (t == typeof(byte))
-            {
-                Write((byte)ObjectType.BYTE);
-                Write((byte)p);
-            }
-            else if (t == typeof(Matrix))
-            {
-                Write((byte)ObjectType.MATRIX);
-                Write((Matrix)p);
-            }
-            else if (t.IsSubclassOf(typeof(Entity)))
-            {
-                Write((byte)ObjectType.ENTITY);
-                Write(((Entity)p).ID);
-            }
-            else if (t.IsSubclassOf(typeof(JToken)))
-            {
-                Write((byte)ObjectType.JSON);
-                Write(((JToken)p));
-            }
-            else if (t == typeof(float[,]))
-            {
-                Write((byte)ObjectType.FLOATARRAY);
-                Write((float[,])p);
-            }
-            else if (t == typeof(bool))
-            {
-                Write((byte)ObjectType.BOOL);
-                Write((bool)p);
-            }
-            else
-            {
-                throw new SerializationException("Uknown primitive type");
-            }
+            ObjectType objType = GetPrimitiveType(t);
+            Write((byte)objType);
+            _WritePrimitive(objType, p);
         }
-        public object ReadPrimitive()
+        object ReadPrimitive(ObjectType type)
         {
-            ObjectType type = (ObjectType)ReadByte();
             switch (type)
             {
                 case ObjectType.INT:
@@ -408,9 +488,28 @@ namespace Spectrum.Framework.Network
                     return Read2DFloatArray();
                 case ObjectType.BOOL:
                     return ReadBool();
+                case ObjectType.NETID:
+                    return ReadNetID();
+                case ObjectType.DICTIONARY:
+                    ObjectType keyType = (ObjectType)ReadByte();
+                    ObjectType valueType = (ObjectType)ReadByte();
+                    int count = ReadInt();
+                    System.Reflection.ConstructorInfo c = typeof(Dictionary<,>).MakeGenericType(
+                        GetPrimitiveType(keyType), GetPrimitiveType(valueType)).GetConstructors()[0];
+                    IDictionary output = (IDictionary)c.Invoke(new object[] { });
+                    for (int i = 0; i < count; i++)
+                    {
+                        output.Add(ReadPrimitive(keyType), ReadPrimitive(valueType));
+                    }
+                    return output;
                 default:
                     throw new SerializationException("Uknown primitive type");
             }
+        }
+        public object ReadPrimitive()
+        {
+            ObjectType type = (ObjectType)ReadByte();
+            return ReadPrimitive(type);
         }
 
         // Constructor Args

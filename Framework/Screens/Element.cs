@@ -107,6 +107,18 @@ namespace Spectrum.Framework.Screens
             set { Fields[key].StrValue = value; }
         }
 
+        public List<Element> FindAll(Func<Element, bool> Predicate)
+        {
+            List<Element> output = new List<Element>();
+            foreach (Element child in Children)
+            {
+                if (Predicate(child))
+                    output.Add(child);
+                output.AddRange(child.FindAll(Predicate));
+            }
+            return output;
+        }
+
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
             foreach (Element child in Children)
@@ -218,8 +230,8 @@ namespace Spectrum.Framework.Screens
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
             element.Manager = Manager;
-            element.Initialize();
             _children.Insert(index ?? _children.Count, element);
+            element.Initialize();
             PositionUpdate();
         }
         public virtual void RemoveElement(Element element)

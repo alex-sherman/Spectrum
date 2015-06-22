@@ -191,7 +191,7 @@ namespace Spectrum.Framework.Entities
 
         public void Draw(GameTime gameTime)
         {
-            GraphicsEngine.Render(ECollection.gameObjects, gameTime);
+            GraphicsEngine.Render(ECollection.updateables, gameTime);
         }
     }
 }

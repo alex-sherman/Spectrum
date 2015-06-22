@@ -105,14 +105,6 @@ namespace Spectrum
             this.Window.ClientSizeChanged += WindowSizeChange;
             WindowForm = (Form)Form.FromHandle(Window.Handle);
             IsFixedTimeStep = false;
-            string path = "save.dat";
-            if (File.Exists(path))
-            {
-                LoadSettings(File.OpenRead(path));
-            }
-            else { SaveSettings(File.Create(path)); }
-            this.IsMouseVisible = true;
-            Content.RootDirectory = "Content";
         }
 
         private void LoadSettings(FileStream stream)
@@ -191,6 +183,14 @@ namespace Spectrum
         protected override void LoadContent()
         {
             base.LoadContent();
+            string path = "save.dat";
+            if (File.Exists(path))
+            {
+                LoadSettings(File.OpenRead(path));
+            }
+            else { SaveSettings(File.Create(path)); }
+            this.IsMouseVisible = true;
+            Content.RootDirectory = "Content";
             ScreenManager = new ScreenManager(this, ContentHelper.Single);
             Components.Add(ScreenManager);
             ScreenManager.Initialize();
