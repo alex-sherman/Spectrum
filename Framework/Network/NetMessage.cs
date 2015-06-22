@@ -305,8 +305,7 @@ namespace Spectrum.Framework.Network
         }
         public bool ReadBool()
         {
-            if (stream.Position == stream.Length) throw new EndOfStreamException();
-            return stream.ReadByte() == 1;
+            return ReadByte() == 1;
         }
 
         public void Write(JToken jobj)
@@ -390,6 +389,8 @@ namespace Spectrum.Framework.Network
         }
         void _WritePrimitive(ObjectType primType, object p)
         {
+            Type t;
+            ObjectType valueType;
             switch (primType)
             {
                 case ObjectType.INT:
@@ -431,10 +432,19 @@ namespace Spectrum.Framework.Network
                 case ObjectType.NETID:
                     Write((NetID)p);
                     break;
+                case ObjectType.LIST:
+                    t = p.GetType();
+                    valueType = GetPrimitiveType(t.GetGenericArguments()[0]);
+                    Write((byte)valueType);
+                    foreach (var value in (ICollection)p)
+                    {
+                        _WritePrimitive(valueType, value);
+                    }
+                    break;
                 case ObjectType.DICTIONARY:
-                    Type t = p.GetType();
+                    t = p.GetType();
                     ObjectType keyType = GetPrimitiveType(t.GetGenericArguments()[0]);
-                    ObjectType valueType = GetPrimitiveType(t.GetGenericArguments()[1]);
+                    valueType = GetPrimitiveType(t.GetGenericArguments()[1]);
                     Write((byte)keyType);
                     Write((byte)valueType);
                     IDictionary herp = p as IDictionary;
@@ -462,6 +472,9 @@ namespace Spectrum.Framework.Network
         }
         object ReadPrimitive(ObjectType type)
         {
+            ObjectType valueType;
+            int count;
+            ConstructorInfo cinfo;
             switch (type)
             {
                 case ObjectType.INT:
@@ -490,18 +503,25 @@ namespace Spectrum.Framework.Network
                     return ReadBool();
                 case ObjectType.NETID:
                     return ReadNetID();
+                case ObjectType.LIST:
+                    valueType = (ObjectType)ReadByte();
+                    count = ReadInt();
+                    cinfo = typeof(List<>).MakeGenericType(
+                        GetPrimitiveType(valueType)).GetConstructors()[0];
+                    ICollection list = (ICollection)cinfo.Invoke(new object[] { });
+                    return list;
                 case ObjectType.DICTIONARY:
                     ObjectType keyType = (ObjectType)ReadByte();
-                    ObjectType valueType = (ObjectType)ReadByte();
-                    int count = ReadInt();
-                    System.Reflection.ConstructorInfo c = typeof(Dictionary<,>).MakeGenericType(
+                    valueType = (ObjectType)ReadByte();
+                    count = ReadInt();
+                    cinfo = typeof(Dictionary<,>).MakeGenericType(
                         GetPrimitiveType(keyType), GetPrimitiveType(valueType)).GetConstructors()[0];
-                    IDictionary output = (IDictionary)c.Invoke(new object[] { });
+                    IDictionary dictionary = (IDictionary)cinfo.Invoke(new object[] { });
                     for (int i = 0; i < count; i++)
                     {
-                        output.Add(ReadPrimitive(keyType), ReadPrimitive(valueType));
+                        dictionary.Add(ReadPrimitive(keyType), ReadPrimitive(valueType));
                     }
-                    return output;
+                    return dictionary;
                 default:
                     throw new SerializationException("Uknown primitive type");
             }
@@ -568,39 +588,6 @@ namespace Spectrum.Framework.Network
             foreach (ISerializable item in input)
             {
                 item.WriteTo(this);
-            }
-        }
-
-        // Dictionary
-        public Dictionary<string, T> ReadDict<T>() where T : ISerializable
-        {
-            try
-            {
-                Dictionary<string, T> output = new Dictionary<string, T>();
-                int count = ReadInt();
-                Type t = typeof(T);
-                ConstructorInfo cinfo = t.GetConstructor(new Type[] { typeof(NetMessage) });
-                if (cinfo == null) { return output; }
-                for (int i = 0; i < count; i++)
-                {
-                    string key = ReadString();
-                    T toAdd = (T)cinfo.Invoke(new object[] { this });
-                    output[key] = toAdd;
-                }
-                return output;
-            }
-            catch (Exception e)
-            {
-                throw new SerializationException(e);
-            }
-        }
-        public void Write<T>(Dictionary<string, T> input) where T : ISerializable
-        {
-            Write(input.Count());
-            foreach (KeyValuePair<string, T> item in input)
-            {
-                Write(item.Key);
-                item.Value.WriteTo(this);
             }
         }
 
