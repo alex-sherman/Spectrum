@@ -38,14 +38,14 @@ namespace Spectrum.Framework.Network
                 {
                     byte comType = (byte)netStream.ReadByte();
                     NetMessage header = new NetMessage(netStream);
-                    conn.ClientID = header.ReadNetID();
+                    conn.PeerID = header.ReadNetID();
                     NetMessage message = ReadFromControlStream(netStream);
                     switch (comType)
                     {
                         case 255:
                             throw new InvalidDataException("Bad data from host");
                         default:
-                            conn.MPService.ReceiveMessage(comType, conn.ClientID, message);
+                            conn.MPService.ReceiveMessage(comType, conn.PeerID, message);
                             break;
                     }
                     lastHeard = DateTime.Now;

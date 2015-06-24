@@ -49,8 +49,8 @@ namespace Spectrum.Framework.Entities
                         }
                     }
                 );
-            mpService.RegisterHandshakeHandler(HandshakeStage.PartialResponse, entitySender);
-            mpService.RegisterHandshakeHandler(HandshakeStage.Completed, entitySender);
+            Handshake.RegisterHandshakeHandler(HandshakeStage.PartialResponse, entitySender);
+            Handshake.RegisterHandshakeHandler(HandshakeStage.Completed, entitySender);
             mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, HandleEntityCreation);
             mpService.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
             mpService.RegisterMessageCallback(FrameworkMessages.EntityMessage, HandleEntityMessage);

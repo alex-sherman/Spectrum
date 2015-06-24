@@ -79,9 +79,9 @@ namespace Spectrum.Framework.Network
                     memStream.WriteTo(netStream);
                 }
             }
-            else if (conn.ClientID.SteamID != null)
+            else if (conn.PeerID.SteamID != null)
             {
-                Steamworks.CSteamID steamID = new Steamworks.CSteamID(conn.ClientID.SteamID.Value);
+                Steamworks.CSteamID steamID = new Steamworks.CSteamID(conn.PeerID.SteamID.Value);
                 Steamworks.SteamNetworking.SendP2PPacket(steamID, memStream.GetBuffer(), (uint)memStream.Length, Steamworks.EP2PSend.k_EP2PSendReliable);
             }
         }

@@ -163,6 +163,7 @@
     <Compile Include="Framework\LSystem\LTree.cs" />
     <Compile Include="Framework\ExtensionMethods.cs" />
     <Compile Include="Framework\MatrixHelper.cs" />
+    <Compile Include="Framework\Network\Handshake.cs" />
     <Compile Include="Framework\Network\ISerializable.cs" />
     <Compile Include="Framework\Network\NetID.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />

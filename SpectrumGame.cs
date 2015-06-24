@@ -79,7 +79,7 @@ namespace Spectrum
         private Point mousePosition;
         public bool UsingSteam { get; private set; }
 
-        public SpectrumGame(Guid? guid = null)
+        public SpectrumGame(Guid? guid = null, string nick = "Player")
         {
             NetID ID;
             UsingSteam = guid == null;
@@ -97,7 +97,7 @@ namespace Spectrum
             InputLayout.Init();
             EntityCollection ECollection = new EntityCollection();
             PhysicsEngine.Init(ECollection);
-            MP = new MultiplayerService(ID);
+            MP = new MultiplayerService(ID, nick);
             EntityManager = new EntityManager(ECollection, MP);
             graphics = new GraphicsDeviceManager(this);
             AudioManager.Init();
