@@ -38,6 +38,16 @@ namespace Spectrum.Framework.Graphics
             }
             SkinningData = skinningData;
         }
+        public Texture2D Texture
+        {
+            set
+            {
+                foreach (var part in MeshParts.Values)
+                {
+                    part.effect.Texture = value;
+                }
+            }
+        }
         public void Update(GameTime gameTime)
         {
             if (AnimationPlayer != null)

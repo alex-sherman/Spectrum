@@ -42,17 +42,6 @@ namespace Spectrum.Framework.Network
         }
     }
 
-    public struct HandshakeHandler
-    {
-        public Action<NetID, NetMessage> Receive;
-        public Action<NetID, NetMessage> Write;
-        public HandshakeHandler(Action<NetID, NetMessage> write, Action<NetID, NetMessage> receive)
-        {
-            Write = write;
-            Receive = receive;
-        }
-    }
-
     public delegate void NetMessageHandler(NetID peerID, NetMessage message);
     struct MultiplayerMessage
     {

@@ -40,15 +40,15 @@ namespace Spectrum.Framework.Content
             Content = content;
         }
 
-        public static T Load<T>(string plugin, string path) where T : class
-        {
-            Plugin p = SpectrumGame.Game.Plugins[plugin];
-            if (p == null) { return null; }
-            return p.Content._load<T>(path, true);
-        }
-
         public static T Load<T>(string path, bool usePrefix) where T : class
         {
+            if (usePrefix && path.Contains('@'))
+            {
+                string[] split = path.Split('@');
+                Plugin plugin;
+                if (SpectrumGame.Game.Plugins.TryGetValue(split[0], out plugin))
+                    return plugin.Content._load<T>(split[1], true);
+            }
             return (T)Single._load<T>(path, usePrefix);
         }
 
@@ -57,18 +57,11 @@ namespace Spectrum.Framework.Content
             return Load<T>(path, true);
         }
 
-        public static object LoadType(Type type, string path, string plugin)
+        public static object LoadType(Type type, string path)
         {
-            MethodInfo load = null;
-            if (plugin == null)
-                load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string) });
-            else
-                load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string), typeof(string) });
+            MethodInfo load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string) });
             load = load.MakeGenericMethod(type);
-            if (plugin == null)
-                return load.Invoke(null, new object[] { path });
-            else
-                return load.Invoke(null, new object[] { plugin, path });
+            return load.Invoke(null, new object[] { path });
         }
 
         private T _load<T>(string path, bool usePrefix) where T : class
@@ -94,21 +87,6 @@ namespace Spectrum.Framework.Content
             {
                 throw new ContentLoadException();
             }
-        }
-
-        public Texture2D ObjectTexture(object obj)
-        {
-            if (obj == null) { return Blank; }
-            PropertyInfo[] pinfos = obj.GetType().GetProperties();
-            foreach (PropertyInfo pinfo in pinfos)
-            {
-                if (pinfo.Name == "GUITex")
-                {
-                    Texture2D output = pinfo.GetValue(obj, null) as Texture2D;
-                    if (output != null) { return output; }
-                }
-            }
-            return Blank;
         }
     }
 }

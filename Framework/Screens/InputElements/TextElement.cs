@@ -26,6 +26,7 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public override void Draw(GameTime time)
         {
+            base.Draw(time);
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y);

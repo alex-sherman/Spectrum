@@ -10,7 +10,6 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class Button : InputElement
     {
-        public object DrawObject;
         public string Text;
 
         public Button(int width, int height)
@@ -37,10 +36,6 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Draw(GameTime time)
         {
             base.Draw(time);
-            if (DrawObject != null)
-            {
-                ScreenManager.CurrentManager.Draw(ScreenManager.CurrentManager.TextureLoader.ObjectTexture(DrawObject), Rect, Color.White, Layer(1));
-            }
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;

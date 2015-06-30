@@ -70,7 +70,7 @@ namespace Spectrum
         }
         #endregion
 
-        public RealDict<string, Plugin> Plugins = new RealDict<string, Plugin>();
+        public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
         GraphicsDeviceManager graphics;
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }

@@ -8,19 +8,12 @@ namespace Spectrum.Framework.Content
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Class)]
     public class PreloadedContentAttribute : System.Attribute
     {
-        public Type Type { get; private set; }
         public string Path { get; private set; }
-        public string Plugin { get; private set; }
-        public PreloadedContentAttribute(Type type, string path, string plugin)
+        public Type Type { get; private set; }
+        public PreloadedContentAttribute(string path, Type type = null)
         {
+            Path = path;
             Type = type;
-            Path = path;
-            Plugin = plugin;
-        }
-        public PreloadedContentAttribute(string path, string plugin = null)
-        {
-            Path = path;
-            Plugin = plugin;
         }
     }
 }

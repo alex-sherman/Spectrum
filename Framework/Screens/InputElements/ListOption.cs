@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Screens.InputElements
             : base()
         {
             this.text = text;
-            this.Tag = tag;
+            this.Data = tag;
         }
         public override void Draw(GameTime time)
         {

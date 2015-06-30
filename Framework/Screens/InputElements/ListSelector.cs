@@ -37,7 +37,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         private void optionClicked(InputElement clicked)
         {
-            OnPick((clicked as ListOption).Tag);
+            OnPick((clicked as ListOption).Data);
             Close();
         }
         public override bool HandleInput(bool otherTookInput, InputState input)

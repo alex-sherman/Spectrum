@@ -140,7 +140,7 @@ namespace Spectrum.Framework.Entities
         }
         public Entity CreateEntityFromData(EntityData data)
         {
-            Type t = TypeHelper.Helper[data.type];
+            Type t = TypeHelper.Types[data.type];
             Entity e = CreateEntityType(t, data.guid, data.owner, data.args);
             if (e is GameObject) { (e as GameObject).Position = data.position; }
             return e;

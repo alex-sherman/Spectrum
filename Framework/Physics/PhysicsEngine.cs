@@ -74,20 +74,5 @@ namespace Spectrum.Framework.Physics
                 }
             }
         }
-        public GroundInfo GetTerrainHeight(Vector3 point)
-        {
-            float fraction;
-            Vector3 normal;
-            foreach (GameObject t in world.Collidables)
-            {
-                point.Y = t.BoundingBox.Max.Y + 100;
-                if (CollisionSystem.Raycast(t, point, Vector3.Down, out normal, out fraction))
-                {
-                    return new GroundInfo(t, point + Vector3.Down * fraction, normal);
-                }
-            }
-
-            return null;
-        }
     }
 }

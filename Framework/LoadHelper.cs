@@ -23,14 +23,14 @@ namespace Spectrum.Framework
             {
                 if (type.GetCustomAttributes(true).Any((object attribute) => attribute is LoadableType))
                 {
-                    TypeHelper.Helper[type.Name] = type;
+                    TypeHelper.Types[type.Name] = type;
                     #region PreloadContent
                     foreach (object attribute in type.GetCustomAttributes(true).ToList())
                     {
                         PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
                         if (preload != null)
                         {
-                            ContentHelper.LoadType(preload.Type, preload.Path, preload.Plugin);
+                            ContentHelper.LoadType(preload.Type, preload.Path);
                         }
                     }
                     foreach (FieldInfo field in type.GetFields())
@@ -40,7 +40,7 @@ namespace Spectrum.Framework
                             PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
                             if (preload != null)
                             {
-                                ContentHelper.LoadType(field.FieldType, preload.Path, preload.Plugin);
+                                ContentHelper.LoadType(field.FieldType, preload.Path);
                             }
                         }
                     }
@@ -66,13 +66,17 @@ namespace Spectrum.Framework
                 string pluginName = Path.GetFileName(pluginPath);
                 SpectrumGame.Game.Plugins[pluginName] = new Plugin(pluginName, pluginPath);
             }
+            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
+            {
+                plugin.Initialize();
+            }
 
             LoadHelper.LoadTypes(Assembly.GetEntryAssembly().GetTypes());
             LoadHelper.LoadTypes(Assembly.GetExecutingAssembly().GetTypes());
             //TypeHelper.Helper["StatModifier"] = typeof(StatModifier);
             //TypeHelper.Helper["Player"] = typeof(Player);
             //TypeHelper.Helper["Water"] = typeof(Water);
-            return TypeHelper.Helper;
+            return TypeHelper.Types;
         }
     }
 

@@ -14,6 +14,18 @@ namespace Spectrum.Framework.Network
         PartialResponse = 4,
         Completed = 5
     }
+
+    public struct HandshakeHandler
+    {
+        public Action<NetID, NetMessage> Receive;
+        public Action<NetID, NetMessage> Write;
+        public HandshakeHandler(Action<NetID, NetMessage> write, Action<NetID, NetMessage> receive)
+        {
+            Write = write;
+            Receive = receive;
+        }
+    }
+
     public class Handshake
     {
         private static Dictionary<HandshakeStage, List<HandshakeHandler>> handshakeHandlers = new Dictionary<HandshakeStage, List<HandshakeHandler>>();

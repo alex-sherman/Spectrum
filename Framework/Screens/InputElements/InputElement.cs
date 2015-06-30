@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Screens.InputElements
     public class InputElement : Element
     {
         public event InterfaceEventHandler OnClick;
-        public object Tag;
+        public object Data;
 
         public string MouseOverText;
         public bool MouseInside()

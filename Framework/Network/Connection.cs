@@ -122,7 +122,7 @@ namespace Spectrum.Framework.Network
             {
                 case HandshakeStage.Begin:
                     List<NetMessage> hashMessages = new List<NetMessage>();
-                    foreach (string type in TypeHelper.Helper.GetTypes())
+                    foreach (string type in TypeHelper.Types.GetTypes())
                     {
                         NetMessage hashMessage = new NetMessage();
                         hashMessage.Write(type);
@@ -172,7 +172,7 @@ namespace Spectrum.Framework.Network
             switch (ConnectionStage)
             {
                 case HandshakeStage.Begin:
-                    List<string> types = TypeHelper.Helper.GetTypes();
+                    List<string> types = TypeHelper.Types.GetTypes();
                     List<NetMessage> hashMessages = message.ReadList<NetMessage>().ToList();
                     foreach (NetMessage hashMessage in hashMessages)
                     {

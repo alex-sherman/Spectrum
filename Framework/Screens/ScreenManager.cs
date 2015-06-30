@@ -35,9 +35,6 @@ namespace Spectrum.Framework.Screens
 
         public SpriteBatch SpriteBatch;
         public static ScreenManager CurrentManager;
-        public Texture2D blankTexture { get { return ContentHelper.Blank; } }
-        private object grabbed;
-        private Texture2D grabbedTexture;
         public Viewport Viewport;
         public ContentHelper TextureLoader { get; private set; }
 
@@ -49,9 +46,6 @@ namespace Spectrum.Framework.Screens
         {
             get { return Game.IsActive; }
         }
-
-        public object Grabbed
-        { get { return grabbed; } set { grabbed = value; grabbedTexture = TextureLoader.ObjectTexture(value); } }
 
         #endregion
 
@@ -114,10 +108,6 @@ namespace Spectrum.Framework.Screens
                 SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             Root.PositionUpdate();
             Root.DrawWithChildren(gameTime, 1.0f);
-            if (Grabbed != null)
-            {
-                Draw(grabbedTexture, new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 64, 64), Color.White, 0);
-            }
             SpriteBatch.End();
         }
 
@@ -154,7 +144,7 @@ namespace Spectrum.Framework.Screens
             Viewport viewport = GraphicsDevice.Viewport;
 
 
-            SpriteBatch.Draw(blankTexture,
+            SpriteBatch.Draw(ContentHelper.Blank,
                              new Rectangle(0, 0, viewport.Width, viewport.Height),
                              Color.Black * alpha);
 

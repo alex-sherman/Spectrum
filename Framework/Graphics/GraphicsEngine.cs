@@ -87,6 +87,7 @@ namespace Spectrum.Framework.Graphics
             {
                 if (drawable.GetType() != typeof(Water))
                 {
+                    drawable.Draw3D(time, batch, Camera.View, Camera.ReflectionProjection);
                 }
             }
             device.SetRenderTarget(Water.reflectionRenderTarget);
@@ -97,7 +98,7 @@ namespace Spectrum.Framework.Graphics
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    drawable.Draw3D(time, batch, Camera.ReflectionView, Camera.Projection);
+                    drawable.Draw3D(time, batch, Camera.ReflectionView, Camera.ReflectionProjection);
                 }
             }
             SpectrumEffect.Clip = false;

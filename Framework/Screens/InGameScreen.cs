@@ -13,12 +13,6 @@ namespace Spectrum.Framework.Screens
 {
     public class InGameScreen : GameScreen
     {
-        public static ScalableTexture DefaultBackground = new ScalableTexture(ContentHelper.Blank, 0);
-        public static ScalableTexture DefaultTopBar = new ScalableTexture(ContentHelper.Blank, 0);
-        public static ScalableTexture DefaultCloseButton = new ScalableTexture(ContentHelper.Blank, 0);
-        protected ScalableTexture Background;
-        protected ScalableTexture TopBar;
-        protected ScalableTexture CloseButton;
         protected int TopBarHeight = 40;
         bool dragging = false;
         Vector2 dragMouseBegin;
@@ -26,10 +20,10 @@ namespace Spectrum.Framework.Screens
         public string Title;
         public InGameScreen(string title, ScalableTexture background = null, ScalableTexture topBar = null, ScalableTexture closeButton = null)
         {
-            Background = background ?? DefaultBackground;
-            TopBar = topBar ?? DefaultTopBar;
-            CloseButton = closeButton ?? DefaultCloseButton;
+            if (title == null)
+                throw new ArgumentNullException("Title cannot be null");
             this.Title = title;
+
         }
         public override void Initialize()
         {
@@ -40,14 +34,16 @@ namespace Spectrum.Framework.Screens
             FlatWidth = 100;
             X = 0;
             Y = 0;
-            if (Title != null)
-            {
-                TextElement titleElement = new TextElement(Title);
-                titleElement.Tags.Add("ingame-window-title");
-                titleElement.Margin.LeftRelative = .5f;
-                AddElement(titleElement);
-                titleElement.Margin.LeftOffset = -titleElement.Width / 2;
-            }
+
+            Element TitleContainer = new Element();
+            TitleContainer.RelativeWidth = 1;
+            TitleContainer.Tags.Add("ingame-window-title-container");
+            AddElement(TitleContainer);
+            TextElement TitleElement = new TextElement(Title);
+            TitleElement.Tags.Add("ingame-window-title");
+            TitleContainer.AddElement(TitleElement);
+            TitleElement.Center();
+            TitleContainer.FlatHeight = TitleElement.FlatHeight;
         }
 
         public Rectangle CloseButtonRect
@@ -56,32 +52,13 @@ namespace Spectrum.Framework.Screens
         }
         public Rectangle TopBarRect
         {
-            get { return new Rectangle(Rect.X, Rect.Y, Rect.Width, TopBarHeight + TopBar.BorderWidth); }
+            get { return new Rectangle(Rect.X, Rect.Y, Rect.Width, TopBarHeight); }
         }
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-            if (Background != null)
-            {
-                Background.Draw(Rect, Manager.SpriteBatch, Z);
-            }
-            if (TopBar != null)
-            {
-                TopBar.Draw(TopBarRect, Manager.SpriteBatch, Layer(1));
-            }
-            if (CloseButton != null)
-            {
-                CloseButton.Draw(CloseButtonRect, Manager.SpriteBatch, Layer(2));
-            }
             Color borderColor = Color.Black;
             borderColor.A = 100;
-            //if (Title != "")
-            //{
-            //    Manager.DrawString(font, Title,
-            //        new Vector2(
-            //            TopBarRect.X + TopBarRect.Width / 2 - font.MeasureString(Title).X / 2,
-            //            TopBarRect.Y + TopBarRect.Height / 2 - font.MeasureString(Title).Y / 2), Color.LightGray, Layer(2));
-            //}
         }
 
         public override ElementDisplay Toggle()

@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public DropdownOption(string text, object tag)
         {
-            Tag = tag;
+            Data = tag;
             Text = text;
         }
         public override void Initialize()

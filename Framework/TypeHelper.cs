@@ -12,20 +12,20 @@ namespace Spectrum.Framework
 {
     public class TypeHelper
     {
-        public static TypeHelper Helper = new TypeHelper();
-        private RealDict<string, Type> Types = new RealDict<string, Type>();
-        public List<String> GetTypes() { return Types.Keys.ToList(); }
+        public static TypeHelper Types = new TypeHelper();
+        private static RealDict<string, Type> _types = new RealDict<string, Type>();
+        public List<String> GetTypes() { return _types.Keys.ToList(); }
 
-        public T Instantiate<T>(string type, params object[] args) where T: class
+        public static T Instantiate<T>(string type, params object[] args) where T: class
         {
-            return Instantiate(this[type], args) as T;
+            return Instantiate(_types[type], args) as T;
         }
         public List<string> GetNames(Type t)
         {
             List<string> output = new List<string>();
-            foreach (string type in Types.Keys)
+            foreach (string type in _types.Keys)
             {
-                if (Types[type].IsSubclassOf(t))
+                if (_types[type].IsSubclassOf(t))
                 {
                     output.Add(type);
                 }
@@ -36,12 +36,12 @@ namespace Spectrum.Framework
         {
             get
             {
-                return Types[name];
+                return _types[name];
             }
             set
             {
-                if (Types[name] != null) { throw new ArgumentException("Key was already in the dictionary"); }
-                Types[name] = value;
+                if (_types[name] != null) { throw new ArgumentException("Key was already in the dictionary"); }
+                _types[name] = value;
             }
         }
         public static object Instantiate(Type t, params object[] args)
@@ -65,7 +65,7 @@ namespace Spectrum.Framework
                         PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
                         if (preload != null)
                         {
-                            field.SetValue(output, ContentHelper.LoadType(field.FieldType, preload.Path, preload.Plugin));
+                            field.SetValue(output, ContentHelper.LoadType(field.FieldType, preload.Path));
                         }
                     }
                 }
