@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Draw(GameTime time)
         {
             base.Draw(time);
-            ScreenManager.CurrentManager.DrawString(Font, text, new Vector2(X, Y), Color.Black, Layer(2));
+            ScreenManager.CurrentManager.DrawString(Font, text, new Vector2(AbsoluteX, AbsoluteY), Color.Black, Layer(2));
         }
     }
 }

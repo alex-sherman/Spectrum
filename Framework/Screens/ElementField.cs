@@ -27,7 +27,7 @@ namespace Spectrum.Framework.Screens
         {
             try
             {
-                return ContentHelper.Load<T>(value);
+                return value == null ? null : ContentHelper.Load<T>(value);
             }
             catch (ContentLoadException)
             {

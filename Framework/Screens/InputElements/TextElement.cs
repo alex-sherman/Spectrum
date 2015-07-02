@@ -20,8 +20,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Initialize()
         {
             base.Initialize();
-            FlatWidth = (int)Font.MeasureString(Text).X;
-            FlatHeight = (int)Font.MeasureString(Text).Y;
+            Width.Flat = (int)Font.MeasureString(Text).X;
+            Height.Flat = (int)Font.MeasureString(Text).Y;
         }
 
         public override void Draw(GameTime time)

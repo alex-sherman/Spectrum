@@ -43,10 +43,10 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
-            FlatWidth = 400;
-            FlatHeight = 100;
-            X = Manager.Viewport.Width / 2 - Width / 2;
-            Y = Manager.Viewport.Height / 2 - Height / 2;
+            Width.Flat = 400;
+            Height.Flat = 100;
+            X.Flat = Manager.Viewport.Width / 2 - TotalWidth / 2;
+            Y.Flat = Manager.Viewport.Height / 2 - TotalHeight / 2;
             Button button = new Button(_option1);
             button.OnClick += (InputElement clicked) => { Exit(); };
             if (Option1 != null)

@@ -23,14 +23,14 @@ namespace Spectrum.Framework.Screens
     public class RootElement : Element
     {
         public RootElement(ScreenManager manager) : base(manager) { }
-        public override int Width
+        public override int TotalWidth
         {
             get
             {
                 return Manager.Viewport.Width;
             }
         }
-        public override int Height
+        public override int TotalHeight
         {
             get
             {
@@ -55,6 +55,8 @@ namespace Spectrum.Framework.Screens
         public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
         public ScalableTexture Texture { get { return Fields["image"].ObjValue as ScalableTexture; } }
         public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
+        public ScalableTexture Background { get { return Fields["background"].ObjValue as ScalableTexture; } }
+        public Color BackgroundColor { get { return (Color)(Fields["background-color"].ObjValue ?? Color.White); } }
 
         protected Element(ScreenManager manager) : this() { Manager = manager; }
 
@@ -71,6 +73,18 @@ namespace Spectrum.Framework.Screens
                 this,
                 "font-color",
                 ElementField.ColorSetter
+                );
+            this.Fields["background"] = new ElementField(
+                this,
+                "background",
+                ElementField.ContentSetter<ScalableTexture>,
+                false
+                );
+            this.Fields["background-color"] = new ElementField(
+                this,
+                "background-color",
+                ElementField.ColorSetter,
+                false
                 );
             this.Fields["image"] = new ElementField(
                 this,
@@ -132,24 +146,24 @@ namespace Spectrum.Framework.Screens
         public RectOffset Margin;
         public RectOffset Padding;
 
-        public float RelativeWidth;
-        public int FlatWidth;
-        public virtual int Width { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Width : Parent.Width) * RelativeWidth) + FlatWidth; } }
+        public ElementSize Width;
+        public virtual int TotalWidth { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Width : Parent.TotalWidth) * Width.Relative) + Width.Flat; } }
 
-        public float RelativeHeight;
-        public int FlatHeight;
-        public virtual int Height { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.Height) * RelativeHeight) + FlatHeight; } }
+        public ElementSize Height;
+        public virtual int TotalHeight { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.TotalHeight) * Height.Relative) + Height.Flat; } }
 
         public void Center()
         {
             Margin.LeftRelative = .5f;
             Margin.RightRelative = .5f;
-            Margin.LeftOffset = -Width / 2;
-            Margin.RightOffset = Width / 2;
+            Margin.LeftOffset = -TotalWidth / 2;
+            Margin.RightOffset = TotalWidth / 2;
         }
 
-        public int X;
-        public int Y;
+        public ElementSize X;
+        public ElementSize Y;
+        public int AbsoluteX { get; private set; }
+        public int AbsoluteY { get; private set; }
         protected const float ZDiff = 0.00001f;
         protected const int ZLayers = 10;
         public float Z { get; private set; }
@@ -160,7 +174,7 @@ namespace Spectrum.Framework.Screens
 
         public Rectangle Rect
         {
-            get { return new Rectangle((int)X, (int)Y, (int)Width, (int)Height); }
+            get { return new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)TotalWidth, (int)TotalHeight); }
         }
 
         public virtual void Update(GameTime gameTime)
@@ -183,16 +197,21 @@ namespace Spectrum.Framework.Screens
             {
                 if (child.Positioning == PositionType.Inline)
                 {
-                    if (XOffset > 0 && XOffset + child.Width + child.Margin.Left(Width) > Width)
+                    if (XOffset > 0 && XOffset + child.TotalWidth + child.Margin.Left(TotalWidth) > TotalWidth)
                     {
                         XOffset = 0;
                         YOffset += MaxRowHeight;
                         MaxRowHeight = 0;
                     }
-                    MaxRowHeight = Math.Max(MaxRowHeight, child.Height + child.Margin.Top(Height) + child.Margin.Bottom(Width));
-                    child.X = XOffset + X + child.Margin.Left(Width);
-                    child.Y = YOffset + Y + child.Margin.Top(Height);
-                    XOffset += child.Width + child.Margin.Left(Width) + child.Margin.Right(Width);
+                    MaxRowHeight = Math.Max(MaxRowHeight, child.TotalHeight + child.Margin.Top(TotalHeight) + child.Margin.Bottom(TotalWidth));
+                    child.AbsoluteX = XOffset + AbsoluteX + child.Margin.Left(TotalWidth);
+                    child.AbsoluteY = YOffset + AbsoluteY + child.Margin.Top(TotalHeight);
+                    XOffset += child.TotalWidth + child.Margin.Left(TotalWidth) + child.Margin.Right(TotalWidth);
+                }
+                else
+                {
+                    child.AbsoluteY = (int)(TotalHeight * (child.Y.Relative)) + child.Y.Flat + AbsoluteY;
+                    child.AbsoluteX = (int)(TotalWidth* (child.X.Relative)) + child.X.Flat + AbsoluteX;
                 }
                 child.PositionUpdate();
             }
@@ -202,7 +221,11 @@ namespace Spectrum.Framework.Screens
         {
             if (Texture != null)
             {
-                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z, color: TextureColor);
+                Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Layer(1), color: TextureColor);
+            }
+            if (Background != null)
+            {
+                Background.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z, color: BackgroundColor);
             }
         }
 

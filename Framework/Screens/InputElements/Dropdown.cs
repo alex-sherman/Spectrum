@@ -23,8 +23,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Initialize()
         {
             base.Initialize();
-            RelativeHeight = 1;
-            RelativeWidth = 1;
+            Height.Relative = 1;
+            Width.Relative = 1;
         }
         public override void Draw(GameTime time)
         {
@@ -96,8 +96,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Initialize()
         {
             base.Initialize();
-            FlatWidth = 100;
-            FlatHeight = (int)Font.LineSpacing;
+            Width.Flat = 100;
+            Height.Flat = (int)Font.LineSpacing;
         }
         public void SetOptions(params DropdownOption[] options)
         {
@@ -137,7 +137,7 @@ namespace Spectrum.Framework.Screens.InputElements
             base.Draw(time);
             if (selected != null)
             {
-                ScreenManager.CurrentManager.DrawString(Font, selected.Text, new Vector2(X, Y),
+                ScreenManager.CurrentManager.DrawString(Font, selected.Text, new Vector2(AbsoluteX, AbsoluteY),
                     Color.Black, Layer(3));
             }
             if (Expanded)

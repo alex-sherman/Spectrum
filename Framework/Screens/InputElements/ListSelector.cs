@@ -19,8 +19,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public ListSelector(Element parent, int x, int y)
         {
             Positioning = PositionType.Absolute;
-            X = x;
-            Y = y;
+            X.Flat = x;
+            Y.Flat = y;
         }
         public override void Initialize()
         {
@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens.InputElements
             ListOption option = new ListOption(tag, text);
             option.OnClick += new InterfaceEventHandler(optionClicked);
             this.options.Add(option);
-            FlatHeight += optionHeight;
+            Height.Flat += optionHeight;
         }
         private void optionClicked(InputElement clicked)
         {

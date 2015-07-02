@@ -235,6 +235,7 @@
     <Compile Include="Framework\RealDict.cs" />
     <Compile Include="Framework\LoadHelper.cs" />
     <Compile Include="Framework\JConvert.cs" />
+    <Compile Include="Framework\Screens\ElementSize.cs" />
     <Compile Include="Framework\TypeHelper.cs" />
     <Compile Include="Framework\Graphics\DrawablePart.cs" />
     <Compile Include="Framework\Graphics\Effects\PostProcessEffect.cs" />

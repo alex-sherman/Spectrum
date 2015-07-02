@@ -14,8 +14,8 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public Button(int width, int height)
         {
-            FlatWidth = width;
-            FlatHeight = height;
+            Width.Flat = width;
+            Height.Flat = height;
         }
 
         public Button(string text)
@@ -28,8 +28,8 @@ namespace Spectrum.Framework.Screens.InputElements
             base.Initialize();
             if (Text != null)
             {
-                FlatWidth = (int)Font.MeasureString(Text).X;
-                FlatHeight = (int)Font.LineSpacing;
+                Width.Flat = (int)Font.MeasureString(Text).X;
+                Height.Flat = (int)Font.LineSpacing;
             }
         }
 

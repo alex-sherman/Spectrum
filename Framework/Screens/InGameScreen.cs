@@ -28,22 +28,20 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
-            RelativeHeight = 0;
-            RelativeWidth = 0;
-            FlatHeight = 100;
-            FlatWidth = 100;
-            X = 0;
-            Y = 0;
+            Height.Relative = 0;
+            Width.Relative = 0;
+            Height.Flat = 100;
+            Width.Flat = 100;
 
             Element TitleContainer = new Element();
-            TitleContainer.RelativeWidth = 1;
+            TitleContainer.Width.Relative = 1;
             TitleContainer.Tags.Add("ingame-window-title-container");
             AddElement(TitleContainer);
             TextElement TitleElement = new TextElement(Title);
             TitleElement.Tags.Add("ingame-window-title");
             TitleContainer.AddElement(TitleElement);
             TitleElement.Center();
-            TitleContainer.FlatHeight = TitleElement.FlatHeight;
+            TitleContainer.Height.Flat = TitleElement.TotalHeight;
         }
 
         public Rectangle CloseButtonRect
@@ -108,8 +106,8 @@ namespace Spectrum.Framework.Screens
                     otherTookInput = true;
                     Vector2 newPos = new Vector2(input.MouseState.X, input.MouseState.Y) - dragMouseBegin + dragBegin;
 
-                    X = (int)newPos.X;
-                    Y = (int)newPos.Y;
+                    X.Flat = (int)newPos.X;
+                    Y.Flat = (int)newPos.Y;
                 }
             }
             return otherTookInput;

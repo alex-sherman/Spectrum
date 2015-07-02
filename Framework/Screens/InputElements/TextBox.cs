@@ -20,8 +20,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Initialize()
         {
             base.Initialize();
-            FlatWidth = (int)Font.MeasureString("a").X * 10;
-            FlatHeight = Font.LineSpacing;
+            Width.Flat = (int)Font.MeasureString("a").X * 10;
+            Height.Flat = Font.LineSpacing;
             OnClick += TextBox_OnClick;
         }
 
@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Screens.InputElements
             Selected = true;
             textPosition = 0;
             int mouseX = Mouse.GetState().X;
-            while (textPosition < Text.Count() && Font.MeasureString(Text.Substring(0, textPosition + 1)).X + X - Font.Spacing < mouseX)
+            while (textPosition < Text.Count() && Font.MeasureString(Text.Substring(0, textPosition + 1)).X + AbsoluteX - Font.Spacing < mouseX)
             {
                 textPosition++;
             }
@@ -80,7 +80,7 @@ namespace Spectrum.Framework.Screens.InputElements
             ScreenManager.CurrentManager.DrawString(Font, Text, new Vector2(Rect.X + Font.Spacing, Rect.Y), Color.Black, Layer(3));
             if (Selected)
             {
-                ScreenManager.CurrentManager.DrawString(Font, "|", new Vector2(X + Font.MeasureString(Text.Substring(0, textPosition)).X, Y), Color.Black, Layer(3));
+                ScreenManager.CurrentManager.DrawString(Font, "|", new Vector2(AbsoluteX + Font.MeasureString(Text.Substring(0, textPosition)).X, AbsoluteY), Color.Black, Layer(3));
             }
             base.Draw(time);
         }
