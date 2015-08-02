@@ -11,6 +11,7 @@ using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Content;
+using System.Diagnostics;
 
 
 namespace Spectrum.Framework.Graphics
@@ -25,9 +26,12 @@ namespace Spectrum.Framework.Graphics
         public static Camera Camera { get; set; }
         private static RenderTarget2D shadowMap;
         private static RenderTarget2D AATarget;
+        private static Stopwatch timer;
+        public static Dictionary<Type, long> renderTimes = new Dictionary<Type, long>();
         //TODO: Add a settings thing for multisample count
         public static void Initialize(Camera camera)
         {
+            timer = new Stopwatch();
             Camera = camera;
             GraphicsEngine.device = SpectrumGame.Game.GraphicsDevice;
             Settings.Init(device);
@@ -121,7 +125,7 @@ namespace Spectrum.Framework.Graphics
                 foo.FillMode = FillMode.Solid;
             }
             device.BlendState = BlendState.AlphaBlend;
-            foo.MultiSampleAntiAlias = true;
+            foo.MultiSampleAntiAlias = false;
             foo.CullMode = CullMode.None;
             device.RasterizerState = foo;
             DepthStencilState poo = new DepthStencilState();
@@ -170,10 +174,6 @@ namespace Spectrum.Framework.Graphics
             {
                 foreach (DrawablePart part in drawable.Parts)
                 {
-                    //if (drawable.Model != null && (part.effect as CustomSkinnedEffect) != null)
-                    //{
-                    //    (part.effect as CustomSkinnedEffect).Bones = drawable.Model.AnimationPlayer.GetSkinTransforms();
-                    //}
                     GraphicsEngine.Render(part, drawable.World, View, Projection);
                 }
             }
@@ -241,6 +241,7 @@ namespace Spectrum.Framework.Graphics
         }
         public static void Render(List<Entity> drawables, GameTime gameTime)
         {
+            renderTimes.Clear();
             BeginRender(gameTime);
             WaterEffect.ReflectionView = Camera.ReflectionView;
             WaterEffect.ReflectionProj = Camera.ReflectionProjection;
@@ -261,8 +262,13 @@ namespace Spectrum.Framework.Graphics
             GraphicsEngine.device.Clear(clearColor);
             foreach (Entity drawable in drawables)
             {
+                timer.Restart();
                 drawable.Draw(gameTime, spriteBatch);
                 drawable.Draw3D(gameTime, spriteBatch, Camera.View, Camera.Projection);
+                timer.Stop();
+                if (!renderTimes.ContainsKey(drawable.GetType()))
+                    renderTimes[drawable.GetType()] = 0;
+                renderTimes[drawable.GetType()] += timer.ElapsedTicks;
             }
             spriteBatch.End();
             //Clear the screen and perform anti aliasing

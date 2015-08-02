@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -9,10 +10,9 @@ namespace Spectrum.Framework.Content
     {
         string Prefix { get; set; }
         string Suffix { get; set; }
-        void Cache(string path);
         object Load(string path);
     }
-    public abstract class CachedContentParser<T, U> : ICachedContentParser
+    public abstract class CachedContentParser<T, U> : ICachedContentParser where T : class
     {
         protected Dictionary<string, T> cachedData = new Dictionary<string, T>();
         protected abstract T LoadData(string path);
@@ -27,7 +27,14 @@ namespace Spectrum.Framework.Content
 
         public virtual void Cache(string path)
         {
-            cachedData[path] = LoadData(path);
+            try
+            {
+                cachedData[path] = LoadData(path);
+            }
+            catch(FileNotFoundException)
+            {
+                cachedData[path] = null;
+            }
         }
 
         object ICachedContentParser.Load(string path)

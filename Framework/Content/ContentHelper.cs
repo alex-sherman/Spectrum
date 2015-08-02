@@ -66,27 +66,20 @@ namespace Spectrum.Framework.Content
 
         private T _load<T>(string path, bool usePrefix) where T : class
         {
-            try
+            if (ContentParsers.ContainsKey(typeof(T)))
             {
-                if (ContentParsers.ContainsKey(typeof(T)))
-                {
-                    ICachedContentParser parser = ContentParsers[typeof(T)];
-                    if (usePrefix)
-                        path = Content.RootDirectory + "\\" + parser.Prefix + path;
-                    path += parser.Suffix;
-                    return (T)ContentParsers[typeof(T)].Load(path);
-                }
-                if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
-                if (typeof(T) == typeof(Effect))
-                {
-                    path = @"HLSL\" + path + ".mgfx";
-                }
-                return Content.Load<T>(path);
+                ICachedContentParser parser = ContentParsers[typeof(T)];
+                if (usePrefix)
+                    path = Content.RootDirectory + "\\" + parser.Prefix + path;
+                path += parser.Suffix;
+                return (T)ContentParsers[typeof(T)].Load(path);
             }
-            catch (FileNotFoundException)
+            if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
+            if (typeof(T) == typeof(Effect))
             {
-                throw new ContentLoadException();
+                path = @"HLSL\" + path + ".mgfx";
             }
+            return Content.Load<T>(path);
         }
     }
 }

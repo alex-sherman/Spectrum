@@ -18,7 +18,7 @@ namespace Spectrum.Framework
         //TODO: Randomly can't get a filename and throws exception causing a crash
         public static void print(string msg)
         {
-            StackFrame sf =  new StackFrame(1, true);
+            StackFrame sf = new StackFrame(1, true);
             lock (strings)
             {
                 if (strings.Count > 20)
@@ -55,15 +55,15 @@ namespace Spectrum.Framework
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-            //base.Draw(gameTime);
 
             if (SpectrumGame.Game.Debug)
             {
+                float strSize = Font.LineSpacing;
                 lock (strings)
                 {
                     if (strings.Count > 0)
                     {
-                        float strSize = Font.MeasureString(strings[0]).Y;
+                        strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
                             Manager.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, Z);
@@ -71,16 +71,23 @@ namespace Spectrum.Framework
                     }
                 }
                 float curPos = 0;
-                if (objects.Count > 0)
+                for (int i = 0; i < objects.Count; i++)
                 {
-                    float strSize = Font.MeasureString("foo").Y;
-                    for (int i = 0; i < objects.Count; i++)
-                    {
-                        string toPrint = objects[i].Debug();
-                        Manager.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
-                        curPos += Font.MeasureString(toPrint.ToString()).Y;
-                    }
+                    string toPrint = objects[i].Debug();
+                    Manager.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
+                    curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
+                List<KeyValuePair<Type, long>> renderTimes = GraphicsEngine.renderTimes.ToList();
+                renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
+                double sum = renderTimes.Sum(item => item.Value);
+                curPos = 0;
+                for (int i = 0; i < 10 && i < renderTimes.Count; i++)
+                {
+                    string toPrint = renderTimes[i].Key.ToString() + ": " + String.Format("{0:0.00}", renderTimes[i].Value / sum);
+                    Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos + (11) * strSize), Color.Blue, Z);
+                    curPos += Font.MeasureString(toPrint.ToString()).Y;
+                }
+
             }
             if (SpectrumGame.Game.DebugDraw)
             {

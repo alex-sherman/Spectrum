@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Content
         public string Filename;
         public string Type;
     }
-    struct ModelParserCache
+    class ModelParserCache
     {
         public JObject jobj;
         public VertexBuffer vBuffer;
