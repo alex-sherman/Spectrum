@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens
         {
             Height.Relative = 1;
             Width.Relative = 1;
-            Positioning = PositionType.Absolute;
+            Positioning = PositionType.Relative;
         }
         public virtual void Exit()
         {

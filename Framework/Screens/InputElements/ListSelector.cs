@@ -16,15 +16,17 @@ namespace Spectrum.Framework.Screens.InputElements
         private List<ListOption> options = new List<ListOption>();
         private int stringHeight;
         //The list selector's _rect is in absolute coordinates unlike other interface elements
-        public ListSelector(Element parent, int x, int y)
+        public ListSelector(Element parent, int x, int y, int width)
         {
             Positioning = PositionType.Absolute;
             X.Flat = x;
             Y.Flat = y;
+            Width.Flat = width;
         }
         public override void Initialize()
         {
             base.Initialize();
+            Parent.MoveElement(this, 0);
             stringHeight = (int)Font.LineSpacing;
         }
         public void AddOption(object tag, string text)
@@ -34,26 +36,34 @@ namespace Spectrum.Framework.Screens.InputElements
             option.OnClick += new InterfaceEventHandler(optionClicked);
             this.options.Add(option);
             Height.Flat += optionHeight;
+            AddElement(option);
         }
         private void optionClicked(InputElement clicked)
         {
             OnPick((clicked as ListOption).Data);
             Close();
         }
+
+        public override void PositionUpdate()
+        {
+            base.PositionUpdate();
+            int distFromBottom = Manager.Root.TotalHeight - (Y.Flat + TotalHeight);
+            if (distFromBottom < 0)
+                Y.Flat += distFromBottom;
+        }
+
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
+            otherTookInput |= base.HandleInput(otherTookInput, input);
             if (input.IsNewMousePress(0) && !Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 Close();
             }
-            return base.HandleInput(otherTookInput, input);
+            otherTookInput |= MouseInside();
+            return otherTookInput;
         }
         public void Close()
         {
-            foreach (ListOption option in options)
-            {
-                Parent.RemoveElement(option);
-            }
             Parent.RemoveElement(this);
         }
     }

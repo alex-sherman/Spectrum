@@ -18,6 +18,7 @@ namespace Spectrum.Framework.Screens
     public enum PositionType
     {
         Inline,
+        Relative,
         Absolute
     }
     public class RootElement : Element
@@ -195,23 +196,30 @@ namespace Spectrum.Framework.Screens
             int MaxRowHeight = 0;
             foreach (Element child in Children)
             {
-                if (child.Positioning == PositionType.Inline)
+                switch (child.Positioning)
                 {
-                    if (XOffset > 0 && XOffset + child.TotalWidth + child.Margin.Left(TotalWidth) > TotalWidth)
-                    {
-                        XOffset = 0;
-                        YOffset += MaxRowHeight;
-                        MaxRowHeight = 0;
-                    }
-                    MaxRowHeight = Math.Max(MaxRowHeight, child.TotalHeight + child.Margin.Top(TotalHeight) + child.Margin.Bottom(TotalWidth));
-                    child.AbsoluteX = XOffset + AbsoluteX + child.Margin.Left(TotalWidth);
-                    child.AbsoluteY = YOffset + AbsoluteY + child.Margin.Top(TotalHeight);
-                    XOffset += child.TotalWidth + child.Margin.Left(TotalWidth) + child.Margin.Right(TotalWidth);
-                }
-                else
-                {
-                    child.AbsoluteY = (int)(TotalHeight * (child.Y.Relative)) + child.Y.Flat + AbsoluteY;
-                    child.AbsoluteX = (int)(TotalWidth* (child.X.Relative)) + child.X.Flat + AbsoluteX;
+                    case PositionType.Inline:
+                        if (XOffset > 0 && XOffset + child.TotalWidth + child.Margin.Left(TotalWidth) > TotalWidth)
+                        {
+                            XOffset = 0;
+                            YOffset += MaxRowHeight;
+                            MaxRowHeight = 0;
+                        }
+                        MaxRowHeight = Math.Max(MaxRowHeight, child.TotalHeight + child.Margin.Top(TotalHeight) + child.Margin.Bottom(TotalWidth));
+                        child.AbsoluteX = XOffset + AbsoluteX + child.Margin.Left(TotalWidth);
+                        child.AbsoluteY = YOffset + AbsoluteY + child.Margin.Top(TotalHeight);
+                        XOffset += child.TotalWidth + child.Margin.Left(TotalWidth) + child.Margin.Right(TotalWidth);
+                        break;
+                    case PositionType.Absolute:
+                        child.AbsoluteY = (int)(Manager.Root.TotalHeight * (child.Y.Relative)) + child.Y.Flat;
+                        child.AbsoluteX = (int)(Manager.Root.TotalWidth * (child.X.Relative)) + child.X.Flat;
+                        break;
+                    case PositionType.Relative:
+                        child.AbsoluteY = (int)(TotalHeight * (child.Y.Relative)) + child.Y.Flat + AbsoluteY;
+                        child.AbsoluteX = (int)(TotalWidth * (child.X.Relative)) + child.X.Flat + AbsoluteX;
+                        break;
+                    default:
+                        break;
                 }
                 child.PositionUpdate();
             }
@@ -238,7 +246,9 @@ namespace Spectrum.Framework.Screens
             foreach (Element child in drawChildren)
             {
                 if (child.Display == ElementDisplay.Visible)
+                {
                     layer = child.DrawWithChildren(gameTime, layer * .9999f);
+                }
             }
             return layer * .9999f;
         }

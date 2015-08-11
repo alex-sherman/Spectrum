@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Content;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,11 @@ namespace Spectrum.Framework.Screens
             }
         }
 
+        public static object JSONSetter<T>(string value)
+        {
+            return JToken.Parse(value).Value<T>();
+        }
+
         public static List<Tuple<string, string, string>> TagOverrides = new List<Tuple<string, string, string>>();
         private static string FindTagOverride(Element element, string fieldName)
         {
@@ -57,6 +63,7 @@ namespace Spectrum.Framework.Screens
         private Func<string, object> setter;
         private string _strValue;
         private object _value;
+        private object defaultValue;
         public object ObjValue
         {
             get
@@ -68,17 +75,19 @@ namespace Spectrum.Framework.Screens
         private bool inherited;
         private Element element;
         private bool initialized = false;
-        public ElementField(Element element, string fieldName, Func<string, object> setter, bool inherited = true)
+        public ElementField(Element element, string fieldName, Func<string, object> setter, bool inherited = true, object defaultValue = null)
         {
             this.element = element;
             this.fieldName = fieldName;
             this.setter = setter;
             this.inherited = inherited;
+            this.defaultValue = defaultValue;
         }
         public void Initialize()
         {
             if (!initialized)
             {
+                _value = defaultValue;
                 string overrideValue = ElementField.FindTagOverride(element, fieldName);
                 if (overrideValue != null)
                 {

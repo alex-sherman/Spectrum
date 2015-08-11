@@ -77,13 +77,13 @@ namespace Spectrum.Framework
                     Manager.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                List<KeyValuePair<Type, long>> renderTimes = GraphicsEngine.renderTimes.ToList();
+                List<KeyValuePair<string, long>> renderTimes = GraphicsEngine.renderTimes.ToList();
                 renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
                 double sum = renderTimes.Sum(item => item.Value);
                 curPos = 0;
                 for (int i = 0; i < 10 && i < renderTimes.Count; i++)
                 {
-                    string toPrint = renderTimes[i].Key.ToString() + ": " + String.Format("{0:0.00}", renderTimes[i].Value / sum);
+                    string toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value / sum);
                     Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos + (11) * strSize), Color.Blue, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }

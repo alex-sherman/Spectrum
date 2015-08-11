@@ -8,17 +8,20 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class ListOption : InputElement
     {
-        public string text;
+        public TextElement text;
         public ListOption(object tag, string text)
             : base()
         {
-            this.text = text;
+            this.text = new TextElement(text);
             this.Data = tag;
         }
-        public override void Draw(GameTime time)
+        public override void Initialize()
         {
-            base.Draw(time);
-            ScreenManager.CurrentManager.DrawString(Font, text, new Vector2(AbsoluteX, AbsoluteY), Color.Black, Layer(2));
+            base.Initialize();
+            AddElement(text);
+            text.Center();
+            Height.Flat = text.Height.Flat;
+            Width.Relative = 1.0f;
         }
     }
 }

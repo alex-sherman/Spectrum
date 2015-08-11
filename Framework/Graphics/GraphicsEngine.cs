@@ -27,7 +27,7 @@ namespace Spectrum.Framework.Graphics
         private static RenderTarget2D shadowMap;
         private static RenderTarget2D AATarget;
         private static Stopwatch timer;
-        public static Dictionary<Type, long> renderTimes = new Dictionary<Type, long>();
+        public static Dictionary<string, long> renderTimes = new Dictionary<string, long>();
         //TODO: Add a settings thing for multisample count
         public static void Initialize(Camera camera)
         {
@@ -255,8 +255,12 @@ namespace Spectrum.Framework.Graphics
             //    PostProcessEffect.LightViewProj = Matrix.CreateLookAt(SpectrumEffect.LightPos, Player.LocalPlayer.Position, Vector3.Up) * Settings.lightProjection;
             //    UpdateShadowMap(drawables);
             //}
+            timer.Restart();
             spriteBatch.Begin();
             if (Settings.enableWater) { UpdateWater(drawables, gameTime, spriteBatch); }
+            timer.Stop();
+            //renderTimes["Water Update"] = timer.ElapsedTicks;
+
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTarget(AATarget);
             GraphicsEngine.device.Clear(clearColor);
@@ -266,18 +270,22 @@ namespace Spectrum.Framework.Graphics
                 drawable.Draw(gameTime, spriteBatch);
                 drawable.Draw3D(gameTime, spriteBatch, Camera.View, Camera.Projection);
                 timer.Stop();
-                if (!renderTimes.ContainsKey(drawable.GetType()))
-                    renderTimes[drawable.GetType()] = 0;
-                renderTimes[drawable.GetType()] += timer.ElapsedTicks;
+                string itemName = drawable.GetType().Name;
+                if (!renderTimes.ContainsKey(itemName))
+                    renderTimes[itemName] = 0;
+                renderTimes[itemName] += timer.ElapsedTicks;
             }
             spriteBatch.End();
             //Clear the screen and perform anti aliasing
             device.SetRenderTarget(null);
+            timer.Restart();
             GraphicsEngine.device.Clear(clearColor);
             PostProcessEffect.Technique = "AAPP";
             spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
             spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
             spriteBatch.End();
+            timer.Stop();
+            renderTimes["Post Process"] = timer.ElapsedTicks;
         }
     }
 }

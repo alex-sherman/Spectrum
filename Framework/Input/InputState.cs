@@ -17,12 +17,6 @@ using System.Collections.Generic;
 
 namespace Spectrum.Framework.Input
 {
-    /// <summary>
-    /// Helper for reading input from keyboard, gamepad, and touch input. This class 
-    /// tracks both the current and previous state of the input devices, and implements 
-    /// query methods for high level input actions such as "move up through the menu"
-    /// or "pause the game".
-    /// </summary>
     public class InputState
     {
         public static float MouseSensitivity = 0.003f;
@@ -163,7 +157,7 @@ namespace Spectrum.Framework.Input
 
         public bool IsMouseDown(int button)
         {
-            return MouseState.buttons[button];
+            return button >= MouseState.buttons.Length ? false : MouseState.buttons[button];
         }
         public bool IsNewMousePress(int button)
         {
