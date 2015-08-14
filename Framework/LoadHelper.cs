@@ -24,7 +24,7 @@ namespace Spectrum.Framework
                 if (type.GetCustomAttributes(true).Any((object attribute) => attribute is LoadableType))
                 {
                     TypeHelper.Types[type.Name] = type;
-                    #region PreloadContent
+
                     foreach (object attribute in type.GetCustomAttributes(true).ToList())
                     {
                         PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
@@ -45,38 +45,29 @@ namespace Spectrum.Framework
                         }
                     }
                 }
-                #endregion
 
             }
         }
-        public static TypeHelper LoadTypes(string LocalDir = null)
+        public static void LoadTypes(string LocalDir = null)
         {
-            string path = "Plugins";
-            if (LocalDir != null)
+            foreach (var pluginName in Plugin.GetPluginNames())
             {
-                path = System.IO.Path.Combine(LocalDir, "Plugins");
+                SpectrumGame.Game.Plugins[pluginName] = Plugin.CreatePlugin(pluginName);
             }
-            if (!Directory.Exists(path))
-            {
-                Directory.CreateDirectory(path);
-            }
-            string[] plugins = Directory.GetDirectories(path);
-            foreach (string pluginPath in plugins)
-            {
-                string pluginName = Path.GetFileName(pluginPath);
-                SpectrumGame.Game.Plugins[pluginName] = new Plugin(pluginName, pluginPath);
-            }
+
+            //Load all types before calling OnLoad
             foreach (var plugin in SpectrumGame.Game.Plugins.Values)
             {
-                plugin.Initialize();
+                LoadHelper.LoadTypes(plugin.GetTypes());
             }
 
             LoadHelper.LoadTypes(Assembly.GetEntryAssembly().GetTypes());
             LoadHelper.LoadTypes(Assembly.GetExecutingAssembly().GetTypes());
-            //TypeHelper.Helper["StatModifier"] = typeof(StatModifier);
-            //TypeHelper.Helper["Player"] = typeof(Player);
-            //TypeHelper.Helper["Water"] = typeof(Water);
-            return TypeHelper.Types;
+
+            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
+            {
+                plugin.OnLoad();
+            }
         }
     }
 
