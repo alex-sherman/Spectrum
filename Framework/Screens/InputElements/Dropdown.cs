@@ -35,16 +35,24 @@ namespace Spectrum.Framework.Screens.InputElements
                 ScreenManager.CurrentManager.DrawString(Font, Text, pos, FontColor, Layer(1));
             }
         }
-        public override bool HandleInput(bool otherTookInput, InputState input)
-        {
-            return base.HandleInput(otherTookInput, input);
-        }
     }
 
     public class Dropdown : InputElement
     {
+        public event InterfaceEventHandler OnSelectedChanged;
         private List<DropdownOption> options = new List<DropdownOption>();
         private DropdownOption selected = null;
+        public DropdownOption Selected
+        {
+            get { return selected; }
+            set
+            {
+                Expanded = false;
+                selected = value;
+                if (OnSelectedChanged != null)
+                    OnSelectedChanged(selected);
+            }
+        }
         private bool _expanded;
         private bool Expanded
         {
@@ -85,7 +93,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public Dropdown(params DropdownOption[] options)
         {
-            SetOptions(options);
+            SetOptions(options.ToList());
             OnClick += Dropdown_OnClick;
         }
 
@@ -99,9 +107,17 @@ namespace Spectrum.Framework.Screens.InputElements
             Width.Flat = 100;
             Height.Flat = (int)Font.LineSpacing;
         }
-        public void SetOptions(params DropdownOption[] options)
+        public void ClearOptions()
         {
-            foreach (DropdownOption option in options)
+            foreach (var option in options.ToList())
+            {
+                RemoveOption(option);
+            }
+        }
+        public void SetOptions(List<DropdownOption> options)
+        {
+            ClearOptions();
+            foreach (var option in options)
             {
                 AddOption(option);
             }
@@ -111,15 +127,22 @@ namespace Spectrum.Framework.Screens.InputElements
             if (Children.Count == 0)
                 option.Margin.TopRelative = 1;
             option.OnClick += option_OnClick;
-            option.Display = ElementDisplay.Hidden;
+            option.Display = Expanded ? ElementDisplay.Visible : ElementDisplay.Hidden;
+            options.Add(option);
             AddElement(option);
+        }
+        public void RemoveOption(DropdownOption option)
+        {
+            RemoveElement(option);
+            options.Remove(option);
+            if (Selected == option)
+                Selected = null;
         }
 
         void option_OnClick(InputElement clicked)
         {
             Selected = clicked as DropdownOption;
         }
-        public event EventHandler SelectedItemChanged;
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
@@ -139,25 +162,6 @@ namespace Spectrum.Framework.Screens.InputElements
             {
                 ScreenManager.CurrentManager.DrawString(Font, selected.Text, new Vector2(AbsoluteX, AbsoluteY),
                     Color.Black, Layer(3));
-            }
-            if (Expanded)
-            {
-                for (int i = 0; i < options.Count(); i++)
-                {
-                    ScreenManager.CurrentManager.DrawString(Font, options[i].Text, Rect,
-                        Color.Black, Layer(2));
-                }
-            }
-        }
-        public DropdownOption Selected
-        {
-            get { return selected; }
-            set
-            {
-                Expanded = false;
-                selected = value;
-                if (SelectedItemChanged != null)
-                    SelectedItemChanged(selected, null);
             }
         }
     }

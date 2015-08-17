@@ -33,9 +33,9 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Draw(GameTime time)
         {
             base.Draw(time);
-            if (MouseInside() && TitleText != null)
+            if (HasFocus && MouseInside() && TitleText != null)
             {
-                ScreenManager.CurrentManager.DrawString(Font, TitleText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, Layer(ZLayers - 1));
+                ScreenManager.CurrentManager.DrawString(Font, TitleText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
             }
         }
         public override bool HandleInput(bool otherTookInput, InputState input)

@@ -67,7 +67,13 @@ namespace Spectrum.Framework.Screens
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            otherTookInput |= base.HandleInput(otherTookInput, input);
+            bool childTookInput = base.HandleInput(otherTookInput, input);
+            if (childTookInput && !otherTookInput)
+            {
+                Parent.MoveElement(this, 0);
+            }
+            otherTookInput |= childTookInput;
+
             if (!otherTookInput)
             {
                 if (input.IsNewKeyPress("GoBack"))

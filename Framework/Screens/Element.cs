@@ -39,6 +39,7 @@ namespace Spectrum.Framework.Screens
             }
         }
     }
+    public class LineBreak : Element { }
     #endregion
 
     public class Element
@@ -50,6 +51,7 @@ namespace Spectrum.Framework.Screens
         public List<Element> Children { get { return _children.ToList(); } }
         public ElementDisplay Display { get; set; }
         public PositionType Positioning { get; set; }
+        public bool HasFocus { get; protected set; }
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
@@ -199,11 +201,13 @@ namespace Spectrum.Framework.Screens
                 switch (child.Positioning)
                 {
                     case PositionType.Inline:
-                        if (XOffset > 0 && XOffset + child.TotalWidth + child.Margin.Left(TotalWidth) > TotalWidth)
+                        if ((XOffset > 0 && XOffset + child.TotalWidth + child.Margin.Left(TotalWidth) > TotalWidth) || child is LineBreak)
                         {
                             XOffset = 0;
                             YOffset += MaxRowHeight;
                             MaxRowHeight = 0;
+                            if (child is LineBreak)
+                                continue;
                         }
                         MaxRowHeight = Math.Max(MaxRowHeight, child.TotalHeight + child.Margin.Top(TotalHeight) + child.Margin.Bottom(TotalWidth));
                         child.AbsoluteX = XOffset + AbsoluteX + child.Margin.Left(TotalWidth);
@@ -223,6 +227,15 @@ namespace Spectrum.Framework.Screens
                 }
                 child.PositionUpdate();
             }
+        }
+        public virtual bool UpdateFocus(bool parentHasFocus)
+        {
+            foreach (var child in Children)
+            {
+                child.UpdateFocus(parentHasFocus);
+            }
+            HasFocus = parentHasFocus;
+            return parentHasFocus;
         }
 
         public virtual void Draw(GameTime gameTime)

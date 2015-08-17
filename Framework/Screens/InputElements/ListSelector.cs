@@ -12,7 +12,7 @@ namespace Spectrum.Framework.Screens.InputElements
     public delegate void PickedEventHandler(object picked);
     public class ListSelector : InputElement
     {
-        public event PickedEventHandler OnPick;
+        public event InterfaceEventHandler OnPick;
         private List<ListOption> options = new List<ListOption>();
         private int stringHeight;
         //The list selector's _rect is in absolute coordinates unlike other interface elements
@@ -40,7 +40,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         private void optionClicked(InputElement clicked)
         {
-            OnPick((clicked as ListOption).Data);
+            OnPick(clicked);
             Close();
         }
 

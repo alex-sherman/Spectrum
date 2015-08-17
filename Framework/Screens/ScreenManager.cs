@@ -93,6 +93,7 @@ namespace Spectrum.Framework.Screens
             // Read the keyboard and gamepad.
             input.Update();
             Root.Update(gameTime);
+            Root.UpdateFocus(IsActive);
             if (IsActive)
                 Root.HandleInput(false, input);
         }

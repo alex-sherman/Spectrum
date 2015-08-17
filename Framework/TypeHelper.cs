@@ -73,7 +73,7 @@ namespace Spectrum.Framework
             }
             catch
             {
-                return null;
+                throw new Exception("An error occured constructing the entity");
             }
         }
     }
