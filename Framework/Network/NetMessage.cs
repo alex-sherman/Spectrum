@@ -565,6 +565,7 @@ namespace Spectrum.Framework.Network
         {
             try
             {
+                if (!ReadBool()) return null;
                 List<T> output = new List<T>();
                 int count = ReadInt();
                 Type t = typeof(T);
@@ -584,10 +585,14 @@ namespace Spectrum.Framework.Network
         }
         public void Write<T>(List<T> input) where T : ISerializable
         {
-            Write(input.Count());
-            foreach (ISerializable item in input)
+            Write(input != null);
+            if(input != null)
             {
-                item.WriteTo(this);
+                Write(input.Count());
+                foreach (ISerializable item in input)
+                {
+                    item.WriteTo(this);
+                }
             }
         }
 

@@ -15,15 +15,18 @@ namespace Spectrum.Framework.Graphics
     [LoadableType]
     public class Water : GameObject
     {
+        public const string waterBump1 = "waterbump";
+        public const string waterBump2 = "waterbump1";
         public const float waterHeight = 0;
         public static RenderTarget2D refractionRenderTarget;
         public static RenderTarget2D reflectionRenderTarget;
         public VertexBuffer waterV;
         private int size;
         int numVertices = 32;
-        public Water(int size, string waterBump1, string waterBump2)
+        public Water(int size, Vector3 position)
             : base()
         {
+            this.position = position;
             IsStatic = true;
             this.Ignore = true;
             this.AllowReplicate = false;

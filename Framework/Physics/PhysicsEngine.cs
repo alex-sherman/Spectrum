@@ -15,7 +15,7 @@ namespace Spectrum.Framework.Physics
         public CollisionSystemPersistentSAP CollisionSystem = new CollisionSystemPersistentSAP();
         private static PhysicsEngine _single;
         private EntityCollection ECollection;
-        World world;
+        public World world;
         public static PhysicsEngine Single
         {
             get
@@ -63,16 +63,6 @@ namespace Spectrum.Framework.Physics
         public void Update(GameTime gameTime)
         {
             world.Step((float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f, true);
-        }
-        public void ShiftOrigin(Vector3 offset)
-        {
-            foreach (Entity obj in world.Collidables)
-            {
-                if (obj as GameObject != null)
-                {
-                    (obj as GameObject).Position += offset;
-                }
-            }
         }
     }
 }
