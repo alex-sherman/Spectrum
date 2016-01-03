@@ -10,10 +10,10 @@ namespace Spectrum.Framework.Graphics
 {
     public class PostProcessEffect
     {
-        public static Effect effect;
+        public static SpectrumEffect effect;
         public static void Initialize()
         {
-            effect = ContentHelper.Load<Effect>(@"PostProcessEffect");
+            effect = new SpectrumEffect(ContentHelper.Load<Effect>(@"PostProcessEffect"));
             effect.Parameters["darkness"].SetValue(0.0f);
             ResetViewPort();
         }
@@ -31,10 +31,10 @@ namespace Spectrum.Framework.Graphics
             get { return effect.Parameters["lightViewProjectionMatrix"].GetValueMatrix(); }
             set { effect.Parameters["lightViewProjectionMatrix"].SetValue(value); }
         }
-        public static Texture2D AATarget
+        public static Texture2D DepthTarget
         {
-            get { return effect.Parameters["AATarget"].GetValueTexture2D(); }
-            set { effect.Parameters["AATarget"].SetValue(value); }
+            get { return effect.Parameters["DepthTarget"].GetValueTexture2D(); }
+            set { effect.Parameters["DepthTarget"].SetValue(value); }
         }
         public static Texture2D ShadowMap
         {

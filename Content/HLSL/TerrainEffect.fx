@@ -46,6 +46,7 @@ sampler snow = sampler_state
 struct MultiTex_VS_OUT
 {
 	float4 position  : SV_Position;
+	float3 worldPosition : POSITION1;
 	float2 textureCoordinate : TEXCOORD0;
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
 	float clipDistance : TEXCOORD2;
@@ -116,8 +117,6 @@ float4 ApplyMultiTexture(MultiTex_VS_OUT vsout) : COLOR
 	if(!aboveWater){
 		toReturn.b+=.1f;
 	}
-	float4 faff = vsout.blend;
-		faff.a = 1;
 	return toReturn;
 }
 technique MultiTexture

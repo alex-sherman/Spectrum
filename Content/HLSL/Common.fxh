@@ -47,6 +47,7 @@ struct CommonVSInput
 struct CommonVSOut
 {
 	float4 position  : SV_Position;
+	float3 worldPosition : POSITION1;
 	float2 textureCoordinate : TEXCOORD0;
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
 	float clipDistance : TEXCOORD2;
@@ -57,7 +58,7 @@ struct CommonVSOut
 float4 VSCalcPos2DAsSeenByLight(float4 worldPosition){
 	return mul(worldPosition, lightViewProjectionMatrix);
 }
-float3 VSCalculateLight(float3 normal, float4 worldPosition){
+float3 VSCalculateLight(float3 normal, float3 worldPosition){
 	float3 lightDirection = worldPosition - lightPosition;
 		lightDirection.y *= -1;
 	return (.2+.8*clamp(dot(normalize(lightDirection), normal),0,1));
@@ -89,13 +90,14 @@ void DoClip(CommonVSOut vsout){
 }
 float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout){
 	vsout = (CommonVSOut)0;
-	float4 worldPosition = mul(vin.Position, world);
-	vsout.position =mul(mul(worldPosition, view), proj);
-	vsout.depth = length(worldPosition-cameraPosition);
+	float4 HworldPosition = mul(vin.Position, world);
+	vsout.worldPosition = HworldPosition.xyz / HworldPosition.w;
+	vsout.position =mul(mul(HworldPosition, view), proj);
+	vsout.depth = length(vsout.worldPosition-cameraPosition);
 	vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
-	vsout.clipDistance = dot(worldPosition, ClipPlane);
-	vsout.light = VSCalculateLight(mul(vin.normal,world), worldPosition);
-	vsout.Pos2DAsSeenByLight = VSCalcPos2DAsSeenByLight(worldPosition);
+	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
+	vsout.light = VSCalculateLight(mul(vin.normal,world), vsout.worldPosition);
+	vsout.Pos2DAsSeenByLight = VSCalcPos2DAsSeenByLight(HworldPosition);
 	vsout.textureCoordinate = vin.TextureCoordinate;
-	return worldPosition;
+	return HworldPosition;
 }

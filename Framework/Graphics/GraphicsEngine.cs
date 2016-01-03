@@ -26,6 +26,7 @@ namespace Spectrum.Framework.Graphics
         public static Camera Camera { get; set; }
         private static RenderTarget2D shadowMap;
         private static RenderTarget2D AATarget;
+        private static RenderTarget2D DepthTarget;
         private static Stopwatch timer;
         public static Dictionary<string, long> renderTimes = new Dictionary<string, long>();
         //TODO: Add a settings thing for multisample count
@@ -46,6 +47,8 @@ namespace Spectrum.Framework.Graphics
             {
                 spriteBatch = new SpriteBatch(device);
                 AATarget = new RenderTarget2D(GraphicsEngine.device, device.Viewport.Width, device.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                DepthTarget = new RenderTarget2D(GraphicsEngine.device, device.Viewport.Width, device.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                PostProcessEffect.DepthTarget = DepthTarget;
                 Water.ResetRenderTargets();
                 PostProcessEffect.ResetViewPort();
             }
@@ -82,27 +85,40 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        public static void UpdateWater(List<Entity> scene, GameTime time, SpriteBatch batch)
+        public static void UpdateDepthBuffer(List<GameObject> scene)
         {
-            Color transparentClear = clearColor;
-            device.SetRenderTarget(Water.refractionRenderTarget);
-            GraphicsEngine.device.Clear(transparentClear);
-            foreach (Entity drawable in scene)
+            device.SetRenderTarget(DepthTarget);
+            GraphicsEngine.device.Clear(clearColor);
+            PostProcessEffect.effect.CurrentTechnique = PostProcessEffect.effect.Techniques["ShadowMap"];
+            foreach (GameObject drawable in scene)
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    drawable.Draw3D(time, batch, Camera.View, Camera.ReflectionProjection);
+                    GraphicsEngine.Render(drawable, Camera.View, Camera.Projection, PostProcessEffect.effect);
+                }
+            }
+            PostProcessEffect.effect.CurrentTechnique = PostProcessEffect.effect.Techniques["AAPP"];
+        }
+        public static void UpdateWater(List<GameObject> scene)
+        {
+            device.SetRenderTarget(Water.refractionRenderTarget);
+            GraphicsEngine.device.Clear(clearColor);
+            foreach (GameObject drawable in scene)
+            {
+                if (drawable.GetType() != typeof(Water))
+                {
+                    GraphicsEngine.Render(drawable, Camera.View, Camera.ReflectionProjection);
                 }
             }
             device.SetRenderTarget(Water.reflectionRenderTarget);
-            GraphicsEngine.device.Clear(transparentClear);
+            GraphicsEngine.device.Clear(clearColor);
             SpectrumEffect.Clip = true;
             SpectrumEffect.ClipPlane = new Vector4(0, 1, 0, -Water.waterHeight);
-            foreach (Entity drawable in scene)
+            foreach (GameObject drawable in scene)
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    drawable.Draw3D(time, batch, Camera.ReflectionView, Camera.ReflectionProjection);
+                    GraphicsEngine.Render(drawable, Camera.ReflectionView, Camera.ReflectionProjection);
                 }
             }
             SpectrumEffect.Clip = false;
@@ -131,20 +147,20 @@ namespace Spectrum.Framework.Graphics
             DepthStencilState poo = new DepthStencilState();
             device.DepthStencilState = poo;
         }
-        public static void Render(DrawablePart part, Matrix world, Matrix? View = null, Matrix? projection = null)
+        public static void Render(DrawablePart part, SpectrumEffect effect, Matrix world, Matrix? View = null, Matrix? projection = null)
         {
-            if (part.effect != null)
+            if (effect != null)
             {
-                part.effect.View = View ?? Camera.View;
-                part.effect.Projection = projection ?? Camera.Projection;
-                part.effect.World = part.transform * world;
+                effect.View = View ?? Camera.View;
+                effect.Projection = projection ?? Camera.Projection;
+                effect.World = part.transform * world;
                 //Draw vertex component
                 if (part.VBuffer != null)
                 {
                     if (part.IBuffer != null)
                     {
                         setBuffers(part.VBuffer, part.IBuffer);
-                        part.effect.CurrentTechnique.Passes[0].Apply();
+                        effect.CurrentTechnique.Passes[0].Apply();
                         if (part.primType == PrimitiveType.TriangleStrip)
                         {
                             device.DrawIndexedPrimitives(part.primType, 0, 0,
@@ -159,7 +175,7 @@ namespace Spectrum.Framework.Graphics
                     else
                     {
                         setBuffers(part.VBuffer, part.IBuffer);
-                        part.effect.CurrentTechnique.Passes[0].Apply();
+                        effect.CurrentTechnique.Passes[0].Apply();
                         if (part.primType == PrimitiveType.TriangleStrip)
                         {
                             device.DrawPrimitives(part.primType, 0, part.VBuffer.VertexCount - 2);
@@ -168,13 +184,15 @@ namespace Spectrum.Framework.Graphics
                 }
             }
         }
-        public static void Render(GameObject drawable, Matrix View, Matrix Projection)
+        public static void Render(GameObject drawable, Matrix View, Matrix Projection, SpectrumEffect effect = null)
         {
             if (drawable != null && drawable.Parts != null)
             {
                 foreach (DrawablePart part in drawable.Parts)
                 {
-                    GraphicsEngine.Render(part, drawable.World, View, Projection);
+                    SpectrumEffect partEffect = effect ?? part.effect;
+                    if (partEffect != null)
+                        GraphicsEngine.Render(part, partEffect, drawable.World, View, Projection);
                 }
             }
         }
@@ -248,6 +266,7 @@ namespace Spectrum.Framework.Graphics
             SpectrumEffect.CameraPos = Camera.Position;
             SpectrumEffect.AboveWater = Camera.Position.Y > Water.waterHeight;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
+            List<GameObject> drawable3D = drawables.Where(e => e is GameObject).Cast<GameObject>().ToList();
 
 
             //if (PostProcessEffect.ShadowMapEnabled)
@@ -255,11 +274,9 @@ namespace Spectrum.Framework.Graphics
             //    PostProcessEffect.LightViewProj = Matrix.CreateLookAt(SpectrumEffect.LightPos, Player.LocalPlayer.Position, Vector3.Up) * Settings.lightProjection;
             //    UpdateShadowMap(drawables);
             //}
-            timer.Restart();
             spriteBatch.Begin();
-            if (Settings.enableWater) { UpdateWater(drawables, gameTime, spriteBatch); }
-            timer.Stop();
-            //renderTimes["Water Update"] = timer.ElapsedTicks;
+            if (Settings.enableWater) { UpdateWater(drawable3D); }
+            UpdateDepthBuffer(drawable3D);
 
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTarget(AATarget);
@@ -268,7 +285,8 @@ namespace Spectrum.Framework.Graphics
             {
                 timer.Restart();
                 drawable.Draw(gameTime, spriteBatch);
-                drawable.Draw3D(gameTime, spriteBatch, Camera.View, Camera.Projection);
+                if (drawable is GameObject)
+                    GraphicsEngine.Render(drawable as GameObject, Camera.View, Camera.Projection);
                 timer.Stop();
                 string itemName = drawable.GetType().Name;
                 if (!renderTimes.ContainsKey(itemName))

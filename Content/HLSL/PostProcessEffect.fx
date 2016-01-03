@@ -9,6 +9,7 @@ float specularIntensity;
 //For AA
 bool AAEnabled = true;
 uniform extern texture AATarget;
+uniform extern texture DepthTarget;
 float2 viewPort;
 bool vingette = false;
 
@@ -41,34 +42,33 @@ sampler AASampler = sampler_state
 	AddressV = clamp;
 };
 
+sampler DepthSampler = sampler_state
+{
+	Texture = <DepthTarget>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter=LINEAR;
+	AddressU = clamp;
+	AddressV = clamp;
+};
+
 
 //------------------------------------------------Shadow Map-----------------------------
-struct ShadowVSInput
-{
-	float4 Position  : POSITION;
-};
-struct ShadowVSOutput
-{
-	float4 position  : POSITION;
-	float4 position2d  : TEXCOORD;
-};
 
-ShadowVSOutput ShadowVS(
-	ShadowVSInput input
+CommonVSOut ShadowVS(
+	CommonVSInput input
 	)
 {
-	ShadowVSOutput Out = (ShadowVSOutput)0;
+	CommonVSOut Out = (CommonVSOut)0;
 	float4 worldPosition = mul(input.Position, world);
-		Out.position = mul(worldPosition, lightViewProjectionMatrix);
-	Out.position2d = Out.position;
+	Out.position = mul(mul(worldPosition, view), proj);
+	Out.depth = max(0, length(Out.position - cameraPosition) - 50) / 3000;
 	return Out;
 }
-float4 ShadowPS(ShadowVSOutput vsout) : COLOR
+float4 ShadowPS(CommonVSOut vsout) : COLOR
 {
 	float4 color = (float4)0;
-		//color.r = .00196265;
-		color.r = 600.0/(vsout.position2d.z-1000.0);
-	//color.g = 
+	color.rgb = vsout.depth;
 	color.a = 1;
 	return color;
 }
@@ -87,33 +87,46 @@ float4 VingetteShader(float2 coord, float4 color)
 float4 CalcAA(float2 texCoord)
 {
 	float total = 1;
-	float3 value = tex2D(AASampler,texCoord);
+	float3 value = tex2D(AASampler,texCoord).rgb;
 		float weight = .3;
 	total+=4*weight;
 
 	texCoord.x-=1/viewPort.x;
-	value += tex2D(AASampler,texCoord)*weight;
+	value += tex2D(AASampler, texCoord).rgb*weight;
 	texCoord.x+=1/viewPort.x;
 
 	texCoord.x+=1/viewPort.x;
-	value += tex2D(AASampler,texCoord)*weight;
+	value += tex2D(AASampler, texCoord).rgb*weight;
 	texCoord.x-=1/viewPort.x;
 
 	texCoord.y-=1/viewPort.y;
-	value += tex2D(AASampler,texCoord)*weight;
+	value += tex2D(AASampler, texCoord).rgb*weight;
 	texCoord.y+=1/viewPort.y;
 
 	texCoord.y+=1/viewPort.y;
-	value += tex2D(AASampler,texCoord)*weight;
+	value += tex2D(AASampler, texCoord).rgb*weight;
 	texCoord.y-=1/viewPort.y;
 
 	float4 color = (float4)1;
 	color.rgb = value/total;
 	return color;
 }
+float3 Blur(float3 color, float2 texCoord, float factor)
+{
+	float3 output = (float3)0;
+	for(int i = -2; i <= 2; i++) {
+		for(int j = -2; j <= 2; j++) {
+			float weight = i == 0 && j == 0 ? (1 - factor) : (factor) / 25;
+			float3 lerpColor = i == 0 && j == 0 ? color : tex2D(AASampler, texCoord + float2(i/viewPort.x, j/viewPort.y)).rgb;
+			output += lerpColor * weight;
+		}
+	}
+	return output;
+}
 float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 texCoord : TEXCOORD0) : COLOR
 {
-	float3 value = tex2D(AASampler,texCoord);
+	float3 value = tex2D(AASampler, texCoord).rgb;
+	float depth = tex2D(DepthSampler, texCoord).r;
 	float4 color = (float4)1;
 	float2 orgCoord = texCoord;
 	if(AAEnabled){
@@ -133,11 +146,10 @@ float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 te
 		if(length(value-other)>threshold){ value = CalcAA(orgCoord); }
 		texCoord.y-=1/viewPort.y;
 	}
-	color.rgb = value*(1-darkness);
+	color.rgb = Blur(value, texCoord, depth)*(1-darkness);
 	if(vingette){
 		color = VingetteShader(texCoord,color);
 	}
-
 	return color;
 }
 
@@ -155,5 +167,4 @@ technique ShadowMap
 		vertexShader = compile vs_4_0 ShadowVS();
 		pixelShader  = compile ps_4_0 ShadowPS();
 	}
-
 }

@@ -151,7 +151,6 @@ namespace Spectrum.Framework.Entities
             if (replicateCounter > 0) { replicateCounter -= gameTime.ElapsedGameTime.Milliseconds; }
         }
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
-        public virtual void Draw3D(GameTime gameTime, SpriteBatch spriteBatch, Matrix View, Matrix Projection) { }
         public virtual void TickTenth() { }
         public virtual void TickOne() { }
     }
