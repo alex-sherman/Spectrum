@@ -35,12 +35,13 @@ namespace Spectrum.Framework.Physics.Collision
     /// </summary>
     public sealed class GJKCollide
     {
+        public static float Timestep = 1 / 60f;
         private const int MaxIterations = 15;
 
         private static ResourcePool<VoronoiSimplexSolver> simplexSolverPool = new ResourcePool<VoronoiSimplexSolver>();
 
         #region private static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 direction, out Vector3 result)
-        private static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 direction, out Vector3 result)
+        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out Vector3 result)
         {
             //Vector3.Transform(ref direction, ref invOrientation, out result);
             //support.SupportMapping(ref result, out result);
@@ -60,6 +61,12 @@ namespace Spectrum.Framework.Physics.Collision
             result.X = position.X + x;
             result.Y = position.Y + y;
             result.Z = position.Z + z;
+            if (Vector3.Dot(velocity, direction) < 0)
+            {
+                result.X -= velocity.X * Timestep;
+                result.Y -= velocity.Y * Timestep;
+                result.Z -= velocity.Z * Timestep;
+            }
         }
         #endregion
 
@@ -72,7 +79,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="position">The position of the shape.</param>
         /// <param name="point">The point to check.</param>
         /// <returns>Returns true if the point is within the shape, otherwise false.</returns>
-        public static bool Pointcast(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 point)
+        /*public static bool Pointcast(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 point)
         {
             Vector3 arbitraryPoint;
 
@@ -121,10 +128,10 @@ namespace Spectrum.Framework.Physics.Collision
             simplexSolverPool.GiveBack(simplexSolver);
             return true;
 
-        }
+        }*/
 
 
-        public static bool ClosestPoints(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
+        /*public static bool ClosestPoints(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
             Matrix orientation2, Vector3 position1, Vector3 position2,
             out Vector3 p1, out Vector3 p2, out Vector3 normal)
         {
@@ -182,7 +189,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             return true;
 
-        }
+        }*/
 
 
         #region GJK Detect
@@ -199,9 +206,11 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="normal">The normal pointing from body2 to body1.</param>
         /// <param name="penetration">Estimated penetration depth of the collision.</param>
         /// <returns>Returns true if there is a collision, false otherwise.</returns>
-        public static bool Detect(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
-             Matrix orientation2, Vector3 position1, Vector3 position2,
-             out List<Vector3> simplex)
+        public static bool Detect(ISupportMappable support1, ISupportMappable support2,
+            Matrix orientation1, Matrix orientation2,
+            Vector3 position1, Vector3 position2,
+            Vector3 velocity1, Vector3 velocity2,
+            out List<Vector3> simplex)
         {
             simplex = new List<Vector3>();
 
@@ -209,8 +218,8 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 direction = Vector3.One;
             Vector3 negativeDirection = -direction;
             //Get an initial point on the Minkowski difference.
-            SupportMapTransformed(support1, ref orientation1, ref position1, ref negativeDirection, out s1);
-            SupportMapTransformed(support2, ref orientation2, ref position2, ref direction, out s2);
+            SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1);
+            SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out s2);
             s = s2 - s1;
 
             simplex.Add(s);
@@ -228,8 +237,8 @@ namespace Spectrum.Framework.Physics.Collision
                 if (direction.LengthSquared() > 0)
                     direction.Normalize();
                 negativeDirection = -direction;
-                SupportMapTransformed(support1, ref orientation1, ref position1, ref negativeDirection, out s1);
-                SupportMapTransformed(support2, ref orientation2, ref position2, ref direction, out s2);
+                SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1);
+                SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out s2);
                 Vector3 a = s2 - s1;
 
                 //If we move toward the origin and didn't pass it 
@@ -369,7 +378,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="normal">The normal from the ray collision.</param>
         /// <returns>Returns true if the ray hit the shape, false otherwise.</returns>
         public static bool Raycast(ISupportMappable support, ref Matrix orientation, ref Matrix invOrientation,
-            ref Vector3 position, ref Vector3 origin, ref Vector3 direction, out float fraction, out Vector3 normal)
+            ref Vector3 position, ref Vector3 velocity, ref Vector3 origin, ref Vector3 direction, out float fraction, out Vector3 normal)
         {
             VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
             simplexSolver.Reset();
@@ -384,7 +393,7 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 w, p, v;
 
             Vector3 arbitraryPoint;
-            SupportMapTransformed(support, ref orientation, ref position, ref r, out arbitraryPoint);
+            SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref r, out arbitraryPoint);
             Vector3.Subtract(ref x, ref arbitraryPoint, out v);
 
             int maxIter = MaxIterations;
@@ -396,7 +405,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
-                SupportMapTransformed(support, ref orientation, ref position, ref v, out p);
+                SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref v, out p);
                 Vector3.Subtract(ref x, ref p, out w);
 
                 float VdotW = Vector3.Dot(v, w);

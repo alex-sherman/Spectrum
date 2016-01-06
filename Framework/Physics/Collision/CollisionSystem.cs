@@ -236,10 +236,14 @@ namespace Spectrum.Framework.Physics.Collision
                     if (ms2 != null)
                         ms2.SetCurrentShape(j);
                     List<Vector3> simplex;
-                    if (GJKCollide.Detect(s1, s2, body1.Orientation, body2.Orientation, body1.Position, body2.Position, out simplex))
+                    if (GJKCollide.Detect(s1, s2,
+                        body1.Orientation, body2.Orientation,
+                        body1.Position, body2.Position,
+                        body1.Velocity, body2.Velocity,
+                        out simplex))
                     {
                         if (XenoCollide.Detect(s1, s2, body1.Orientation,
-                            body2.Orientation, body1.Position, body2.Position,
+                            body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
                             out tempPoint, out tempNormal, out tempPenetration))
                         {
                             if (tempPenetration > penetration)

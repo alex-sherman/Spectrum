@@ -482,6 +482,8 @@ namespace Spectrum.Framework.Physics
             // throw exception if the timestep is smaller zero.
             if (timestep < 0.0f) throw new ArgumentException("The timestep can't be negative.", "timestep");
 
+            GJKCollide.Timestep = timestep;
+
             // Calculate this
             currentAngularDampFactor = (float)Math.Pow(angularDamping, timestep);
             currentLinearDampFactor = (float)Math.Pow(linearDamping, timestep);

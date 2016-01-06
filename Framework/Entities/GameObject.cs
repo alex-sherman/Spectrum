@@ -61,7 +61,7 @@ namespace Spectrum.Framework.Entities
             set { position = value; PhysicsUpdate(); }
         }
         [Replicate]
-        public Vector3 LinearVelocity
+        public Vector3 Velocity
         {
             get { return linearVelocity; }
             set { linearVelocity = value; }

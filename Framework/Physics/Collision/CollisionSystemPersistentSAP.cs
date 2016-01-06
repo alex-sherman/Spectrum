@@ -416,7 +416,7 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     ms.SetCurrentShape(i);
 
-                    if (GJKCollide.Raycast(ms, ref body.orientation, ref body.invOrientation, ref body.position,
+                    if (GJKCollide.Raycast(ms, ref body.orientation, ref body.invOrientation, ref body.position, ref body.linearVelocity,
                         ref rayOrigin, ref rayDirection, out tempFraction, out tempNormal))
                     {
                         if (tempFraction < fraction)
@@ -440,7 +440,7 @@ namespace Spectrum.Framework.Physics.Collision
             }
             else
             {
-                return (GJKCollide.Raycast(body.Shape, ref body.orientation, ref body.invOrientation, ref body.position,
+                return (GJKCollide.Raycast(body.Shape, ref body.orientation, ref body.invOrientation, ref body.position, ref body.linearVelocity,
                     ref rayOrigin, ref rayDirection, out fraction, out normal));
             }
 

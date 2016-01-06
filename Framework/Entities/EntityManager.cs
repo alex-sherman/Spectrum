@@ -8,6 +8,7 @@ using Spectrum.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using System.Reflection;
 using Spectrum.Framework.Network;
+using System.Diagnostics;
 
 namespace Spectrum.Framework.Entities
 {
@@ -21,6 +22,8 @@ namespace Spectrum.Framework.Entities
         private EntityCollection ECollection;
         public MultiplayerService mpService;
         public bool Paused = false;
+        private static Stopwatch timer = new Stopwatch();
+        public static Dictionary<string, long> updateTimes = new Dictionary<string, long>();
         public EntityManager(EntityCollection ECollection, MultiplayerService mpService)
         {
             this.ECollection = ECollection;
@@ -119,6 +122,7 @@ namespace Spectrum.Framework.Entities
             List<Entity> updateables = ECollection.updateables;
             for (int i = 0; i < updateables.Count; i++)
             {
+                timer.Restart();
                 if (updateables[i].Enabled)
                 {
                     updateables[i].Update(gameTime);
@@ -129,6 +133,9 @@ namespace Spectrum.Framework.Entities
                 }
                 if (updateables[i].Disposing)
                     ECollection.Remove(updateables[i].ID);
+                timer.Stop();
+                string itemName = updateables[i].GetType().Name;
+                DebugPrinter.time("Update", itemName, timer.Elapsed.Ticks);
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;

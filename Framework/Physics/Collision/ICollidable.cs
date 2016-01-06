@@ -12,6 +12,7 @@ namespace Spectrum.Framework.Physics.Collision
     {
         Shape Shape { get; }
         Vector3 Position { get; }
+        Vector3 Velocity { get; }
         Matrix Orientation { get; }
         JBBox BoundingBox { get;  }
     }

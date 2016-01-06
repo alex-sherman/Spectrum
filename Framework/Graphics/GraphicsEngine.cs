@@ -160,25 +160,31 @@ namespace Spectrum.Framework.Graphics
                     if (part.IBuffer != null)
                     {
                         setBuffers(part.VBuffer, part.IBuffer);
-                        effect.CurrentTechnique.Passes[0].Apply();
-                        if (part.primType == PrimitiveType.TriangleStrip)
+                        foreach (var pass in effect.CurrentTechnique.Passes)
                         {
-                            device.DrawIndexedPrimitives(part.primType, 0, 0,
-                                                                 part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2);
-                        }
-                        if (part.primType == PrimitiveType.TriangleList)
-                        {
-                            device.DrawIndexedPrimitives(part.primType, 0, 0,
-                                                                 part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3);
+                            pass.Apply();
+                            if (part.primType == PrimitiveType.TriangleStrip)
+                            {
+                                device.DrawIndexedPrimitives(part.primType, 0, 0,
+                                                                     part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2);
+                            }
+                            if (part.primType == PrimitiveType.TriangleList)
+                            {
+                                device.DrawIndexedPrimitives(part.primType, 0, 0,
+                                                                     part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3);
+                            }
                         }
                     }
                     else
                     {
                         setBuffers(part.VBuffer, part.IBuffer);
-                        effect.CurrentTechnique.Passes[0].Apply();
-                        if (part.primType == PrimitiveType.TriangleStrip)
+                        foreach (var pass in effect.CurrentTechnique.Passes)
                         {
-                            device.DrawPrimitives(part.primType, 0, part.VBuffer.VertexCount - 2);
+                            pass.Apply();
+                            if (part.primType == PrimitiveType.TriangleStrip)
+                            {
+                                device.DrawPrimitives(part.primType, 0, part.VBuffer.VertexCount - 2);
+                            }
                         }
                     }
                 }
@@ -289,9 +295,7 @@ namespace Spectrum.Framework.Graphics
                     GraphicsEngine.Render(drawable as GameObject, Camera.View, Camera.Projection);
                 timer.Stop();
                 string itemName = drawable.GetType().Name;
-                if (!renderTimes.ContainsKey(itemName))
-                    renderTimes[itemName] = 0;
-                renderTimes[itemName] += timer.ElapsedTicks;
+                DebugPrinter.time("render", itemName, timer.Elapsed.Ticks);
             }
             spriteBatch.End();
             //Clear the screen and perform anti aliasing

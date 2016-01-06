@@ -11,7 +11,7 @@ sampler sand = sampler_state
 	Texture = <MultiTextureA>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter=POINT;
+	mipfilter = POINT;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -20,7 +20,7 @@ sampler grass = sampler_state
 	Texture = <MultiTextureB>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter=POINT;
+	mipfilter = POINT;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -29,7 +29,7 @@ sampler rock = sampler_state
 	Texture = <MultiTextureC>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter=POINT;
+	mipfilter = POINT;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -38,7 +38,7 @@ sampler snow = sampler_state
 	Texture = <MultiTextureD>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter=POINT;
+	mipfilter = POINT;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -71,59 +71,41 @@ MultiTex_VS_OUT TransformMulti(MultiTex_VS_IN vin)
     vin.Position = lerp(vin.Position, vin.Position2, VertexBlend);
 	float4 worldPosition = 	CommonVS((CommonVSInput)vin, (CommonVSOut)Out);
 	Out.blend = lerp(vin.blend, vin.blend2, VertexBlend);
-	float blendDistance1 = 100;
+	float blendDistance1 = 300;
 	Out.depthBlend.x = clamp((Out.depth)/blendDistance1, 0, 1);
-	float blendDistance2 = 500;
-
-	Out.depthBlend.y = clamp((Out.depth - blendDistance1)/blendDistance2, 0, 1);
 	return Out;
 }
-float4 ApplyMultiTexture(MultiTex_VS_OUT vsout) : COLOR
+float4 ApplyMultiTexture(MultiTex_VS_OUT vsout, SamplerState samp, int blendIndex) : COLOR
 {
 	DoClip((CommonVSOut)vsout);
 	float texw = vsout.blend.x;
 	float lodw = vsout.depthBlend.x;
-	float2 coorda = vsout.textureCoordinate*4;
+	float2 coorda = vsout.textureCoordinate*2;
 	float2 coordb = vsout.textureCoordinate/4;
 	float3 sampled = 0;
-	if(vsout.depthBlend.y>0){
-		lodw = vsout.depthBlend.y;
-		coorda = vsout.textureCoordinate/4;
-		coordb = vsout.textureCoordinate/8;
-	}
-    coorda /= 2.5;
-    coordb /= 2.5;
-	if(vsout.blend.w>0) {
-		sampled += lerp(tex2D(snow,coorda).rgb,tex2D(snow,coordb),lodw) * vsout.blend.w;
-	}
-	if(vsout.blend.z>0){
-		sampled += lerp(tex2D(rock,coorda).rgb,tex2D(rock,coordb),lodw) * vsout.blend.z;
-	}
-	if(vsout.blend.y>0){
-		sampled += lerp(tex2D(grass,coorda).rgb,tex2D(grass,coordb),lodw) * vsout.blend.y;
-	}
-	if(vsout.blend.x>0) {
-		sampled += lerp(tex2D(sand,coorda).rgb,tex2D(sand,coordb),lodw) * vsout.blend.x;
-	}
+	//sampled += lerp(tex2D(snow,coorda).rgb,tex2D(snow,coordb),lodw) * vsout.blend.w;
+	//sampled += lerp(tex2D(rock,coorda).rgb,tex2D(rock,coordb),lodw) * vsout.blend.z;
+	//sampled += lerp(tex2D(sand, coorda).rgb, tex2D(sand, coordb), lodw) * vsout.blend.y;
+	sampled += tex2D(samp, coorda) * vsout.blend[blendIndex];
 	float4 toReturn = (float4)0;
 	toReturn.rgb = sampled;
 
-	float3 lightEffect = PSCalculateLight((CommonVSOut)vsout);
-	toReturn.rgb *= lightEffect;
-
 	toReturn.rgb = lerp(toReturn.rgb, (float4)0,vsout.fog);
-	//toReturn.rgb *= darkness;
 	toReturn.a = 1-vsout.fog;
 	if(!aboveWater){
 		toReturn.b+=.1f;
 	}
 	return toReturn;
 }
+float4 ApplyMultiTextureSand(MultiTex_VS_OUT vsout) : COLOR
+{
+	return ApplyMultiTexture(vsout, grass, 1);
+}
 technique MultiTexture
 {
 	pass P0
 	{
 		vertexShader = compile vs_4_0 TransformMulti();
-		pixelShader  = compile ps_4_0 ApplyMultiTexture();
+		pixelShader = compile ps_4_0 ApplyMultiTextureSand();
 	}
 }

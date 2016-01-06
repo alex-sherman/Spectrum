@@ -15,6 +15,7 @@ namespace Spectrum.Framework
     {
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
+        private static Dictionary<string, Dictionary<string, double>> timings = new Dictionary<string, Dictionary<string, double>>();
         //TODO: Randomly can't get a filename and throws exception causing a crash
         public static void print(string msg)
         {
@@ -52,6 +53,33 @@ namespace Spectrum.Framework
         {
             print(String.Format(msg, args));
         }
+        public static void time(string group, string name, double miliseconds)
+        {
+            if (!timings.ContainsKey(group))
+                timings[group] = new Dictionary<string, double>();
+            if (!timings[group].ContainsKey(name))
+                timings[group][name] = 0;
+            timings[group][name] += miliseconds;
+        }
+        private void DrawTimes(int startLine)
+        {
+            float curPos = (startLine) * Font.LineSpacing;
+            foreach (var timeGroup in timings)
+            {
+                string toPrint = timeGroup.Key+"\n---------------";
+                Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
+                curPos += Font.MeasureString(toPrint).Y;
+                List<KeyValuePair<string, double>> renderTimes = timeGroup.Value.ToList();
+                renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
+                double sum = renderTimes.Sum(item => item.Value);
+                for (int i = 0; i < 10 && i < renderTimes.Count; i++)
+                {
+                    toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value / 1000.0f);
+                    Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
+                    curPos += Font.LineSpacing;
+                }
+            }
+        }
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
@@ -77,16 +105,7 @@ namespace Spectrum.Framework
                     Manager.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                List<KeyValuePair<string, long>> renderTimes = GraphicsEngine.renderTimes.ToList();
-                renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
-                double sum = renderTimes.Sum(item => item.Value);
-                curPos = 0;
-                for (int i = 0; i < 10 && i < renderTimes.Count; i++)
-                {
-                    string toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value / sum);
-                    Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos + (11) * strSize), Color.Blue, Z);
-                    curPos += Font.MeasureString(toPrint.ToString()).Y;
-                }
+                DrawTimes(2);
 
             }
             if (SpectrumGame.Game.DebugDraw)
@@ -96,6 +115,7 @@ namespace Spectrum.Framework
                     objects[i].DebugDraw(gameTime, Manager.SpriteBatch);
                 }
             }
+            timings = new Dictionary<string, Dictionary<string, double>>();
         }
     }
 }

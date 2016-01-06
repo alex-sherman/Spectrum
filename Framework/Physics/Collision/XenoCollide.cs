@@ -63,26 +63,6 @@ namespace Spectrum.Framework.Physics.Collision
         private const float CollideEpsilon = 1e-4f;
         private const int MaximumIterations = 34;
 
-        private static void SupportMapTransformed(ISupportMappable support,
-            ref Matrix orientation, ref Vector3 position, ref Vector3 direction, out Vector3 result)
-        {
-            // THIS IS *THE* HIGH FREQUENCY CODE OF THE COLLLISION PART OF THE ENGINE
-
-            result.X = ((direction.X * orientation.M11) + (direction.Y * orientation.M12)) + (direction.Z * orientation.M13);
-            result.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
-            result.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
-
-            support.SupportMapping(ref result, out result);
-
-            float x = ((result.X * orientation.M11) + (result.Y * orientation.M21)) + (result.Z * orientation.M31);
-            float y = ((result.X * orientation.M12) + (result.Y * orientation.M22)) + (result.Z * orientation.M32);
-            float z = ((result.X * orientation.M13) + (result.Y * orientation.M23)) + (result.Z * orientation.M33);
-
-            result.X = position.X + x;
-            result.Y = position.Y + y;
-            result.Z = position.Z + z;
-        }
-
         /// <summary>
         /// Checks two shapes for collisions.
         /// </summary>
@@ -97,7 +77,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="penetration">Estimated penetration depth of the collision.</param>
         /// <returns>Returns true if there is a collision, false otherwise.</returns>
         public static bool Detect(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
-             Matrix orientation2, Vector3 position1, Vector3 position2,
+             Matrix orientation2, Vector3 position1, Vector3 position2, Vector3 velocity1, Vector3 velocity2,
              out Vector3 point, out Vector3 normal, out float penetration)
         {
             // Used variables
@@ -135,8 +115,8 @@ namespace Spectrum.Framework.Physics.Collision
             mn = v0;
             Vector3.Negate(ref v0, out normal);
 
-            SupportMapTransformed(support1, ref orientation1, ref position1, ref mn, out v11);
-            SupportMapTransformed(support2, ref orientation2, ref position2, ref normal, out v12);
+            GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref mn, out v11);
+            GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out v12);
             Vector3.Subtract(ref v12, ref v11, out v1);
             float dotted;
             Vector3.Dot(ref v1, ref normal, out dotted);
@@ -164,8 +144,8 @@ namespace Spectrum.Framework.Physics.Collision
             }
 
             Vector3.Negate(ref normal, out mn);
-            SupportMapTransformed(support1, ref orientation1, ref position1, ref mn, out v21);
-            SupportMapTransformed(support2, ref orientation2, ref position2, ref normal, out v22);
+            GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref mn, out v21);
+            GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out v22);
             Vector3.Subtract(ref v22, ref v21, out v2);
 
             if (Vector3.Dot(v2, normal) <= 0.0f) return false;
@@ -203,8 +183,8 @@ namespace Spectrum.Framework.Physics.Collision
                 // Obtain the support point in a direction perpendicular to the existing plane
                 // Note: This point is guaranteed to lie off the plane
                 Vector3.Negate(ref normal, out mn);
-                SupportMapTransformed(support1, ref orientation1, ref position1, ref mn, out v31);
-                SupportMapTransformed(support2, ref orientation2, ref position2, ref normal, out v32);
+                GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref mn, out v31);
+                GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out v32);
                 Vector3.Subtract(ref v32, ref v31, out v3);
 
                 if (Vector3.Dot(v3, normal) <= 0.0f)
@@ -267,8 +247,8 @@ namespace Spectrum.Framework.Physics.Collision
 
                     // Find the support point in the direction of the wedge face
                     Vector3.Negate(ref normal, out mn);
-                    SupportMapTransformed(support1, ref orientation1, ref position1, ref mn, out v41);
-                    SupportMapTransformed(support2, ref orientation2, ref position2, ref normal, out v42);
+                    GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref mn, out v41);
+                    GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out v42);
                     Vector3.Subtract(ref v42, ref v41, out v4);
 
                     Vector3.Subtract(ref v4, ref v3, out temp1);
