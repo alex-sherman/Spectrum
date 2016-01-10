@@ -27,7 +27,7 @@ CommonVSOut Transform(CommonVSInput input){
 CommonVSOut InstanceTransform(CommonVSInput input, float4x4 instanceTranform : BLENDWEIGHT){
 	return CommonTransform(input, mul(transpose(instanceTranform),world));
 }
-float4 ApplyTexture(CommonVSOut vsout) : COLOR
+CommonPSOut ApplyTexture(CommonVSOut vsout)
 {
 	if(Clip) { clip(vsout.clipDistance); }
 	if(vsout.fog >=.99f){ clip(-1); }
@@ -39,7 +39,7 @@ float4 ApplyTexture(CommonVSOut vsout) : COLOR
 		color.b+=.1f;
 	}
 	color.a = 1-vsout.fog;
-	return color;
+	return PSReturn(color, vsout);
 }
 technique TextureDraw
 {

@@ -38,14 +38,14 @@ CommonVSOut CustomVL4(VSInputNmTxWeights vin)
 	return output;
 }
 // Pixel shader: vertex lighting, no fog.
-float4 CustomPSNoFog(CommonVSOut pin) : SV_Target0
+CommonPSOut CustomPSNoFog(CommonVSOut pin)
 {
 	DoClip(pin);
 	float3 lightEffect = PSCalculateLight(pin);
 	float4 output = tex2D(customTexture, pin.textureCoordinate);
 	output.rgb *= lightEffect;
 	//if(glowEnabled) { output.rgb = output.rgb * .25f + glowColor * .75f; }
-	return output;
+	return PSReturn(output, pin);
 }
 Technique SkinnedEffect
 {

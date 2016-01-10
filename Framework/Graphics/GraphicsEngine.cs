@@ -280,12 +280,12 @@ namespace Spectrum.Framework.Graphics
             //    PostProcessEffect.LightViewProj = Matrix.CreateLookAt(SpectrumEffect.LightPos, Player.LocalPlayer.Position, Vector3.Up) * Settings.lightProjection;
             //    UpdateShadowMap(drawables);
             //}
-            spriteBatch.Begin();
+            PostProcessEffect.Technique = "PassThrough";
+            spriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, effect: PostProcessEffect.effect);
             if (Settings.enableWater) { UpdateWater(drawable3D); }
-            UpdateDepthBuffer(drawable3D);
 
             //Begin rendering this to the Anti Aliasing texture
-            device.SetRenderTarget(AATarget);
+            device.SetRenderTargets(AATarget, DepthTarget);
             GraphicsEngine.device.Clear(clearColor);
             foreach (Entity drawable in drawables)
             {

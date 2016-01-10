@@ -13,25 +13,6 @@ uniform extern texture DepthTarget;
 float2 viewPort;
 bool vingette = false;
 
-
-struct VertexShaderOutputPerVertexDiffuse
-{
-	float4 Position : POSITION;
-	float3 WorldNormal : TEXCOORD0;
-	float3 WorldPosition : TEXCOORD1;
-	float4 textureCoord : TEXCOORD2;
-	float4 Color : COLOR0;
-};
-
-
-struct PixelShaderInputPerVertexDiffuse
-{
-	float4 textureCoord : TEXCOORD2;
-	float3 WorldNormal : TEXCOORD0;
-	float3 WorldPosition : TEXCOORD1;
-	float4 Color: COLOR0;
-};
-
 sampler AASampler = sampler_state
 {
 	Texture = <AATarget>;
@@ -111,22 +92,26 @@ float4 CalcAA(float2 texCoord)
 	color.rgb = value/total;
 	return color;
 }
-float3 Blur(float3 color, float2 texCoord, float factor)
+float3 Blur(float3 color, float2 texCoord)
 {
 	float3 output = (float3)0;
+	float centerDepth = tex2D(DepthSampler, texCoord);
+	float weightSum = 0;
 	for(int i = -2; i <= 2; i++) {
 		for(int j = -2; j <= 2; j++) {
-			float weight = i == 0 && j == 0 ? (1 - factor) : (factor) / 25;
+			float depth = tex2D(DepthSampler, texCoord + float2(i / viewPort.x, j / viewPort.y));
+			if (centerDepth < depth) continue;
+			float weight = i == 0 && j == 0 ? (1 - depth) : (depth);
 			float3 lerpColor = i == 0 && j == 0 ? color : tex2D(AASampler, texCoord + float2(i/viewPort.x, j/viewPort.y)).rgb;
 			output += lerpColor * weight;
+			weightSum += weight;
 		}
 	}
-	return output;
+	return output / weightSum;
 }
 float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 texCoord : TEXCOORD0) : COLOR
 {
 	float3 value = tex2D(AASampler, texCoord).rgb;
-	float depth = tex2D(DepthSampler, texCoord).r;
 	float4 color = (float4)1;
 	float2 orgCoord = texCoord;
 	if(AAEnabled){
@@ -146,11 +131,20 @@ float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 te
 		if(length(value-other)>threshold){ value = CalcAA(orgCoord); }
 		texCoord.y-=1/viewPort.y;
 	}
-	color.rgb = Blur(value, texCoord, depth)*(1-darkness);
+	color.rgb = Blur(value, texCoord)*(1-darkness);
 	if(vingette){
 		color = VingetteShader(texCoord,color);
 	}
 	return color;
+}
+sampler TextureSampler : register(s0);
+CommonPSOut PassThrough2D(float4 position : SV_Position, float4 inputColor : COLOR0, float2 texCoord : TEXCOORD0)
+{
+	CommonPSOut output = (CommonPSOut)0;
+	//I have no idea how alpha blending works
+	output.color = inputColor * tex2D(TextureSampler, texCoord);
+	output.depth = output.color == 1 ? (float4)1 : 0;
+	return output;
 }
 
 technique AAPP
@@ -158,6 +152,13 @@ technique AAPP
 	pass P0
 	{
 		pixelShader = compile ps_4_0 AAPS();
+	}
+}
+technique PassThrough
+{
+	pass P0
+	{
+		pixelShader = compile ps_4_0 PassThrough2D();
 	}
 }
 technique ShadowMap

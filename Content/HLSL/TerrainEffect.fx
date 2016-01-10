@@ -75,7 +75,7 @@ MultiTex_VS_OUT TransformMulti(MultiTex_VS_IN vin)
 	Out.depthBlend.x = clamp((Out.depth)/blendDistance1, 0, 1);
 	return Out;
 }
-float4 ApplyMultiTexture(MultiTex_VS_OUT vsout, SamplerState samp, int blendIndex) : COLOR
+CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout, SamplerState samp, int blendIndex)
 {
 	DoClip((CommonVSOut)vsout);
 	float texw = vsout.blend.x;
@@ -95,9 +95,9 @@ float4 ApplyMultiTexture(MultiTex_VS_OUT vsout, SamplerState samp, int blendInde
 	if(!aboveWater){
 		toReturn.b+=.1f;
 	}
-	return toReturn;
+	return PSReturn(toReturn, (CommonVSOut)vsout);
 }
-float4 ApplyMultiTextureSand(MultiTex_VS_OUT vsout) : COLOR
+CommonPSOut ApplyMultiTextureSand(MultiTex_VS_OUT vsout)
 {
 	return ApplyMultiTexture(vsout, grass, 1);
 }

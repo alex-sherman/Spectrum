@@ -55,6 +55,18 @@ struct CommonVSOut
 	float fog	: COLOR0;
 	float light : COLOR1;
 };
+struct CommonPSOut
+{
+	float4 color : COLOR0;
+	float4 depth : COLOR1;
+};
+CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
+	CommonPSOut output = (CommonPSOut)0;
+	output.color = color;
+	output.depth = max(0, length(vsout.position.xyz / vsout.position.w - cameraPosition) - 50) / 3000;
+	output.depth.a = 1;
+	return output;
+}
 float4 VSCalcPos2DAsSeenByLight(float4 worldPosition){
 	return mul(worldPosition, lightViewProjectionMatrix);
 }
