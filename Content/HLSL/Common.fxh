@@ -63,7 +63,7 @@ struct CommonPSOut
 CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
 	CommonPSOut output = (CommonPSOut)0;
 	output.color = color;
-	output.depth = max(0, length(vsout.position.xyz / vsout.position.w - cameraPosition) - 50) / 3000;
+	output.depth.rgb = max(0, (vsout.position.w - 1000) / 10000);
 	output.depth.a = 1;
 	return output;
 }

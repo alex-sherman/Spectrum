@@ -33,27 +33,6 @@ sampler DepthSampler = sampler_state
 	AddressV = clamp;
 };
 
-
-//------------------------------------------------Shadow Map-----------------------------
-
-CommonVSOut ShadowVS(
-	CommonVSInput input
-	)
-{
-	CommonVSOut Out = (CommonVSOut)0;
-	float4 worldPosition = mul(input.Position, world);
-	Out.position = mul(mul(worldPosition, view), proj);
-	Out.depth = max(0, length(Out.position - cameraPosition) - 50) / 3000;
-	return Out;
-}
-float4 ShadowPS(CommonVSOut vsout) : COLOR
-{
-	float4 color = (float4)0;
-	color.rgb = vsout.depth;
-	color.a = 1;
-	return color;
-}
-
 float R = 3.0f; // Radius of vingette
 float4 VingetteShader(float2 coord, float4 color)
 {     
@@ -101,7 +80,7 @@ float3 Blur(float3 color, float2 texCoord)
 		for(int j = -2; j <= 2; j++) {
 			float depth = tex2D(DepthSampler, texCoord + float2(i / viewPort.x, j / viewPort.y));
 			if (centerDepth < depth) continue;
-			float weight = i == 0 && j == 0 ? (1 - depth) : (depth);
+			float weight = i == 0 && j == 0 ? (1 - depth / 2) : (depth / 2);
 			float3 lerpColor = i == 0 && j == 0 ? color : tex2D(AASampler, texCoord + float2(i/viewPort.x, j/viewPort.y)).rgb;
 			output += lerpColor * weight;
 			weightSum += weight;
@@ -159,13 +138,5 @@ technique PassThrough
 	pass P0
 	{
 		pixelShader = compile ps_4_0 PassThrough2D();
-	}
-}
-technique ShadowMap
-{
-	pass P0
-	{
-		vertexShader = compile vs_4_0 ShadowVS();
-		pixelShader  = compile ps_4_0 ShadowPS();
 	}
 }

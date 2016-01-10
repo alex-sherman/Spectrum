@@ -11,7 +11,7 @@ sampler sand = sampler_state
 	Texture = <MultiTextureA>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter = POINT;
+	mipfilter = LINEAR;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -20,7 +20,7 @@ sampler grass = sampler_state
 	Texture = <MultiTextureB>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter = POINT;
+	mipfilter = LINEAR;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -29,7 +29,7 @@ sampler rock = sampler_state
 	Texture = <MultiTextureC>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter = POINT;
+	mipfilter = LINEAR;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -38,7 +38,7 @@ sampler snow = sampler_state
 	Texture = <MultiTextureD>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter = POINT;
+	mipfilter = LINEAR;
 	AddressU = wrap;
 	AddressV = wrap;
 };
@@ -75,18 +75,18 @@ MultiTex_VS_OUT TransformMulti(MultiTex_VS_IN vin)
 	Out.depthBlend.x = clamp((Out.depth)/blendDistance1, 0, 1);
 	return Out;
 }
-CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout, SamplerState samp, int blendIndex)
+CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 {
 	DoClip((CommonVSOut)vsout);
 	float texw = vsout.blend.x;
 	float lodw = vsout.depthBlend.x;
-	float2 coorda = vsout.textureCoordinate*2;
-	float2 coordb = vsout.textureCoordinate/4;
+	float2 coorda = vsout.textureCoordinate * 2;
+	float2 coordb = vsout.textureCoordinate / 4;
 	float3 sampled = 0;
-	//sampled += lerp(tex2D(snow,coorda).rgb,tex2D(snow,coordb),lodw) * vsout.blend.w;
-	//sampled += lerp(tex2D(rock,coorda).rgb,tex2D(rock,coordb),lodw) * vsout.blend.z;
-	//sampled += lerp(tex2D(sand, coorda).rgb, tex2D(sand, coordb), lodw) * vsout.blend.y;
-	sampled += tex2D(samp, coorda) * vsout.blend[blendIndex];
+	sampled += tex2D(sand, coordb) * vsout.blend[0];
+	sampled += tex2D(grass, coordb) * vsout.blend[1];
+	sampled += tex2D(rock, coordb) * vsout.blend[2];
+	sampled += tex2D(snow, coordb) * vsout.blend[3];
 	float4 toReturn = (float4)0;
 	toReturn.rgb = sampled;
 
@@ -97,15 +97,11 @@ CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout, SamplerState samp, int blen
 	}
 	return PSReturn(toReturn, (CommonVSOut)vsout);
 }
-CommonPSOut ApplyMultiTextureSand(MultiTex_VS_OUT vsout)
-{
-	return ApplyMultiTexture(vsout, grass, 1);
-}
 technique MultiTexture
 {
 	pass P0
 	{
 		vertexShader = compile vs_4_0 TransformMulti();
-		pixelShader = compile ps_4_0 ApplyMultiTextureSand();
+		pixelShader = compile ps_4_0 ApplyMultiTexture();
 	}
 }

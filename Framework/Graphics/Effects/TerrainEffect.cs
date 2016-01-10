@@ -18,10 +18,10 @@ namespace Spectrum.Framework.Graphics
         public TerrainEffect(string textureA, string textureB, string textureC, string textureD)
             : base(ContentHelper.Load<Effect>("TerrainEffect"))
         {
-            //Parameters["MultiTextureA"].SetValue(ContentHelper.Load<Texture2D>(textureA));
+            Parameters["MultiTextureA"].SetValue(ContentHelper.Load<Texture2D>(textureA));
             Parameters["MultiTextureB"].SetValue(ContentHelper.Load<Texture2D>(textureB));
-            //Parameters["MultiTextureC"].SetValue(ContentHelper.Load<Texture2D>(textureC));
-            //Parameters["MultiTextureD"].SetValue(ContentHelper.Load<Texture2D>(textureD));
+            Parameters["MultiTextureC"].SetValue(ContentHelper.Load<Texture2D>(textureC));
+            Parameters["MultiTextureD"].SetValue(ContentHelper.Load<Texture2D>(textureD));
         }
     }
 }
