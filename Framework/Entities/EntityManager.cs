@@ -191,6 +191,12 @@ namespace Spectrum.Framework.Entities
                 .Cast<T>()
                 .Where(predicate);
         }
+        public Entity Find(Guid id)
+        {
+            if (ECollection.Contains(id))
+                return ECollection.Find(id);
+            return null;
+        }
         public void RemoveEntity(Guid entityID)
         {
             ECollection.Remove(entityID);

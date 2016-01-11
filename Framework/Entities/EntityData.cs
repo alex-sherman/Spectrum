@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Spectrum.Framework.Entities
 {
-    public class EntityData : ISerializable
+    public class EntityData : NetworkSerializable
     {
         public string type;
         public Guid guid;
@@ -55,7 +55,7 @@ namespace Spectrum.Framework.Entities
             output.WritePrimitiveArray(args);
         }
 
-        public ISerializable Copy()
+        public NetworkSerializable Copy()
         {
             NetMessage temp = new NetMessage();
             this.WriteTo(temp);

@@ -6,9 +6,9 @@ using System.Text;
 
 namespace Spectrum.Framework.Network
 {
-    public interface ISerializable
+    public interface NetworkSerializable
     {
         void WriteTo(NetMessage output);
-        ISerializable Copy();
+        NetworkSerializable Copy();
     }
 }

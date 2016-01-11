@@ -36,7 +36,7 @@ namespace Spectrum.Framework.Network
         DICTIONARY = 13,
         NETID = 14,
     }
-    public class NetMessage : ISerializable
+    public class NetMessage : NetworkSerializable
     {
         public MemoryStream stream;
         public static EntityCollection ECollection;
@@ -535,7 +535,9 @@ namespace Spectrum.Framework.Network
         // Constructor Args
         public void WritePrimitiveArray(object[] args)
         {
-            Write((byte)args.Length);
+            int header = (args == null ? 0 : (1 << 31 | args.Length));
+            Write(header);
+            if (args == null) return;
             for (int i = 0; i < args.Length; i++)
             {
                 WritePrimitive(args[i]);
@@ -545,7 +547,10 @@ namespace Spectrum.Framework.Network
         {
             try
             {
-                int numObjs = ReadByte();
+                int header = ReadInt();
+                if ((header & (1 << 31)) == 0)
+                    return null;
+                int numObjs = header & (~(1 << 31));
                 byte[] buffer = new byte[4];
                 object[] output = new object[numObjs];
                 for (int i = 0; i < numObjs; i++)
@@ -561,7 +566,7 @@ namespace Spectrum.Framework.Network
         }
 
         // List
-        public List<T> ReadList<T>() where T : ISerializable
+        public List<T> ReadList<T>() where T : NetworkSerializable
         {
             try
             {
@@ -583,20 +588,20 @@ namespace Spectrum.Framework.Network
                 throw new SerializationException(e);
             }
         }
-        public void Write<T>(List<T> input) where T : ISerializable
+        public void Write<T>(List<T> input) where T : NetworkSerializable
         {
             Write(input != null);
             if(input != null)
             {
                 Write(input.Count());
-                foreach (ISerializable item in input)
+                foreach (NetworkSerializable item in input)
                 {
                     item.WriteTo(this);
                 }
             }
         }
 
-        public ISerializable Copy()
+        public NetworkSerializable Copy()
         {
             NetMessage temp = new NetMessage(stream.ToArray());
             temp.stream.Position = stream.Position;

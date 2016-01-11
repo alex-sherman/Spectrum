@@ -47,6 +47,7 @@ namespace Spectrum.Framework
         public static object Instantiate(Type t, params object[] args)
         {
             if (t == null) { return null; }
+            if(args == null) args = new object[0];
             Type[] types = new Type[args.Length];
             for (int i = 0; i < args.Length; i++)
             {
