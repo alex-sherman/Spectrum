@@ -23,6 +23,7 @@ namespace Spectrum.Framework.Graphics
         private Matrix[] parBones { set { Parameters["Bones"].SetValue(value); } }
         public string[] Bones;
         public SkinningData SkinningData = null;
+        Matrix[] boneTransforms;
 
         /// <summary>
         /// Creates a new CustomSkinnedEffect with default parameter settings.
@@ -32,28 +33,24 @@ namespace Spectrum.Framework.Graphics
         {
             Parameters["world"].SetValue(Matrix.Identity);
 
-            Matrix[] identityBones = new Matrix[MaxBones];
-
+            this.boneTransforms = new Matrix[Bones.Count()];
             for (int i = 0; i < Bones.Count(); i++)
             {
-                identityBones[i] = Matrix.Identity;
+                boneTransforms[i] = Matrix.Identity;
             }
-            parBones = identityBones;
+            parBones = boneTransforms;
             this.Bones = Bones;
         }
-
-        protected override bool OnApply()
+        public void UpdateBoneTransforms()
         {
             if (SkinningData != null)
             {
-                Matrix[] bones = new Matrix[Bones.Count()];
-                for (int i = 0; i < Bones.Count(); i++)
+                for (int i = 0; i < boneTransforms.Count(); i++)
                 {
-                    bones[i] = SkinningData.Bones[Bones[i]].absoluteTransform;
+                    boneTransforms[i] = SkinningData.Bones[Bones[i]].absoluteTransform;
                 }
-                parBones = bones;
+                parBones = boneTransforms;
             }
-            return base.OnApply();
         }
     }
 }

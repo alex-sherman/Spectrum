@@ -54,6 +54,11 @@ namespace Spectrum.Framework.Graphics
             {
                 AnimationPlayer.Update(gameTime.ElapsedGameTime);
             }
+            foreach (var part in this)
+            {
+                if (part.effect is CustomSkinnedEffect)
+                    ((CustomSkinnedEffect)part.effect).UpdateBoneTransforms();
+            }
         }
     }
 }

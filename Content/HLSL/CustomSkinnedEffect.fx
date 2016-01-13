@@ -1,5 +1,5 @@
 #include "Common.fxh"
-#define SKINNED_EFFECT_MAX_BONES   72
+#define SKINNED_EFFECT_MAX_BONES   64
 
 
 
@@ -18,8 +18,7 @@ struct VSInputNmTxWeights
 void Skin(inout VSInputNmTxWeights vin, uniform int boneCount)
 {
 	float4x3 skinning = 0;
-
-		[unroll]
+	[unroll]
 	for (int i = 0; i < boneCount; i++)
 	{
 		skinning += Bones[vin.Indices[i]] * vin.Weights[i];

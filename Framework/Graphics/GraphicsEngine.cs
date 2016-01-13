@@ -272,6 +272,7 @@ namespace Spectrum.Framework.Graphics
             SpectrumEffect.CameraPos = Camera.Position;
             SpectrumEffect.AboveWater = Camera.Position.Y > Water.waterHeight;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
+            drawables = drawables.Where(e => e.DrawEnabled).ToList();
             List<GameObject> drawable3D = drawables.Where(e => e is GameObject).Cast<GameObject>().ToList();
 
 

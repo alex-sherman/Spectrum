@@ -131,6 +131,8 @@ namespace Spectrum.Framework.Entities
                     if (tickTenthTimer >= 100)
                         updateables[i].TickTenth();
                 }
+                else
+                    updateables[i].DisabledUpdate(gameTime);
                 if (updateables[i].Disposing)
                     ECollection.Remove(updateables[i].ID);
                 timer.Stop();

@@ -42,9 +42,15 @@ namespace Spectrum.Framework.Entities
         public NetID OwnerGuid;
         public object[] creationArgs = new object[0];
         public EntityManager Manager;
+
+        public bool Enabled { get; protected set; }
+        public bool DrawEnabled { get; protected set; }
+        public bool Disposing { get; private set; }
+
         public Entity()
         {
             Enabled = true;
+            DrawEnabled = true;
             AllowReplicate = true;
             StateReplicationMessage = AllocateMessageType();
             FunctionReplicationMessage = AllocateMessageType();
@@ -65,9 +71,6 @@ namespace Spectrum.Framework.Entities
         }
 
         public virtual void Initialize() { }
-
-        public virtual bool Enabled { get; private set; }
-        public bool Disposing { get; private set; }
 
         [Replicate]
         public virtual void Dispose()
@@ -150,6 +153,7 @@ namespace Spectrum.Framework.Entities
         {
             if (replicateCounter > 0) { replicateCounter -= gameTime.ElapsedGameTime.Milliseconds; }
         }
+        public virtual void DisabledUpdate(GameTime time) { }
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
         public virtual void TickTenth() { }
         public virtual void TickOne() { }

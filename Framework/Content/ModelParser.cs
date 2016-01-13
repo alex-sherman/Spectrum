@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Spectrum.Framework.Content
 {
@@ -57,7 +58,10 @@ namespace Spectrum.Framework.Content
                 SkinnedVertex vertex = new SkinnedVertex();
                 foreach (string attribute in attributes)
                 {
-                    switch (attribute)
+                    Match m = Regex.Match(attribute, "^(\\w+?)(\\d*)$");
+                    string attributeType = attribute.Substring(m.Groups[1].Index, m.Groups[1].Length);
+                    int attributeIndex = m.Groups[2].Length > 0 ? int.Parse(attribute.Substring(m.Groups[2].Index, m.Groups[2].Length)) : 0;
+                    switch (attributeType)
                     {
                         case "POSITION":
                             vertex.Position = new Vector3((float)jsonVertices[i++], (float)jsonVertices[i++], (float)jsonVertices[i++]);
@@ -65,24 +69,32 @@ namespace Spectrum.Framework.Content
                         case "NORMAL":
                             vertex.Normal = new Vector3((float)jsonVertices[i++], (float)jsonVertices[i++], (float)jsonVertices[i++]);
                             break;
-                        case "TEXCOORD0":
+                        case "TEXCOORD":
                             vertex.TextureCoordinate = new Vector2((float)jsonVertices[i++], (float)jsonVertices[i++]);
                             break;
-                        case "BLENDWEIGHT0":
-                            vertex.BlendIndices.X = (float)jsonVertices[i++];
-                            vertex.Blendweight0.X = (float)jsonVertices[i++];
-                            break;
-                        case "BLENDWEIGHT1":
-                            vertex.BlendIndices.Y = (float)jsonVertices[i++];
-                            vertex.Blendweight0.Y = (float)jsonVertices[i++];
-                            break;
-                        case "BLENDWEIGHT2":
-                            vertex.BlendIndices.Z = (float)jsonVertices[i++];
-                            vertex.Blendweight0.Z = (float)jsonVertices[i++];
-                            break;
-                        case "BLENDWEIGHT3":
-                            vertex.BlendIndices.W = (float)jsonVertices[i++];
-                            vertex.Blendweight0.W = (float)jsonVertices[i++];
+                        case "BLENDWEIGHT":
+                            switch (attributeIndex)
+                            {
+                                case 0:
+                                    vertex.BlendIndices.X = (float)jsonVertices[i++];
+                                    vertex.Blendweight0.X = (float)jsonVertices[i++];
+                                    break;
+                                case 1:
+                                    vertex.BlendIndices.Y = (float)jsonVertices[i++];
+                                    vertex.Blendweight0.Y = (float)jsonVertices[i++];
+                                    break;
+                                case 2:
+                                    vertex.BlendIndices.Z = (float)jsonVertices[i++];
+                                    vertex.Blendweight0.Z = (float)jsonVertices[i++];
+                                    break;
+                                case 3:
+                                    vertex.BlendIndices.W = (float)jsonVertices[i++];
+                                    vertex.Blendweight0.W = (float)jsonVertices[i++];
+                                    break;
+                                default:
+                                    i++; i++;
+                                    break;
+	                        }
                             break;
                         default:
                             break;
