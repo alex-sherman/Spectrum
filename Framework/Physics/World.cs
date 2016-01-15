@@ -50,8 +50,6 @@ namespace Spectrum.Framework.Physics
             public event WorldStep PostStep;
 
             // Add&Remove
-            public event Action<GameObject> AddedRigidBody;
-            public event Action<GameObject> RemovedRigidBody;
             public event Action<Constraint> AddedConstraint;
             public event Action<Constraint> RemovedConstraint;
             //public event Action<SoftBody> AddedSoftBody;
@@ -78,16 +76,6 @@ namespace Spectrum.Framework.Physics
             internal void RaiseWorldPostStep(float timestep)
             {
                 if (PostStep != null) PostStep(timestep);
-            }
-
-            internal void RaiseAddedRigidBody(GameObject body)
-            {
-                if (AddedRigidBody != null) AddedRigidBody(body);
-            }
-
-            internal void RaiseRemovedRigidBody(GameObject body)
-            {
-                if (RemovedRigidBody != null) RemovedRigidBody(body);
             }
 
             internal void RaiseAddedConstraint(Constraint constraint)
@@ -240,14 +228,7 @@ namespace Spectrum.Framework.Physics
                 body.connections.Clear();
                 body.arbiters.Clear();
                 body.constraints.Clear();
-
-                events.RaiseRemovedRigidBody(body);
             }
-
-            //foreach (SoftBody body in softbodies)
-            //{
-            //    CollisionSystem.RemoveEntity(body);
-            //}
 
             // remove bodies from the world
             Collidables.Clear();
@@ -258,8 +239,6 @@ namespace Spectrum.Framework.Physics
                 events.RaiseRemovedConstraint(constraint);
             }
             Constraints.Clear();
-
-            //softbodies.Clear();
 
             // remove all islands
             islands.RemoveAll();
@@ -388,8 +367,6 @@ namespace Spectrum.Framework.Physics
             // remove the body from the island manager
             islands.RemoveBody(body);
 
-            events.RaiseRemovedRigidBody(body);
-
             return true;
         }
 
@@ -402,8 +379,6 @@ namespace Spectrum.Framework.Physics
         {
             if (body == null) throw new ArgumentNullException("body", "body can't be null.");
             if (Collidables.Contains(body)) throw new ArgumentException("The body was already added to the world.", "body");
-
-            events.RaiseAddedRigidBody(body);
 
             this.CollisionSystem.AddEntity(body);
 

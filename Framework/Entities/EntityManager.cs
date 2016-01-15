@@ -150,29 +150,31 @@ namespace Spectrum.Framework.Entities
         public Entity CreateEntityFromData(EntityData data)
         {
             Type t = TypeHelper.Types[data.type];
-            Entity e = CreateEntityType(t, data.guid, data.owner, data.args);
+            Entity e = AddEntity(Construct(t, data.guid, data.owner, data.args));
             if (e is GameObject) { (e as GameObject).Position = data.position; }
             return e;
         }
         public Entity CreateEntityType(Type t, params object[] args)
         {
-            Entity output = CreateEntityType(t, Guid.NewGuid(), mpService.ID, args);
-            if (output != null)
-                SendEntityCreation(output);
-            return output;
+            return AddEntity(Construct(t, Guid.NewGuid(), mpService.ID, args));
         }
-        public Entity CreateEntityType(Type t, Guid entityID, NetID ownerID, params object[] args)
+        public Entity Construct(Type type, Guid entityID, NetID ownerID, params object[] args)
         {
-            if (t == null || (!t.IsSubclassOf(typeof(Entity)))) { return null; }
-            Entity output = (Entity)TypeHelper.Instantiate(t, args);
+            if (type == null || (!type.IsSubclassOf(typeof(Entity)))) { throw new ArgumentException("Type must be subclass of Entity", "type"); }
+            Entity output = (Entity)TypeHelper.Instantiate(type, args);
             output.OwnerGuid = ownerID;
             output.ID = entityID;
             output.creationArgs = args;
-            output.Manager = this;
-            ECollection.Add(output);
             output.SendMessageCallback = SendEntityMessage;
-            output.Initialize();
-            return (Entity)output;
+            return output;
+        }
+        public Entity AddEntity(Entity entity)
+        {
+            entity.Manager = this;
+            ECollection.Add(entity);
+            if (mpService.ID == entity.OwnerGuid)
+                SendEntityCreation(entity);
+            return entity;
         }
         public void ClearEntities(Func<Entity, bool> predicate = null)
         {

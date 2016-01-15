@@ -14,46 +14,31 @@ namespace Spectrum.Framework.Entities
         Dictionary<Guid, Entity> entities = new Dictionary<Guid, Entity>();
         private List<Entity> _updateables = new List<Entity>();
         public List<Entity> updateables { get { lock (this) { return _updateables.ToList(); } } }
-        public List<GameObject> gameObjects
-        {
-            get
-            {
-                lock (this)
-                {
-                    return _updateables.ToList()
-                        .Where((Entity entity) => (entity is GameObject))
-                        .ToList()
-                        .ConvertAll((Entity entity) => (entity as GameObject));
-                }
-            }
-        }
 
         public void Add(Entity entity)
         {
-            if (OnEntityAdded != null) { OnEntityAdded(entity); }
-            entities[entity.ID] = entity;
-            int i = 0;
-            while (i < _updateables.Count - 1 && _updateables[i].UpdateOrder < entity.UpdateOrder) { i++; }
-            _updateables.Insert(i, entity);
-            if (entity is GameObject)
+            lock (this)
             {
-                gameObjects.Add(entity as GameObject);
+                if (OnEntityAdded != null) { OnEntityAdded(entity); }
+                entities[entity.ID] = entity;
+                int i = 0;
+                while (i < _updateables.Count - 1 && _updateables[i].UpdateOrder < entity.UpdateOrder) { i++; }
+                _updateables.Insert(i, entity);
             }
         }
         public event EntityCollectionUpdated OnEntityAdded;
         public void Remove(Guid entityID)
         {
-            if (entities.ContainsKey(entityID))
+            lock (this)
             {
-                Entity entity = entities[entityID];
-                if (OnEntityRemoved != null) { OnEntityRemoved(entity); }
-                entities.Remove(entityID);
-                _updateables.Remove(entity);
-                if (entity is GameObject)
+                if (entities.ContainsKey(entityID))
                 {
-                    gameObjects.Remove(entity as GameObject);
+                    Entity entity = entities[entityID];
+                    if (OnEntityRemoved != null) { OnEntityRemoved(entity); }
+                    entities.Remove(entityID);
+                    _updateables.Remove(entity);
+                    entity.Dispose();
                 }
-                entity.Dispose();
             }
         }
         public event EntityCollectionUpdated OnEntityRemoved;

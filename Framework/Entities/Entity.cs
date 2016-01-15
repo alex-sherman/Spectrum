@@ -70,8 +70,6 @@ namespace Spectrum.Framework.Entities
             }
         }
 
-        public virtual void Initialize() { }
-
         [Replicate]
         public virtual void Dispose()
         {

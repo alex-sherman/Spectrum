@@ -37,6 +37,7 @@ namespace Spectrum.Framework.Graphics
             GraphicsEngine.device = SpectrumGame.Game.GraphicsDevice;
             Settings.Init(device);
             PostProcessEffect.Initialize();
+            PostProcessEffect.AAEnabled = true;
             shadowMap = new RenderTarget2D(device, 2048, 2048, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
             ResetOnResize(SpectrumGame.Game, EventArgs.Empty);
             SpectrumGame.Game.OnScreenResize += ResetOnResize;

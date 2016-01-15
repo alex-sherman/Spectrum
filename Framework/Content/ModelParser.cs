@@ -22,10 +22,29 @@ namespace Spectrum.Framework.Content
     class ModelParserCache
     {
         public JObject jobj;
-        public VertexBuffer vBuffer;
-        public Dictionary<string, IndexBuffer> indices;
-        public Dictionary<string, List<MaterialTexture>> materials;
+        public Dictionary<string, MeshPartData> parts = new Dictionary<string, MeshPartData>();
+        public Dictionary<string, List<MaterialTexture>> materials = new Dictionary<string, List<MaterialTexture>>();
         public string Directory;
+    }
+    struct MeshPartData
+    {
+        public VertexBuffer vbuffer;
+        public IndexBuffer ibuffer;
+        public MeshPartData(VertexBuffer vbuffer, IndexBuffer ibuffer)
+        {
+            this.vbuffer = vbuffer;
+            this.ibuffer = ibuffer;
+        }
+    }
+    struct BoneWeight
+    {
+        public int Index;
+        public float Weight;
+        public BoneWeight(int index, float weight)
+        {
+            Index = index;
+            Weight = weight;
+        }
     }
     class ModelParser : CachedContentParser<ModelParserCache, SpecModel>
     {
@@ -34,9 +53,11 @@ namespace Spectrum.Framework.Content
             Prefix = @"Models\";
             Suffix = ".g3dj";
         }
+
+
         protected override ModelParserCache LoadData(string path)
         {
-            
+
             ModelParserCache modelData = new ModelParserCache();
             modelData.Directory = Path.GetDirectoryName(path);
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
@@ -44,81 +65,95 @@ namespace Spectrum.Framework.Content
             if (modelData.jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
 
 
-            JObject mesh = (JObject)modelData.jobj["meshes"][0];
-            List<string> attributes = new List<string>();
-            foreach (string attribute in mesh["attributes"])
+            foreach (JObject mesh in modelData.jobj["meshes"])
             {
-                attributes.Add(attribute);
-            }
-
-            JArray jsonVertices = (JArray)mesh["vertices"];
-            List<SkinnedVertex> vertices = new List<SkinnedVertex>();
-            for (int i = 0; i < jsonVertices.Count; )
-            {
-                SkinnedVertex vertex = new SkinnedVertex();
-                foreach (string attribute in attributes)
+                List<string> attributes = new List<string>();
+                foreach (string attribute in mesh["attributes"])
                 {
-                    Match m = Regex.Match(attribute, "^(\\w+?)(\\d*)$");
-                    string attributeType = attribute.Substring(m.Groups[1].Index, m.Groups[1].Length);
-                    int attributeIndex = m.Groups[2].Length > 0 ? int.Parse(attribute.Substring(m.Groups[2].Index, m.Groups[2].Length)) : 0;
-                    switch (attributeType)
-                    {
-                        case "POSITION":
-                            vertex.Position = new Vector3((float)jsonVertices[i++], (float)jsonVertices[i++], (float)jsonVertices[i++]);
-                            break;
-                        case "NORMAL":
-                            vertex.Normal = new Vector3((float)jsonVertices[i++], (float)jsonVertices[i++], (float)jsonVertices[i++]);
-                            break;
-                        case "TEXCOORD":
-                            vertex.TextureCoordinate = new Vector2((float)jsonVertices[i++], (float)jsonVertices[i++]);
-                            break;
-                        case "BLENDWEIGHT":
-                            switch (attributeIndex)
-                            {
-                                case 0:
-                                    vertex.BlendIndices.X = (float)jsonVertices[i++];
-                                    vertex.Blendweight0.X = (float)jsonVertices[i++];
-                                    break;
-                                case 1:
-                                    vertex.BlendIndices.Y = (float)jsonVertices[i++];
-                                    vertex.Blendweight0.Y = (float)jsonVertices[i++];
-                                    break;
-                                case 2:
-                                    vertex.BlendIndices.Z = (float)jsonVertices[i++];
-                                    vertex.Blendweight0.Z = (float)jsonVertices[i++];
-                                    break;
-                                case 3:
-                                    vertex.BlendIndices.W = (float)jsonVertices[i++];
-                                    vertex.Blendweight0.W = (float)jsonVertices[i++];
-                                    break;
-                                default:
-                                    i++; i++;
-                                    break;
-	                        }
-                            break;
-                        default:
-                            break;
-                    }
+                    attributes.Add(attribute);
                 }
-                vertices.Add(vertex);
-            }
-            modelData.vBuffer = VertexHelper.MakeVertexBuffer(vertices);
 
-            modelData.indices = new Dictionary<string, IndexBuffer>();
-            foreach (JObject meshPart in mesh["parts"])
-            {
-                List<uint> indices = ((JArray)meshPart["indices"]).ToList().ConvertAll(x => (uint)x);
-                IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(indices);
-                modelData.indices[(string)meshPart["id"]] = iBuffer;
+                JArray jsonVertices = (JArray)mesh["vertices"];
+                List<SkinnedVertex> vertices = new List<SkinnedVertex>();
+                for (int i = 0; i < jsonVertices.Count; )
+                {
+                    SkinnedVertex vertex = ParseVertex(attributes, jsonVertices, ref i);
+                    vertices.Add(vertex);
+                }
+                VertexBuffer vbuffer = VertexHelper.MakeVertexBuffer(vertices);
+
+                foreach (JObject meshPart in mesh["parts"])
+                {
+                    List<uint> indices = ((JArray)meshPart["indices"]).ToList().ConvertAll(x => (uint)x);
+                    IndexBuffer ibuffer = VertexHelper.MakeIndexBuffer(indices);
+                    modelData.parts[(string)meshPart["id"]] = new MeshPartData(vbuffer, ibuffer);
+                }
             }
 
             modelData.materials = ReadMaterials(modelData.jobj);
             return modelData;
         }
 
+        private static SkinnedVertex ParseVertex(List<string> attributes, JArray jsonVertices, ref int i)
+        {
+            SkinnedVertex vertex = new SkinnedVertex();
+            List<BoneWeight> weights = new List<BoneWeight>();
+            foreach (string attribute in attributes)
+            {
+                Match m = Regex.Match(attribute, "^(\\w+?)(\\d*)$");
+                string attributeType = attribute.Substring(m.Groups[1].Index, m.Groups[1].Length);
+                int attributeIndex = m.Groups[2].Length > 0 ? int.Parse(attribute.Substring(m.Groups[2].Index, m.Groups[2].Length)) : 0;
+                switch (attributeType)
+                {
+                    case "POSITION":
+                        vertex.Position = new Vector3((float)jsonVertices[i++], (float)jsonVertices[i++], (float)jsonVertices[i++]);
+                        break;
+                    case "NORMAL":
+                        vertex.Normal = new Vector3((float)jsonVertices[i++], (float)jsonVertices[i++], (float)jsonVertices[i++]);
+                        break;
+                    case "TEXCOORD":
+                        vertex.TextureCoordinate = new Vector2((float)jsonVertices[i++], (float)jsonVertices[i++]);
+                        break;
+                    case "BLENDWEIGHT":
+                        int index = (int)jsonVertices[i++];
+                        float weight = (float)jsonVertices[i++];
+                        weights.Add(new BoneWeight(index, weight));
+                        break;
+                    default:
+                        break;
+                }
+            }
+            weights.Sort((a, b) => b.Weight.CompareTo(a.Weight));
+            for (int j = 0; j < 4; j++)
+            {
+                switch (j)
+                {
+                    case 0:
+                        vertex.BlendIndices.X = weights[j].Index;
+                        vertex.Blendweight0.X = weights[j].Weight;
+                        break;
+                    case 1:
+                        vertex.BlendIndices.Y = weights[j].Index;
+                        vertex.Blendweight0.Y = weights[j].Weight;
+                        break;
+                    case 2:
+                        vertex.BlendIndices.Z = weights[j].Index;
+                        vertex.Blendweight0.Z = weights[j].Weight;
+                        break;
+                    case 3:
+                        vertex.BlendIndices.W = weights[j].Index;
+                        vertex.Blendweight0.W = weights[j].Weight;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return vertex;
+        }
+
         public Dictionary<string, List<MaterialTexture>> ReadMaterials(JObject jobj)
         {
-            Dictionary<string, List<MaterialTexture>> output = new Dictionary<string,List<MaterialTexture>>();
+            Dictionary<string, List<MaterialTexture>> output = new Dictionary<string, List<MaterialTexture>>();
             if (jobj["materials"] != null)
             {
                 foreach (JObject material in jobj["materials"])
@@ -192,24 +227,26 @@ namespace Spectrum.Framework.Content
         protected override SpecModel SafeCopy(ModelParserCache data)
         {
             Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
-            foreach (KeyValuePair<string, IndexBuffer> partIbuffer in data.indices)
+            foreach (KeyValuePair<string, MeshPartData> part in data.parts)
             {
-                parts[partIbuffer.Key] = new DrawablePart(data.vBuffer, partIbuffer.Value);
+                parts[part.Key] = new DrawablePart(part.Value.vbuffer, part.Value.ibuffer);
             }
             foreach (JToken nodePart in ((JArray)data.jobj["nodes"])[0]["parts"])
             {
+                List<string> meshpartids = new List<string>();
+                meshpartids.Add((string)nodePart["meshpartid"]);
                 DrawablePart part = parts[(string)nodePart["meshpartid"]];
                 if (nodePart["bones"] != null)
                     part.effect = new CustomSkinnedEffect((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
                 else
                     part.effect = new SpectrumEffect();
 
-                if(nodePart["materialid"] != null)
+                if (nodePart["materialid"] != null)
                 {
                     List<MaterialTexture> materialTextures = data.materials[(string)nodePart["materialid"]];
                     foreach (MaterialTexture texture in materialTextures)
                     {
-                        if(texture.Type == "NONE")
+                        if (texture.Type == "NONE")
                         {
                             part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false);
                         }
