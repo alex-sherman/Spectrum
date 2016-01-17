@@ -124,7 +124,7 @@ namespace Spectrum.Framework.Content
                 }
             }
             weights.Sort((a, b) => b.Weight.CompareTo(a.Weight));
-            for (int j = 0; j < 4; j++)
+            for (int j = 0; j < 4 && j < weights.Count; j++)
             {
                 switch (j)
                 {

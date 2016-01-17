@@ -13,8 +13,8 @@ namespace Spectrum.Framework.Content
     {
         public const string BasePath = "Plugins";
         public ContentHelper Content { get; private set; }
-        private string path;
-        public Assembly assembly { get; protected set; }
+        private Assembly assembly;
+        public string Name { get; private set; }
         public Plugin()
         {
             //Monogame's content manager doesn't work with absolute paths
@@ -72,6 +72,12 @@ namespace Spectrum.Framework.Content
                 throw new FileNotFoundException("Invalid plugin, does not contain a DLL of the same name as the plugin directory");
             Assembly assembly = Assembly.LoadFile(System.IO.Path.GetFullPath(dlls[0]));
 
+            ContentHelper content = new ContentHelper(new ContentManager(SpectrumGame.Game.Services, Path.Combine(pluginPath, "Content")));
+
+            return CreatePlugin(plugin, content, assembly);
+        }
+        public static Plugin CreatePlugin(string plugin, ContentHelper content, Assembly assembly)
+        {
             Plugin output = null;
             Type pluginType = assembly.GetType(plugin + "." + plugin);
             if (pluginType != null)
@@ -82,14 +88,15 @@ namespace Spectrum.Framework.Content
             }
             else
                 output = new Plugin();
+            output.Name = plugin;
             output.assembly = assembly;
-            output.Content = new ContentHelper(new ContentManager(SpectrumGame.Game.Services, Path.Combine(pluginPath, "Content")));
+            output.Content = content;
             return output;
         }
 
-        public virtual List<Type> GetTypes()
+        public List<Type> GetLoadableTypes()
         {
-            return assembly.GetTypes().ToList();
+            return assembly.GetTypes().Where(type => type.GetCustomAttributes(false).Any(attr => attr is LoadableType)).ToList();
         }
     }
 }

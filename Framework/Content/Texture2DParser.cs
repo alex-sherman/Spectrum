@@ -53,16 +53,18 @@ namespace Spectrum.Framework.Content
                                 for (int iy = 0; iy < 2; iy++)
                                 {
                                     Color c = lastLevelData[(x * 2 + ix) + (y * 2 + iy) * levelWidth * 2];
-                                    sum.X += c.R / (float)4;
-                                    sum.Y += c.G / (float)4;
-                                    sum.Z += c.B / (float)4;
-                                    sum.W += c.A / (float)4;
+                                    if(c.A < 255) continue;
+                                    sum.X += c.R;
+                                    sum.Y += c.G;
+                                    sum.Z += c.B;
+                                    sum.W += c.A;
                                 }
                             }
-                            levelData[x + y * levelWidth].R = (byte)sum.X;
-                            levelData[x + y * levelWidth].G = (byte)sum.Y;
-                            levelData[x + y * levelWidth].B = (byte)sum.Z;
-                            levelData[x + y * levelWidth].A = (byte)sum.W;
+                            if(sum.W == 0) continue;
+                            levelData[x + y * levelWidth].R = (byte)(sum.X / (sum.W / 255));
+                            levelData[x + y * levelWidth].G = (byte)(sum.Y / (sum.W / 255));
+                            levelData[x + y * levelWidth].B = (byte)(sum.Z / (sum.W / 255));
+                            levelData[x + y * levelWidth].A = (byte)(sum.W / (sum.W / 255));
                         }
                     }
                 }

@@ -13,19 +13,25 @@ namespace Spectrum.Framework
     public class TypeHelper
     {
         public static TypeHelper Types = new TypeHelper();
-        private static RealDict<string, Type> _types = new RealDict<string, Type>();
-        public List<String> GetTypes() { return _types.Keys.ToList(); }
+        private static RealDict<string, Type> types = new RealDict<string, Type>();
+        private static RealDict<Type, Plugin> plugins = new RealDict<Type, Plugin>();
+        public List<String> GetTypes() { return types.Keys.ToList(); }
 
+        public static void RegisterType(Type type, Plugin plugin)
+        {
+            types[type.Name] = type;
+            plugins[type] = plugin;
+        }
         public static T Instantiate<T>(string type, params object[] args) where T: class
         {
-            return Instantiate(_types[type], args) as T;
+            return Instantiate(types[type], args) as T;
         }
         public List<string> GetNames(Type t)
         {
             List<string> output = new List<string>();
-            foreach (string type in _types.Keys)
+            foreach (string type in types.Keys)
             {
-                if (_types[type].IsSubclassOf(t))
+                if (types[type].IsSubclassOf(t))
                 {
                     output.Add(type);
                 }
@@ -36,12 +42,7 @@ namespace Spectrum.Framework
         {
             get
             {
-                return _types[name];
-            }
-            set
-            {
-                if (_types[name] != null) { throw new ArgumentException("Key was already in the dictionary"); }
-                _types[name] = value;
+                return types[name];
             }
         }
         public static object Instantiate(Type t, params object[] args)
@@ -76,6 +77,10 @@ namespace Spectrum.Framework
             {
                 throw new Exception("An error occured constructing the entity");
             }
+        }
+        public static Plugin GetPlugin(Type type)
+        {
+            return plugins[type];
         }
     }
 }

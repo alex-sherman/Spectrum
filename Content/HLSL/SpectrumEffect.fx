@@ -32,13 +32,13 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 	if(Clip) { clip(vsout.clipDistance); }
 	if(vsout.fog >=.99f){ clip(-1); }
 	float4 color = tex2D(customTexture, vsout.textureCoordinate).rgba;
-		clip(color.a == 0 ? -1:1);
+	clip(color.a < 1 ? -1:1);
 	if (lightingEnabled)
 		color.rgb *= specularLightColor.rgb*vsout.light+ambientLightColor.rgb;
 	if(!aboveWater){
 		color.b+=.1f;
 	}
-	color.a = 1-vsout.fog;
+	color.a *= 1-vsout.fog;
 	return PSReturn(color, vsout);
 }
 technique TextureDraw

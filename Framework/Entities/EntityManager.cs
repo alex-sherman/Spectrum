@@ -150,20 +150,27 @@ namespace Spectrum.Framework.Entities
         public Entity CreateEntityFromData(EntityData data)
         {
             Type t = TypeHelper.Types[data.type];
-            Entity e = AddEntity(Construct(t, data.guid, data.owner, data.args));
+            Entity e = Construct(t, data.args);
+            e.ID = data.guid;
+            e.OwnerGuid = data.owner;
+            AddEntity(e);
             if (e is GameObject) { (e as GameObject).Position = data.position; }
             return e;
         }
         public Entity CreateEntityType(Type t, params object[] args)
         {
-            return AddEntity(Construct(t, Guid.NewGuid(), mpService.ID, args));
+            return AddEntity(Construct(t, args));
         }
-        public Entity Construct(Type type, Guid entityID, NetID ownerID, params object[] args)
+        public Entity Construct(string typeName, params object[] args)
+        {
+            return Construct(TypeHelper.Types[typeName], args);
+        }
+        public Entity Construct(Type type, params object[] args)
         {
             if (type == null || (!type.IsSubclassOf(typeof(Entity)))) { throw new ArgumentException("Type must be subclass of Entity", "type"); }
             Entity output = (Entity)TypeHelper.Instantiate(type, args);
-            output.OwnerGuid = ownerID;
-            output.ID = entityID;
+            output.OwnerGuid = mpService.ID;
+            output.ID = Guid.NewGuid();
             output.creationArgs = args;
             output.SendMessageCallback = SendEntityMessage;
             return output;
