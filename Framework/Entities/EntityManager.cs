@@ -157,6 +157,10 @@ namespace Spectrum.Framework.Entities
             if (e is GameObject) { (e as GameObject).Position = data.position; }
             return e;
         }
+        public Entity CreateEntityType(string typeName, params object[] args)
+        {
+            return AddEntity(Construct(typeName, args));
+        }
         public Entity CreateEntityType(Type t, params object[] args)
         {
             return AddEntity(Construct(t, args));
