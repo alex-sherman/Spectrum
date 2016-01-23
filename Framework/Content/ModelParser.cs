@@ -241,7 +241,7 @@ namespace Spectrum.Framework.Content
                 else
                     part.effect = new SpectrumEffect();
 
-                if (nodePart["materialid"] != null)
+                if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
                 {
                     List<MaterialTexture> materialTextures = data.materials[(string)nodePart["materialid"]];
                     foreach (MaterialTexture texture in materialTextures)

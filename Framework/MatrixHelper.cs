@@ -27,6 +27,7 @@ namespace Spectrum.Framework
         }
         static public Matrix CreateRotationFromDirection(Vector3 vDirection)
         {
+            vDirection.Normalize();
             vDirection *= -1;
             // Step 1. Setup basis vectors describing the rotation given the input vector and assuming an initial up direction of (0, 1, 0)
             Vector3 vUp = new Vector3(0, 1.0f, 0.0f);           // Y Up vector
