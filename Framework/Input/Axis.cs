@@ -15,10 +15,12 @@ namespace Spectrum.Framework.Input
     {
         public Keys Positive;
         public Keys Negative;
-        public KeyboardAxis(Keys positive, Keys negative)
+        public float Scalar;
+        public KeyboardAxis(Keys positive, Keys negative, float scalar = 1)
         {
             Positive = positive;
             Negative = negative;
+            Scalar = scalar;
         }
 
         public float Value(InputState input, PlayerInformation player)
@@ -29,7 +31,7 @@ namespace Spectrum.Framework.Input
                 output += 1;
             if (input.IsKeyDown(Negative))
                 output -= 1;
-            return output;
+            return output * Scalar;
         }
     }
     public struct GamepadAxis : IAxis
@@ -72,7 +74,7 @@ namespace Spectrum.Framework.Input
     public struct Axis1
     {
         public List<IAxis> Axes;
-        public Axis1(IAxis axis, float scalar = 1)
+        public Axis1(IAxis axis)
         {
             Axes = new List<IAxis>();
             Axes.Add(axis);
