@@ -153,9 +153,6 @@ namespace Spectrum.Framework.Physics
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
 
-        private Action<object> arbiterCallback;
-        private Action<object> integrateCallback;
-
         private CollisionDetectedHandler collisionDetectionHandler;
 
         /// <summary>
@@ -169,9 +166,6 @@ namespace Spectrum.Framework.Physics
         {
             if (collision == null)
                 throw new ArgumentNullException("The CollisionSystem can't be null.", "collision");
-
-            arbiterCallback = new Action<object>(ArbiterCallback);
-            integrateCallback = new Action<object>(IntegrateCallback);
 
             // Create the readonly wrappers
             this.Collidables = new HashSet<GameObject>();
@@ -479,26 +473,24 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            IntegrateForces();
+            sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
             CollisionSystem.Detect(multithread);
             sw.Stop(); debugTimes[(int)DebugType.CollisionDetect] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            HandleArbiter(contactIterations, multithread);
+            sw.Stop(); debugTimes[(int)DebugType.HandleArbiter] = sw.Elapsed.TotalMilliseconds;
 
+            sw.Reset(); sw.Start();
             while (addedArbiterQueue.Count > 0) islands.ArbiterCreated(addedArbiterQueue.Dequeue());
-
             sw.Stop(); debugTimes[(int)DebugType.BuildIslands] = sw.Elapsed.TotalMilliseconds + ms;
 
             sw.Reset(); sw.Start();
             CheckDeactivation();
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            IntegrateForces();
-            sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            HandleArbiter(contactIterations, multithread);
-            sw.Stop(); debugTimes[(int)DebugType.HandleArbiter] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             Integrate(multithread);
@@ -508,42 +500,6 @@ namespace Spectrum.Framework.Physics
             foreach (GameObject body in Collidables) body.PostStep(timestep);
             events.RaiseWorldPostStep(timestep);
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
-        }
-
-        private float accumulatedTime = 0.0f;
-
-        /// <summary>
-        /// Integrates the whole world several fixed timestep further in time.
-        /// </summary>
-        /// <param name="totalTime">The time to integrate.</param>
-        /// <param name="timestep">The timestep in seconds. 
-        /// It should be small as possible to keep the simulation stable.
-        /// The physics simulation shouldn't run slower than 60fps.
-        /// (timestep=1/60).</param>
-        /// <param name="multithread">If true the engine uses several threads to
-        /// integrate the world. This is faster on multicore CPUs.</param>
-        /// <param name="maxSteps">The maximum number of substeps. After that Jitter gives up
-        /// to keep up with the given totalTime.</param>
-        public void Step(float totalTime, bool multithread, float timestep, int maxSteps)
-        {
-            int counter = 0;
-            accumulatedTime += totalTime;
-
-            while (accumulatedTime > timestep)
-            {
-                Step(timestep, multithread);
-
-                accumulatedTime -= timestep;
-                counter++;
-
-                if (counter > maxSteps)
-                {
-                    // okay, okay... we can't keep up
-                    accumulatedTime = 0.0f;
-                    break;
-                }
-            }
-
         }
 
         private void UpdateArbiterContacts(Arbiter arbiter)
@@ -559,7 +515,7 @@ namespace Spectrum.Framework.Physics
                 Contact c = arbiter.contactList[i];
                 c.UpdatePosition();
 
-                if (c.penetration < -contactSettings.breakThreshold || (c.p1 - c.p2).LengthSquared() > contactSettings.slipThresholdSquared)
+                if (c.Penetration < -contactSettings.breakThreshold || (c.p1 - c.p2).LengthSquared() > contactSettings.slipThresholdSquared)
                 {
                     Contact.Pool.GiveBack(c);
                     arbiter.contactList.RemoveAt(i);
@@ -590,7 +546,26 @@ namespace Spectrum.Framework.Physics
 
         }
 
-        #region private void ArbiterCallback(object obj)
+        private void HandleArbiter(int iterations, bool multiThreaded)
+        {
+            if (multiThreaded)
+            {
+                for (int i = 0; i < islands.Count; i++)
+                {
+                    if (islands[i].IsActive()) threadManager.AddTask(ArbiterCallback, islands[i]);
+                }
+
+                threadManager.Execute();
+            }
+            else
+            {
+                for (int i = 0; i < islands.Count; i++)
+                {
+                    if (islands[i].IsActive()) ArbiterCallback(islands[i]);
+                }
+
+            }
+        }
         private void ArbiterCallback(object obj)
         {
             CollisionIsland island = obj as CollisionIsland;
@@ -598,7 +573,7 @@ namespace Spectrum.Framework.Physics
             int thisIterations;
             if (island.Bodies.Count + island.Constraints.Count > 3) thisIterations = contactIterations;
             else thisIterations = smallIterations;
-
+            thisIterations = 0;
             for (int i = -1; i < thisIterations; i++)
             {
                 // Contact and Collision
@@ -607,8 +582,9 @@ namespace Spectrum.Framework.Physics
                     int contactCount = arbiter.contactList.Count;
                     for (int e = 0; e < contactCount; e++)
                     {
+                        //arbiter.contactList[e].NewIterate();
                         if (i == -1) arbiter.contactList[e].PrepareForIteration(timestep);
-                        else arbiter.contactList[e].Iterate();
+                        arbiter.contactList[e].Iterate();
                     }
                 }
 
@@ -620,28 +596,6 @@ namespace Spectrum.Framework.Physics
 
                     if (i == -1) c.PrepareForIteration(timestep);
                     else c.Iterate();
-                }
-
-            }
-        }
-        #endregion
-
-        private void HandleArbiter(int iterations, bool multiThreaded)
-        {
-            if (multiThreaded)
-            {
-                for (int i = 0; i < islands.Count; i++)
-                {
-                    if (islands[i].IsActive()) threadManager.AddTask(arbiterCallback, islands[i]);
-                }
-
-                threadManager.Execute();
-            }
-            else
-            {
-                for (int i = 0; i < islands.Count; i++)
-                {
-                    if (islands[i].IsActive()) arbiterCallback(islands[i]);
                 }
 
             }
@@ -730,7 +684,7 @@ namespace Spectrum.Framework.Physics
                 foreach (GameObject body in Collidables)
                 {
                     if (body.IsStatic || !body.IsActive) continue;
-                    threadManager.AddTask(integrateCallback, body);
+                    threadManager.AddTask(IntegrateCallback, body);
                 }
 
                 threadManager.Execute();
@@ -740,7 +694,7 @@ namespace Spectrum.Framework.Physics
                 foreach (GameObject body in Collidables)
                 {
                     if (body.IsStatic || !body.IsActive) continue;
-                    integrateCallback(body);
+                    IntegrateCallback(body);
                 }
             }
         }

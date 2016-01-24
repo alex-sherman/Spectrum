@@ -228,10 +228,10 @@ namespace Spectrum.Framework.Physics.Dynamics
             float maxPenetration = pen;
             for (int i = 0; i < 4; i++)
             {
-                if (contactList[i].penetration > maxPenetration)
+                if (contactList[i].Penetration > maxPenetration)
                 {
                     maxPenetrationIndex = i;
-                    maxPenetration = contactList[i].penetration;
+                    maxPenetration = contactList[i].Penetration;
                 }
             }
 

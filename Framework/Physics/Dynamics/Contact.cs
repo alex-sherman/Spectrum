@@ -69,7 +69,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
     /// <summary>
     /// </summary>
-    public class Contact : IConstraint
+    public class Contact
     {
         private CollisionSystem system;
         private ContactSettings settings;
@@ -85,11 +85,10 @@ namespace Spectrum.Framework.Physics.Dynamics
         internal float accumulatedNormalImpulse = 0.0f;
         internal float accumulatedTangentImpulse = 0.0f;
 
-        internal float penetration = 0.0f;
         internal float slip = 0.0f;
         internal float initialPen = 0.0f;
 
-        private float staticFriction, dynamicFriction, restitution;
+        private float staticFriction, dynamicFriction;
         private float friction = 0.0f;
 
         private float massNormal = 0.0f, massTangent = 0.0f;
@@ -113,11 +112,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         private float lastTimeStep = float.PositiveInfinity;
 
         #region Properties
-        public float Restitution
-        {
-            get { return restitution; }
-            set { restitution = value; }
-        }
+        public float Restitution { get; set; }
 
         public float StaticFriction
         {
@@ -144,7 +139,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <summary>
         /// The penetration of the contact.
         /// </summary>
-        public float Penetration { get { return penetration; } }
+        public float Penetration { get; private set; }
 
         /// <summary>
         /// The collision position in world space of body1.
@@ -168,33 +163,10 @@ namespace Spectrum.Framework.Physics.Dynamics
         #endregion
 
         /// <summary>
-        /// Calculates relative velocity of body contact points on the bodies.
-        /// </summary>
-        /// <param name="relVel">The relative velocity of body contact points on the bodies.</param>
-        public Vector3 CalculateRelativeVelocity()
-        {
-            float x, y, z;
-
-            x = (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y) + body2.linearVelocity.X;
-            y = (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z) + body2.linearVelocity.Y;
-            z = (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X) + body2.linearVelocity.Z;
-
-            Vector3 relVel;
-            relVel.X = x - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y) - body1.linearVelocity.X;
-            relVel.Y = y - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z) - body1.linearVelocity.Y;
-            relVel.Z = z - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X) - body1.linearVelocity.Z;
-
-            return relVel;
-        }
-
-        /// <summary>
         /// Solves the contact iteratively.
         /// </summary>
         public void Iterate()
         {
-            //body1.linearVelocity = Vector3.Zero;
-            //body2.linearVelocity = Vector3.Zero;
-            //return;
             if (noCollide) return;
             if (treatBody1AsStatic && treatBody2AsStatic) return;
 
@@ -241,19 +213,70 @@ namespace Spectrum.Framework.Physics.Dynamics
             impulse.Y = normal.Y * normalImpulse + tangent.Y * tangentImpulse;
             impulse.Z = normal.Z * normalImpulse + tangent.Z * tangentImpulse;
 
+            ApplyImpulse(impulse);
+        }
+
+        public void NewIterate()
+        {
+            float e = 0.8f;
+            //matrix IaInverse = Ia.inverse();
+            //vector angularVelChangea = normal.copy(); // start calculating the change in abgular rotation of a
+            //angularVelChangea.cross(ra);
+            //IaInverse.transform(angularVelChangea);
+            //vector vaLinDueToR = angularVelChangea.copy().cross(ra);  // calculate the linear velocity of collision point on a due to rotation of a
+            //double scalar = 1 / ma + vaLinDueToR.dot(normal);
+            float scalar = body1.IsStatic ? 0 : body1.inverseMass;
+            //matrix IbInverse = Ib.inverse();
+            //vector angularVelChangeb = normal.copy(); // start calculating the change in abgular rotation of b
+            //angularVelChangeb.cross(rb);
+            //IbInverse.transform(angularVelChangeb);
+            //vector vbLinDueToR = angularVelChangeb.copy().cross(rb);  // calculate the linear velocity of collision point on b due to rotation of b
+            //scalar += 1 / mb + vbLinDueToR.dot(normal);
+            scalar += body2.IsStatic ? 0 : body2.inverseMass;
+            float Jmod = (e) * (body1.linearVelocity - body2.linearVelocity).Length() / scalar;
+            Vector3 J = normal * (Jmod + restitutionBias);
+            ApplyImpulse(J);
+
+            //vaf = vai - J.mul(1 / ma);
+            //vbf = vbi - J.mul(1 / mb);
+            //waf = wai - angularVelChangea;
+            //wbf = wbi - angularVelChangeb;
+        }
+
+        public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
+        public float AppliedTangentImpulse { get { return accumulatedTangentImpulse; } }
+
+        /// <summary>
+        /// The points in wolrd space gets recalculated by transforming the
+        /// local coordinates. Also new penetration depth is estimated.
+        /// </summary>
+        public void UpdatePosition()
+        {
+            Vector3.Transform(ref realRelPos1, ref body1.orientation, out p1);
+            Vector3.Add(ref p1, ref body1.position, out p1);
+
+            Vector3.Transform(ref realRelPos2, ref body2.orientation, out p2);
+            Vector3.Add(ref p2, ref body2.position, out p2);
+
+            Vector3 dist; Vector3.Subtract(ref p1, ref p2, out dist);
+            Penetration = Vector3.Dot(dist, normal);
+        }
+
+        public void ApplyImpulse(Vector3 impulse)
+        {
             if (!treatBody1AsStatic)
             {
                 body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
                 body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
                 body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
 
-                float num0, num1, num2;
-                num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
-
                 if (!body1.IgnoreRotation)
                 {
+                    float num0, num1, num2;
+                    num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
+                    num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
+                    num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
+
                     float num3 =
                         (((num0 * body1.invInertiaWorld.M11) +
                         (num1 * body1.invInertiaWorld.M21)) +
@@ -280,12 +303,13 @@ namespace Spectrum.Framework.Physics.Dynamics
                 body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
                 body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
 
-                float num0, num1, num2;
-                num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
                 if (!body2.IgnoreRotation)
                 {
+                    float num0, num1, num2;
+                    num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
+                    num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
+                    num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
+
                     float num3 =
                         (((num0 * body2.invInertiaWorld.M11) +
                         (num1 * body2.invInertiaWorld.M21)) +
@@ -304,166 +328,6 @@ namespace Spectrum.Framework.Physics.Dynamics
                     body2.angularVelocity.Z += num5;
                 }
             }
-
-        }
-
-        public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
-        public float AppliedTangentImpulse { get { return accumulatedTangentImpulse; } }
-
-        /// <summary>
-        /// The points in wolrd space gets recalculated by transforming the
-        /// local coordinates. Also new penetration depth is estimated.
-        /// </summary>
-        public void UpdatePosition()
-        {
-            Vector3.Transform(ref realRelPos1, ref body1.orientation, out p1);
-            Vector3.Add(ref p1, ref body1.position, out p1);
-
-            Vector3.Transform(ref realRelPos2, ref body2.orientation, out p2);
-            Vector3.Add(ref p2, ref body2.position, out p2);
-
-            Vector3 dist; Vector3.Subtract(ref p1, ref p2, out dist);
-            penetration = Vector3.Dot(dist, normal);
-        }
-
-        /// <summary>
-        /// An impulse is applied an both contact points.
-        /// </summary>
-        /// <param name="impulse">The impulse to apply.</param>
-        public void ApplyImpulse(ref Vector3 impulse)
-        {
-            #region INLINE - HighFrequency
-            //Vector3 temp;
-
-            if (!treatBody1AsStatic)
-            {
-                body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
-                body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
-                body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
-
-                float num0, num1, num2;
-                num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
-
-                float num3 =
-                    (((num0 * body1.invInertiaWorld.M11) +
-                    (num1 * body1.invInertiaWorld.M21)) +
-                    (num2 * body1.invInertiaWorld.M31));
-                float num4 =
-                    (((num0 * body1.invInertiaWorld.M12) +
-                    (num1 * body1.invInertiaWorld.M22)) +
-                    (num2 * body1.invInertiaWorld.M32));
-                float num5 =
-                    (((num0 * body1.invInertiaWorld.M13) +
-                    (num1 * body1.invInertiaWorld.M23)) +
-                    (num2 * body1.invInertiaWorld.M33));
-
-                body1.angularVelocity.X -= num3;
-                body1.angularVelocity.Y -= num4;
-                body1.angularVelocity.Z -= num5;
-            }
-
-            if (!treatBody2AsStatic)
-            {
-
-                body2.linearVelocity.X += (impulse.X * body2.inverseMass);
-                body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
-                body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
-
-                float num0, num1, num2;
-                num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
-
-                float num3 =
-                    (((num0 * body2.invInertiaWorld.M11) +
-                    (num1 * body2.invInertiaWorld.M21)) +
-                    (num2 * body2.invInertiaWorld.M31));
-                float num4 =
-                    (((num0 * body2.invInertiaWorld.M12) +
-                    (num1 * body2.invInertiaWorld.M22)) +
-                    (num2 * body2.invInertiaWorld.M32));
-                float num5 =
-                    (((num0 * body2.invInertiaWorld.M13) +
-                    (num1 * body2.invInertiaWorld.M23)) +
-                    (num2 * body2.invInertiaWorld.M33));
-
-                body2.angularVelocity.X += num3;
-                body2.angularVelocity.Y += num4;
-                body2.angularVelocity.Z += num5;
-            }
-
-
-            #endregion
-        }
-
-        public void ApplyImpulse(Vector3 impulse)
-        {
-            #region INLINE - HighFrequency
-            //Vector3 temp;
-
-            if (!treatBody1AsStatic)
-            {
-                body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
-                body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
-                body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
-
-                float num0, num1, num2;
-                num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
-
-                float num3 =
-                    (((num0 * body1.invInertiaWorld.M11) +
-                    (num1 * body1.invInertiaWorld.M21)) +
-                    (num2 * body1.invInertiaWorld.M31));
-                float num4 =
-                    (((num0 * body1.invInertiaWorld.M12) +
-                    (num1 * body1.invInertiaWorld.M22)) +
-                    (num2 * body1.invInertiaWorld.M32));
-                float num5 =
-                    (((num0 * body1.invInertiaWorld.M13) +
-                    (num1 * body1.invInertiaWorld.M23)) +
-                    (num2 * body1.invInertiaWorld.M33));
-
-                body1.angularVelocity.X -= num3;
-                body1.angularVelocity.Y -= num4;
-                body1.angularVelocity.Z -= num5;
-            }
-
-            if (!treatBody2AsStatic)
-            {
-
-                body2.linearVelocity.X += (impulse.X * body2.inverseMass);
-                body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
-                body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
-
-                float num0, num1, num2;
-                num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
-
-                float num3 =
-                    (((num0 * body2.invInertiaWorld.M11) +
-                    (num1 * body2.invInertiaWorld.M21)) +
-                    (num2 * body2.invInertiaWorld.M31));
-                float num4 =
-                    (((num0 * body2.invInertiaWorld.M12) +
-                    (num1 * body2.invInertiaWorld.M22)) +
-                    (num2 * body2.invInertiaWorld.M32));
-                float num5 =
-                    (((num0 * body2.invInertiaWorld.M13) +
-                    (num1 * body2.invInertiaWorld.M23)) +
-                    (num2 * body2.invInertiaWorld.M33));
-
-                body2.angularVelocity.X += num3;
-                body2.angularVelocity.Y += num4;
-                body2.angularVelocity.Z += num5;
-            }
-
-
-            #endregion
         }
 
         /// <summary>
@@ -652,16 +516,16 @@ namespace Spectrum.Framework.Physics.Dynamics
             // is a new contact.
             if (relNormalVel < -1.0f && newContact)
             {
-                restitutionBias = Math.Max(-restitution * relNormalVel, restitutionBias);
+                restitutionBias = Math.Max(-Restitution * relNormalVel, restitutionBias);
             }
 
             // Speculative Contacts!
             // if the penetration is negative (which means the bodies are not already in contact, but they will
             // be in the future) we store the current bounce bias in the variable 'lostSpeculativeBounce'
             // and apply it the next frame, when the speculative contact was already solved.
-            if (penetration < -settings.allowedPenetration)
+            if (Penetration < -settings.allowedPenetration)
             {
-                speculativeVelocity = penetration / timestep;
+                speculativeVelocity = Penetration / timestep;
 
                 lostSpeculativeBounce = restitutionBias;
                 restitutionBias = 0.0f;
@@ -675,71 +539,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
             impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
 
-            if (!treatBody1AsStatic)
-            {
-                body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
-                body1.linearVelocity.Y -= (impulse.Y * body1.inverseMass);
-                body1.linearVelocity.Z -= (impulse.Z * body1.inverseMass);
-
-                float num0, num1, num2;
-                num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
-
-                if (!body1.IgnoreRotation)
-                {
-                    float num3 =
-                        (((num0 * body1.invInertiaWorld.M11) +
-                        (num1 * body1.invInertiaWorld.M21)) +
-                        (num2 * body1.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body1.invInertiaWorld.M12) +
-                        (num1 * body1.invInertiaWorld.M22)) +
-                        (num2 * body1.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body1.invInertiaWorld.M13) +
-                        (num1 * body1.invInertiaWorld.M23)) +
-                        (num2 * body1.invInertiaWorld.M33));
-
-                    body1.angularVelocity.X -= num3;
-                    body1.angularVelocity.Y -= num4;
-                    body1.angularVelocity.Z -= num5;
-                }
-
-            }
-
-            if (!treatBody2AsStatic)
-            {
-
-                body2.linearVelocity.X += (impulse.X * body2.inverseMass);
-                body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
-                body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
-
-                float num0, num1, num2;
-                num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
-
-                if (!body2.IgnoreRotation)
-                {
-                    float num3 =
-                        (((num0 * body2.invInertiaWorld.M11) +
-                        (num1 * body2.invInertiaWorld.M21)) +
-                        (num2 * body2.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body2.invInertiaWorld.M12) +
-                        (num1 * body2.invInertiaWorld.M22)) +
-                        (num2 * body2.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body2.invInertiaWorld.M13) +
-                        (num1 * body2.invInertiaWorld.M23)) +
-                        (num2 * body2.invInertiaWorld.M33));
-
-                    body2.angularVelocity.X += num3;
-                    body2.angularVelocity.Y += num4;
-                    body2.angularVelocity.Z += num5;
-                }
-            }
+            ApplyImpulse(impulse);
 
             lastTimeStep = timestep;
 
@@ -772,7 +572,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             Vector3.Transform(ref relativePos2, ref body2.invOrientation, out realRelPos2);
 
             this.initialPen = penetration;
-            this.penetration = penetration;
+            this.Penetration = penetration;
 
             // Material Properties
             if (newContact)
@@ -791,17 +591,17 @@ namespace Spectrum.Framework.Physics.Dynamics
                     case ContactSettings.MaterialCoefficientMixingType.TakeMaximum:
                         staticFriction = JMath.Max(body1.material.staticFriction, body2.material.staticFriction);
                         dynamicFriction = JMath.Max(body1.material.kineticFriction, body2.material.kineticFriction);
-                        restitution = JMath.Max(body1.material.restitution, body2.material.restitution);
+                        Restitution = JMath.Max(body1.material.restitution, body2.material.restitution);
                         break;
                     case ContactSettings.MaterialCoefficientMixingType.TakeMinimum:
                         staticFriction = JMath.Min(body1.material.staticFriction, body2.material.staticFriction);
                         dynamicFriction = JMath.Min(body1.material.kineticFriction, body2.material.kineticFriction);
-                        restitution = JMath.Min(body1.material.restitution, body2.material.restitution);
+                        Restitution = JMath.Min(body1.material.restitution, body2.material.restitution);
                         break;
                     case ContactSettings.MaterialCoefficientMixingType.UseAverage:
                         staticFriction = (body1.material.staticFriction + body2.material.staticFriction) / 2.0f;
                         dynamicFriction = (body1.material.kineticFriction + body2.material.kineticFriction) / 2.0f;
-                        restitution = (body1.material.restitution + body2.material.restitution) / 2.0f;
+                        Restitution = (body1.material.restitution + body2.material.restitution) / 2.0f;
                         break;
                 }
 
