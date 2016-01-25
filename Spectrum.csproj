@@ -172,6 +172,7 @@
     <Compile Include="Framework\Physics\Collision\CollisionSystem.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystemPersistentSAP.cs" />
     <Compile Include="Framework\Physics\Collision\DynamicTree.cs" />
+    <Compile Include="Framework\Physics\Collision\EPACollide.cs" />
     <Compile Include="Framework\Physics\Collision\GJKCollide.cs" />
     <Compile Include="Framework\Physics\Collision\GroundInfo.cs" />
     <Compile Include="Framework\Physics\Collision\ICollidable.cs" />

@@ -153,8 +153,6 @@ namespace Spectrum.Framework.Physics
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
 
-        private CollisionDetectedHandler collisionDetectionHandler;
-
         /// <summary>
         /// Create a new instance of the <see cref="World"/> class.
         /// </summary>
@@ -174,9 +172,7 @@ namespace Spectrum.Framework.Physics
 
             this.CollisionSystem = collision;
 
-            collisionDetectionHandler = new CollisionDetectedHandler(CollisionDetected);
-
-            this.CollisionSystem.CollisionDetected += collisionDetectionHandler;
+            this.CollisionSystem.CollisionDetected += CollisionDetected;
 
             this.arbiterMap = new ArbiterMap();
 
@@ -460,17 +456,16 @@ namespace Spectrum.Framework.Physics
             sw.Reset(); sw.Start();
             events.RaiseWorldPreStep(timestep);
             foreach (GameObject body in Collidables) body.PreStep(timestep);
-
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            UpdateContacts();
-            sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             double ms = 0;
             while (removedArbiterQueue.Count > 0) islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
             sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
+            UpdateContacts();
+            sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             IntegrateForces();
@@ -481,12 +476,12 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); debugTimes[(int)DebugType.CollisionDetect] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            HandleArbiter(contactIterations, multithread);
-            sw.Stop(); debugTimes[(int)DebugType.HandleArbiter] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
             while (addedArbiterQueue.Count > 0) islands.ArbiterCreated(addedArbiterQueue.Dequeue());
             sw.Stop(); debugTimes[(int)DebugType.BuildIslands] = sw.Elapsed.TotalMilliseconds + ms;
+
+            sw.Reset(); sw.Start();
+            HandleArbiter(contactIterations, multithread);
+            sw.Stop(); debugTimes[(int)DebugType.HandleArbiter] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             CheckDeactivation();
@@ -573,7 +568,7 @@ namespace Spectrum.Framework.Physics
             int thisIterations;
             if (island.Bodies.Count + island.Constraints.Count > 3) thisIterations = contactIterations;
             else thisIterations = smallIterations;
-            thisIterations = 0;
+            //thisIterations = 0;
             for (int i = -1; i < thisIterations; i++)
             {
                 // Contact and Collision

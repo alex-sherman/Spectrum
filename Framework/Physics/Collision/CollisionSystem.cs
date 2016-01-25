@@ -242,9 +242,20 @@ namespace Spectrum.Framework.Physics.Collision
                         body1.Velocity, body2.Velocity,
                         out simplex))
                     {
-                        if (XenoCollide.Detect(s1, s2, body1.Orientation,
+                        //EPACollide.Detect(s1, s2, simplex, body1.Orientation,
+                        //    body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
+                        //    out tempPoint, out tempNormal, out tempPenetration);
+                        Vector3 xenoPoint, xenoNormal;
+                        float xenoPen;
+                        XenoCollide.Detect(s1, s2, body1.Orientation,
+                        body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
+                        out xenoPoint, out xenoNormal, out xenoPen);
+                        if (EPACollide.Detect(s1, s2, simplex, body1.Orientation,
                             body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
                             out tempPoint, out tempNormal, out tempPenetration))
+                        //if (XenoCollide.Detect(s1, s2, body1.Orientation,
+                        //    body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
+                        //    out tempPoint, out tempNormal, out tempPenetration))
                         {
                             if (tempPenetration > penetration)
                             {
@@ -257,7 +268,9 @@ namespace Spectrum.Framework.Physics.Collision
                     }
                 }
             }
-
+            //Vector3 penVector = normal * penetration;
+            //normal = Vector3.Down;
+            //penetration = 0.5f;
             if (ms1 != null)
                 ms1.ReturnWorkingClone();
             if (ms2 != null)
