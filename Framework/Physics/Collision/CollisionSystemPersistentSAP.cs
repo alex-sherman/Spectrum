@@ -134,12 +134,8 @@ namespace Spectrum.Framework.Physics.Collision
 
         private HashSet<OverlapPair> fullOverlaps = new HashSet<OverlapPair>();
 
-        Action<object> detectCallback, sortCallback;
-
         public CollisionSystemPersistentSAP()
         {
-            detectCallback = new Action<object>(DetectCallback);
-            sortCallback = new Action<object>(SortCallback);
         }
 
         #region Incoherent Update - Quicksort
@@ -169,7 +165,7 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     foreach (GameObject body in activeList)
                     {
-                        if (CheckBoundingBoxes(body,keyelement.Body)) 
+                        if (CheckBoundingBoxes(body, keyelement.Body))
                             fullOverlaps.Add(new OverlapPair(body, keyelement.Body));
                     }
 
@@ -277,17 +273,17 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 if (multiThreaded)
                 {
-                    threadManager.AddTask(sortCallback, axis1);
-                    threadManager.AddTask(sortCallback, axis2);
-                    threadManager.AddTask(sortCallback, axis3);
+                    threadManager.AddTask(SortCallback, axis1);
+                    threadManager.AddTask(SortCallback, axis2);
+                    threadManager.AddTask(SortCallback, axis3);
 
                     threadManager.Execute();
                 }
                 else
                 {
-                    sortCallback(axis1);
-                    sortCallback(axis2);
-                    sortCallback(axis3);
+                    SortCallback(axis1);
+                    SortCallback(axis2);
+                    SortCallback(axis3);
                 }
             }
 
@@ -297,23 +293,20 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 if (this.CheckBothStaticOrInactive(key.Entity1, key.Entity2)) continue;
 
-                if (base.RaisePassedBroadphase(key.Entity1, key.Entity2))
+                if (multiThreaded)
                 {
-                    if (multiThreaded)
-                    {
-                        BroadphasePair pair = BroadphasePair.Pool.GetNew();
-                        if (swapOrder) { pair.Entity1 = key.Entity1; pair.Entity2 = key.Entity2; }
-                        else { pair.Entity2 = key.Entity2; pair.Entity1 = key.Entity1; }
-                        threadManager.AddTask(detectCallback, pair);
-                    }
-                    else
-                    {
-                        if (swapOrder) { Detect(key.Entity1, key.Entity2); }
-                        else Detect(key.Entity2, key.Entity1);
-                    }
-
-                    swapOrder = !swapOrder;
+                    BroadphasePair pair = BroadphasePair.Pool.GetNew();
+                    if (swapOrder) { pair.Entity1 = key.Entity1; pair.Entity2 = key.Entity2; }
+                    else { pair.Entity2 = key.Entity2; pair.Entity1 = key.Entity1; }
+                    threadManager.AddTask(DetectCallback, pair);
                 }
+                else
+                {
+                    if (swapOrder) { Detect(key.Entity1, key.Entity2); }
+                    else Detect(key.Entity2, key.Entity1);
+                }
+
+                swapOrder = !swapOrder;
             }
 
             threadManager.Execute();
@@ -339,52 +332,30 @@ namespace Spectrum.Framework.Physics.Collision
         /// against rays (rays are of infinite length). They are checked against segments
         /// which start at rayOrigin and end in rayOrigin + rayDirection.
         /// </summary>
-        #region public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, out Vector3 normal,out float fraction)
         public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, Func<GameObject, Vector3, float, bool> raycast, out GameObject body, out Vector3 normal, out float fraction)
         {
             body = null; normal = Vector3.Zero; fraction = float.MaxValue;
 
-            Vector3 tempNormal;float tempFraction;
+            Vector3 tempNormal; float tempFraction;
             bool result = false;
 
             // TODO: This can be done better in CollisionSystemPersistenSAP
             foreach (GameObject e in bodyList)
             {
-                //if (e is SoftBody)
-                //{
-                //    SoftBody softBody = e as SoftBody;
-                //    foreach (RigidBody b in softBody.VertexBodies)
-                //    {
-                //        if (this.Raycast(b, rayOrigin, rayDirection, out tempNormal, out tempFraction))
-                //        {
-                //            if (tempFraction < fraction && (raycast == null || raycast(b, tempNormal, tempFraction)))
-                //            {
-                //                body = b;
-                //                normal = tempNormal;
-                //                fraction = tempFraction;
-                //                result = true;
-                //            }
-                //        }
-                //    }
-                //}
-                //else
+                if (this.Raycast(e, rayOrigin, rayDirection, out tempNormal, out tempFraction))
                 {
-                    if (this.Raycast(e, rayOrigin, rayDirection, out tempNormal, out tempFraction))
+                    if (tempFraction < fraction && (raycast == null || raycast(e, tempNormal, tempFraction)))
                     {
-                        if (tempFraction < fraction && (raycast == null || raycast(e, tempNormal, tempFraction)))
-                        {
-                            body = e;
-                            normal = tempNormal;
-                            fraction = tempFraction;
-                            result = true;
-                        }
+                        body = e;
+                        normal = tempNormal;
+                        fraction = tempFraction;
+                        result = true;
                     }
                 }
             }
 
             return result;
         }
-        #endregion
 
 
         /// <summary>
@@ -392,7 +363,6 @@ namespace Spectrum.Framework.Physics.Collision
         /// against rays (rays are of infinite length). They are checked against segments
         /// which start at rayOrigin and end in rayOrigin + rayDirection.
         /// </summary>
-        #region public override bool Raycast(RigidBody body, Vector3 rayOrigin, Vector3 rayDirection, out Vector3 normal, out float fraction)
         public override bool Raycast(GameObject body, Vector3 rayOrigin, Vector3 rayDirection, out Vector3 normal, out float fraction)
         {
             fraction = float.MaxValue; normal = Vector3.Zero;
@@ -402,8 +372,8 @@ namespace Spectrum.Framework.Physics.Collision
             if (body.Shape is Multishape)
             {
                 Multishape ms = (body.Shape as Multishape).RequestWorkingClone();
-                
-                Vector3 tempNormal;float tempFraction;
+
+                Vector3 tempNormal; float tempFraction;
                 bool multiShapeCollides = false;
 
                 Vector3 transformedOrigin; Vector3.Subtract(ref rayOrigin, ref body.position, out transformedOrigin);
@@ -446,7 +416,6 @@ namespace Spectrum.Framework.Physics.Collision
 
 
         }
-        #endregion
 
 
     }

@@ -118,14 +118,8 @@ namespace Spectrum.Framework.Physics.Collision
 
         public virtual void AddEntity(GameObject body)
         {
-
             bodyList.Add(body);
         }
-
-        /// <summary>
-        /// Gets called when the broadphase system has detected possible collisions.
-        /// </summary>
-        public event PassedBroadphaseHandler PassedBroadphase;
 
         /// <summary>
         /// Gets called when broad- and narrow phase collision were positive.
@@ -134,12 +128,7 @@ namespace Spectrum.Framework.Physics.Collision
 
         protected ThreadManager threadManager = ThreadManager.Instance;
 
-        private bool speculativeContacts = false;
-        public bool EnableSpeculativeContacts
-        {
-            get { return speculativeContacts; }
-            set { speculativeContacts = value; }
-        }
+        public bool EnableSpeculativeContacts { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the CollisionSystem.
@@ -242,20 +231,9 @@ namespace Spectrum.Framework.Physics.Collision
                         body1.Velocity, body2.Velocity,
                         out simplex))
                     {
-                        //EPACollide.Detect(s1, s2, simplex, body1.Orientation,
-                        //    body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
-                        //    out tempPoint, out tempNormal, out tempPenetration);
-                        Vector3 xenoPoint, xenoNormal;
-                        float xenoPen;
-                        XenoCollide.Detect(s1, s2, body1.Orientation,
-                        body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
-                        out xenoPoint, out xenoNormal, out xenoPen);
                         if (EPACollide.Detect(s1, s2, simplex, body1.Orientation,
                             body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
                             out tempPoint, out tempNormal, out tempPenetration))
-                        //if (XenoCollide.Detect(s1, s2, body1.Orientation,
-                        //    body2.Orientation, body1.Position, body2.Position, body1.Velocity, body2.Velocity,
-                        //    out tempPoint, out tempNormal, out tempPenetration))
                         {
                             if (tempPenetration > penetration)
                             {
@@ -268,38 +246,13 @@ namespace Spectrum.Framework.Physics.Collision
                     }
                 }
             }
-            //Vector3 penVector = normal * penetration;
-            //normal = Vector3.Down;
-            //penetration = 0.5f;
+
             if (ms1 != null)
                 ms1.ReturnWorkingClone();
             if (ms2 != null)
                 ms2.ReturnWorkingClone();
 
             return collisionDetected;
-        }
-
-
-        private void FindSupportPoints(GameObject body1, GameObject body2,
-            Shape shape1, Shape shape2, ref Vector3 point, ref Vector3 normal,
-            out Vector3 point1, out Vector3 point2)
-        {
-            Vector3 mn; Vector3.Negate(ref normal, out mn);
-
-            Vector3 sA; SupportMapping(body1, shape1, ref mn, out sA);
-            Vector3 sB; SupportMapping(body2, shape2, ref normal, out sB);
-
-            Vector3.Subtract(ref sA, ref point, out sA);
-            Vector3.Subtract(ref sB, ref point, out sB);
-
-            float dot1 = Vector3.Dot(sA, normal);
-            float dot2 = Vector3.Dot(sB, normal);
-
-            Vector3.Multiply(ref normal, dot1, out sA);
-            Vector3.Multiply(ref normal, dot2, out sB);
-
-            Vector3.Add(ref point, ref sA, out point1);
-            Vector3.Add(ref point, ref sB, out point2);
         }
 
         private void SupportMapping(GameObject body, Shape workingShape, ref Vector3 direction, out Vector3 result)
@@ -353,37 +306,6 @@ namespace Spectrum.Framework.Physics.Collision
             return ((((box1.Max.Z >= box2.Min.Z) && (box1.Min.Z <= box2.Max.Z)) &&
                 ((box1.Max.Y >= box2.Min.Y) && (box1.Min.Y <= box2.Max.Y))) &&
                 ((box1.Max.X >= box2.Min.X) && (box1.Min.X <= box2.Max.X)));
-        }
-
-        /// <summary>
-        /// Raises the PassedBroadphase event.
-        /// </summary>
-        /// <param name="entity1">The first body.</param>
-        /// <param name="entity2">The second body.</param>
-        /// <returns>Returns false if the collision information
-        /// should be dropped</returns>
-        public bool RaisePassedBroadphase(GameObject entity1, GameObject entity2)
-        {
-            if (this.PassedBroadphase != null)
-                return this.PassedBroadphase(entity1, entity2);
-
-            // allow this detection by default
-            return true;
-        }
-
-
-        /// <summary>
-        /// Raises the CollisionDetected event.
-        /// </summary>
-        /// <param name="body1">The first body involved in the collision.</param>
-        /// <param name="body2">The second body involved in the collision.</param>
-        /// <param name="point">The collision point.</param>
-        /// <param name="normal">The normal pointing to body1.</param>
-        /// <param name="penetration">The penetration depth.</param>
-        protected void RaiseCollisionDetected(GameObject body1, GameObject body2,
-                                            ref Vector3 point1, ref Vector3 point2,
-                                            ref Vector3 normal, float penetration)
-        {
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Spectrum.Framework.Physics.Collision.Shapes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace Spectrum.Framework.Physics.Collision
         public EPAVertex[] Points = new EPAVertex[3];
         public Vector3 Normal;
         public float Distance;
+        public bool Degenerate = false;
         public EPAFace(EPAVertex p1, EPAVertex p2, EPAVertex p3)
         {
             Points[0] = p1;
@@ -30,6 +32,8 @@ namespace Spectrum.Framework.Physics.Collision
                 Normal.Normalize();
                 Distance = Vector3.Dot(Normal, Points[0].Position);
             }
+            if (float.IsNaN(Distance))
+                Degenerate = true;
             Points[0].Faces.Add(this);
             Points[1].Faces.Add(this);
             Points[2].Faces.Add(this);
@@ -102,6 +106,8 @@ namespace Spectrum.Framework.Physics.Collision
              out Vector3 point, out Vector3 normal, out float penetration)
         {
             point = Vector3.Zero;
+            normal = Vector3.Zero;
+            penetration = 0;
             List<EPAFace> faces = new List<EPAFace>();
             List<EPAVertex> vertices = simplex;
             faces.Add(new EPAFace(vertices[2], vertices[1], vertices[0]));
@@ -112,6 +118,8 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 s1, s2;
             while (true)
             {
+                if (faces.Any(face => face.Degenerate))
+                    return false;
                 faces.Sort((f1, f2) => f1.Distance.CompareTo(f2.Distance));
                 EPAFace closestFace = faces[0];
                 normal = faces[0].Normal;

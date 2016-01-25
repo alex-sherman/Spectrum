@@ -70,67 +70,6 @@ namespace Spectrum.Framework.Physics.Collision
         }
         #endregion
 
-        /// <summary>
-        /// Checks if given point is within a shape.
-        /// </summary>
-        /// <param name="support">The supportmap implementation representing the shape.</param>
-        /// <param name="orientation">The orientation of the shape.</param>
-        /// <param name="invOrientation">The inverse orientation of the shape.</param>
-        /// <param name="position">The position of the shape.</param>
-        /// <param name="point">The point to check.</param>
-        /// <returns>Returns true if the point is within the shape, otherwise false.</returns>
-        /*public static bool Pointcast(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 point)
-        {
-            Vector3 arbitraryPoint;
-
-            SupportMapTransformed(support, ref orientation, ref position, ref point, out arbitraryPoint);
-            Vector3.Subtract(ref point, ref arbitraryPoint, out arbitraryPoint);
-
-            Vector3 r; support.SupportCenter(out r);
-            Vector3.Transform(ref r, ref orientation, out r);
-            Vector3.Add(ref position, ref r, out r);
-            Vector3.Subtract(ref point, ref r, out r);
-
-            Vector3 x = point;
-            Vector3 w, p;
-            float VdotR;
-
-            Vector3 v; Vector3.Subtract(ref x, ref arbitraryPoint, out v);
-            float dist = v.LengthSquared();
-            float epsilon = 0.0001f;
-
-            int maxIter = MaxIterations;
-
-            VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
-
-            simplexSolver.Reset();
-
-            while ((dist > epsilon) && (maxIter-- != 0))
-            {
-                SupportMapTransformed(support, ref orientation, ref position, ref v, out p);
-                Vector3.Subtract(ref x, ref p, out w);
-
-                float VdotW = Vector3.Dot(v, w);
-
-                if (VdotW > 0.0f)
-                {
-                    VdotR = Vector3.Dot(v, r);
-
-                    if (VdotR >= -(JMath.Epsilon * JMath.Epsilon)) { simplexSolverPool.GiveBack(simplexSolver); return false; }
-                    else simplexSolver.Reset();
-                }
-                if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, x, p);
-
-                if (simplexSolver.Closest(out v)) dist = v.LengthSquared();
-                else dist = 0.0f;
-            }
-
-            simplexSolverPool.GiveBack(simplexSolver);
-            return true;
-
-        }*/
-
-
         /*public static bool ClosestPoints(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
             Matrix orientation2, Vector3 position1, Vector3 position2,
             out Vector3 p1, out Vector3 p2, out Vector3 normal)
