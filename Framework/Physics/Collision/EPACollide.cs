@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spectrum.Framework.Physics.Collision
 {
-    class EPAFace
+    public class EPAFace
     {
         public EPAVertex[] Points = new EPAVertex[3];
         public Vector3 Normal;
@@ -20,13 +20,9 @@ namespace Spectrum.Framework.Physics.Collision
             Normal = Vector3.Cross(Points[2].Position - Points[1].Position, Points[0].Position - Points[1].Position);
             Normal.Normalize();
             Distance = Vector3.Dot(Normal, Points[0].Position);
-            if(float.IsNaN(Distance))
-            {
-
-            }
 
             //Correct the order of the points if winding was backwards
-            if(Distance < 0)
+            if (Distance < 0)
             {
                 Points[0] = p2;
                 Points[1] = p1;
@@ -54,13 +50,17 @@ namespace Spectrum.Framework.Physics.Collision
             return Points.Select(p => new EPAEdge(p, Next(p))).ToList();
         }
     }
-    class EPAVertex
+    public class EPAVertex
     {
         public List<EPAFace> Faces;
         public Vector3 Position;
-        public EPAVertex(Vector3 position)
+        public Vector3 Position1;
+        public Vector3 Position2;
+        public EPAVertex(Vector3 position, Vector3 position1, Vector3 position2)
         {
             Position = position;
+            Position1 = position1;
+            Position2 = position2;
             Faces = new List<EPAFace>();
         }
         public override string ToString()
@@ -68,7 +68,7 @@ namespace Spectrum.Framework.Physics.Collision
             return Position.ToString();
         }
     }
-    class EPAEdge
+    public class EPAEdge
     {
         public EPAVertex P1;
         public EPAVertex P2;
@@ -82,18 +82,28 @@ namespace Spectrum.Framework.Physics.Collision
             return (P1 == other.P1 && P2 == other.P2) || (P1 == other.P2 && P2 == other.P1);
         }
     }
-    class EPACollide
+    public class EPACollide
     {
-        public static bool Detect(ISupportMappable support1, ISupportMappable support2, List<Vector3> simplex, Matrix orientation1,
+        static void Barycentric(Vector3 p, Vector3 a, Vector3 b, Vector3 c, out float u, out float v, out float w)
+        {
+            Vector3 v0 = b - a, v1 = c - a, v2 = p - a;
+            float d00 = Vector3.Dot(v0, v0);
+            float d01 = Vector3.Dot(v0, v1);
+            float d11 = Vector3.Dot(v1, v1);
+            float d20 = Vector3.Dot(v2, v0);
+            float d21 = Vector3.Dot(v2, v1);
+            float denom = d00 * d11 - d01 * d01;
+            v = (d11 * d20 - d01 * d21) / denom;
+            w = (d00 * d21 - d01 * d20) / denom;
+            u = 1.0f - v - w;
+        }
+        public static bool Detect(ISupportMappable support1, ISupportMappable support2, List<EPAVertex> simplex, Matrix orientation1,
              Matrix orientation2, Vector3 position1, Vector3 position2, Vector3 velocity1, Vector3 velocity2,
              out Vector3 point, out Vector3 normal, out float penetration)
         {
+            point = Vector3.Zero;
             List<EPAFace> faces = new List<EPAFace>();
-            List<EPAVertex> vertices = new List<EPAVertex>();
-            vertices.Add(new EPAVertex(simplex[0]));
-            vertices.Add(new EPAVertex(simplex[1]));
-            vertices.Add(new EPAVertex(simplex[2]));
-            vertices.Add(new EPAVertex(simplex[3]));
+            List<EPAVertex> vertices = simplex;
             faces.Add(new EPAFace(vertices[2], vertices[1], vertices[0]));
             faces.Add(new EPAFace(vertices[3], vertices[2], vertices[0]));
             faces.Add(new EPAFace(vertices[0], vertices[1], vertices[3]));
@@ -108,16 +118,27 @@ namespace Spectrum.Framework.Physics.Collision
                 Vector3 negativeDirection = -normal;
                 GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1);
                 GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out s2);
-                point = s2 - s1;
-                penetration = Vector3.Dot(normal, point);
-                if (penetration - faces[0].Distance < 0.01)
+                Vector3 s = s2 - s1;
+                penetration = Vector3.Dot(normal, s);
+                if (penetration - faces[0].Distance < 0.001)
                     break;
-                SimplexInsert(faces, vertices, new EPAVertex(point));
+                SimplexInsert(faces, vertices, new EPAVertex(s, s1, s2));
 
                 if (iterationLimit-- == 0)
                     return false;
             }
-            point = (s1 + s2) / 2;
+            EPAVertex[] points = faces[0].Points;
+            float u, v, w;
+            Barycentric(normal * penetration,
+                points[0].Position,
+                points[1].Position,
+                points[2].Position,
+                out u, out v, out w);
+            point = points[0].Position1 * u + points[0].Position2 * u +
+                points[1].Position1 * v + points[1].Position2 * v +
+                points[2].Position1 * w + points[2].Position2 * w;
+            point /= 2;
+            //point = (s1 + s2) / 2;
             return true;
         }
         private static void SimplexInsert(List<EPAFace> faces, List<EPAVertex> vertices, EPAVertex newVertex)

@@ -1,0 +1,57 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2013 for Windows Desktop
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpectrumTest", "Test\SpectrumTest.csproj", "{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spectrum", "Spectrum.csproj", "{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+		Steam-Debug|Any CPU = Steam-Debug|Any CPU
+		Steam-Debug|Mixed Platforms = Steam-Debug|Mixed Platforms
+		Steam-Debug|x86 = Steam-Debug|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|x86.ActiveCfg = Release|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Steam-Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Steam-Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Steam-Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Steam-Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Steam-Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|x86.ActiveCfg = Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|x86.Build.0 = Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Release|Any CPU.ActiveCfg = Release|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Release|Mixed Platforms.Build.0 = Release|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Release|x86.ActiveCfg = Release|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Release|x86.Build.0 = Release|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|Any CPU.ActiveCfg = Steam-Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|Mixed Platforms.ActiveCfg = Steam-Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|Mixed Platforms.Build.0 = Steam-Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|x86.ActiveCfg = Steam-Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|x86.Build.0 = Steam-Debug|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

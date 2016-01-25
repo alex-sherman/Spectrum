@@ -47,12 +47,12 @@ namespace Spectrum.Framework.Physics.Collision
             //support.SupportMapping(ref result, out result);
             //Vector3.Transform(ref result, ref orientation, out result);
             //Vector3.Add(ref result, ref position, out result);
+            Vector3 newDirection = direction;
+            newDirection.X = ((direction.X * orientation.M11) + (direction.Y * orientation.M12)) + (direction.Z * orientation.M13);
+            newDirection.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
+            newDirection.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
 
-            result.X = ((direction.X * orientation.M11) + (direction.Y * orientation.M12)) + (direction.Z * orientation.M13);
-            result.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
-            result.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
-
-            support.SupportMapping(ref result, out result);
+            support.SupportMapping(ref newDirection, out result);
 
             float x = ((result.X * orientation.M11) + (result.Y * orientation.M21)) + (result.Z * orientation.M31);
             float y = ((result.X * orientation.M12) + (result.Y * orientation.M22)) + (result.Z * orientation.M32);
@@ -210,9 +210,9 @@ namespace Spectrum.Framework.Physics.Collision
             Matrix orientation1, Matrix orientation2,
             Vector3 position1, Vector3 position2,
             Vector3 velocity1, Vector3 velocity2,
-            out List<Vector3> simplex)
+            out List<EPAVertex> simplex)
         {
-            simplex = new List<Vector3>();
+            simplex = new List<EPAVertex>();
 
             Vector3 s, s1, s2;
             Vector3 direction = Vector3.One;
@@ -222,7 +222,7 @@ namespace Spectrum.Framework.Physics.Collision
             SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out s2);
             s = s2 - s1;
 
-            simplex.Add(s);
+            simplex.Add(new EPAVertex(s, s1, s2));
 
             //Choose an initial direction toward the origin.
             direction = -s;
@@ -250,7 +250,7 @@ namespace Spectrum.Framework.Physics.Collision
                 //otherwise we add the new
                 //point to the simplex and
                 //process it.
-                simplex.Add(a);
+                simplex.Add(new EPAVertex(a, s1, s2));
                 //Here we either find a collision or we find the closest feature of
                 //the simplex to the origin, make that the new simplex and update the direction
                 //to move toward the origin from that feature.
@@ -269,7 +269,7 @@ namespace Spectrum.Framework.Physics.Collision
         ///Either finds a collision or the closest feature of the simplex to the origin, 
         ///and updates the simplex and direction.
         /// </summary>
-        static bool ProcessSimplex(List<Vector3> simplex, ref Vector3 direction)
+        static bool ProcessSimplex(List<EPAVertex> simplex, ref Vector3 direction)
         {
             if (simplex.Count == 2)
             {
@@ -285,10 +285,10 @@ namespace Spectrum.Framework.Physics.Collision
             }
         }
 
-        static bool ProcessLine(List<Vector3> simplex, ref Vector3 direction)
+        static bool ProcessLine(List<EPAVertex> simplex, ref Vector3 direction)
         {
-            Vector3 a = simplex[1];
-            Vector3 b = simplex[0];
+            Vector3 a = simplex[1].Position;
+            Vector3 b = simplex[0].Position;
             Vector3 ab = b - a;
             Vector3 aO = -a;
 
@@ -296,11 +296,11 @@ namespace Spectrum.Framework.Physics.Collision
             return false;
         }
 
-        static bool ProcessTriangle(List<Vector3> simplex, ref Vector3 direction)
+        static bool ProcessTriangle(List<EPAVertex> simplex, ref Vector3 direction)
         {
-            Vector3 a = simplex[2];
-            Vector3 b = simplex[1];
-            Vector3 c = simplex[0];
+            Vector3 a = simplex[2].Position;
+            Vector3 b = simplex[1].Position;
+            Vector3 c = simplex[0].Position;
             Vector3 ab = b - a;
             Vector3 ac = c - a;
             Vector3 abc = Vector3.Cross(ab, ac);
@@ -318,12 +318,12 @@ namespace Spectrum.Framework.Physics.Collision
             return false;
         }
 
-        static bool ProcessTetrehedron(List<Vector3> simplex, ref Vector3 direction)
+        static bool ProcessTetrehedron(List<EPAVertex> simplex, ref Vector3 direction)
         {
-            Vector3 a = simplex[3];
-            Vector3 b = simplex[2];
-            Vector3 c = simplex[1];
-            Vector3 d = simplex[0];
+            Vector3 a = simplex[3].Position;
+            Vector3 b = simplex[2].Position;
+            Vector3 c = simplex[1].Position;
+            Vector3 d = simplex[0].Position;
             Vector3 ac = c - a;
             Vector3 ad = d - a;
             Vector3 ab = b - a;
@@ -340,17 +340,17 @@ namespace Spectrum.Framework.Physics.Collision
 
             if (abc.IsInSameDirection(aO))
             {
-                simplex.Remove(d);
+                simplex.RemoveAt(0);
                 direction = abc;
             }
             else if (acd.IsInSameDirection(aO))
             {
-                simplex.Remove(b);
+                simplex.RemoveAt(2);
                 direction = acd;
             }
             else if (abd.IsInSameDirection(aO))
             {
-                simplex.Remove(c);
+                simplex.RemoveAt(1);
                 direction = abd;
             }
             else

@@ -235,7 +235,7 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     if (ms2 != null)
                         ms2.SetCurrentShape(j);
-                    List<Vector3> simplex;
+                    List<EPAVertex> simplex;
                     if (GJKCollide.Detect(s1, s2,
                         body1.Orientation, body2.Orientation,
                         body1.Position, body2.Position,
