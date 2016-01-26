@@ -47,13 +47,13 @@ struct CommonVSInput
 struct CommonVSOut
 {
 	float4 position  : SV_Position;
+	float3 normal : NORMAL0;
 	float3 worldPosition : POSITION1;
 	float2 textureCoordinate : TEXCOORD0;
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
 	float clipDistance : TEXCOORD2;
 	float depth : TEXCOORD3;
 	float fog	: COLOR0;
-	float light : COLOR1;
 };
 struct CommonPSOut
 {
@@ -75,27 +75,6 @@ float3 VSCalculateLight(float3 normal, float3 worldPosition){
 		lightDirection.y *= -1;
 	return (.2+.8*clamp(dot(normalize(lightDirection), normal),0,1));
 }
-float3 PSCalculateLight(CommonVSOut vsout){
-	float3 lightEffect = vsout.light;
-	if(lightingEnabled)
-		lightEffect = specularLightColor.rgb*lightEffect+ambientLightColor.rgb;
-	if(shadowMapEnabled){
-		float2 ProjectedTexCoords; 
-		ProjectedTexCoords.x = vsout.Pos2DAsSeenByLight.x/vsout.Pos2DAsSeenByLight.w/2.0f +0.5f;
-		ProjectedTexCoords.y = -vsout.Pos2DAsSeenByLight.y/vsout.Pos2DAsSeenByLight.w/2.0f +0.5f;
-		if(ProjectedTexCoords.x <1 && ProjectedTexCoords.x>0 && ProjectedTexCoords.y<1 && ProjectedTexCoords.y>0){
-			float3 shadow = tex2D(shadowMapSampler, ProjectedTexCoords);
-				if(600.0/shadow.r+1000<vsout.Pos2DAsSeenByLight.z-10){
-					lightEffect = ambientLightColor.rgb;
-				}
-				else
-				{
-					lightEffect = specularLightColor.rgb*vsout.light+ambientLightColor.rgb;
-				}
-		}
-	}
-	return lightEffect;
-}
 void DoClip(CommonVSOut vsout){
 	if(Clip) { clip(vsout.clipDistance); }
 	if(vsout.fog >=.99f){ clip(-1); }
@@ -108,8 +87,8 @@ float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout){
 	vsout.depth = length(vsout.worldPosition-cameraPosition);
 	vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
 	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
-	vsout.light = VSCalculateLight(mul(vin.normal,world), vsout.worldPosition);
 	vsout.Pos2DAsSeenByLight = VSCalcPos2DAsSeenByLight(HworldPosition);
 	vsout.textureCoordinate = vin.TextureCoordinate;
+	vsout.normal = mul(vin.normal, (float3x3)world);
 	return HworldPosition;
 }

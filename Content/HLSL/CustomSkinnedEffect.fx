@@ -40,9 +40,7 @@ CommonVSOut CustomVL4(VSInputNmTxWeights vin)
 CommonPSOut CustomPSNoFog(CommonVSOut pin)
 {
 	DoClip(pin);
-	float3 lightEffect = PSCalculateLight(pin);
 	float4 output = tex2D(customTexture, pin.textureCoordinate);
-	output.rgb *= lightEffect;
 	//if(glowEnabled) { output.rgb = output.rgb * .25f + glowColor * .75f; }
 	return PSReturn(output, pin);
 }
