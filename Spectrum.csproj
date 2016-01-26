@@ -155,6 +155,7 @@
     <Compile Include="Framework\Graphics\Camera.cs" />
     <Compile Include="Framework\Input\Axis.cs" />
     <Compile Include="Framework\Input\Gamepad.cs" />
+    <Compile Include="Framework\Input\IEntityInput.cs" />
     <Compile Include="Framework\Input\KeyBinding.cs" />
     <Compile Include="Framework\Input\InputLayout.cs" />
     <Compile Include="Framework\Input\PlayerInformation.cs" />
