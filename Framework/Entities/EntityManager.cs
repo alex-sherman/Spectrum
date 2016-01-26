@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using System.Reflection;
 using Spectrum.Framework.Network;
 using System.Diagnostics;
+using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.Entities
 {
@@ -220,6 +221,12 @@ namespace Spectrum.Framework.Entities
         public void Draw(GameTime gameTime)
         {
             GraphicsEngine.Render(ECollection.updateables, gameTime);
+        }
+        public void HandleInput(Spectrum.Framework.Input.InputState input)
+        {
+            foreach (IEntityInput e in ECollection.updateables.Where(e => e is IEntityInput)) {
+                e.HandleInput(input);
+            }
         }
     }
 }
