@@ -27,15 +27,6 @@ namespace Spectrum.Framework.Entities
     }
     public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable
     {
-        //This decides whether the game object will despawn if it goes out of range of the heightmap
-        protected bool required = false;
-        private bool _canMove = true;
-        public virtual bool CanMove
-        {
-            get { return _canMove; }
-            protected set { _canMove = value; }
-        }
-
         #region Physics Fields/Properties
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
