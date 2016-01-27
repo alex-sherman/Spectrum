@@ -236,18 +236,18 @@ namespace Spectrum.Framework.Physics.Dynamics
             //vector vbLinDueToR = angularVelChangeb.copy().cross(rb);  // calculate the linear velocity of collision point on b due to rotation of b
             //scalar += 1 / mb + vbLinDueToR.dot(normal);
             scalar += body2.IsStatic ? 0 : body2.inverseMass;
-            float Jmod = (e + 1) * (body1.linearVelocity - body2.linearVelocity).Length() / scalar;
+            float Jmod = (e + 1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity) / scalar;
             Vector3 J = normal * (Jmod);
 
             if (!treatBody1AsStatic)
             {
                 body1.linearVelocity -= J * body1.inverseMass;
-                body1.position -= normal * Penetration / 2;
+                //body1.position -= normal * Penetration / 2;
             }
             if (!treatBody2AsStatic)
             {
                 body2.linearVelocity += J * body2.inverseMass;
-                body2.position += normal * Penetration / 2;
+                //body2.position += normal * Penetration / 2;
             }
 
             //vaf = vai - J.mul(1 / ma);
