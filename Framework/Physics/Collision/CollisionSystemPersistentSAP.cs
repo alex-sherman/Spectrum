@@ -342,6 +342,7 @@ namespace Spectrum.Framework.Physics.Collision
             // TODO: This can be done better in CollisionSystemPersistenSAP
             foreach (GameObject e in bodyList)
             {
+                if (e.Ignore) continue;
                 if (this.Raycast(e, rayOrigin, rayDirection, out tempNormal, out tempFraction))
                 {
                     if (tempFraction < fraction && (raycast == null || raycast(e, tempNormal, tempFraction)))

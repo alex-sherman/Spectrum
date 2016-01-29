@@ -61,11 +61,11 @@ namespace Spectrum.Framework.Physics.Collision
             result.X = position.X + x;
             result.Y = position.Y + y;
             result.Z = position.Z + z;
-            if (Vector3.Dot(velocity, direction) < 0)
+            if (Vector3.Dot(velocity, direction) > 0)
             {
-                result.X -= velocity.X * Timestep;
-                result.Y -= velocity.Y * Timestep;
-                result.Z -= velocity.Z * Timestep;
+                result.X += velocity.X * Timestep;
+                result.Y += velocity.Y * Timestep;
+                result.Z += velocity.Z * Timestep;
             }
         }
         #endregion

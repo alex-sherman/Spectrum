@@ -624,6 +624,8 @@ namespace Spectrum.Framework.Physics
                 body.force = new Vector3();
                 body.torque = new Vector3();
 
+                body.PhysicsUpdate(timestep);
+
             }
         }
 
@@ -667,7 +669,7 @@ namespace Spectrum.Framework.Physics
             if ((body.Damping & GameObject.DampingType.Angular) != 0)
                 Vector3.Multiply(ref body.angularVelocity, currentAngularDampFactor, out body.angularVelocity);
 
-            body.PhysicsUpdate();
+            body.PhysicsUpdate(timestep);
 
 
             if (CollisionSystem.EnableSpeculativeContacts || body.EnableSpeculativeContacts)

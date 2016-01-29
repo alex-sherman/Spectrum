@@ -218,8 +218,6 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void NewIterate()
         {
-            if (Vector3.Dot(body2.linearVelocity - body1.linearVelocity, normal) > 0)
-                return;
             if (Penetration < 0) return;
             float e = 0.5f;
             //matrix IaInverse = Ia.inverse();
@@ -237,19 +235,17 @@ namespace Spectrum.Framework.Physics.Dynamics
             //scalar += 1 / mb + vbLinDueToR.dot(normal);
             scalar += body2.IsStatic ? 0 : body2.inverseMass;
             float Jmod = (e + 1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity) / scalar;
+            float Tmag = (1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity);
             Vector3 J = normal * (Jmod);
 
             if (!treatBody1AsStatic)
             {
                 body1.linearVelocity -= J * body1.inverseMass;
-                //body1.position -= normal * Penetration / 2;
             }
             if (!treatBody2AsStatic)
             {
                 body2.linearVelocity += J * body2.inverseMass;
-                //body2.position += normal * Penetration / 2;
             }
-
             //vaf = vai - J.mul(1 / ma);
             //vbf = vbi - J.mul(1 / mb);
             //waf = wai - angularVelChangea;

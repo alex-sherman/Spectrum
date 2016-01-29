@@ -76,13 +76,6 @@ namespace Spectrum.Framework.Physics.Dynamics.Constraints
             this.body2 = body2;
 
             instance = Interlocked.Increment(ref instanceCount);
-
-            // calling body.update does not hurt
-            // if the user set orientations all
-            // inverse orientations etc. get also
-            // recalculated.
-            if (body1 != null) body1.PhysicsUpdate();
-            if (body2 != null) body2.PhysicsUpdate();
         }
 
         /// <summary>

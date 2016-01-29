@@ -40,7 +40,7 @@ namespace Spectrum.Framework.Entities
         public Matrix Orientation
         {
             get { return orientation; }
-            set { orientation = value; PhysicsUpdate(); }
+            set { orientation = value; }
         }
         public Matrix invOrientation;
         public Matrix InvOrientation { get { return invOrientation; } }
@@ -49,7 +49,7 @@ namespace Spectrum.Framework.Entities
         public Vector3 Position
         {
             get { return position; }
-            set { position = value; PhysicsUpdate(); }
+            set { position = value; }
         }
         [Replicate]
         public Vector3 Velocity
@@ -132,24 +132,8 @@ namespace Spectrum.Framework.Entities
 
         public int internalIndex = 0;
 
-        private ShapeUpdatedHandler updatedHandler;
-
         public int marker = 0;
-        private Shape shape;
-        public Shape Shape
-        {
-            get { return shape; }
-            set
-            {
-                // deregister update event
-                if (shape != null) shape.ShapeUpdated -= updatedHandler;
-
-                // register new event
-                shape = value;
-                shape.ShapeUpdated += updatedHandler;
-                PhysicsUpdate();
-            }
-        }
+        public Shape Shape { get; set; }
         public virtual void OnCollide(GameObject other, Vector3 normal) { }
         public virtual void OnEndCollide(GameObject other) { }
 
@@ -181,8 +165,6 @@ namespace Spectrum.Framework.Entities
             this.Parts = new List<DrawablePart>();
             IsActive = true;
 
-            updatedHandler = new ShapeUpdatedHandler(PhysicsUpdate);
-
             orientation = Matrix.Identity;
             inertia = new Matrix();
             invInertia = this.invInertiaWorld = new Matrix();
@@ -190,11 +172,10 @@ namespace Spectrum.Framework.Entities
             inverseMass = 1.0f;
             material = new Material();
             Shape = new BoxShape(1, 1, 1);
-            PhysicsUpdate();
         }
 
         #region Physics Functions
-        public void PhysicsUpdate()
+        public void PhysicsUpdate(float timestep)
         {
             //Set mass properties
             this.inertia = Shape.inertia;
@@ -205,7 +186,9 @@ namespace Spectrum.Framework.Entities
             Matrix.Transpose(ref orientation, out invOrientation);
             Shape.GetBoundingBox(ref orientation, out boundingBox);
             Vector3.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
+            boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
             Vector3.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
+            boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
 
 
             if (!IsStatic)
@@ -213,9 +196,11 @@ namespace Spectrum.Framework.Entities
                 Matrix.Multiply(ref invOrientation, ref invInertia, out invInertiaWorld);
                 Matrix.Multiply(ref invInertiaWorld, ref orientation, out invInertiaWorld);
             }
-            this.Replicate();
         }
-        public virtual void PreStep(float step) { }
+        public virtual void PreStep(float step)
+        {
+            PhysicsUpdate(step);
+        }
         public virtual void PostStep(float step) { }
         #endregion
 
@@ -268,7 +253,7 @@ namespace Spectrum.Framework.Entities
         public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             JBBox boundingBox;
-            shape.GetBoundingBox(ref orientation, out boundingBox);
+            Shape.GetBoundingBox(ref orientation, out boundingBox);
             Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
             Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
             GraphicsEngine.DrawJBBox(boundingBox, Color.Black, spriteBatch);
