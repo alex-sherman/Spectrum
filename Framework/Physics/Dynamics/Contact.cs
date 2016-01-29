@@ -218,7 +218,8 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void NewIterate()
         {
-            float e = 0.8f;
+            if (Penetration < 0) return;
+            float e = 0.5f;
             //matrix IaInverse = Ia.inverse();
             //vector angularVelChangea = normal.copy(); // start calculating the change in abgular rotation of a
             //angularVelChangea.cross(ra);
@@ -233,10 +234,18 @@ namespace Spectrum.Framework.Physics.Dynamics
             //vector vbLinDueToR = angularVelChangeb.copy().cross(rb);  // calculate the linear velocity of collision point on b due to rotation of b
             //scalar += 1 / mb + vbLinDueToR.dot(normal);
             scalar += body2.IsStatic ? 0 : body2.inverseMass;
-            float Jmod = (e) * (body1.linearVelocity - body2.linearVelocity).Length() / scalar;
-            Vector3 J = normal * (Jmod + restitutionBias);
-            ApplyImpulse(J);
+            float Jmod = (e + 1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity) / scalar;
+            float Tmag = (1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity);
+            Vector3 J = normal * (Jmod);
 
+            if (!treatBody1AsStatic)
+            {
+                body1.linearVelocity -= J * body1.inverseMass;
+            }
+            if (!treatBody2AsStatic)
+            {
+                body2.linearVelocity += J * body2.inverseMass;
+            }
             //vaf = vai - J.mul(1 / ma);
             //vbf = vbi - J.mul(1 / mb);
             //waf = wai - angularVelChangea;

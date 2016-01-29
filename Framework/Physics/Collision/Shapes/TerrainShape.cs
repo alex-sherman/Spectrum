@@ -168,6 +168,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// called.</returns>
         public override int Prepare(ref JBBox box)
         {
+            if (boundings.Contains(box) == JBBox.ContainmentType.Disjoint)
+                return 0;
             // simple idea: the terrain is a grid. x and z is the position in the grid.
             // y the height. we know compute the min and max grid-points. All quads
             // between these points have to be checked.

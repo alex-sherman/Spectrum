@@ -42,6 +42,7 @@ namespace Spectrum.Framework.Entities
         public NetID OwnerGuid;
         public object[] creationArgs = new object[0];
         public EntityManager Manager;
+        private bool replicateNextUpdate = false;
 
         public bool Enabled { get; protected set; }
         public bool DrawEnabled { get; protected set; }
@@ -135,14 +136,18 @@ namespace Spectrum.Framework.Entities
                 SendMessage(default(NetID), FunctionReplicationMessage, replicationMessage);
             }
         }
+        private void Replicate()
+        {
+            replicateCounter = minReplicationPeriod;
+            NetMessage replicationMessage = new NetMessage();
+            getData(replicationMessage);
+            SendMessage(default(NetID), StateReplicationMessage, replicationMessage);
+        }
         public void Replicate(bool force = false)
         {
-            if ((force || replicateCounter <= 0) && CanReplicate)
+            if ((force || replicateCounter <= 0))
             {
-                replicateCounter = minReplicationPeriod;
-                NetMessage replicationMessage = new NetMessage();
-                getData(replicationMessage);
-                SendMessage(default(NetID), StateReplicationMessage, replicationMessage);
+                replicateNextUpdate = true;
             }
         }
 
@@ -150,6 +155,12 @@ namespace Spectrum.Framework.Entities
         public virtual void Update(GameTime gameTime)
         {
             if (replicateCounter > 0) { replicateCounter -= gameTime.ElapsedGameTime.Milliseconds; }
+
+            if (replicateNextUpdate && CanReplicate)
+            {
+                Replicate();
+                replicateNextUpdate = false;
+            }
         }
         public virtual void DisabledUpdate(GameTime time) { }
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }

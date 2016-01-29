@@ -176,6 +176,7 @@
     <Compile Include="Framework\Physics\Collision\CollisionSystem.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystemPersistentSAP.cs" />
     <Compile Include="Framework\Physics\Collision\DynamicTree.cs" />
+    <Compile Include="Framework\Physics\Collision\EPACollide.cs" />
     <Compile Include="Framework\Physics\Collision\GJKCollide.cs" />
     <Compile Include="Framework\Physics\Collision\GroundInfo.cs" />
     <Compile Include="Framework\Physics\Collision\ICollidable.cs" />
@@ -185,12 +186,12 @@
     <Compile Include="Framework\Physics\Collision\Shapes\ConeShape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\ConvexHullShape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\CylinderShape.cs" />
+    <Compile Include="Framework\Physics\Collision\Shapes\ISupportMappable.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\ListMultishape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\Multishape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\Shape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\SphereShape.cs" />
     <Compile Include="Framework\Physics\Collision\Shapes\TerrainShape.cs" />
-    <Compile Include="Framework\Physics\Collision\XenoCollide.cs" />
     <Compile Include="Framework\Physics\Dynamics\Arbiter.cs" />
     <Compile Include="Framework\Physics\Dynamics\ArbiterMap.cs" />
     <Compile Include="Framework\Physics\Dynamics\Constraint.cs" />
@@ -202,7 +203,7 @@
     </Compile>
     <Compile Include="Framework\Physics\ResourcePool.cs" />
     <Compile Include="Framework\Physics\ThreadManager.cs" />
-    <Compile Include="Framework\Physics\World.cs" />
+    <Compile Include="Framework\Physics\PhysicsEngine.cs" />
     <Compile Include="Framework\Screens\BackgroundScreen.cs" />
     <Compile Include="Framework\Screens\Element.cs" />
     <Compile Include="Framework\Screens\ElementField.cs" />
@@ -252,7 +253,6 @@
     <Compile Include="SpectrumGame.cs" />
     <Compile Include="Framework\Entities\Entity.cs" />
     <Compile Include="Framework\Entities\EntityCollection.cs" />
-    <Compile Include="Framework\Physics\PhysicsEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Framework\Graphics\Water.cs" />
   </ItemGroup>
