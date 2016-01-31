@@ -46,6 +46,7 @@ sampler snow = sampler_state
 struct MultiTex_VS_OUT
 {
 	float4 position  : SV_Position;
+	float3 normal        : NORMAL0;
 	float3 worldPosition : POSITION1;
 	float2 textureCoordinate : TEXCOORD0;
 	float4 Pos2DAsSeenByLight : TEXCOORD1;

@@ -218,7 +218,8 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void NewIterate()
         {
-            if (Penetration < 0) return;
+            if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
+            if (noCollide || Penetration < 0) return;
             float e = 0.5f;
             //matrix IaInverse = Ia.inverse();
             //vector angularVelChangea = normal.copy(); // start calculating the change in abgular rotation of a
