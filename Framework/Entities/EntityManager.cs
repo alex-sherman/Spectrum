@@ -186,6 +186,7 @@ namespace Spectrum.Framework.Entities
             ECollection.Add(entity);
             if (mpService.ID == entity.OwnerGuid)
                 SendEntityCreation(entity);
+            entity.Initialize();
             return entity;
         }
         public void ClearEntities(Func<Entity, bool> predicate = null)

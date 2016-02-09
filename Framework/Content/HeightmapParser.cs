@@ -39,18 +39,41 @@ namespace Spectrum.Framework.Content
             }
             return heightmap;
         }
+        public static List<DrawablePart> CreateParts<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor, int sectionCountX, int sectionCountZ) where T : struct, IVertexType
+        {
+            List<DrawablePart> output = new List<DrawablePart>();
+            int width = heightmap.GetLength(0);
+            int sectionWidth = width / sectionCountX;
+            int height = heightmap.GetLength(1);
+            int sectionHeight = height / sectionCountZ;
+
+            for (int x = 0; x < sectionCountX; x++)
+            {
+                for (int y = 0; y < sectionCountZ; y++)
+                {
+                    output.Add(CreatePart<T>(heightmap, scaleXZ, vertexConstructor,
+                        sectionWidth * x, Math.Min(sectionWidth * (x + 1) + 1, width),
+                        sectionHeight * y, Math.Min(sectionHeight * (y + 1) + 1, height)));
+                }
+            }
+            return output;
+        }
         public static DrawablePart CreatePart<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor) where T : struct, IVertexType
         {
+            return CreatePart<T>(heightmap, scaleXZ, vertexConstructor, 0, heightmap.GetLength(0), 0, heightmap.GetLength(1));
+        }
+        public static DrawablePart CreatePart<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor, int minX, int maxX, int minZ, int maxZ) where T : struct, IVertexType
+        {
             List<T> vertices = new List<T>();
-            for (int x = 0; x < heightmap.GetLength(0); x++)
+            for (int y = minZ; y < maxZ; y++)
             {
-                for(int y = 0; y < heightmap.GetLength(1); y++)
+                for (int x = minX; x < maxX; x++)
                 {
                     vertices.Add(VertexHelper.getVertex<T>(x, y, heightmap, scaleXZ, vertexConstructor));
                 }
             }
             VertexBuffer vBuffer = VertexHelper.MakeVertexBuffer<T>(vertices);
-            IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(VertexHelper.getIndexList(heightmap.GetLength(0)).ToList());
+            IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(VertexHelper.getIndexList(maxX - minX, maxZ - minZ).ToList());
             return new DrawablePart(vBuffer, iBuffer);
         }
     }

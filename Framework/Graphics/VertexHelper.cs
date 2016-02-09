@@ -41,18 +41,22 @@ namespace Spectrum.Framework.Graphics
         }
         public static ushort[] getIndexList(int squareSize)
         {
-            ushort[] toReturn = new ushort[(squareSize - 1) * (squareSize - 1) * 6];
-            for(int x = 0; x < squareSize - 1; x++)
+            return getIndexList(squareSize, squareSize);
+        }
+        public static ushort[] getIndexList(int meshWidth, int meshHeight)
+        {
+            ushort[] toReturn = new ushort[(meshWidth - 1) * (meshHeight - 1) * 6];
+            for(int x = 0; x < meshWidth - 1; x++)
             {
-                for (int y = 0; y < squareSize - 1; y++)
+                for (int y = 0; y < meshHeight - 1; y++)
                 {
-                    int i = x + y * (squareSize - 1);
-                    toReturn[i * 6] = (ushort)(x + y * squareSize);
-                    toReturn[i * 6 + 1] = (ushort)(toReturn[i * 6] + (squareSize + 1));
+                    int i = x + y * (meshWidth - 1);
+                    toReturn[i * 6] = (ushort)(x + y * meshWidth);
+                    toReturn[i * 6 + 1] = (ushort)(toReturn[i * 6] + (meshWidth + 1));
                     toReturn[i * 6 + 2] = (ushort)(toReturn[i * 6] + 1);
                     toReturn[i * 6 + 3] = (ushort)(toReturn[i * 6]);
-                    toReturn[i * 6 + 4] = (ushort)(toReturn[i * 6] + (squareSize + 1));
-                    toReturn[i * 6 + 5] = (ushort)(toReturn[i * 6] + (squareSize));
+                    toReturn[i * 6 + 4] = (ushort)(toReturn[i * 6] + (meshWidth + 1));
+                    toReturn[i * 6 + 5] = (ushort)(toReturn[i * 6] + (meshWidth));
                 }
             }
 
