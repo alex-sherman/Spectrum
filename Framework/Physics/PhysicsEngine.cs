@@ -581,9 +581,9 @@ namespace Spectrum.Framework.Physics
                     int contactCount = arbiter.contactList.Count;
                     for (int e = 0; e < contactCount; e++)
                     {
-                        arbiter.contactList[e].NewIterate();
-                        //if (i == -1) arbiter.contactList[e].PrepareForIteration(timestep);
-                        //arbiter.contactList[e].Iterate();
+                        //arbiter.contactList[e].NewIterate();
+                        if (i == -1) arbiter.contactList[e].PrepareForIteration(timestep);
+                        arbiter.contactList[e].Iterate();
                     }
                 }
 

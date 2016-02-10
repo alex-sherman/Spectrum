@@ -332,11 +332,13 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 }
             }
 
-            boundings.Min.X = 0;
-            boundings.Min.Z = 0;
+            boundings.Min.X = -sphericalExpansion;
+            boundings.Min.Y -= sphericalExpansion;
+            boundings.Min.Z = -sphericalExpansion;
 
-            boundings.Max.X = checked(heightsLength0 * scaleXZ);
-            boundings.Max.Z = checked(heightsLength1 * scaleXZ);
+            boundings.Max.X = checked(heightsLength0 * scaleXZ) + sphericalExpansion;
+            boundings.Max.Y += sphericalExpansion;
+            boundings.Max.Z = checked(heightsLength1 * scaleXZ) + sphericalExpansion;
 
             #endregion
 

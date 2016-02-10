@@ -221,36 +221,24 @@ namespace Spectrum.Framework.Physics.Dynamics
             if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
             if (noCollide || Penetration < 0) return;
             float e = 0.5f;
-            //matrix IaInverse = Ia.inverse();
-            //vector angularVelChangea = normal.copy(); // start calculating the change in abgular rotation of a
-            //angularVelChangea.cross(ra);
-            //IaInverse.transform(angularVelChangea);
-            //vector vaLinDueToR = angularVelChangea.copy().cross(ra);  // calculate the linear velocity of collision point on a due to rotation of a
-            //double scalar = 1 / ma + vaLinDueToR.dot(normal);
-            float scalar = body1.IsStatic ? 0 : body1.inverseMass;
-            //matrix IbInverse = Ib.inverse();
-            //vector angularVelChangeb = normal.copy(); // start calculating the change in abgular rotation of b
-            //angularVelChangeb.cross(rb);
-            //IbInverse.transform(angularVelChangeb);
-            //vector vbLinDueToR = angularVelChangeb.copy().cross(rb);  // calculate the linear velocity of collision point on b due to rotation of b
-            //scalar += 1 / mb + vbLinDueToR.dot(normal);
+            Vector3 relativeVelocity = body2.linearVelocity - body1.linearVelocity;
+            //relativeVelocity -= Vector3.Cross(realRelPos1, body1.angularVelocity);
+            //relativeVelocity += Vector3.Cross(realRelPos2, body2.angularVelocity);
+            Vector3 normalVelocity = normal * Vector3.Dot(relativeVelocity, normal);
+            Vector3 inertiaComp1 = body1.IsStatic || body1.IgnoreRotation ? Vector3.Zero : Vector3.Cross(Vector3.Transform(Vector3.Cross(relativePos1, normal), body1.invInertiaWorld), relativePos1);
+            Vector3 inertiaComp2 = body2.IsStatic || body2.IgnoreRotation ? Vector3.Zero : Vector3.Cross(Vector3.Transform(Vector3.Cross(relativePos2, normal), body2.invInertiaWorld), relativePos2);
+            float scalar = 0;
+            scalar += body1.IsStatic ? 0 : body1.inverseMass;
             scalar += body2.IsStatic ? 0 : body2.inverseMass;
-            float Jmod = (e + 1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity) / scalar;
-            float Tmag = (1) * Vector3.Dot(normal, body1.linearVelocity - body2.linearVelocity);
+            //scalar += Vector3.Dot(inertiaComp1, normal);
+            //scalar += Vector3.Dot(inertiaComp2, normal);
+            float Jmod = (e + 1) * normalVelocity.Length() / scalar;
             Vector3 J = normal * (Jmod);
-
-            if (!treatBody1AsStatic)
-            {
-                body1.linearVelocity -= J * body1.inverseMass;
-            }
-            if (!treatBody2AsStatic)
-            {
-                body2.linearVelocity += J * body2.inverseMass;
-            }
-            //vaf = vai - J.mul(1 / ma);
-            //vbf = vbi - J.mul(1 / mb);
-            //waf = wai - angularVelChangea;
-            //wbf = wbi - angularVelChangeb;
+            ApplyImpulse(J);
+            if (!body1.IsStatic)
+                body1.position -= (Penetration / 2 - settings.allowedPenetration) * normal;
+            if (!body2.IsStatic)
+                body2.position += (Penetration / 2 - settings.allowedPenetration) * normal;
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
@@ -572,7 +560,9 @@ namespace Spectrum.Framework.Physics.Dynamics
             this.system = system;
             this.body1 = body1; this.body2 = body2;
             this.normal = n; normal.Normalize();
-            this.p1 = point1; this.p2 = point2;
+            this.p1 = point1 + penetration * normal / 2; this.p2 = point2 - penetration * normal / 2;
+            //this.p1 = point1;
+            //this.p2 = point2;
 
             this.newContact = newContact;
 

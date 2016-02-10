@@ -69,7 +69,7 @@ namespace Spectrum.Framework.Physics.Collision
         }
         public override string ToString()
         {
-            return Position.ToString();
+            return Position.ToString() + " (" + Position1.ToString() + ", " + Position2.ToString() + ")";
         }
     }
     public class EPAEdge
