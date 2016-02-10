@@ -220,20 +220,17 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
             if (noCollide || Penetration < 0) return;
-            float e = 0.5f;
-            Vector3 relativeVelocity = body2.linearVelocity - body1.linearVelocity;
-            //relativeVelocity -= Vector3.Cross(realRelPos1, body1.angularVelocity);
-            //relativeVelocity += Vector3.Cross(realRelPos2, body2.angularVelocity);
-            Vector3 normalVelocity = normal * Vector3.Dot(relativeVelocity, normal);
-            Vector3 inertiaComp1 = body1.IsStatic || body1.IgnoreRotation ? Vector3.Zero : Vector3.Cross(Vector3.Transform(Vector3.Cross(relativePos1, normal), body1.invInertiaWorld), relativePos1);
-            Vector3 inertiaComp2 = body2.IsStatic || body2.IgnoreRotation ? Vector3.Zero : Vector3.Cross(Vector3.Transform(Vector3.Cross(relativePos2, normal), body2.invInertiaWorld), relativePos2);
-            float scalar = 0;
-            scalar += body1.IsStatic ? 0 : body1.inverseMass;
-            scalar += body2.IsStatic ? 0 : body2.inverseMass;
-            //scalar += Vector3.Dot(inertiaComp1, normal);
-            //scalar += Vector3.Dot(inertiaComp2, normal);
-            float Jmod = (e + 1) * normalVelocity.Length() / scalar;
-            Vector3 J = normal * (Jmod);
+            float e = 0.8f;
+            Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
+            dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
+            Vector3 dvNormal = normal * Vector3.Dot(dv, normal);
+            Vector3 dvTangent = dv - dvNormal;
+            tangent = dvTangent;
+            tangent.Normalize();
+
+            massNormal = InertiaInDirection(normal);
+            massTangent = InertiaInDirection(tangent);
+            Vector3 J = -(e + 1) * dvNormal * massNormal - 0.1f * dvTangent * massTangent;
             ApplyImpulse(J);
             if (!body1.IsStatic)
                 body1.position -= (Penetration / 2 - settings.allowedPenetration) * normal;
@@ -328,23 +325,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             }
         }
 
-        /// <summary>
-        /// PrepareForIteration has to be called before <see cref="Iterate"/>.
-        /// </summary>
-        /// <param name="timestep">The timestep of the simulation.</param>
-        public void PrepareForIteration(float timestep)
+        private float InertiaInDirection(Vector3 direction)
         {
-            if (noCollide) return;
-            float dvx, dvy, dvz;
-
-            dvx = (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y) + body2.linearVelocity.X;
-            dvy = (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z) + body2.linearVelocity.Y;
-            dvz = (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X) + body2.linearVelocity.Z;
-
-            dvx = dvx - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y) - body1.linearVelocity.X;
-            dvy = dvy - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z) - body1.linearVelocity.Y;
-            dvz = dvz - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X) - body1.linearVelocity.Z;
-
             float kNormal = 0.0f;
 
             Vector3 rantra = Vector3.Zero;
@@ -352,24 +334,10 @@ namespace Spectrum.Framework.Physics.Dynamics
             {
                 kNormal += body1.inverseMass;
 
-                // Vector3.Cross(ref relativePos1, ref normal, out rantra);
-                rantra.X = (relativePos1.Y * normal.Z) - (relativePos1.Z * normal.Y);
-                rantra.Y = (relativePos1.Z * normal.X) - (relativePos1.X * normal.Z);
-                rantra.Z = (relativePos1.X * normal.Y) - (relativePos1.Y * normal.X);
-
-                // Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
-                float num1 = ((rantra.X * body1.invInertiaWorld.M12) + (rantra.Y * body1.invInertiaWorld.M22)) + (rantra.Z * body1.invInertiaWorld.M32);
-                float num2 = ((rantra.X * body1.invInertiaWorld.M13) + (rantra.Y * body1.invInertiaWorld.M23)) + (rantra.Z * body1.invInertiaWorld.M33);
-
-                rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
-
-                //Vector3.Cross(ref rantra, ref relativePos1, out rantra);
-                num0 = (rantra.Y * relativePos1.Z) - (rantra.Z * relativePos1.Y);
-                num1 = (rantra.Z * relativePos1.X) - (rantra.X * relativePos1.Z);
-                num2 = (rantra.X * relativePos1.Y) - (rantra.Y * relativePos1.X);
-
-                rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
+                Vector3.Cross(ref relativePos1, ref normal, out rantra);
+                Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
+                Vector3.Cross(ref rantra, ref relativePos1, out rantra);
+                kNormal += rantra.X * normal.X + rantra.Y * normal.Y + rantra.Z * normal.Z;
 
             }
 
@@ -378,118 +346,45 @@ namespace Spectrum.Framework.Physics.Dynamics
             {
                 kNormal += body2.inverseMass;
 
-                // Vector3.Cross(ref relativePos1, ref normal, out rantra);
-                rbntrb.X = (relativePos2.Y * normal.Z) - (relativePos2.Z * normal.Y);
-                rbntrb.Y = (relativePos2.Z * normal.X) - (relativePos2.X * normal.Z);
-                rbntrb.Z = (relativePos2.X * normal.Y) - (relativePos2.Y * normal.X);
-
-                // Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
-                float num1 = ((rbntrb.X * body2.invInertiaWorld.M12) + (rbntrb.Y * body2.invInertiaWorld.M22)) + (rbntrb.Z * body2.invInertiaWorld.M32);
-                float num2 = ((rbntrb.X * body2.invInertiaWorld.M13) + (rbntrb.Y * body2.invInertiaWorld.M23)) + (rbntrb.Z * body2.invInertiaWorld.M33);
-
-                rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-
-                //Vector3.Cross(ref rantra, ref relativePos1, out rantra);
-                num0 = (rbntrb.Y * relativePos2.Z) - (rbntrb.Z * relativePos2.Y);
-                num1 = (rbntrb.Z * relativePos2.X) - (rbntrb.X * relativePos2.Z);
-                num2 = (rbntrb.X * relativePos2.Y) - (rbntrb.Y * relativePos2.X);
-
-                rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-
+                Vector3.Cross(ref relativePos2, ref normal, out rbntrb);
+                Vector3.Transform(ref rbntrb, ref body2.invInertiaWorld, out rbntrb);
+                Vector3.Cross(ref rbntrb, ref relativePos2, out rbntrb);
+                kNormal += rbntrb.X * normal.X + rbntrb.Y * normal.Y + rbntrb.Z * normal.Z;
             }
 
-            if (!treatBody1AsStatic) kNormal += rantra.X * normal.X + rantra.Y * normal.Y + rantra.Z * normal.Z;
-            if (!treatBody2AsStatic) kNormal += rbntrb.X * normal.X + rbntrb.Y * normal.Y + rbntrb.Z * normal.Z;
+            return 1.0f / kNormal;
+        }
 
-            massNormal = 1.0f / kNormal;
+        /// <summary>
+        /// PrepareForIteration has to be called before <see cref="Iterate"/>.
+        /// </summary>
+        /// <param name="timestep">The timestep of the simulation.</param>
+        public void PrepareForIteration(float timestep)
+        {
+            if (noCollide) return;
 
-            float num = dvx * normal.X + dvy * normal.Y + dvz * normal.Z;
+            Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
+            dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
+            Vector3 dvNormal = normal * Vector3.Dot(dv, normal);
 
-            tangent.X = dvx - normal.X * num;
-            tangent.Y = dvy - normal.Y * num;
-            tangent.Z = dvz - normal.Z * num;
+            massNormal = InertiaInDirection(normal);
+            float normalImpulse = massNormal * (-dvNormal.Length() + restitutionBias + speculativeVelocity);
 
-            num = tangent.X * tangent.X + tangent.Y * tangent.Y + tangent.Z * tangent.Z;
+            tangent = dv - dvNormal;
+            tangent.Normalize();
 
-            if (num != 0.0f)
-            {
-                num = (float)Math.Sqrt(num);
-                tangent.X /= num;
-                tangent.Y /= num;
-                tangent.Z /= num;
-            }
-
-            float kTangent = 0.0f;
-
-            if (treatBody1AsStatic) rantra = new Vector3();
-            else
-            {
-                kTangent += body1.inverseMass;
-
-                // Vector3.Cross(ref relativePos1, ref normal, out rantra);
-                rantra.X = (relativePos1.Y * tangent.Z) - (relativePos1.Z * tangent.Y);
-                rantra.Y = (relativePos1.Z * tangent.X) - (relativePos1.X * tangent.Z);
-                rantra.Z = (relativePos1.X * tangent.Y) - (relativePos1.Y * tangent.X);
-
-                // Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                float num0 = ((rantra.X * body1.invInertiaWorld.M11) + (rantra.Y * body1.invInertiaWorld.M21)) + (rantra.Z * body1.invInertiaWorld.M31);
-                float num1 = ((rantra.X * body1.invInertiaWorld.M12) + (rantra.Y * body1.invInertiaWorld.M22)) + (rantra.Z * body1.invInertiaWorld.M32);
-                float num2 = ((rantra.X * body1.invInertiaWorld.M13) + (rantra.Y * body1.invInertiaWorld.M23)) + (rantra.Z * body1.invInertiaWorld.M33);
-
-                rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
-
-                //Vector3.Cross(ref rantra, ref relativePos1, out rantra);
-                num0 = (rantra.Y * relativePos1.Z) - (rantra.Z * relativePos1.Y);
-                num1 = (rantra.Z * relativePos1.X) - (rantra.X * relativePos1.Z);
-                num2 = (rantra.X * relativePos1.Y) - (rantra.Y * relativePos1.X);
-
-                rantra.X = num0; rantra.Y = num1; rantra.Z = num2;
-
-
-            }
-
-            if (treatBody2AsStatic) rbntrb = new Vector3();
-            else
-            {
-                kTangent += body2.inverseMass;
-
-                // Vector3.Cross(ref relativePos1, ref normal, out rantra);
-                rbntrb.X = (relativePos2.Y * tangent.Z) - (relativePos2.Z * tangent.Y);
-                rbntrb.Y = (relativePos2.Z * tangent.X) - (relativePos2.X * tangent.Z);
-                rbntrb.Z = (relativePos2.X * tangent.Y) - (relativePos2.Y * tangent.X);
-
-                // Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                float num0 = ((rbntrb.X * body2.invInertiaWorld.M11) + (rbntrb.Y * body2.invInertiaWorld.M21)) + (rbntrb.Z * body2.invInertiaWorld.M31);
-                float num1 = ((rbntrb.X * body2.invInertiaWorld.M12) + (rbntrb.Y * body2.invInertiaWorld.M22)) + (rbntrb.Z * body2.invInertiaWorld.M32);
-                float num2 = ((rbntrb.X * body2.invInertiaWorld.M13) + (rbntrb.Y * body2.invInertiaWorld.M23)) + (rbntrb.Z * body2.invInertiaWorld.M33);
-
-                rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-
-                //Vector3.Cross(ref rantra, ref relativePos1, out rantra);
-                num0 = (rbntrb.Y * relativePos2.Z) - (rbntrb.Z * relativePos2.Y);
-                num1 = (rbntrb.Z * relativePos2.X) - (rbntrb.X * relativePos2.Z);
-                num2 = (rbntrb.X * relativePos2.Y) - (rbntrb.Y * relativePos2.X);
-
-                rbntrb.X = num0; rbntrb.Y = num1; rbntrb.Z = num2;
-
-            }
-
-            if (!treatBody1AsStatic) kTangent += Vector3.Dot(rantra, tangent);
-            if (!treatBody2AsStatic) kTangent += Vector3.Dot(rbntrb, tangent);
-            massTangent = 1.0f / kTangent;
+            massTangent = InertiaInDirection(tangent);
 
             restitutionBias = lostSpeculativeBounce;
 
             speculativeVelocity = 0.0f;
 
-            float relNormalVel = normal.X * dvx + normal.Y * dvy + normal.Z * dvz; //Vector3.Dot(ref normal, ref dv);
+            float relNormalVel = Vector3.Dot(normal, dv);
 
             if (Penetration > settings.allowedPenetration)
             {
                 restitutionBias = settings.bias * (1.0f / timestep) * JMath.Max(0.0f, Penetration - settings.allowedPenetration);
                 restitutionBias = JMath.Clamp(restitutionBias, 0.0f, settings.maximumBias);
-                //  body1IsMassPoint = body2IsMassPoint = false;
             }
 
 
@@ -497,15 +392,13 @@ namespace Spectrum.Framework.Physics.Dynamics
             accumulatedNormalImpulse *= timeStepRatio;
             accumulatedTangentImpulse *= timeStepRatio;
 
-            {
-                // Static/Dynamic friction
-                float relTangentVel = -(tangent.X * dvx + tangent.Y * dvy + tangent.Z * dvz);
-                float tangentImpulse = massTangent * relTangentVel;
-                float maxTangentImpulse = -staticFriction * accumulatedNormalImpulse;
+            // Static/Dynamic friction
+            float relTangentVel = -(Vector3.Dot(tangent, dv));
+            float tangentImpulse = massTangent * relTangentVel;
+            float maxTangentImpulse = -staticFriction * accumulatedNormalImpulse;
 
-                if (tangentImpulse < maxTangentImpulse) friction = dynamicFriction;
-                else friction = staticFriction;
-            }
+            if (tangentImpulse < maxTangentImpulse) friction = dynamicFriction;
+            else friction = staticFriction;
 
             Vector3 impulse;
 
@@ -537,7 +430,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
             impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
 
-            ApplyImpulse(impulse);
+            //ApplyImpulse(impulse);
+            ApplyImpulse(normal * normalImpulse);
 
             lastTimeStep = timestep;
 
