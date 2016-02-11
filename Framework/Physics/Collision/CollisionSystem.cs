@@ -240,19 +240,19 @@ namespace Spectrum.Framework.Physics.Collision
                                 point = tempPoint;
                                 normal = tempNormal;
                                 penetration = tempPenetration;
+                                collisionDetected = true;
                             }
-                            collisionDetected = true;
                         }
                     }
                 }
             }
-
+            Debug.Assert(!collisionDetected || normal != Vector3.Zero, "A collision was reported but the normal wasn't properly set");
             if (ms1 != null)
                 ms1.ReturnWorkingClone();
             if (ms2 != null)
                 ms2.ReturnWorkingClone();
 
-            return collisionDetected;
+            return collisionDetected && normal != Vector3.Zero;
         }
 
         private void SupportMapping(GameObject body, Shape workingShape, ref Vector3 direction, out Vector3 result)

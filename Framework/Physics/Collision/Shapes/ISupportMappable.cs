@@ -12,6 +12,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
     /// </summary>
     public interface ISupportMappable
     {
+
         /// <summary>
         /// SupportMapping. Finds the point in the shape furthest away from the given direction.
         /// Imagine a plane with a normal in the search direction. Now move the plane along the normal
@@ -19,6 +20,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// </summary>
         /// <param name="direction">The direction.</param>
         /// <param name="result">The result.</param>
-        void SupportMapping(ref Vector3 direction, out Vector3 result);
+        /// <param name="retrievingInformation">Set to true when searching for the collision normal and penetration,
+        /// useful to read in multishapes where sub shapes may have edges that produce wonky collision normals.</param>
+        void SupportMapping(ref Vector3 direction, out Vector3 result, bool retrievingInformation);
     }
 }

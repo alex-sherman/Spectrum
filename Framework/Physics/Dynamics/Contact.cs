@@ -220,7 +220,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
             if (noCollide || Penetration < 0) return;
-            float e = 0.8f;
+            float e = 0.5f;
             Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
             dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
             Vector3 dvNormal = normal * Vector3.Dot(dv, normal);
@@ -462,6 +462,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             Vector3.Subtract(ref p1, ref body1.position, out relativePos1);
             Vector3.Subtract(ref p2, ref body2.position, out relativePos2);
+
             Vector3.Transform(ref relativePos1, ref body1.invOrientation, out realRelPos1);
             Vector3.Transform(ref relativePos2, ref body2.invOrientation, out realRelPos2);
 

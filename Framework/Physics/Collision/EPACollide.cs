@@ -124,8 +124,8 @@ namespace Spectrum.Framework.Physics.Collision
                 EPAFace closestFace = faces[0];
                 normal = faces[0].Normal;
                 Vector3 negativeDirection = -normal;
-                GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1);
-                GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out s2);
+                GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1, true);
+                GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out s2, true);
                 Vector3 s = s2 - s1;
                 penetration = Vector3.Dot(normal, s);
                 if (penetration - faces[0].Distance < 0.001)

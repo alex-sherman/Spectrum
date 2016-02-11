@@ -64,15 +64,13 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         protected abstract Multishape CreateWorkingClone();
 
-        internal bool isClone = false;
-
-        public bool IsClone { get{ return isClone;} }
+        public bool IsClone { get; private set; }
 
         Stack<Multishape> workingCloneStack = new Stack<Multishape>();
         public Multishape RequestWorkingClone()
         {
             Debug.Assert(this.workingCloneStack.Count<10, "Unusual size of the workingCloneStack. Forgot to call ReturnWorkingClone?");
-            Debug.Assert(!this.isClone, "Can't clone clones! Something wrong here!");
+            Debug.Assert(!IsClone, "Can't clone clones! Something wrong here!");
 
             Multishape multiShape;
 
@@ -85,7 +83,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                     workingCloneStack.Push(multiShape);
                 }
                 multiShape = workingCloneStack.Pop();
-                multiShape.isClone = true;
+                multiShape.IsClone = true;
             }
 
             return multiShape;
@@ -99,7 +97,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         public void ReturnWorkingClone()
         {
-            Debug.Assert(this.isClone, "Only clones can be returned!");
+            Debug.Assert(IsClone, "Only clones can be returned!");
             lock (workingCloneStack) { workingCloneStack.Push(this); }
         }
 

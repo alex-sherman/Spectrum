@@ -41,7 +41,7 @@ namespace Spectrum.Framework.Physics.Collision
         private static ResourcePool<VoronoiSimplexSolver> simplexSolverPool = new ResourcePool<VoronoiSimplexSolver>();
 
         #region private static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 direction, out Vector3 result)
-        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out Vector3 result)
+        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out Vector3 result, bool retrievingInformation = false)
         {
             //Vector3.Transform(ref direction, ref invOrientation, out result);
             //support.SupportMapping(ref result, out result);
@@ -52,7 +52,7 @@ namespace Spectrum.Framework.Physics.Collision
             newDirection.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
             newDirection.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
 
-            support.SupportMapping(ref newDirection, out result);
+            support.SupportMapping(ref newDirection, out result, retrievingInformation);
 
             float x = ((result.X * orientation.M11) + (result.Y * orientation.M21)) + (result.Z * orientation.M31);
             float y = ((result.X * orientation.M12) + (result.Y * orientation.M22)) + (result.Z * orientation.M32);
@@ -61,7 +61,7 @@ namespace Spectrum.Framework.Physics.Collision
             result.X = position.X + x;
             result.Y = position.Y + y;
             result.Z = position.Z + z;
-            if (Vector3.Dot(velocity, direction) > 0)
+            if (!retrievingInformation && Vector3.Dot(velocity, direction) > 0)
             {
                 result.X += velocity.X * Timestep;
                 result.Y += velocity.Y * Timestep;

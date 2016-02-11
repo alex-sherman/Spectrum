@@ -25,6 +25,7 @@ using Spectrum.Framework.Physics.Dynamics;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Collision.Shapes;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 #endregion
 
 namespace Spectrum.Framework.Physics.Collision.Shapes
@@ -61,6 +62,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         private JBBox boundings;
 
         private float sphericalExpansion = 0.1f;
+        private const float planarExpansion = 0.5f;
 
         /// <summary>
         /// Expands the triangles by the specified amount.
@@ -210,22 +212,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             // since every quad contains two triangles we multiply by 2.
             return numX * numZ * 2;
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
         public override void CalculateMassInertia()
         {
             this.inertia = Matrix.Identity;
             this.Mass = 1.0f;
         }
-
-        /// <summary>
-        /// Gets the axis aligned bounding box of the orientated shape. This includes
-        /// the whole shape.
-        /// </summary>
-        /// <param name="orientation">The orientation of the shape.</param>
-        /// <param name="box">The axis aligned bounding box of the shape.</param>
         public override void GetBoundingBox(ref Matrix orientation, out JBBox box)
         {
             box = boundings;
@@ -241,7 +232,6 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
             box.Transform(ref orientation);
         }
-
         public override void MakeHull(ref List<Vector3> triangleList, int generationThreshold)
         {
             for (int index = 0; index < (heightsLength0 - 1) * (heightsLength1 - 1); index++)
@@ -258,15 +248,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 triangleList.Add(new Vector3((0 + quadIndexX + 0) * scaleXZ, heights[0 + quadIndexX + 0, 0 + quadIndexZ + 1], (0 + quadIndexZ + 1) * scaleXZ));
             }
         }
-
-        /// <summary>
-        /// SupportMapping. Finds the point in the shape furthest away from the given direction.
-        /// Imagine a plane with a normal in the search direction. Now move the plane along the normal
-        /// until the plane does not intersect the shape. The last intersection point is the result.
-        /// </summary>
-        /// <param name="direction">The direction.</param>
-        /// <param name="result">The result.</param>
         public override void SupportMapping(ref Vector3 direction, out Vector3 result)
+        {
+            throw new InvalidOperationException("This shouldn't be able to be called! Overriding the other support mapping should prevent it.");
+        }
+        public override void SupportMapping(ref Vector3 direction, out Vector3 result, bool retrievingInformation)
         {
             Vector3 expandVector;
             Vector3.Normalize(ref direction, out expandVector);
@@ -288,14 +274,26 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             }
 
             Vector3.Add(ref points[minIndex], ref expandVector, out result);
+
+            if(retrievingInformation)
+            {
+                Vector3 sectionNormal = Vector3.Cross(points[0] - points[1], points[0] - points[2]);
+                sectionNormal.Normalize();
+                dot = Vector3.Dot(direction, sectionNormal);
+                //This is necessary to avoid floating point rounding errors when the direction
+                //and normal are in almost identical directions
+                if (Math.Abs(dot) < (0.9f))
+                {
+                    Vector3 normalD = sectionNormal * dot;
+                    Vector3 planarExpansionDirection = direction - normalD;
+                    planarExpansionDirection.Normalize();
+                    planarExpansionDirection *= scaleXZ * planarExpansion;
+                    Vector3.Add(ref result, ref planarExpansionDirection, out result);
+                }
+            }
+
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="rayOrigin"></param>
-        /// <param name="rayDelta"></param>
-        /// <returns></returns>
         public override int Prepare(ref Vector3 rayOrigin, ref Vector3 rayDelta)
         {
             JBBox box = JBBox.SmallBox;

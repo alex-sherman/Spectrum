@@ -355,6 +355,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             this.mass = Shape.CalculateMassInertia(this, out geomCen, out inertia);
         }
 
+        public virtual void SupportMapping(ref Vector3 direction, out Vector3 result, bool retrievingInformation)
+        {
+            SupportMapping(ref direction, out result);
+        }
+
         /// <summary>
         /// SupportMapping. Finds the point in the shape furthest away from the given direction.
         /// Imagine a plane with a normal in the search direction. Now move the plane along the normal
