@@ -22,7 +22,7 @@ namespace Spectrum.Framework
             types[type.Name] = type;
             plugins[type] = plugin;
         }
-        public static T Instantiate<T>(string type, params object[] args) where T: class
+        public static T Instantiate<T>(string type, params object[] args) where T : class
         {
             return Instantiate(types[type], args) as T;
         }
@@ -48,14 +48,17 @@ namespace Spectrum.Framework
         public static object Instantiate(Type t, params object[] args)
         {
             if (t == null) { return null; }
-            if(args == null) args = new object[0];
+            if (args == null) args = new object[0];
             Type[] types = new Type[args.Length];
             for (int i = 0; i < args.Length; i++)
             {
                 types[i] = args[i].GetType();
             }
-            System.Reflection.ConstructorInfo cinfo = t.GetConstructor(types);
-            if (cinfo == null) { throw new InvalidOperationException("Unable to construct an entity with the given parameters"); }
+            ConstructorInfo cinfo = t.GetConstructor(types);
+            if (cinfo == null)
+            {
+                throw new InvalidOperationException("Unable to construct an entity with the given parameters");
+            }
             try
             {
                 object output = cinfo.Invoke(args);

@@ -134,14 +134,13 @@ namespace Spectrum.Framework.Entities
 
         public int marker = 0;
         public Shape Shape { get; set; }
-        public virtual void OnCollide(GameObject other, Vector3 normal) { }
+        public virtual void OnCollide(GameObject other, Vector3 normal, float penetration) { }
         public virtual void OnEndCollide(GameObject other) { }
 
 
         /// <summary>
         /// The current oriention of the body.
         /// </summary>
-
         public Matrix World
         {
             get { return orientation * Matrix.CreateTranslation(position); }

@@ -76,11 +76,11 @@ namespace Spectrum.Framework.Physics
                 if (RemovedConstraint != null) RemovedConstraint(constraint);
             }
 
-            internal void RaiseBodiesBeginCollide(GameObject body1, GameObject body2, Vector3 normal)
+            internal void RaiseBodiesBeginCollide(GameObject body1, GameObject body2, Vector3 normal, float penetration)
             {
                 if (BodiesBeginCollide != null) BodiesBeginCollide(body1, body2, normal);
-                body1.OnCollide(body2, normal);
-                body2.OnCollide(body1, normal);
+                body1.OnCollide(body2, normal, penetration);
+                body2.OnCollide(body1, normal, penetration);
             }
 
             internal void RaiseBodiesEndCollide(GameObject body1, GameObject body2)
@@ -717,7 +717,7 @@ namespace Spectrum.Framework.Physics
 
                     addedArbiterQueue.Enqueue(arbiter);
 
-                    events.RaiseBodiesBeginCollide(body1, body2, normal);
+                    events.RaiseBodiesBeginCollide(body1, body2, normal, penetration);
                 }
             }
 
