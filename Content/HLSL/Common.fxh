@@ -24,7 +24,7 @@ sampler customTexture = sampler_state
 	Texture = <Texture>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter=LINEAR;
+	mipfilter = LINEAR;
 	AddressU = mirror;
 	AddressV = mirror;
 };

@@ -14,6 +14,7 @@ namespace Spectrum.Framework.Graphics
         public SpectrumEffect effect;
         public VertexBuffer VBuffer;
         public IndexBuffer IBuffer;
+        public DynamicVertexBuffer InstanceBuffer;
         public PrimitiveType primType = PrimitiveType.TriangleList;
         public DrawablePart(List<CommonTex> vertices)
         {

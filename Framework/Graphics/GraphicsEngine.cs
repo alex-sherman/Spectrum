@@ -81,6 +81,9 @@ namespace Spectrum.Framework.Graphics
             return new Ray(nearPoint, direction);
         }
 
+        //private static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
+        //{
+        //}
         public static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer)
         {
             device.SetVertexBuffer(vertexBuffer);
@@ -160,19 +163,27 @@ namespace Spectrum.Framework.Graphics
                 {
                     if (part.IBuffer != null)
                     {
-                        setBuffers(part.VBuffer, part.IBuffer);
-                        foreach (var pass in effect.CurrentTechnique.Passes)
+                        ///TODO: Upgrade monogame to a version that supports hardware instancing
+                        //if (part.InstanceBuffer != null)
+                        //{
+                            
+                        //}
+                        //else
                         {
-                            pass.Apply();
-                            if (part.primType == PrimitiveType.TriangleStrip)
+                            setBuffers(part.VBuffer, part.IBuffer);
+                            foreach (var pass in effect.CurrentTechnique.Passes)
                             {
-                                device.DrawIndexedPrimitives(part.primType, 0, 0,
-                                                                     part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2);
-                            }
-                            if (part.primType == PrimitiveType.TriangleList)
-                            {
-                                device.DrawIndexedPrimitives(part.primType, 0, 0,
-                                                                     part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3);
+                                pass.Apply();
+                                if (part.primType == PrimitiveType.TriangleStrip)
+                                {
+                                    device.DrawIndexedPrimitives(part.primType, 0, 0,
+                                                                         part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2);
+                                }
+                                if (part.primType == PrimitiveType.TriangleList)
+                                {
+                                    device.DrawIndexedPrimitives(part.primType, 0, 0,
+                                                                         part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3);
+                                }
                             }
                         }
                     }

@@ -22,7 +22,8 @@ namespace Spectrum.Framework.Content
         public U Load(string path)
         {
             if (!cachedData.ContainsKey(path)) { Cache(path); }
-            return SafeCopy(cachedData[path]);
+            T data = cachedData[path];
+            return data == null ? default(U) : SafeCopy(data);
         }
 
         public virtual void Cache(string path)
