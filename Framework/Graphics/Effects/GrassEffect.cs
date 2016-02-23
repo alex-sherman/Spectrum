@@ -10,7 +10,6 @@ namespace Spectrum.Framework.Graphics.Effects
 {
     public class GrassEffect : SpectrumEffect
     {
-        public Matrix[] Worlds { set { this.Parameters["worlds"].SetValue(value); } }
         public GrassEffect()
             : base(ContentHelper.Load<Effect>("Grass"))
         {

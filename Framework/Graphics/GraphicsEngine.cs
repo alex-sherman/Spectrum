@@ -81,9 +81,11 @@ namespace Spectrum.Framework.Graphics
             return new Ray(nearPoint, direction);
         }
 
-        //private static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
-        //{
-        //}
+        private static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
+        {
+            device.SetVertexBuffers(new VertexBufferBinding(vertexBuffer, 0, 0), new VertexBufferBinding(instanceBuffer, 0, 1));
+            device.Indices = indexBuffer;
+        }
         public static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer)
         {
             device.SetVertexBuffer(vertexBuffer);
@@ -164,11 +166,23 @@ namespace Spectrum.Framework.Graphics
                     if (part.IBuffer != null)
                     {
                         ///TODO: Upgrade monogame to a version that supports hardware instancing
-                        //if (part.InstanceBuffer != null)
-                        //{
-                            
-                        //}
-                        //else
+                        if (part.InstanceBuffer != null)
+                        {
+                            setBuffers(part.VBuffer, part.IBuffer, part.InstanceBuffer);
+                            foreach (var pass in effect.CurrentTechnique.Passes)
+                            {
+                                pass.Apply();
+                                if (part.primType == PrimitiveType.TriangleStrip)
+                                {
+                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2, part.InstanceBuffer.VertexCount);
+                                }
+                                if (part.primType == PrimitiveType.TriangleList)
+                                {
+                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3, part.InstanceBuffer.VertexCount);
+                                }
+                            }
+                        }
+                        else
                         {
                             setBuffers(part.VBuffer, part.IBuffer);
                             foreach (var pass in effect.CurrentTechnique.Passes)
@@ -176,13 +190,11 @@ namespace Spectrum.Framework.Graphics
                                 pass.Apply();
                                 if (part.primType == PrimitiveType.TriangleStrip)
                                 {
-                                    device.DrawIndexedPrimitives(part.primType, 0, 0,
-                                                                         part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2);
+                                    device.DrawIndexedPrimitives(part.primType, 0, 0, part.IBuffer.IndexCount - 2);
                                 }
                                 if (part.primType == PrimitiveType.TriangleList)
                                 {
-                                    device.DrawIndexedPrimitives(part.primType, 0, 0,
-                                                                         part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3);
+                                    device.DrawIndexedPrimitives(part.primType, 0, 0, part.IBuffer.IndexCount / 3);
                                 }
                             }
                         }

@@ -26,6 +26,10 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,6 +42,7 @@
     <NoStdLib>true</NoStdLib>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -49,6 +54,7 @@
     <NoStdLib>true</NoStdLib>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ManifestCertificateThumbprint>F60950CB6273709E4B4DC7354D68A68C1C362F80</ManifestCertificateThumbprint>
@@ -72,6 +78,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <RunPostBuildEvent>Always</RunPostBuildEvent>
@@ -84,8 +91,7 @@
     <Reference Include="Mono.Nat">
       <HintPath>Dependencies\Mono.Nat.dll</HintPath>
     </Reference>
-    <Reference Include="MonoGame.Framework, Version=3.1.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="MonoGame.Framework">
       <HintPath>Dependencies\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib">
@@ -94,12 +100,10 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>Dependencies\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SharpDX">
       <HintPath>Dependencies\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.DirectInput, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SharpDX.DirectInput">
       <HintPath>Dependencies\SharpDX.DirectInput.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.XAudio2, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
