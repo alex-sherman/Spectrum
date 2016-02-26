@@ -41,6 +41,7 @@ CommonPSOut CustomPSNoFog(CommonVSOut pin)
 {
 	DoClip(pin);
 	float4 output = tex2D(customTexture, pin.textureCoordinate);
+	output = PSLighting(output, pin);
 	//if(glowEnabled) { output.rgb = output.rgb * .25f + glowColor * .75f; }
 	return PSReturn(output, pin);
 }

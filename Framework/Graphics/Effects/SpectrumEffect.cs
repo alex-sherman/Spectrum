@@ -10,9 +10,6 @@ namespace Spectrum.Framework.Graphics
 {
     public class SpectrumEffect : Effect
     {
-        /// <summary>
-        /// Gets or sets the world matrix.
-        /// </summary>
         public Matrix World
         {
             get { return Parameters["world"].GetValueMatrix(); }
@@ -22,11 +19,6 @@ namespace Spectrum.Framework.Graphics
                 Parameters["world"].SetValue(value);
             }
         }
-
-
-        /// <summary>
-        /// Gets or sets the view matrix.
-        /// </summary>
         public Matrix View
         {
             get { return Parameters["view"].GetValueMatrix(); }
@@ -36,11 +28,6 @@ namespace Spectrum.Framework.Graphics
                 Parameters["view"].SetValue(value);
             }
         }
-
-
-        /// <summary>
-        /// Gets or sets the projection matrix.
-        /// </summary>
         public Matrix Projection
         {
             get { return Parameters["proj"].GetValueMatrix(); }
@@ -50,6 +37,7 @@ namespace Spectrum.Framework.Graphics
                 Parameters["proj"].SetValue(value);
             }
         }
+
         public float MixLerp
         {
             set { Parameters["mixLerp"].SetValue(value); }
@@ -65,12 +53,13 @@ namespace Spectrum.Framework.Graphics
         }
         public static Vector3 LightPos;
 
-        public static Vector4 SpecularLightColor;
+        public static Vector3 SpecularLightColor;
         public static Vector3 CameraPos = new Vector3();
         public static bool Clip = false;
         public static bool AboveWater = true;
         public static Vector4 ClipPlane;
         public Texture2D Texture { set { Parameters["Texture"].SetValue(value); } }
+        public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); } }
         //TODO: Set values only when necessary
         protected override bool OnApply()
         {
@@ -87,11 +76,11 @@ namespace Spectrum.Framework.Graphics
             : base(effect)
         {
             Parameters["ambientLightColor"].SetValue(
-                Color.White.ToVector4() * .4f);
+                Color.White.ToVector3() * 0.6f);
             Parameters["diffuseLightColor"].SetValue(
-                Color.White.ToVector4());
+                Color.White.ToVector3());
             Parameters["specularLightColor"].SetValue(
-                Color.White.ToVector4() / 3);
+                Color.White.ToVector3() / 3);
             effect.Parameters["lightPosition"].SetValue(
                     new Vector3(10f, 10f, 0));
             Parameters["ClipPlane"].SetValue(new Vector4(0, 1, 0, -Water.waterHeight));

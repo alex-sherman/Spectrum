@@ -75,7 +75,7 @@ namespace Spectrum.Framework.Content
 
                 JArray jsonVertices = (JArray)mesh["vertices"];
                 List<SkinnedVertex> vertices = new List<SkinnedVertex>();
-                for (int i = 0; i < jsonVertices.Count; )
+                for (int i = 0; i < jsonVertices.Count;)
                 {
                     SkinnedVertex vertex = ParseVertex(attributes, jsonVertices, ref i);
                     vertices.Add(vertex);
@@ -113,6 +113,9 @@ namespace Spectrum.Framework.Content
                         break;
                     case "TEXCOORD":
                         vertex.TextureCoordinate = new Vector2((float)jsonVertices[i++], (float)jsonVertices[i++]);
+                        break;
+                    case "COLOR":
+                        i += 4;
                         break;
                     case "BLENDWEIGHT":
                         int index = (int)jsonVertices[i++];
@@ -178,10 +181,10 @@ namespace Spectrum.Framework.Content
 
         public SkinningData GetSkinningData(JObject jobj)
         {
+            JToken armature = ((JArray)jobj["nodes"]).FirstOrDefault(node => (string)node["id"] == "Armature");
+            if (armature == null) return null;
             Dictionary<string, Bone> bones = new Dictionary<string, Bone>();
-            if (((JArray)jobj["nodes"]).Count < 2)
-                return null;
-            Bone rootBone = JObjToBone(((JArray)jobj["nodes"])[1], bones);
+            Bone rootBone = JObjToBone(armature, bones);
 
             SkinningData output = new SkinningData(rootBone, bones);
 
@@ -189,7 +192,7 @@ namespace Spectrum.Framework.Content
             {
                 bone.inverseBindPose = Matrix.Invert(bone.withParentTransform);
             }
-            output.Root.defaultRotation = Matrix.CreateFromYawPitchRoll((float)Math.PI, -(float)Math.PI / 2, 0);
+            output.Root.defaultRotation = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             return output;
         }
 
@@ -224,14 +227,9 @@ namespace Spectrum.Framework.Content
             return rootBone;
         }
 
-        protected override SpecModel SafeCopy(ModelParserCache data)
+        private void parseNode(JToken node, ModelParserCache data, Dictionary<string, DrawablePart> parts)
         {
-            Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
-            foreach (KeyValuePair<string, MeshPartData> part in data.parts)
-            {
-                parts[part.Key] = new DrawablePart(part.Value.vbuffer, part.Value.ibuffer);
-            }
-            foreach (JToken nodePart in ((JArray)data.jobj["nodes"])[0]["parts"])
+            foreach (JToken nodePart in node["parts"])
             {
                 List<string> meshpartids = new List<string>();
                 meshpartids.Add((string)nodePart["meshpartid"]);
@@ -246,13 +244,39 @@ namespace Spectrum.Framework.Content
                     List<MaterialTexture> materialTextures = data.materials[(string)nodePart["materialid"]];
                     foreach (MaterialTexture texture in materialTextures)
                     {
-                        if (texture.Type == "NONE")
+                        if (texture.Type == "NONE" || texture.Type == "DIFFUSE")
                         {
                             part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false);
+                        }
+                        if (texture.Type == "NORMAL")
+                        {
+                            part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false);
                         }
                     }
                 }
             }
+            if (node["children"] != null)
+            {
+                foreach (var child in node["children"])
+                {
+                    parseNode(child, data, parts);
+                }
+            }
+        }
+
+        protected override SpecModel SafeCopy(ModelParserCache data)
+        {
+            Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
+            foreach (KeyValuePair<string, MeshPartData> part in data.parts)
+            {
+                parts[part.Key] = new DrawablePart(part.Value.vbuffer, part.Value.ibuffer);
+            }
+            foreach (var node in ((JArray)data.jobj["nodes"]).Where(node => node["parts"] != null))
+            {
+                parseNode(node, data, parts);
+            }
+
+
             return new SpecModel(parts, GetSkinningData(data.jobj));
         }
     }

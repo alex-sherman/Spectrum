@@ -10,9 +10,10 @@ float fogDistance = 6400;
 float fogWidth = 100;
 bool Clip = false;
 uniform extern texture Texture;
-float4 ambientLightColor = float4(0,0,0,1);
-float4 diffuseLightColor = float4(1,1,1,1);
-float4 specularLightColor = float4(1,1,1,1);
+uniform extern texture NormalMap;
+float3 ambientLightColor = float3(0.3,.3,.3);
+float3 diffuseLightColor = float3(1,1,1);
+float3 specularLightColor = float3(1,1,1);
 bool aboveWater = true;
 float4x4 lightViewProjectionMatrix;
 bool shadowMapEnabled = false;
@@ -22,6 +23,15 @@ bool lightingEnabled = true;
 sampler customTexture = sampler_state
 {
 	Texture = <Texture>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = mirror;
+	AddressV = mirror;
+};
+sampler normalMap = sampler_state
+{
+	Texture = <NormalMap>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
 	mipfilter = LINEAR;
@@ -60,6 +70,16 @@ struct CommonPSOut
 	float4 color : COLOR0;
 	float4 depth : COLOR1;
 };
+float4 PSLighting(float4 color, CommonVSOut vsout) {
+	float4 output = color;
+	if (lightingEnabled) {
+		output.rgb = (float3)0;
+		vsout.normal += tex2D(normalMap, vsout.textureCoordinate).rgb;
+		float3 light = clamp(ambientLightColor + clamp(dot(normalize(vsout.normal), normalize(lightPosition - vsout.worldPosition)),0,1), 0, 1);
+		output.rgb += color.rgb * light;
+	}
+	return output;
+}
 CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
 	CommonPSOut output = (CommonPSOut)0;
 	output.color = color;

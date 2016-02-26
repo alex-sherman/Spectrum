@@ -14,9 +14,7 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 	if(!aboveWater){
 		color.b+=.1f;
 	}
-	if (lightingEnabled) {
-		color.rgb *= clamp(dot(normalize(vsout.normal), normalize(lightPosition - vsout.worldPosition)), 0.2, 1);
-	}
+	color = PSLighting(color, vsout);
 	color.a *= 1-vsout.fog;
 	return PSReturn(color, vsout);
 }
