@@ -157,7 +157,6 @@
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
     <Compile Include="Framework\Graphics\Animation\Keyframe.cs" />
     <Compile Include="Framework\Graphics\Animation\SkinningData.cs" />
-    <Compile Include="Framework\Graphics\Effects\GrassEffect.cs" />
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\IDebug.cs" />
     <Compile Include="Framework\Graphics\Camera.cs" />
