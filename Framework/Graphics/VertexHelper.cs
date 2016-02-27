@@ -16,10 +16,40 @@ namespace Spectrum.Framework.Graphics
     }
     public class VertexHelper
     {
-        public static VertexBuffer MakeVertexBuffer<T>(List<T> vertices) where T : struct, IVertexType
+        public static void ComputeTangents<T>(List<T> vertices, List<uint> indices) where T : struct, ICommonTex
+        {
+            for (int i = 0; i < indices.Count; i += 3)
+            {
+                T v0 = vertices[(int)indices[i]];
+                T v1 = vertices[(int)indices[i + 1]];
+                T v2 = vertices[(int)indices[i + 2]];
+
+                // Edges of the triangle : postion delta
+                Vector3 deltaPos1 = v1.Position - v0.Position;
+                Vector3 deltaPos2 = v2.Position - v0.Position;
+
+                // UV delta
+                Vector2 deltaUV1 = v1.TextureCoordinate - v0.TextureCoordinate;
+                Vector2 deltaUV2 = v2.TextureCoordinate - v0.TextureCoordinate;
+                float r = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X);
+                Vector3 tangent = (deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r;
+                tangent.Normalize();
+                v0.Tangent = tangent;
+                v1.Tangent = tangent;
+                v2.Tangent = tangent;
+                vertices[(int)indices[i]] = v0;
+                vertices[(int)indices[i + 1]] = v1;
+                vertices[(int)indices[i + 2]] = v2;
+            }
+        }
+        public static VertexBuffer MakeVertexBuffer(VertexDeclaration decleration, int count)
         {
             if (SpectrumGame.Game.GraphicsDevice == null) { throw new NullReferenceException("Graphics device must have been initialized before this operation can be performed"); }
-            VertexBuffer vBuffer = new VertexBuffer(SpectrumGame.Game.GraphicsDevice, vertices[0].VertexDeclaration, vertices.Count, BufferUsage.WriteOnly);
+            return new VertexBuffer(SpectrumGame.Game.GraphicsDevice, decleration, count, BufferUsage.WriteOnly);
+        }
+        public static VertexBuffer MakeVertexBuffer<T>(List<T> vertices) where T : struct, IVertexType
+        {
+            VertexBuffer vBuffer = MakeVertexBuffer(vertices[0].VertexDeclaration, vertices.Count);
             vBuffer.SetData(vertices.ToArray());
             return vBuffer;
         }
@@ -46,7 +76,7 @@ namespace Spectrum.Framework.Graphics
         public static ushort[] getIndexList(int meshWidth, int meshHeight)
         {
             ushort[] toReturn = new ushort[(meshWidth - 1) * (meshHeight - 1) * 6];
-            for(int x = 0; x < meshWidth - 1; x++)
+            for (int x = 0; x < meshWidth - 1; x++)
             {
                 for (int y = 0; y < meshHeight - 1; y++)
                 {

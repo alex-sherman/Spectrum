@@ -59,7 +59,7 @@ namespace Spectrum.Framework.Graphics
         public static bool AboveWater = true;
         public static Vector4 ClipPlane;
         public Texture2D Texture { set { Parameters["Texture"].SetValue(value); } }
-        public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); } }
+        public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
         //TODO: Set values only when necessary
         protected override bool OnApply()
         {

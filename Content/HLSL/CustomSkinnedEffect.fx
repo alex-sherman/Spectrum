@@ -8,9 +8,7 @@ float4x3 Bones[SKINNED_EFFECT_MAX_BONES];
 
 struct VSInputNmTxWeights
 {
-	float4 Position : SV_Position;
-	float2 TexCoord : TEXCOORD0;
-	float3 Normal   : NORMAL;
+	CommonVSInput common;
 	float4 Indices  : BLENDINDICES0;
 	float4 Weights  : BLENDWEIGHT0;
 };
@@ -24,8 +22,9 @@ void Skin(inout VSInputNmTxWeights vin, uniform int boneCount)
 		skinning += Bones[vin.Indices[i]] * vin.Weights[i];
 	}
 
-	vin.Position.xyz = mul(vin.Position, skinning);
-	vin.Normal = mul(vin.Normal, (float3x3)skinning);
+	vin.common.Position.xyz = mul(vin.common.Position, skinning);
+	vin.common.normal = mul(vin.common.normal, (float3x3)skinning);
+	vin.common.tangent = mul(vin.common.tangent, (float3x3)skinning);
 }
 // Vertex shader: vertex lighting, four bones.
 CommonVSOut CustomVL4(VSInputNmTxWeights vin)

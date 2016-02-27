@@ -11,6 +11,7 @@ float fogWidth = 100;
 bool Clip = false;
 uniform extern texture Texture;
 uniform extern texture NormalMap;
+uniform bool UseNormalMap = false;
 float3 ambientLightColor = float3(0.3,.3,.3);
 float3 diffuseLightColor = float3(1,1,1);
 float3 specularLightColor = float3(1,1,1);
@@ -53,11 +54,14 @@ struct CommonVSInput
 	float4 Position  : SV_Position;
 	float2 TextureCoordinate : TEXCOORD0;
 	float3 normal : NORMAL;
+	float3 tangent : TANGENT;
 };
 struct CommonVSOut
 {
 	float4 position  : SV_Position;
 	float3 normal : NORMAL0;
+	float3 tangent : TANGENT0;
+	float3 binormal : TANGENT1;
 	float3 worldPosition : POSITION1;
 	float2 textureCoordinate : TEXCOORD0;
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
@@ -74,8 +78,17 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 	float4 output = color;
 	if (lightingEnabled) {
 		output.rgb = (float3)0;
-		vsout.normal += tex2D(normalMap, vsout.textureCoordinate).rgb;
-		float3 light = clamp(ambientLightColor + clamp(dot(normalize(vsout.normal), normalize(lightPosition - vsout.worldPosition)),0,1), 0, 1);
+		float3 normal;
+		if(UseNormalMap) {
+			float3 normalTex = 2 * tex2D(normalMap, vsout.textureCoordinate).rgb - 1;
+			normal = vsout.normal * normalTex.b;
+			normal += vsout.tangent * normalTex.r;
+			normal += vsout.binormal * normalTex.g;
+		}
+		else {
+			normal = vsout.normal;
+		}
+		float3 light = clamp(ambientLightColor + clamp(dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)),0,1), 0, 1);
 		output.rgb += color.rgb * light;
 	}
 	return output;
@@ -109,6 +122,8 @@ float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout){
 	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
 	vsout.Pos2DAsSeenByLight = VSCalcPos2DAsSeenByLight(HworldPosition);
 	vsout.textureCoordinate = vin.TextureCoordinate;
-	vsout.normal = mul(vin.normal, (float3x3)world);
+	vsout.normal = normalize(mul(vin.normal, (float3x3)world));
+	vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));
+	vsout.binormal = cross(vsout.tangent, vsout.normal);
 	return HworldPosition;
 }

@@ -262,7 +262,6 @@
     <Compile Include="Framework\Graphics\Water.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\HLSL\Grass.fx" />
     <Content Include="Dependencies\Steamworks\CSteamworks.dll">
       <Link>CSteamworks.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -329,11 +328,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\HLSL\Common.fxh" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Content\HLSL\Grass.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

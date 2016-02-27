@@ -80,14 +80,16 @@ namespace Spectrum.Framework.Content
                     SkinnedVertex vertex = ParseVertex(attributes, jsonVertices, ref i);
                     vertices.Add(vertex);
                 }
-                VertexBuffer vbuffer = VertexHelper.MakeVertexBuffer(vertices);
+                VertexBuffer vbuffer = VertexHelper.MakeVertexBuffer(SkinnedVertex.VertexDeclaration, vertices.Count);
 
                 foreach (JObject meshPart in mesh["parts"])
                 {
                     List<uint> indices = ((JArray)meshPart["indices"]).ToList().ConvertAll(x => (uint)x);
+                    VertexHelper.ComputeTangents(vertices, indices);
                     IndexBuffer ibuffer = VertexHelper.MakeIndexBuffer(indices);
                     modelData.parts[(string)meshPart["id"]] = new MeshPartData(vbuffer, ibuffer);
                 }
+                vbuffer.SetData(vertices.ToArray());
             }
 
             modelData.materials = ReadMaterials(modelData.jobj);

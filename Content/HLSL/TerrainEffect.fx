@@ -47,6 +47,8 @@ struct MultiTex_VS_OUT
 {
 	float4 position  : SV_Position;
 	float3 normal        : NORMAL0;
+	float3 tangent : TANGENT0;
+	float3 binormal : TANGENT1;
 	float3 worldPosition : POSITION1;
 	float2 textureCoordinate : TEXCOORD0;
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
@@ -62,6 +64,7 @@ struct MultiTex_VS_IN
 	float4 Position  : SV_Position;
 	float2 TextureCoordinate : TEXCOORD0;
 	float3 normal : NORMAL;
+	float3 tangent : TANGENT0;
 	float4 blend : TEXCOORD1;
     float4 Position2 : TEXCOORD2;
 	float4 blend2 : TEXCOORD3;
