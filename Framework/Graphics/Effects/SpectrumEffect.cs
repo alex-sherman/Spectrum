@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Content;
+using Spectrum.Framework.Graphics.Animation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -60,6 +61,9 @@ namespace Spectrum.Framework.Graphics
         public static Vector4 ClipPlane;
         public Texture2D Texture { set { Parameters["Texture"].SetValue(value); } }
         public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
+
+        private string[] BoneNames;
+        public Matrix[] BoneTransforms { get; protected set; }
         //TODO: Set values only when necessary
         protected override bool OnApply()
         {
@@ -69,6 +73,8 @@ namespace Spectrum.Framework.Graphics
             Parameters["ClipPlane"].SetValue(ClipPlane);
             Parameters["specularLightColor"].SetValue(SpecularLightColor);
             Parameters["lightPosition"].SetValue(LightPos);
+            if (BoneTransforms != null)
+                Parameters["Bones"].SetValue(BoneTransforms);
             return base.OnApply();
         }
         public SpectrumEffect() : this(ContentHelper.Load<Effect>("SpectrumEffect")) { }
@@ -85,6 +91,26 @@ namespace Spectrum.Framework.Graphics
                     new Vector3(10f, 10f, 0));
             Parameters["ClipPlane"].SetValue(new Vector4(0, 1, 0, -Water.waterHeight));
             Parameters["world"].SetValue(Matrix.Identity);
+        }
+        public void SetTechnique(string technique)
+        {
+            CurrentTechnique = Techniques[technique];
+        }
+        public void SetBoneNames(params string[] boneNames)
+        {
+            BoneTransforms = new Matrix[boneNames.Count()];
+            for (int i = 0; i < boneNames.Count(); i++)
+            {
+                BoneTransforms[i] = Matrix.Identity;
+            }
+            BoneNames = boneNames;
+        }
+        public void UpdateBoneTransforms(SkinningData SkinningData)
+        {
+            for (int i = 0; i < BoneTransforms.Count(); i++)
+            {
+                BoneTransforms[i] = SkinningData.Bones[BoneNames[i]].absoluteTransform;
+            }
         }
     }
 }

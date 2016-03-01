@@ -68,7 +68,7 @@ namespace Spectrum.Framework.Network
         private Steamworks.Callback<Steamworks.GameLobbyJoinRequested_t> lobbyJoinRequested;
         private void _lobbyJoinRequestedCallback(Steamworks.GameLobbyJoinRequested_t lobbyCreated)
         {
-            new Action<ulong>(_connectSteam).BeginInvoke(lobbyCreated.m_steamIDFriend.m_SteamID, null, this);
+            new Action<ulong, Action<bool>>(_connectSteam).BeginInvoke(lobbyCreated.m_steamIDFriend.m_SteamID, null, null, this);
         }
         private Steamworks.Callback<Steamworks.P2PSessionRequest_t> p2pSessionRequest;
         private void _p2pSessionRequestCallback(Steamworks.P2PSessionRequest_t sessionRequest)
@@ -215,31 +215,36 @@ namespace Spectrum.Framework.Network
             }
         }
 
-        public void Connect(string hostname, int port)
+        public void Connect(string hostname, int port, Action<bool> callback = null)
         {
             if (!Listening) { throw new Exception("Can't connect to anyone unless you're listening for connections"); }
-            new Action<string, int>(_connect).BeginInvoke(hostname, port, null, this);
+            new Action<string, int, Action<bool>>(_connect).BeginInvoke(hostname, port, callback, null, this);
         }
-        private void _connect(string hostname, int port)
+        public void Connect(ulong steamID, Action<bool> callback = null)
+        {
+            new Action<ulong, Action<bool>>(_connectSteam).BeginInvoke(steamID, callback, null, this);
+        }
+        private void _connect(string hostname, int port, Action<bool> callback)
         {
             try
             {
                 lock (allConnections)
-                    allConnections.Add(new Connection(this, new TcpClient(hostname, port), HandshakeStage.Begin));
+                    allConnections.Add(new Connection(this, new TcpClient(hostname, port), HandshakeStage.Begin, callback));
             }
             catch (SocketException e)
             {
                 DebugPrinter.print(e.Message);
+                callback(false);
                 return;
             }
             DebugPrinter.print("Connected to " + hostname + ":" + port);
         }
-        private void _connectSteam(ulong steamID)
+        private void _connectSteam(ulong steamID, Action<bool> callback)
         {
             try
             {
                 lock (allConnections)
-                    allConnections.Add(new Connection(this, steamID, HandshakeStage.Begin));
+                    allConnections.Add(new Connection(this, steamID, HandshakeStage.Begin, callback));
             }
             catch (SocketException e)
             {

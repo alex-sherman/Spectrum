@@ -19,23 +19,24 @@ namespace Spectrum.Framework.Entities
     public class Entity : IDisposable
     {
         #region Replication
-        private int StateReplicationMessage;
-        private int FunctionReplicationMessage;
-
-
-        private int messageTypeTracker = 0;
+        const int StateReplicationMessage = 0;
+        const int FunctionReplicationMessage = 1;
+        /// <summary>
+        /// The default replication period of entities in miliseconds
+        /// </summary>
+        public const int DefaultReplicationPeriod = 200;
 
         private Dictionary<string, MethodInfo> replicatedMethods = new Dictionary<string, MethodInfo>();
-        private List<PropertyInfo> replicatedProperties = new List<PropertyInfo>();
+        private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
+        private Dictionary<string, PropertyInfo> replicatedProperties = new Dictionary<string, PropertyInfo>();
 
-        //Replication period in ms
-        protected int minReplicationPeriod = 200;
+        protected int ReplicationPeriod = DefaultReplicationPeriod;
         private int replicateCounter = 0;
-        protected int _numReplicatedFunctions;
         #endregion
 
         public Guid ID;
-        public bool AllowReplicate { get; protected set; }
+        public bool AllowReplicate { get; set; }
+        public bool AutoReplicate { get; set; }
         public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
@@ -53,13 +54,11 @@ namespace Spectrum.Framework.Entities
             Enabled = true;
             DrawEnabled = true;
             AllowReplicate = true;
-            StateReplicationMessage = AllocateMessageType();
-            FunctionReplicationMessage = AllocateMessageType();
             foreach (PropertyInfo property in this.GetType().GetProperties())
             {
                 if (property.GetCustomAttributes(true).ToList().ConvertAll(x => x is ReplicateAttribute).Any(x => x))
                 {
-                    replicatedProperties.Add(property);
+                    replicatedProperties[property.Name] = property;
                 }
             }
             foreach (MethodInfo method in this.GetType().GetMethods())
@@ -81,23 +80,28 @@ namespace Spectrum.Framework.Entities
             Disposing = true;
         }
 
+        public void SetInterpolator(string attributeName, Func<float, object, object, object> interpolator)
+        {
+            interpolators[attributeName] = new Interpolator(interpolator);
+        }
+
         protected virtual void getData(NetMessage output)
         {
-            object[] fields = replicatedProperties.ConvertAll(x => x.GetValue(this, null)).ToArray();
+            object[] fields = replicatedProperties.Values.ToList().ConvertAll(x => x.GetValue(this, null)).ToArray();
             output.WritePrimitiveArray(fields);
         }
         protected virtual void setData(NetMessage input)
         {
             object[] fields = input.ReadPrimitiveArray();
+            var properties = replicatedProperties.ToList();
             for (int i = 0; i < fields.Count(); i++)
             {
-                replicatedProperties[i].SetValue(this, fields[i], null);
+                var replicate = properties[i];
+                if (interpolators.ContainsKey(replicate.Key))
+                    interpolators[replicate.Key].BeginInterpolate(ReplicationPeriod * 2, fields[i]);
+                else
+                    replicate.Value.SetValue(this, fields[i]);
             }
-        }
-
-        public int AllocateMessageType()
-        {
-            return messageTypeTracker++;
         }
 
         public void SendMessage(NetID peer, int type, NetMessage message)
@@ -138,9 +142,9 @@ namespace Spectrum.Framework.Entities
                 SendMessage(default(NetID), FunctionReplicationMessage, replicationMessage);
             }
         }
-        private void Replicate()
+        private void _replicate()
         {
-            replicateCounter = minReplicationPeriod;
+            replicateCounter = ReplicationPeriod;
             NetMessage replicationMessage = new NetMessage();
             getData(replicationMessage);
             SendMessage(default(NetID), StateReplicationMessage, replicationMessage);
@@ -156,12 +160,21 @@ namespace Spectrum.Framework.Entities
         public int UpdateOrder { get; protected set; }
         public virtual void Update(GameTime gameTime)
         {
-            if (replicateCounter > 0) { replicateCounter -= gameTime.ElapsedGameTime.Milliseconds; }
-
-            if (replicateNextUpdate && CanReplicate)
+            foreach (var interpolator in interpolators)
             {
-                Replicate();
-                replicateNextUpdate = false;
+                var property = replicatedProperties[interpolator.Key];
+                object value = interpolator.Value.Update(gameTime.ElapsedGameTime.Milliseconds, property.GetValue(this));
+                if (value != null)
+                    property.SetValue(this, value);
+            }
+            if (replicateCounter > 0)
+                replicateCounter -= gameTime.ElapsedGameTime.Milliseconds;
+
+            if (replicateCounter <= 0 && replicateNextUpdate)
+            {
+                replicateCounter = ReplicationPeriod;
+                replicateNextUpdate = AutoReplicate;
+                _replicate();
             }
         }
         public virtual void DisabledUpdate(GameTime time) { }

@@ -31,11 +31,6 @@ namespace Spectrum.Framework.Graphics
         {
             MeshParts = meshParts;
             this.AddRange(meshParts.Values);
-            foreach (DrawablePart part in this)
-            {
-                if (part.effect is CustomSkinnedEffect)
-                    ((CustomSkinnedEffect)part.effect).SkinningData = skinningData;
-            }
             SkinningData = skinningData;
         }
         public Texture2D Texture
@@ -56,8 +51,8 @@ namespace Spectrum.Framework.Graphics
             }
             foreach (var part in this)
             {
-                if (part.effect is CustomSkinnedEffect)
-                    ((CustomSkinnedEffect)part.effect).UpdateBoneTransforms();
+                if (SkinningData != null)
+                    part.effect.UpdateBoneTransforms(SkinningData);
             }
         }
     }

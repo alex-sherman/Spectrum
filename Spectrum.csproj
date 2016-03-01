@@ -152,6 +152,7 @@
     <Compile Include="Framework\Content\ScreenParser.cs" />
     <Compile Include="Framework\DebugPrinter.cs" />
     <Compile Include="Framework\Entities\EntityData.cs" />
+    <Compile Include="Framework\Entities\Interpolator.cs" />
     <Compile Include="Framework\Entities\ReplicateAttribute.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationClip.cs" />
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
@@ -228,7 +229,6 @@
     <Compile Include="Framework\Screens\ScreenManager.cs" />
     <Compile Include="Framework\Content\ContentHelper.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationPlayer.cs" />
-    <Compile Include="Framework\Graphics\Effects\CustomSkinnedEffect.cs" />
     <Compile Include="Framework\Graphics\SpecModel.cs" />
     <Compile Include="Framework\Graphics\Effects\SpectrumEffect.cs" />
     <Compile Include="Framework\Graphics\Effects\TerrainEffect.cs" />
@@ -274,10 +274,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\HLSL\build.py" />
-    <Content Include="Content\HLSL\CustomSkinnedEffect.fx" />
-    <Content Include="Content\HLSL\CustomSkinnedEffect.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Content Include="Content\HLSL\PostProcessEffect.fx" />
     <Content Include="Content\HLSL\SpectrumEffect.fx" />
     <Content Include="Content\HLSL\TerrainEffect.fx" />

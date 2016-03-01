@@ -236,10 +236,12 @@ namespace Spectrum.Framework.Content
                 List<string> meshpartids = new List<string>();
                 meshpartids.Add((string)nodePart["meshpartid"]);
                 DrawablePart part = parts[(string)nodePart["meshpartid"]];
+                part.effect = new SpectrumEffect();
                 if (nodePart["bones"] != null)
-                    part.effect = new CustomSkinnedEffect((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
-                else
-                    part.effect = new SpectrumEffect();
+                {
+                    part.effect.SetBoneNames((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
+                    part.effect.SetTechnique("Skinned");
+                }
 
                 if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
                 {

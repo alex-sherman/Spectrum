@@ -51,10 +51,12 @@ namespace Spectrum.Framework.Network
         public MultiplayerService MPService;
         private MultiplayerSender Sender;
         private MultiplayerReceiver Receiver;
+        private Action<bool> onConnectCallback = null;
         public HandshakeStage ConnectionStage { get; private set; }
 
-        private void Init(MultiplayerService mp, HandshakeStage stage)
+        private void Init(MultiplayerService mp, HandshakeStage stage, Action<bool> callback)
         {
+            onConnectCallback = callback;
             MPService = mp;
             lock (this)
             {
@@ -76,13 +78,13 @@ namespace Spectrum.Framework.Network
             }
         }
 
-        public Connection(MultiplayerService mp, ulong steamID, HandshakeStage stage)
+        public Connection(MultiplayerService mp, ulong steamID, HandshakeStage stage, Action<bool> callback = null)
         {
-            Init(mp, stage);
+            Init(mp, stage, callback);
             PeerID = new NetID(steamID);
         }
 
-        public Connection(MultiplayerService mp, TcpClient client, HandshakeStage stage)
+        public Connection(MultiplayerService mp, TcpClient client, HandshakeStage stage, Action<bool> callback = null)
         {
             if (client == null) { throw new ArgumentNullException(); }
             this.client = client;
@@ -90,7 +92,7 @@ namespace Spectrum.Framework.Network
             {
                 Receiver = new MultiplayerReceiver(this);
             }
-            Init(mp, stage);
+            Init(mp, stage, callback);
         }
 
         public void Update(GameTime time)
@@ -147,6 +149,11 @@ namespace Spectrum.Framework.Network
                     break;
                 case HandshakeStage.Completed:
                     MPService.AddClient(this);
+                    if (onConnectCallback != null)
+                    {
+                        onConnectCallback(true);
+                        onConnectCallback = null;
+                    }
                     break;
                 default:
                     break;
@@ -272,6 +279,11 @@ namespace Spectrum.Framework.Network
         {
             lock (this)
             {
+                if (onConnectCallback != null)
+                {
+                    onConnectCallback(false);
+                    onConnectCallback = null;
+                }
                 _running = false;
                 if (Sender != null)
                 {

@@ -51,6 +51,10 @@ namespace Spectrum.Framework.Entities
             get { return position; }
             set { position = value; }
         }
+        public object PositionInterpolator(float w, object value)
+        {
+            return null;
+        }
         [Replicate]
         public Vector3 Velocity
         {
@@ -171,6 +175,8 @@ namespace Spectrum.Framework.Entities
             inverseMass = 1.0f;
             material = new Material();
             Shape = new BoxShape(1, 1, 1);
+            SetInterpolator("Position", (w, current, target) => Vector3.Lerp((Vector3)current, (Vector3)target, w));
+            SetInterpolator("Orientation", (w, current, target) => Matrix.Lerp((Matrix)current, (Matrix)target, w));
         }
 
         #region Physics Functions
