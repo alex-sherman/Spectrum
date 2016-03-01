@@ -151,6 +151,7 @@ namespace Spectrum.Framework.Entities
         public Entity CreateEntityFromData(EntityData data)
         {
             Type t = TypeHelper.Types[data.type];
+            if(t == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", data.type)); }
             Entity e = Construct(t, data.args);
             e.ID = data.guid;
             e.OwnerGuid = data.owner;
@@ -172,7 +173,7 @@ namespace Spectrum.Framework.Entities
         }
         public Entity Construct(Type type, params object[] args)
         {
-            if (type == null || (!type.IsSubclassOf(typeof(Entity)))) { throw new ArgumentException("Type must be subclass of Entity", "type"); }
+            if (type == null || (!type.IsSubclassOf(typeof(Entity)))) { throw new ArgumentException("Type must be non-null and subclass of Entity", "type"); }
             Entity output = (Entity)TypeHelper.Instantiate(type, args);
             output.OwnerGuid = mpService.ID;
             output.ID = Guid.NewGuid();

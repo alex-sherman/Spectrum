@@ -97,6 +97,7 @@ namespace Spectrum.Framework.Network
         #region Events
         /// <summary>
         /// If no event handler is specified, all connections will be dropped!
+        /// This event handler should call Connection.Allow()
         /// </summary>
         public event Action<Connection, PeerEventArgs> OnPeerJoinRequested;
         public void PeerJoinRequested(Connection connection, PeerEventArgs args)
@@ -104,7 +105,10 @@ namespace Spectrum.Framework.Network
             if (OnPeerJoinRequested != null)
                 OnPeerJoinRequested(connection, args);
             else
+            {
+                DebugPrinter.print("Dropping client because no OnPeerJoinRequested has been specified");
                 connection.Terminate();
+            }
         }
         public event Action<PeerEventArgs> OnPeerJoined;
         public event Action<PeerEventArgs> OnPeerLeft;
