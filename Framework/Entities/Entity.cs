@@ -170,10 +170,9 @@ namespace Spectrum.Framework.Entities
             if (replicateCounter > 0)
                 replicateCounter -= gameTime.ElapsedGameTime.Milliseconds;
 
-            if (replicateCounter <= 0 && replicateNextUpdate)
+            if (replicateCounter <= 0 && (replicateNextUpdate || AutoReplicate))
             {
                 replicateCounter = ReplicationPeriod;
-                replicateNextUpdate = AutoReplicate;
                 _replicate();
             }
         }

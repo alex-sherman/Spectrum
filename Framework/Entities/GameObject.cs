@@ -176,7 +176,8 @@ namespace Spectrum.Framework.Entities
             material = new Material();
             Shape = new BoxShape(1, 1, 1);
             SetInterpolator("Position", (w, current, target) => Vector3.Lerp((Vector3)current, (Vector3)target, w));
-            SetInterpolator("Orientation", (w, current, target) => Matrix.Lerp((Matrix)current, (Matrix)target, w));
+            SetInterpolator("Orientation", (w, current, target) => Matrix.CreateFromQuaternion(Quaternion.Slerp(Quaternion.CreateFromRotationMatrix((Matrix)current),
+                Quaternion.CreateFromRotationMatrix((Matrix)target), w)));
         }
 
         #region Physics Functions
