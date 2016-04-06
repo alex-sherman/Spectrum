@@ -41,7 +41,7 @@ namespace Spectrum.Framework.Entities
                         message.Write(replicateable.Count());
                         foreach (Entity entity in replicateable)
                         {
-                            new EntityData(entity).WriteTo(message);
+                            message.Write(new EntityData(entity));
                         }
                     },
                     delegate(NetID peerGuid, NetMessage message)
@@ -67,13 +67,13 @@ namespace Spectrum.Framework.Entities
             if (!entity.AllowReplicate) { return; }
 
             NetMessage eData = new NetMessage();
-            new EntityData(entity).WriteTo(eData);
+            eData.Write(new EntityData(entity));
             mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
         }
         public void HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
-            EntityData entityData = new EntityData(message);
-            if (!ECollection.Contains(entityData.guid))
+            EntityData entityData = message.Read<EntityData>();
+            if (!ECollection.Contains((Guid)entityData.fields["guid"].Object))
                 CreateEntityFromData(entityData);
         }
 
@@ -85,7 +85,7 @@ namespace Spectrum.Framework.Entities
         }
         public void HandleShowCreate(NetID peerGuid, NetMessage message)
         {
-            Guid entityID = message.ReadGuid();
+            Guid entityID = message.Read<Guid>();
             if (!ECollection.Contains(entityID)) { return; }
             Entity entity = ECollection.Find(entityID);
             SendEntityCreation(entity, peerGuid);
@@ -101,11 +101,11 @@ namespace Spectrum.Framework.Entities
         }
         public void HandleEntityMessage(NetID peerGuid, NetMessage message)
         {
-            Guid entityID = message.ReadGuid();
-            message = message.ReadMessage();
+            Guid entityID = message.Read<Guid>();
+            message = message.Read<NetMessage>();
             if (ECollection.Contains(entityID))
             {
-                ECollection.Find(entityID).HandleMessage(peerGuid, message.ReadInt(), message.ReadMessage());
+                ECollection.Find(entityID).HandleMessage(peerGuid, message.ReadInt(), message.Read<NetMessage>());
             }
             else
             {
@@ -150,13 +150,14 @@ namespace Spectrum.Framework.Entities
         }
         public Entity CreateEntityFromData(EntityData data)
         {
-            Type t = TypeHelper.Types[data.type];
-            if(t == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", data.type)); }
-            Entity e = Construct(t, data.args);
-            e.ID = data.guid;
-            e.OwnerGuid = data.owner;
+            TypeData typeData = TypeHelper.Types.GetData(data.type);
+            if(typeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", data.type)); }
+            Entity e = Construct(typeData.Type, data.args.Select(prim => prim.Object).ToArray());
+            foreach (var field in data.fields)
+            {
+                typeData.Set(e, field.Key, field.Value.Object);
+            }
             AddEntity(e);
-            if (e is GameObject) { (e as GameObject).Position = data.position; }
             return e;
         }
         public Entity CreateEntityType(string typeName, params object[] args)

@@ -11,6 +11,7 @@ namespace Spectrum.Framework.Graphics
 {
     public class SpecModel : List<DrawablePart>
     {
+        public string Path { get; private set; }
         public AnimationPlayer AnimationPlayer { get; set; }
         public SkinningData SkinningData { get; protected set; }
         public Dictionary<string, DrawablePart> MeshParts { get; private set; }
@@ -27,8 +28,9 @@ namespace Spectrum.Framework.Graphics
                 if (AnimationPlayer != null && AnimationPlayer.AnimationNames.Contains(value)) { AnimationPlayer.StartClip(value); }
             }
         }
-        public SpecModel(Dictionary<string, DrawablePart> meshParts, SkinningData skinningData)
+        public SpecModel(string path, Dictionary<string, DrawablePart> meshParts, SkinningData skinningData)
         {
+            Path = path;
             MeshParts = meshParts;
             this.AddRange(meshParts.Values);
             SkinningData = skinningData;

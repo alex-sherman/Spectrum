@@ -32,8 +32,8 @@ namespace Spectrum.Framework.Network
                 {
                     NetMessage data = new NetMessage(client.Receive(ref endpoint));
                     byte comType = data.ReadByte();
-                    NetID peerGuid = data.ReadNetID();
-                    NetMessage userMessage = data.ReadMessage();
+                    NetID peerGuid = data.Read<NetID>();
+                    NetMessage userMessage = data.Read<NetMessage>();
                     switch (comType)
                     {
                         case FrameworkMessages.KeepAlive:

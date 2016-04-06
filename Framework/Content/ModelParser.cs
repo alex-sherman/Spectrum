@@ -25,6 +25,12 @@ namespace Spectrum.Framework.Content
         public Dictionary<string, MeshPartData> parts = new Dictionary<string, MeshPartData>();
         public Dictionary<string, List<MaterialTexture>> materials = new Dictionary<string, List<MaterialTexture>>();
         public string Directory;
+        public string path;
+
+        public ModelParserCache(string path)
+        {
+            this.path = path;
+        }
     }
     struct MeshPartData
     {
@@ -58,7 +64,7 @@ namespace Spectrum.Framework.Content
         protected override ModelParserCache LoadData(string path)
         {
 
-            ModelParserCache modelData = new ModelParserCache();
+            ModelParserCache modelData = new ModelParserCache(path);
             modelData.Directory = Path.GetDirectoryName(path);
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             modelData.jobj = JObject.Load(reader);
@@ -250,11 +256,11 @@ namespace Spectrum.Framework.Content
                     {
                         if (texture.Type == "NONE" || texture.Type == "DIFFUSE")
                         {
-                            part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false);
+                            part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
                         }
                         if (texture.Type == "NORMAL")
                         {
-                            part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false);
+                            part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
                         }
                     }
                 }
@@ -281,7 +287,7 @@ namespace Spectrum.Framework.Content
             }
 
 
-            return new SpecModel(parts, GetSkinningData(data.jobj));
+            return new SpecModel(data.path, parts, GetSkinningData(data.jobj));
         }
     }
 }

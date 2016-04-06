@@ -194,7 +194,9 @@ namespace Spectrum
             ScreenManager = new ScreenManager(this, ContentHelper.Single);
             Components.Add(ScreenManager);
             ScreenManager.Initialize();
+            Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
+
         }
 
         /// <summary>

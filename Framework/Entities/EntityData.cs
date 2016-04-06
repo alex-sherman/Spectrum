@@ -1,65 +1,46 @@
 ﻿using Microsoft.Xna.Framework;
+using ProtoBuf;
 using Spectrum.Framework.Network;
+using Spectrum.Framework.Network.Surrogates;
 using Spectrum.Framework.Physics;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace Spectrum.Framework.Entities
 {
-    public class EntityData : NetworkSerializable
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    public class EntityData
     {
         public string type;
-        public Guid guid;
-        public NetID owner;
-        public object[] args;
-        public Vector3 position;
+        public Primitive[] args;
+        public Dictionary<string, Primitive> fields;
         private EntityData() { }
-        public EntityData(NetMessage stream)
-        {
-            byte[] guidBuffer = new byte[16];
-            guid = stream.ReadGuid();
-            owner = stream.ReadNetID();
-            position = stream.ReadVector();
-            type = stream.ReadString();
-            args = stream.ReadPrimitiveArray();
-        }
-        public EntityData(string type, Guid guid, NetID owner, Vector3 position, object[] args)
+        public EntityData(string type, Primitive[] args = null, Dictionary<string, Primitive> fields = null)
         {
             this.type = type;
-            this.guid = guid;
-            this.owner = owner;
-            this.position = position;
-            this.args = args;
+            this.args = args ?? new Primitive[0];
+            this.fields = fields ?? new Dictionary<string, Primitive>();
         }
         public EntityData(Entity e)
         {
+            fields = new Dictionary<string, Primitive>();
             this.type = e.GetType().Name;
-            this.guid = e.ID;
-            this.owner = e.OwnerGuid;
+            this.fields["ID"] = new Primitive(e.ID);
+            this.fields["OwnerGuid"] = new Primitive(e.OwnerGuid);
             if (e is GameObject)
             {
-                this.position = (e as GameObject).Position;
+                this.fields["position"] = new Primitive((e as GameObject).Position);
             }
-            this.args = e.creationArgs;
+            this.args = e.creationArgs.Select(obj => new Primitive() { Object = obj }).ToArray();
         }
-        public void WriteTo(NetMessage output)
+        public EntityData Set(string name, object value)
         {
-            //Serializer.ConvertToStream(args).WriteTo(output);
-            output.Write(guid);
-            output.Write(owner);
-            output.Write(position);
-            output.Write(type);
-            output.WritePrimitiveArray(args);
-        }
-
-        public NetworkSerializable Copy()
-        {
-            NetMessage temp = new NetMessage();
-            this.WriteTo(temp);
-            return new EntityData(temp);
+            fields[name] = new Primitive(value);
+            return this;
         }
     }
 }

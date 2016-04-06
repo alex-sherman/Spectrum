@@ -16,24 +16,6 @@ namespace Spectrum.Framework
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
         private static Dictionary<string, Dictionary<string, double>> timings = new Dictionary<string, Dictionary<string, double>>();
-        //TODO: Randomly can't get a filename and throws exception causing a crash
-        public static void print(string msg)
-        {
-            StackFrame sf = new StackFrame(1, true);
-            lock (strings)
-            {
-                if (strings.Count > 20)
-                {
-                    strings.RemoveAt(0);
-                }
-                string[] msgStrings = msg.Split('\n');
-                for (int i = 0; i < msgStrings.Length; i++)
-                {
-                    string filename = sf.GetFileName();
-                    strings.Add(String.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last()));
-                }
-            }
-        }
         public static void display(IDebug o)
         {
             if (o != null)
@@ -51,7 +33,21 @@ namespace Spectrum.Framework
         }
         public static void print(string msg, params object[] args)
         {
-            print(String.Format(msg, args));
+            msg = String.Format(msg, args);
+            StackFrame sf = new StackFrame(1, true);
+            lock (strings)
+            {
+                if (strings.Count > 20)
+                {
+                    strings.RemoveAt(0);
+                }
+                string[] msgStrings = msg.Split('\n');
+                for (int i = 0; i < msgStrings.Length; i++)
+                {
+                    string filename = sf.GetFileName();
+                    strings.Add(String.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last()));
+                }
+            }
         }
         public static void time(string group, string name, double miliseconds)
         {

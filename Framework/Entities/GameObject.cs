@@ -16,6 +16,7 @@ using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Dynamics.Constraints;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Audio;
+using Spectrum.Framework.Content;
 
 namespace Spectrum.Framework.Entities
 {
@@ -161,6 +162,36 @@ namespace Spectrum.Framework.Entities
 
         public List<DrawablePart> Parts;
         public SpecModel Model { get { return Parts as SpecModel; } }
+        public string ModelName
+        {
+            get
+            {
+                if (Model == null) return null;
+                return Model.Path;
+            }
+            set
+            {
+                Parts = ContentHelper.Load<SpecModel>(value);
+            }
+        }
+        public Matrix ModelTransform
+        {
+            set
+            {
+                if (Model != null)
+                {
+                    if (Model.SkinningData != null)
+                        Model.SkinningData.Root.transform = value;
+                    else
+                    {
+                        foreach (var part in Parts)
+                        {
+                            part.transform = value;
+                        }
+                    }
+                }
+            }
+        }
 
         public GameObject()
             : base()

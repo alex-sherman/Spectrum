@@ -1,13 +1,17 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Spectrum.Framework.Network
 {
+    [ProtoContract]
     public struct NetID : IComparable
     {
+        [ProtoMember(1)]
         public ulong? SteamID;
+        [ProtoMember(2)]
         public Guid? Guid;
 
         public static bool operator >(NetID lhs, NetID rhs)

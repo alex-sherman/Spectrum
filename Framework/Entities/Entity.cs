@@ -8,7 +8,8 @@ using Microsoft.Xna.Framework;
 using Spectrum.Framework.Network;
 using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
-
+using Spectrum.Framework.Network.Surrogates;
+using ProtoBuf;
 
 namespace Spectrum.Framework.Entities
 {
@@ -16,6 +17,7 @@ namespace Spectrum.Framework.Entities
     /// Entities are just collections of components.
     /// They have more specific definitions as game objects which are specific sets of components.
     /// </summary>
+    [ProtoContract(AsReferenceDefault = true)]
     public class Entity : IDisposable
     {
         #region Replication
@@ -87,20 +89,20 @@ namespace Spectrum.Framework.Entities
 
         protected virtual void getData(NetMessage output)
         {
-            object[] fields = replicatedProperties.Values.ToList().ConvertAll(x => x.GetValue(this, null)).ToArray();
-            output.WritePrimitiveArray(fields);
+            Primitive[] fields = replicatedProperties.Values.ToList().ConvertAll(x => new Primitive(x.GetValue(this, null))).ToArray();
+            output.Write(fields);
         }
         protected virtual void setData(NetMessage input)
         {
-            object[] fields = input.ReadPrimitiveArray();
+            Primitive[] fields = input.Read<Primitive[]>();
             var properties = replicatedProperties.ToList();
             for (int i = 0; i < fields.Count(); i++)
             {
                 var replicate = properties[i];
                 if (interpolators.ContainsKey(replicate.Key))
-                    interpolators[replicate.Key].BeginInterpolate(ReplicationPeriod * 2, fields[i]);
+                    interpolators[replicate.Key].BeginInterpolate(ReplicationPeriod * 2, fields[i].Object);
                 else
-                    replicate.Value.SetValue(this, fields[i]);
+                    replicate.Value.SetValue(this, fields[i].Object);
             }
         }
 
@@ -123,8 +125,8 @@ namespace Spectrum.Framework.Entities
             else if (type == FunctionReplicationMessage)
             {
                 string method = message.ReadString();
-                object[] args = message.ReadPrimitiveArray();
-                replicatedMethods[method].Invoke(this, args);
+                Primitive[] args = message.Read<Primitive[]>();
+                replicatedMethods[method].Invoke(this, args.Select(prim => prim.Object).ToArray());
             }
             else
             {
@@ -138,7 +140,7 @@ namespace Spectrum.Framework.Entities
             {
                 NetMessage replicationMessage = new NetMessage();
                 replicationMessage.Write(method);
-                replicationMessage.WritePrimitiveArray(args);
+                replicationMessage.Write(args.Select(obj => new Primitive(obj)).ToArray());
                 SendMessage(default(NetID), FunctionReplicationMessage, replicationMessage);
             }
         }

@@ -40,7 +40,7 @@ namespace Spectrum.Framework.Network
 
                         byte comType = (byte)data.ReadByte();
                         NetMessage header = new NetMessage(data);
-                        header.ReadNetID();
+                        header.Read<NetID>();
 
                         NetMessage messageOut = new NetMessage(data);
                         byte testBytes = (byte)data.ReadByte();

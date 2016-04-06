@@ -100,6 +100,9 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>Dependencies\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>Dependencies\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX">
       <HintPath>Dependencies\SharpDX.dll</HintPath>
     </Reference>
@@ -176,7 +179,11 @@
     <Compile Include="Framework\Network\ISerializable.cs" />
     <Compile Include="Framework\Network\NetID.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />
+    <Compile Include="Framework\Network\Serialization.cs" />
     <Compile Include="Framework\Network\SteamP2PReceiver.cs" />
+    <Compile Include="Framework\Network\Surrogates\FloatArraySurrogate.cs" />
+    <Compile Include="Framework\Network\Surrogates\PrimitiveSurrogate.cs" />
+    <Compile Include="Framework\Network\Surrogates\StreamSurrogate.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionIsland.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystem.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionSystemPersistentSAP.cs" />
@@ -245,6 +252,7 @@
     <Compile Include="Framework\LoadHelper.cs" />
     <Compile Include="Framework\JConvert.cs" />
     <Compile Include="Framework\Screens\ElementSize.cs" />
+    <Compile Include="Framework\TypeData.cs" />
     <Compile Include="Framework\TypeHelper.cs" />
     <Compile Include="Framework\Graphics\DrawablePart.cs" />
     <Compile Include="Framework\Graphics\Effects\PostProcessEffect.cs" />

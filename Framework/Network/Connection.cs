@@ -166,12 +166,12 @@ namespace Spectrum.Framework.Network
         {
             HandshakeStage ReceivedStage = (HandshakeStage)message.ReadInt();
             ConnectionStage = ReceivedStage;
-            PeerID = message.ReadNetID();
+            PeerID = message.Read<NetID>();
             PeerNick = message.ReadString();
             RemoteDataPort = message.ReadInt();
             if (client != null)
                 RemoteIP = (client.Client.RemoteEndPoint as IPEndPoint).Address;
-            NetMessage ipMessage = message.ReadMessage();
+            NetMessage ipMessage = message.Read<NetMessage>();
             if (ipMessage != null)
             {
                 ///TODO: Maybe notify the client of your perception of their address
@@ -209,7 +209,7 @@ namespace Spectrum.Framework.Network
                     foreach (NetMessage peerMessage in peerMessages)
                     {
                         ConnectionInformation pi = new ConnectionInformation();
-                        pi.id = peerMessage.ReadNetID();
+                        pi.id = peerMessage.Read<NetID>();
                         waitOn.Add(pi.id);
                         if (pi.id.Guid != null)
                         {

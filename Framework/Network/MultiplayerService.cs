@@ -302,7 +302,7 @@ namespace Spectrum.Framework.Network
             int count = message.ReadInt();
             for (int i = 0; i < count; i++)
             {
-                peerGuids.Add(message.ReadNetID());
+                peerGuids.Add(message.Read<NetID>());
             }
             List<NetID> missingPeers = peerGuids.ToList();
             missingPeers.Remove(ID);

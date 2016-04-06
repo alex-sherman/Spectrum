@@ -38,7 +38,7 @@ namespace Spectrum.Framework.Network
                 {
                     byte comType = (byte)netStream.ReadByte();
                     NetMessage header = new NetMessage(netStream);
-                    conn.PeerID = header.ReadNetID();
+                    conn.PeerID = header.Read<NetID>();
                     NetMessage message = ReadFromControlStream(netStream);
                     switch (comType)
                     {

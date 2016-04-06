@@ -13,36 +13,40 @@ namespace Spectrum.Framework
     public class TypeHelper
     {
         public static TypeHelper Types = new TypeHelper();
-        private static RealDict<string, Type> types = new RealDict<string, Type>();
+        private static RealDict<string, TypeData> types = new RealDict<string, TypeData>();
         private static RealDict<Type, Plugin> plugins = new RealDict<Type, Plugin>();
         public List<String> GetTypes() { return types.Keys.ToList(); }
 
         public static void RegisterType(Type type, Plugin plugin)
         {
-            types[type.Name] = type;
+            types[type.Name] = new TypeData(type);
             plugins[type] = plugin;
         }
         public static T Instantiate<T>(string type, params object[] args) where T : class
         {
-            return Instantiate(types[type], args) as T;
+            return Instantiate(types[type].Type, args) as T;
         }
         public List<string> GetNames(Type t)
         {
             List<string> output = new List<string>();
             foreach (string type in types.Keys)
             {
-                if (types[type].IsSubclassOf(t))
+                if (types[type].Type.IsSubclassOf(t))
                 {
                     output.Add(type);
                 }
             }
             return output;
         }
+        public TypeData GetData(string name)
+        {
+            return types[name];
+        }
         public Type this[string name]
         {
             get
             {
-                return types[name];
+                return types[name].Type;
             }
         }
         public static object Instantiate(Type t, params object[] args)
