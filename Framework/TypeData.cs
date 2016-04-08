@@ -12,7 +12,7 @@ namespace Spectrum.Framework
     {
         private Dictionary<string, FieldInfo> fields = new Dictionary<string, FieldInfo>();
         private Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
-        private List<string> replicated = new List<string>();
+        public List<string> ReplicatedMemebers = new List<string>();
         public Type Type { get; private set; }
         public TypeData(Type type)
         {
@@ -21,13 +21,13 @@ namespace Spectrum.Framework
             {
                 fields[field.Name] = field;
                 if (field.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
-                    replicated.Add(field.Name);
+                    ReplicatedMemebers.Add(field.Name);
             }
             foreach (var property in type.GetProperties())
             {
                 properties[property.Name] = property;
                 if(property.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
-                    replicated.Add(property.Name);
+                    ReplicatedMemebers.Add(property.Name);
             }
         }
         public void Set(object obj, string name, object value)

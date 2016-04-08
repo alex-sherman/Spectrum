@@ -29,13 +29,13 @@ namespace Spectrum.Framework.Entities
 
         private Dictionary<string, MethodInfo> replicatedMethods = new Dictionary<string, MethodInfo>();
         private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
-        private Dictionary<string, PropertyInfo> replicatedProperties = new Dictionary<string, PropertyInfo>();
 
         protected int ReplicationPeriod = DefaultReplicationPeriod;
         private int replicateCounter = 0;
         #endregion
 
         public Guid ID;
+        public TypeData TypeData { get; private set; }
         public bool AllowReplicate { get; set; }
         public bool AutoReplicate { get; set; }
         public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }
@@ -55,16 +55,10 @@ namespace Spectrum.Framework.Entities
             Enabled = true;
             DrawEnabled = true;
             AllowReplicate = true;
-            foreach (PropertyInfo property in this.GetType().GetProperties())
-            {
-                if (property.GetCustomAttributes(true).ToList().ConvertAll(x => x is ReplicateAttribute).Any(x => x))
-                {
-                    replicatedProperties[property.Name] = property;
-                }
-            }
+            TypeData = TypeHelper.Types.GetData(this.GetType().Name);
             foreach (MethodInfo method in this.GetType().GetMethods())
             {
-                if (method.GetCustomAttributes(true).ToList().ConvertAll(x => x is ReplicateAttribute).Any(x => x))
+                if (method.GetCustomAttributes(true).ToList().Any(x => x is ReplicateAttribute))
                 {
                     replicatedMethods[method.Name] = method;
                 }
@@ -88,20 +82,20 @@ namespace Spectrum.Framework.Entities
 
         protected virtual void getData(NetMessage output)
         {
-            Primitive[] fields = replicatedProperties.Values.ToList().ConvertAll(x => new Primitive(x.GetValue(this, null))).ToArray();
+            Primitive[] fields = TypeData.ReplicatedMemebers.ToList().ConvertAll(x => new Primitive(TypeData.Get(this, x))).ToArray();
             output.Write(fields);
         }
         protected virtual void setData(NetMessage input)
         {
             Primitive[] fields = input.Read<Primitive[]>();
-            var properties = replicatedProperties.ToList();
+            var properties = TypeData.ReplicatedMemebers.ToList();
             for (int i = 0; i < fields.Count(); i++)
             {
                 var replicate = properties[i];
-                if (interpolators.ContainsKey(replicate.Key))
-                    interpolators[replicate.Key].BeginInterpolate(ReplicationPeriod * 2, fields[i].Object);
+                if (interpolators.ContainsKey(replicate))
+                    interpolators[replicate].BeginInterpolate(ReplicationPeriod * 2, fields[i].Object);
                 else
-                    replicate.Value.SetValue(this, fields[i].Object);
+                    TypeData.Set(this, replicate, fields[i].Object);
             }
         }
 
@@ -163,10 +157,9 @@ namespace Spectrum.Framework.Entities
         {
             foreach (var interpolator in interpolators)
             {
-                var property = replicatedProperties[interpolator.Key];
-                object value = interpolator.Value.Update(gameTime.ElapsedGameTime.Milliseconds, property.GetValue(this));
+                object value = interpolator.Value.Update(gameTime.ElapsedGameTime.Milliseconds, TypeData.Get(this, interpolator.Key));
                 if (value != null)
-                    property.SetValue(this, value);
+                    TypeData.Set(this, interpolator.Key, value);
             }
             if (replicateCounter > 0)
                 replicateCounter -= gameTime.ElapsedGameTime.Milliseconds;

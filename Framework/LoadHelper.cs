@@ -17,7 +17,7 @@ namespace Spectrum.Framework
 
     public class LoadHelper
     {
-        public static void LoadTypes(Plugin plugin)
+        public static void LoadPlugin(Plugin plugin)
         {
             foreach (Type type in plugin.GetLoadableTypes())
             {
@@ -57,7 +57,7 @@ namespace Spectrum.Framework
             //Load all types before calling OnLoad
             foreach (var plugin in SpectrumGame.Game.Plugins.Values)
             {
-                LoadHelper.LoadTypes(plugin);
+                LoadPlugin(plugin);
             }
 
             foreach (var plugin in SpectrumGame.Game.Plugins.Values)

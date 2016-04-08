@@ -8,6 +8,6 @@ using System.Text;
 
 namespace Spectrum.Framework.Entities
 {
-    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method)]
     public class ReplicateAttribute : System.Attribute { }
 }

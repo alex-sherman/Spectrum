@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Content;
+using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -70,7 +71,7 @@ namespace Spectrum.Framework.Content
             string[] dlls = Directory.GetFiles(pluginPath, plugin + ".dll", SearchOption.TopDirectoryOnly);
             if (dlls.Length < 1)
                 throw new FileNotFoundException("Invalid plugin, does not contain a DLL of the same name as the plugin directory");
-            Assembly assembly = Assembly.LoadFile(System.IO.Path.GetFullPath(dlls[0]));
+            Assembly assembly = Assembly.LoadFile(Path.GetFullPath(dlls[0]));
 
             ContentHelper content = new ContentHelper(new ContentManager(SpectrumGame.Game.Services, Path.Combine(pluginPath, "Content")));
 
@@ -96,7 +97,7 @@ namespace Spectrum.Framework.Content
 
         public List<Type> GetLoadableTypes()
         {
-            return assembly.GetTypes().Where(type => type.GetCustomAttributes(false).Any(attr => attr is LoadableType)).ToList();
+            return assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Entity)) || type.GetCustomAttributes(false).Any(attr => attr is LoadableType)).ToList();
         }
     }
 }
