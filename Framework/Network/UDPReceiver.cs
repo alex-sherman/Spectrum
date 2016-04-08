@@ -31,7 +31,7 @@ namespace Spectrum.Framework.Network
                 try
                 {
                     NetMessage data = new NetMessage(client.Receive(ref endpoint));
-                    byte comType = data.ReadByte();
+                    byte comType = data.Read<byte>();
                     NetID peerGuid = data.Read<NetID>();
                     NetMessage userMessage = data.Read<NetMessage>();
                     switch (comType)

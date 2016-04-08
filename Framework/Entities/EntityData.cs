@@ -16,8 +16,8 @@ namespace Spectrum.Framework.Entities
     public class EntityData
     {
         public string type;
-        public Primitive[] args;
-        public Dictionary<string, Primitive> fields;
+        public Primitive[] args = new Primitive[0];
+        public Dictionary<string, Primitive> fields = new Dictionary<string, Primitive>();
         private EntityData() { }
         public EntityData(string type, Primitive[] args = null, Dictionary<string, Primitive> fields = null)
         {

@@ -118,7 +118,8 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 s1, s2;
             while (true)
             {
-                if (faces.Any(face => face.Degenerate))
+                //TODO: The 0 faces case should be looked at, probably I shouldn't return false
+                if (faces.Count == 0 || faces.Any(face => face.Degenerate))
                     return false;
                 faces.Sort((f1, f2) => f1.Distance.CompareTo(f2.Distance));
                 EPAFace closestFace = faces[0];

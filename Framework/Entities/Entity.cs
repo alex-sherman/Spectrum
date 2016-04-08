@@ -17,7 +17,6 @@ namespace Spectrum.Framework.Entities
     /// Entities are just collections of components.
     /// They have more specific definitions as game objects which are specific sets of components.
     /// </summary>
-    [ProtoContract(AsReferenceDefault = true)]
     public class Entity : IDisposable
     {
         #region Replication
@@ -124,7 +123,7 @@ namespace Spectrum.Framework.Entities
             }
             else if (type == FunctionReplicationMessage)
             {
-                string method = message.ReadString();
+                string method = message.Read<string>();
                 Primitive[] args = message.Read<Primitive[]>();
                 replicatedMethods[method].Invoke(this, args.Select(prim => prim.Object).ToArray());
             }

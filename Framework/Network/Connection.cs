@@ -164,11 +164,11 @@ namespace Spectrum.Framework.Network
 
         public void HandleHandshake(NetMessage message)
         {
-            HandshakeStage ReceivedStage = (HandshakeStage)message.ReadInt();
+            HandshakeStage ReceivedStage = (HandshakeStage)message.Read<int>();
             ConnectionStage = ReceivedStage;
             PeerID = message.Read<NetID>();
-            PeerNick = message.ReadString();
-            RemoteDataPort = message.ReadInt();
+            PeerNick = message.Read<string>();
+            RemoteDataPort = message.Read<int>();
             if (client != null)
                 RemoteIP = (client.Client.RemoteEndPoint as IPEndPoint).Address;
             NetMessage ipMessage = message.Read<NetMessage>();
@@ -180,10 +180,10 @@ namespace Spectrum.Framework.Network
             {
                 case HandshakeStage.Begin:
                     List<string> types = TypeHelper.Types.GetTypes();
-                    List<NetMessage> hashMessages = message.ReadList<NetMessage>().ToList();
+                    List<NetMessage> hashMessages = message.Read<List<NetMessage>>().ToList();
                     foreach (NetMessage hashMessage in hashMessages)
                     {
-                        string name = hashMessage.ReadString();
+                        string name = hashMessage.Read<string>();
                         if (types.Contains(name))
                         {
                             types.Remove(name);
@@ -205,7 +205,7 @@ namespace Spectrum.Framework.Network
                     List<ConnectionInformation> peerInfo = new List<ConnectionInformation>();
                     List<NetID> waitOn = new List<NetID>();
                     waitOn.Add(PeerID);
-                    List<NetMessage> peerMessages = message.ReadList<NetMessage>().ToList();
+                    List<NetMessage> peerMessages = message.Read<List<NetMessage>>().ToList();
                     foreach (NetMessage peerMessage in peerMessages)
                     {
                         ConnectionInformation pi = new ConnectionInformation();
@@ -213,7 +213,7 @@ namespace Spectrum.Framework.Network
                         waitOn.Add(pi.id);
                         if (pi.id.Guid != null)
                         {
-                            pi.port = peerMessage.ReadInt();
+                            pi.port = peerMessage.Read<int>();
                             pi.ip = new IPAddress(peerMessage.ReadBytes(4));
                         }
                         peerInfo.Add(pi);

@@ -53,6 +53,7 @@ namespace Spectrum.Framework.Network
             }
             catch (InvalidDataException) { }
             catch (System.IO.IOException) { }
+            catch (NullReferenceException) { }
             finally
             {
                 Running = false;

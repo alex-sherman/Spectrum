@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics;
+using Spectrum.Framework.Network;
 
 namespace Spectrum.Framework
 {
@@ -20,6 +21,7 @@ namespace Spectrum.Framework
         {
             foreach (Type type in plugin.GetLoadableTypes())
             {
+                Serialization.RegisterType(type);
                 TypeHelper.RegisterType(type, plugin);
 
                 foreach (object attribute in type.GetCustomAttributes(true).ToList())

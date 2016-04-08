@@ -299,7 +299,7 @@ namespace Spectrum.Framework.Network
             //TODO: Handle the case where one peer drops a connection to a single other peer
             //Everyone should probably just panic and drop all connections
             List<NetID> peerGuids = new List<NetID>();
-            int count = message.ReadInt();
+            int count = message.Read<int>();
             for (int i = 0; i < count; i++)
             {
                 peerGuids.Add(message.Read<NetID>());
@@ -400,7 +400,7 @@ namespace Spectrum.Framework.Network
                         {
                             try
                             {
-                                handler(received.PeerID, (NetMessage)received.Message.Copy());
+                                handler(received.PeerID, Serialization.Copy(received.Message));
                             }
                             catch (Exception e)
                             {

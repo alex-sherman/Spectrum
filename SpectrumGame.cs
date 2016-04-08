@@ -196,7 +196,7 @@ namespace Spectrum
             ScreenManager.Initialize();
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
-
+            Serialization.Model.CompileInPlace();
         }
 
         /// <summary>

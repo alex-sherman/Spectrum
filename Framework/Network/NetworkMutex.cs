@@ -97,8 +97,8 @@ namespace Spectrum.Framework.Network
         public static void ReceiveRequest(NetID peerGuid, NetMessage message)
         {
             NetID id = peerGuid;
-            string name = message.ReadString();
-            int time = message.ReadInt();
+            string name = message.Read<string>();
+            int time = message.Read<int>();
             NetworkMutex mut;
             lock (Mutexes)
             {
@@ -132,8 +132,8 @@ namespace Spectrum.Framework.Network
         public static void ReceiveReply(NetID peerGuid, NetMessage message)
         {
             NetID id = peerGuid;
-            string name = message.ReadString();
-            int time = message.ReadInt();
+            string name = message.Read<string>();
+            int time = message.Read<int>();
             QEntry reply = new QEntry(time, id, MPService.connectedPeers.Keys.ToArray());
             NetworkMutex mut;
             lock (Mutexes)

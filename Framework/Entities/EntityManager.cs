@@ -46,7 +46,7 @@ namespace Spectrum.Framework.Entities
                     },
                     delegate(NetID peerGuid, NetMessage message)
                     {
-                        int count = message.ReadInt();
+                        int count = message.Read<int>();
                         for (int i = 0; i < count; i++)
                         {
                             HandleEntityCreation(peerGuid, message);
@@ -73,7 +73,7 @@ namespace Spectrum.Framework.Entities
         public void HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
             EntityData entityData = message.Read<EntityData>();
-            if (!ECollection.Contains((Guid)entityData.fields["guid"].Object))
+            if (!ECollection.Contains((Guid)entityData.fields["ID"].Object))
                 CreateEntityFromData(entityData);
         }
 
@@ -105,7 +105,7 @@ namespace Spectrum.Framework.Entities
             message = message.Read<NetMessage>();
             if (ECollection.Contains(entityID))
             {
-                ECollection.Find(entityID).HandleMessage(peerGuid, message.ReadInt(), message.Read<NetMessage>());
+                ECollection.Find(entityID).HandleMessage(peerGuid, message.Read<int>(), message.Read<NetMessage>());
             }
             else
             {
