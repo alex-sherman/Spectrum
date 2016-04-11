@@ -108,7 +108,7 @@ namespace Spectrum.Framework.Screens
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             Root.PositionUpdate();
-            Root.DrawWithChildren(gameTime, 1.0f);
+            Root.DrawWithChildren(gameTime, SpriteBatch, 1.0f);
             SpriteBatch.End();
         }
 
@@ -220,26 +220,6 @@ namespace Spectrum.Framework.Screens
             if (key == Keys.OemQuestion) return '/';
             return (char)0;
         }
-
-        public void DrawString(SpriteFont font, string text, Rectangle rect, Color textColor, float layer)
-        {
-            while (font.MeasureString(text).X > rect.Width)
-                text = text.Substring(0, text.Length - 1);
-            DrawString(font, text, new Vector2(rect.X, rect.Y), textColor, 0, Vector2.Zero, 1, SpriteEffects.None, layer);
-        }
-        public void DrawString(SpriteFont font, string text, Vector2 pos, Color textColor, float layer)
-        {
-            DrawString(font, text, pos, textColor, 0, Vector2.Zero, 1, SpriteEffects.None, layer);
-        }
-        public void DrawString(SpriteFont font, string text, Vector2 pos, Color textColor, float rotation, Vector2 origin, float scale, SpriteEffects effect, float layer)
-        {
-            SpriteBatch.DrawString(font, text, pos, textColor, rotation, origin, scale, effect, layer);
-        }
-        public void Draw(Texture2D tex, Rectangle rect, Color c, float layer)
-        {
-            SpriteBatch.Draw(tex, rect, null, c, 0, Vector2.Zero, SpriteEffects.None, layer);
-        }
-
         #endregion
     }
 }

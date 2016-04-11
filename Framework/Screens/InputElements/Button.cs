@@ -33,13 +33,13 @@ namespace Spectrum.Framework.Screens.InputElements
             }
         }
 
-        public override void Draw(GameTime time)
+        public override void Draw(GameTime time, SpriteBatch spritebatch)
         {
-            base.Draw(time);
+            base.Draw(time, spritebatch);
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;
-                ScreenManager.CurrentManager.DrawString(Font, Text, pos, FontColor, Layer(2));
+                spritebatch.DrawString(Font, Text, pos, FontColor, Layer(2));
             }
         }
     }

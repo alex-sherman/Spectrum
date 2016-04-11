@@ -20,7 +20,14 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 {
 	if(Clip) { clip(vsout.clipDistance); }
 	if(vsout.fog >=.99f){ clip(-1); }
-	float4 color = tex2D(customTexture, vsout.textureCoordinate).rgba;
+	float4 color;
+	if (UseTransparency) {
+		color.rgb = tex2D(customTexture, vsout.textureCoordinate).rgb;
+		color.a = 1 - tex2D(transparencySampler, vsout.textureCoordinate).r;
+		color.rgb *= color.a;
+	}
+	else
+		color = tex2D(customTexture, vsout.textureCoordinate);
 	clip(color.a <= 0 ? -1:1);
 	if(!aboveWater){
 		color.b+=.1f;

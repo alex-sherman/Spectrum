@@ -34,6 +34,7 @@ namespace Spectrum
 
         public bool Debug = false;
         public bool DebugDraw = false;
+        public bool DebugDrawAll = false;
 
         #region Window Properties
         public event EventHandler OnScreenResize;
@@ -72,6 +73,7 @@ namespace Spectrum
 
         public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
         GraphicsDeviceManager graphics;
+        public EntityCollection EntityCollection { get; set; }
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }
         public ScreenManager ScreenManager { get; private set; }
@@ -95,10 +97,10 @@ namespace Spectrum
             }
             Game = this;
             InputLayout.Init();
-            EntityCollection ECollection = new EntityCollection();
-            PhysicsEngine.Init(ECollection);
+            EntityCollection = new EntityCollection();
+            PhysicsEngine.Init(EntityCollection);
             MP = new MultiplayerService(ID, nick);
-            EntityManager = new EntityManager(ECollection, MP);
+            EntityManager = new EntityManager(EntityCollection, MP);
             graphics = new GraphicsDeviceManager(this);
             AudioManager.Init();
             this.Window.AllowUserResizing = true;

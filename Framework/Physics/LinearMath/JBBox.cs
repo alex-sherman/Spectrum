@@ -25,6 +25,7 @@ using Spectrum.Framework.Physics.Dynamics;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Collision.Shapes;
 using Microsoft.Xna.Framework;
+using ProtoBuf;
 #endregion
 
 namespace Spectrum.Framework.Physics.LinearMath
@@ -34,6 +35,7 @@ namespace Spectrum.Framework.Physics.LinearMath
     /// of the math namespace, so every method has it's 'by reference'
     /// equivalent to speed up time critical math operations.
     /// </summary>
+    [ProtoContract]
     public struct JBBox
     {
         /// <summary>
@@ -58,11 +60,13 @@ namespace Spectrum.Framework.Physics.LinearMath
         /// <summary>
         /// The maximum point of the box.
         /// </summary>
+        [ProtoMember(1)]
         public Vector3 Min;
 
         /// <summary>
         /// The minimum point of the box.
         /// </summary>
+        [ProtoMember(2)]
         public Vector3 Max;
 
         /// <summary>
@@ -82,7 +86,7 @@ namespace Spectrum.Framework.Physics.LinearMath
             SmallBox.Min = new Vector3(float.MaxValue);
             SmallBox.Max = new Vector3(float.MinValue);
         }
-
+        
         /// <summary>
         /// Constructor
         /// </summary>

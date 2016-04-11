@@ -75,14 +75,14 @@ namespace Spectrum.Framework.Screens.InputElements
             }
             return base.HandleInput(otherTookInput, input) || Selected;
         }
-        public override void Draw(GameTime time)
+        public override void Draw(GameTime time, SpriteBatch spritebatch)
         {
-            ScreenManager.CurrentManager.DrawString(Font, Text, new Vector2(Rect.X + Font.Spacing, Rect.Y), Color.Black, Layer(3));
+            spritebatch.DrawString(Font, Text, new Vector2(Rect.X + Font.Spacing, Rect.Y), Color.Black, Layer(3));
             if (Selected)
             {
-                ScreenManager.CurrentManager.DrawString(Font, "|", new Vector2(AbsoluteX + Font.MeasureString(Text.Substring(0, textPosition)).X, AbsoluteY), Color.Black, Layer(3));
+                spritebatch.DrawString(Font, "|", new Vector2(AbsoluteX + Font.MeasureString(Text.Substring(0, textPosition)).X, AbsoluteY), Color.Black, Layer(3));
             }
-            base.Draw(time);
+            base.Draw(time, spritebatch);
         }
     }
 }

@@ -262,6 +262,10 @@ namespace Spectrum.Framework.Content
                         {
                             part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
                         }
+                        if (texture.Type == "TRANSPARENCY")
+                        {
+                            part.effect.Transparency = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
+                        }
                     }
                 }
             }

@@ -24,13 +24,13 @@ namespace Spectrum.Framework.Screens.InputElements
             Height.Flat = (int)Font.MeasureString(Text).Y;
         }
 
-        public override void Draw(GameTime time)
+        public override void Draw(GameTime time, SpriteBatch spritebatch)
         {
-            base.Draw(time);
+            base.Draw(time, spritebatch);
             if (Text != null)
             {
                 Vector2 pos = new Vector2(Rect.X, Rect.Y);
-                ScreenManager.CurrentManager.DrawString(Font, Text, pos, FontColor, Layer(1));
+                spritebatch.DrawString(Font, Text, pos, FontColor, Layer(1));
             }
         }
     }

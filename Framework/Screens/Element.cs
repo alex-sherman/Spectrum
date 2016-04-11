@@ -150,10 +150,10 @@ namespace Spectrum.Framework.Screens
         public RectOffset Padding;
 
         public ElementSize Width;
-        public virtual int TotalWidth { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Width : Parent.TotalWidth) * Width.Relative) + Width.Flat; } }
+        public virtual int TotalWidth { get { return (int)Width.Apply(size: Parent == null ? ScreenManager.CurrentManager.Viewport.Width : Parent.TotalWidth); } }
 
         public ElementSize Height;
-        public virtual int TotalHeight { get { return (int)((Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.TotalHeight) * Height.Relative) + Height.Flat; } }
+        public virtual int TotalHeight { get { return (int)Height.Apply(size: Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.TotalHeight); } }
 
         public void Center()
         {
@@ -215,12 +215,12 @@ namespace Spectrum.Framework.Screens
                         XOffset += child.TotalWidth + child.Margin.Left(TotalWidth) + child.Margin.Right(TotalWidth);
                         break;
                     case PositionType.Absolute:
-                        child.AbsoluteY = (int)(Manager.Root.TotalHeight * (child.Y.Relative)) + child.Y.Flat;
-                        child.AbsoluteX = (int)(Manager.Root.TotalWidth * (child.X.Relative)) + child.X.Flat;
+                        child.AbsoluteY = (int)child.Y.Apply(size: Manager.Root.TotalHeight);
+                        child.AbsoluteX = (int)child.X.Apply(size: Manager.Root.TotalWidth);
                         break;
                     case PositionType.Relative:
-                        child.AbsoluteY = (int)(TotalHeight * (child.Y.Relative)) + child.Y.Flat + AbsoluteY;
-                        child.AbsoluteX = (int)(TotalWidth * (child.X.Relative)) + child.X.Flat + AbsoluteX;
+                        child.AbsoluteY = (int)child.Y.Apply(size: TotalHeight, offset: AbsoluteY);
+                        child.AbsoluteX = (int)child.X.Apply(size: TotalWidth, offset: AbsoluteX);
                         break;
                     default:
                         break;
@@ -238,7 +238,7 @@ namespace Spectrum.Framework.Screens
             return parentHasFocus;
         }
 
-        public virtual void Draw(GameTime gameTime)
+        public virtual void Draw(GameTime gameTime, SpriteBatch spritebatch)
         {
             if (Texture != null)
             {
@@ -250,17 +250,17 @@ namespace Spectrum.Framework.Screens
             }
         }
 
-        public virtual float DrawWithChildren(GameTime gameTime, float layer)
+        public virtual float DrawWithChildren(GameTime gameTime, SpriteBatch spritebatch, float layer)
         {
             Z = layer;
-            Draw(gameTime);
+            Draw(gameTime, spritebatch);
             List<Element> drawChildren = Children;
             drawChildren.Reverse();
             foreach (Element child in drawChildren)
             {
                 if (child.Display == ElementDisplay.Visible)
                 {
-                    layer = child.DrawWithChildren(gameTime, layer * .9999f);
+                    layer = child.DrawWithChildren(gameTime, spritebatch, layer * .9999f);
                 }
             }
             return layer * .9999f;

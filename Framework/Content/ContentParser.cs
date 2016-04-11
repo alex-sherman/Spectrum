@@ -34,6 +34,7 @@ namespace Spectrum.Framework.Content
             }
             catch(FileNotFoundException)
             {
+                DebugPrinter.print(string.Format("File not found {0}", path));
                 cachedData[path] = null;
             }
         }

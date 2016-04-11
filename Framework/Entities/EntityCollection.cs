@@ -55,5 +55,9 @@ namespace Spectrum.Framework.Entities
         {
             return entities.ContainsKey(item.ID);
         }
+        public IEnumerator<Entity> GetEnumerator()
+        {
+            return entities.Select(keyvalue => keyvalue.Value).GetEnumerator();
+        }
     }
 }

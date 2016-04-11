@@ -30,12 +30,12 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             return Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y);
         }
-        public override void Draw(GameTime time)
+        public override void Draw(GameTime time, SpriteBatch spritebatch)
         {
-            base.Draw(time);
+            base.Draw(time, spritebatch);
             if (HasFocus && MouseInside() && TitleText != null)
             {
-                ScreenManager.CurrentManager.DrawString(Font, TitleText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
+                spritebatch.DrawString(Font, TitleText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
             }
         }
         public override bool HandleInput(bool otherTookInput, InputState input)

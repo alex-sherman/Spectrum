@@ -61,6 +61,7 @@ namespace Spectrum.Framework.Graphics
         public static Vector4 ClipPlane;
         public Texture2D Texture { set { Parameters["Texture"].SetValue(value); } }
         public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
+        public Texture2D Transparency { set { Parameters["Transparency"].SetValue(value); Parameters["UseTransparency"].SetValue(value != null); } }
 
         private string[] BoneNames;
         public Matrix[] BoneTransforms { get; protected set; }

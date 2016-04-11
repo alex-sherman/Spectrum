@@ -28,6 +28,7 @@ namespace Spectrum.Framework.Network
             RegisterType(typeof(string));
             RegisterType(typeof(Vector3));
             RegisterType(typeof(Entity));
+            RegisterType(typeof(GameObject));
             RegisterType(typeof(Point));
             RegisterType(typeof(byte));
             RegisterType(typeof(Guid));

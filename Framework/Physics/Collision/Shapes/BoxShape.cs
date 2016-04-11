@@ -25,6 +25,7 @@ using Spectrum.Framework.Physics.Dynamics;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Collision.Shapes;
 using Microsoft.Xna.Framework;
+using ProtoBuf;
 #endregion
 
 namespace Spectrum.Framework.Physics.Collision.Shapes
@@ -33,6 +34,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
     /// <summary>
     /// A <see cref="Shape"/> representing a box.
     /// </summary>
+    [ProtoContract]
     public class BoxShape : Shape
     {
         private Vector3 size = Vector3.Zero;
@@ -41,9 +43,17 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <summary>
         /// The sidelength of the box.
         /// </summary>
+        [ProtoMember(1)]
         public Vector3 Size { 
             get { return size; }
             set { size = value; UpdateShape(); }
+        }
+
+        [ProtoMember(2)]
+        public Vector3 Position
+        {
+            get { return position; }
+            set { position = value;  UpdateShape(); }
         }
         
         /// <summary>

@@ -57,13 +57,13 @@ namespace Spectrum.Framework
                 timings[group][name] = 0;
             timings[group][name] += miliseconds;
         }
-        private void DrawTimes(int startLine)
+        private void DrawTimes(int startLine, SpriteBatch spritebatch)
         {
             float curPos = (startLine) * Font.LineSpacing;
             foreach (var timeGroup in timings)
             {
                 string toPrint = timeGroup.Key+"\n---------------";
-                Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
+                spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                 curPos += Font.MeasureString(toPrint).Y;
                 List<KeyValuePair<string, double>> renderTimes = timeGroup.Value.ToList();
                 renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
@@ -71,14 +71,14 @@ namespace Spectrum.Framework
                 for (int i = 0; i < 10 && i < renderTimes.Count; i++)
                 {
                     toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value / 1000.0f);
-                    Manager.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                     curPos += Font.LineSpacing;
                 }
             }
         }
-        public override void Draw(GameTime gameTime)
+        public override void Draw(GameTime gameTime, SpriteBatch spritebatch)
         {
-            base.Draw(gameTime);
+            base.Draw(gameTime, spritebatch);
 
             if (SpectrumGame.Game.Debug)
             {
@@ -90,7 +90,7 @@ namespace Spectrum.Framework
                         strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            Manager.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, Z);
+                            spritebatch.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, Z);
                         }
                     }
                 }
@@ -98,17 +98,25 @@ namespace Spectrum.Framework
                 for (int i = 0; i < objects.Count; i++)
                 {
                     string toPrint = objects[i].Debug();
-                    Manager.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                DrawTimes(2);
+                DrawTimes(2, spritebatch);
 
+            }
+            if(SpectrumGame.Game.DebugDrawAll)
+            {
+                foreach (var entity in SpectrumGame.Game.EntityCollection)
+                {
+                    if (entity is GameObject)
+                        ((GameObject)entity).DebugDraw(gameTime, spritebatch);
+                }
             }
             if (SpectrumGame.Game.DebugDraw)
             {
                 for (int i = 0; i < objects.Count; i++)
                 {
-                    objects[i].DebugDraw(gameTime, Manager.SpriteBatch);
+                    objects[i].DebugDraw(gameTime, spritebatch);
                 }
             }
             timings = new Dictionary<string, Dictionary<string, double>>();

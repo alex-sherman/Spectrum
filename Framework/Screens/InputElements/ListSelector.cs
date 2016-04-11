@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void PositionUpdate()
         {
             base.PositionUpdate();
-            int distFromBottom = Manager.Root.TotalHeight - (Y.Flat + TotalHeight);
+            int distFromBottom = Manager.Root.TotalHeight - ((int)Y.Flat + TotalHeight);
             if (distFromBottom < 0)
                 Y.Flat += distFromBottom;
         }

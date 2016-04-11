@@ -59,10 +59,10 @@ namespace Spectrum.Framework.Screens
             AddElement(button);
         }
 
-        public override void Draw(GameTime gameTime)
+        public override void Draw(GameTime gameTime, SpriteBatch spritebatch)
         {
-            base.Draw(gameTime);
-            Manager.DrawString(Font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, Z);
+            base.Draw(gameTime, spritebatch);
+            spritebatch.DrawString(Font, _message, new Vector2(Rect.X + 10, Rect.Y + 10), Color.White, Z);
         }
     }
 }

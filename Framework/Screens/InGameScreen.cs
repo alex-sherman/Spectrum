@@ -52,12 +52,6 @@ namespace Spectrum.Framework.Screens
         {
             get { return new Rectangle(Rect.X, Rect.Y, Rect.Width, TopBarHeight); }
         }
-        public override void Draw(GameTime gameTime)
-        {
-            base.Draw(gameTime);
-            Color borderColor = Color.Black;
-            borderColor.A = 100;
-        }
 
         public override ElementDisplay Toggle()
         {

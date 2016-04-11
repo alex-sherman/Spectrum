@@ -18,10 +18,5 @@ namespace Spectrum.Framework.Screens
         {
             this.texture = texture;
         }
-
-        public override void Draw(GameTime gameTime)
-        {
-            base.Draw(gameTime);
-        }
     }
 }

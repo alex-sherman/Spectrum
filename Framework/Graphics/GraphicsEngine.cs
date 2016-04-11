@@ -54,6 +54,14 @@ namespace Spectrum.Framework.Graphics
                 PostProcessEffect.ResetViewPort();
             }
         }
+        public static Vector3 ViewPosition(Vector3 WorldPosition)
+        {
+            return Vector3.Transform(WorldPosition, Camera.View);
+        }
+        public static Vector3 ViewToScreenPosition(Vector3 ViewPosition)
+        {
+            return device.Viewport.Project(ViewPosition, Settings.projection, Matrix.Identity, Matrix.Identity);
+        }
         public static Vector3 FullScreenPos(Vector3 WorldPos)
         {
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
@@ -146,12 +154,10 @@ namespace Spectrum.Framework.Graphics
             {
                 foo.FillMode = FillMode.Solid;
             }
-            device.BlendState = BlendState.AlphaBlend;
             foo.MultiSampleAntiAlias = false;
             foo.CullMode = CullMode.None;
             device.RasterizerState = foo;
-            DepthStencilState poo = new DepthStencilState();
-            device.DepthStencilState = poo;
+            device.BlendState = BlendState.AlphaBlend;
         }
         public static void Render(DrawablePart part, SpectrumEffect effect, Matrix world, Matrix? View = null, Matrix? projection = null)
         {

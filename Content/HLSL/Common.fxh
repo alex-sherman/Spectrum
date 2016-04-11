@@ -12,6 +12,8 @@ bool Clip = false;
 uniform extern texture Texture;
 uniform extern texture NormalMap;
 uniform bool UseNormalMap = false;
+uniform extern texture Transparency;
+uniform bool UseTransparency = false;
 float3 ambientLightColor = float3(0.3,.3,.3);
 float3 diffuseLightColor = float3(1,1,1);
 float3 specularLightColor = float3(1,1,1);
@@ -33,6 +35,15 @@ sampler customTexture = sampler_state
 sampler normalMap = sampler_state
 {
 	Texture = <NormalMap>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = mirror;
+	AddressV = mirror;
+};
+sampler transparencySampler = sampler_state
+{
+	Texture = <Transparency>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
 	mipfilter = LINEAR;
