@@ -25,11 +25,11 @@ namespace Spectrum.Framework.Content
         public Dictionary<string, MeshPartData> parts = new Dictionary<string, MeshPartData>();
         public Dictionary<string, List<MaterialTexture>> materials = new Dictionary<string, List<MaterialTexture>>();
         public string Directory;
-        public string path;
+        public string FileName;
 
-        public ModelParserCache(string path)
+        public ModelParserCache(string fileName)
         {
-            this.path = path;
+            this.FileName = fileName;
         }
     }
     struct MeshPartData
@@ -57,20 +57,17 @@ namespace Spectrum.Framework.Content
         public ModelParser()
         {
             Prefix = @"Models\";
-            Suffix = ".g3dj";
         }
-
-
-        protected override ModelParserCache LoadData(string path)
+        
+        protected override ModelParserCache LoadData(string path, string name)
         {
-
-            ModelParserCache modelData = new ModelParserCache(path);
+            path = TryExtensions(path, ".g3dj");
+            ModelParserCache modelData = new ModelParserCache(name);
             modelData.Directory = Path.GetDirectoryName(path);
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             modelData.jobj = JObject.Load(reader);
             if (modelData.jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
-
-
+            
             foreach (JObject mesh in modelData.jobj["meshes"])
             {
                 List<string> attributes = new List<string>();
@@ -289,9 +286,8 @@ namespace Spectrum.Framework.Content
             {
                 parseNode(node, data, parts);
             }
-
-
-            return new SpecModel(data.path, parts, GetSkinningData(data.jobj));
+            
+            return new SpecModel(data.FileName, parts, GetSkinningData(data.jobj));
         }
     }
 }

@@ -25,7 +25,6 @@ namespace Spectrum.Framework.Content
         public AnimationParser()
         {
             Prefix = @"Models\";
-            Suffix = ".g3dj";
         }
         public Dictionary<string, AnimationClip> GetAnimations(JObject jobj)
         {
@@ -59,8 +58,9 @@ namespace Spectrum.Framework.Content
             return output;
         }
 
-        protected override AnimationData LoadData(string path)
+        protected override AnimationData LoadData(string path, string name)
         {
+            path = TryExtensions(path, ".g3dj");
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             JObject jobj = JObject.Load(reader);
 

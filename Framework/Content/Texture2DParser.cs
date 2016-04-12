@@ -19,15 +19,10 @@ namespace Spectrum.Framework.Content
         {
             return (x & (x - 1)) == 0;
         }
-        protected override Texture2D LoadData(string path)
+        protected override Texture2D LoadData(string path, string name)
         {
-            if (!System.IO.File.Exists(path))
-            {
-                if (System.IO.File.Exists(path + ".png")) path += ".png";
-                else if (System.IO.File.Exists(path + ".jpg")) path += ".jpg";
-                else throw new FileNotFoundException("The texture could not be loaded: ", path);
-            }
-            Texture2D loaded = Texture2D.FromStream(SpectrumGame.Game.GraphicsDevice, new FileStream(path, FileMode.Open, FileAccess.Read));
+            name = TryExtensions(path, ".jpg", ".png");
+            Texture2D loaded = Texture2D.FromStream(SpectrumGame.Game.GraphicsDevice, new FileStream(name, FileMode.Open, FileAccess.Read));
             //Of course you have to generate your own mip maps when you import from a file
             //why not. Thanks Monogame.
             bool mipMap = IsPowerOfTwo(loaded.Width) && IsPowerOfTwo(loaded.Height);

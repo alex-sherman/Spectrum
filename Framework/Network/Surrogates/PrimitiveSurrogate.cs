@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Network.Surrogates
     class PrimitiveSurrogate
     {
         private static Dictionary<int, Type> TypeMap = new Dictionary<int, Type>();
-        private static int LastTypeID = 0;
+        private static int LastTypeID = 1;
         public int type;
         public byte[] buffer;
 
@@ -26,6 +26,7 @@ namespace Spectrum.Framework.Network.Surrogates
         {
             get
             {
+                if (type == 0) return null;
                 MemoryStream stream = new MemoryStream(buffer);
                 return Serializer.NonGeneric.Deserialize(TypeMap[type], stream);
             }
@@ -33,9 +34,13 @@ namespace Spectrum.Framework.Network.Surrogates
         public static implicit operator PrimitiveSurrogate(Primitive obj)
         {
             if (obj == null) return null;
-            int type = GetID(obj.Object.GetType());
-            byte[] buffer = GetBytes(obj.Object);
-            return new PrimitiveSurrogate() { type = type, buffer = buffer };
+            if (obj.Object != null)
+            {
+                int type = GetID(obj.Object.GetType());
+                byte[] buffer = GetBytes(obj.Object);
+                return new PrimitiveSurrogate() { type = type, buffer = buffer };
+            }
+            return new PrimitiveSurrogate() { type = 0 };
         }
         public static implicit operator Primitive(PrimitiveSurrogate obj)
         {

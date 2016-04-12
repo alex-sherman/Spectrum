@@ -16,12 +16,11 @@ namespace Spectrum.Framework.Content
             Prefix = "Sounds\\";
         }
 
-        protected override SoundStream LoadData(string path)
+        protected override SoundStream LoadData(string path, string name)
         {
-            if (System.IO.File.Exists(path + ".wav")) path += ".wav";
-            else if (System.IO.File.Exists(path + ".m4a")) path += ".m4a";
+            name = TryExtensions(path, ".wav", ".m4a");
             var nativefilestream = new NativeFileStream(
-                path,
+                name,
                 NativeFileMode.Open,
                 NativeFileAccess.Read,
                 NativeFileShare.Read);

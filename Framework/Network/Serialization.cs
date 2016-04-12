@@ -4,6 +4,7 @@ using ProtoBuf;
 using ProtoBuf.Meta;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Network.Surrogates;
+using Spectrum.Framework.Physics.Collision.Shapes;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +37,7 @@ namespace Spectrum.Framework.Network
             RegisterType(typeof(JToken));
             RegisterType(typeof(NetID));
             RegisterType(typeof(EntityData));
+            RegisterType(typeof(BoxShape));
             //RegisterType(typeof(List<>));
             //RegisterType(typeof(Dictionary<>));
             if (Model.IsDefined(typeof(Primitive)))

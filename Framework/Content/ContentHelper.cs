@@ -40,17 +40,17 @@ namespace Spectrum.Framework.Content
             Content = content;
         }
 
-        public static T Load<T>(string path, bool usePrefix) where T : class
+        public static T Load<T>(string name, bool usePrefix) where T : class
         {
-            if (path == null) return null;
-            if (usePrefix && path.Contains('@'))
+            if (name == null) return null;
+            if (usePrefix && name.Contains('@'))
             {
-                string[] split = path.Split('@');
+                string[] split = name.Split('@');
                 Plugin plugin;
                 if (SpectrumGame.Game.Plugins.TryGetValue(split[0], out plugin))
-                    return plugin.Content._load<T>(split[1], true);
+                    return plugin.Content._load<T>(split[1], true, name);
             }
-            return (T)Single._load<T>(path, usePrefix);
+            return (T)Single._load<T>(name, usePrefix, name);
         }
 
         public static T Load<T>(string path) where T : class
@@ -65,15 +65,14 @@ namespace Spectrum.Framework.Content
             return load.Invoke(null, new object[] { path });
         }
 
-        private T _load<T>(string path, bool usePrefix) where T : class
+        private T _load<T>(string path, bool usePrefix, string name) where T : class
         {
             if (ContentParsers.ContainsKey(typeof(T)))
             {
                 ICachedContentParser parser = ContentParsers[typeof(T)];
                 if (usePrefix)
                     path = Content.RootDirectory + "\\" + parser.Prefix + path;
-                path += parser.Suffix;
-                return (T)ContentParsers[typeof(T)].Load(path);
+                return (T)ContentParsers[typeof(T)].Load(path, name);
             }
             if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
             if (typeof(T) == typeof(Effect))

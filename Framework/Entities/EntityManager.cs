@@ -35,16 +35,16 @@ namespace Spectrum.Framework.Entities
         private void RegisterCallbacks()
         {
             HandshakeHandler entitySender = new HandshakeHandler(
-                    delegate(NetID peerGuid, NetMessage message)
+                    delegate (NetID peerGuid, NetMessage message)
                     {
                         IEnumerable<Entity> replicateable = ECollection.updateables.Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid);
                         message.Write(replicateable.Count());
                         foreach (Entity entity in replicateable)
                         {
-                            message.Write(new EntityData(entity));
+                            message.Write(entity.CreationData);
                         }
                     },
-                    delegate(NetID peerGuid, NetMessage message)
+                    delegate (NetID peerGuid, NetMessage message)
                     {
                         int count = message.Read<int>();
                         for (int i = 0; i < count; i++)
@@ -67,14 +67,14 @@ namespace Spectrum.Framework.Entities
             if (!entity.AllowReplicate) { return; }
 
             NetMessage eData = new NetMessage();
-            eData.Write(new EntityData(entity));
+            eData.Write(entity.CreationData);
             mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
         }
         public void HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
             EntityData entityData = message.Read<EntityData>();
             if (!ECollection.Contains((Guid)entityData.fields["ID"].Object))
-                CreateEntityFromData(entityData);
+                CreateEntity(entityData);
         }
 
         public void SendShowCreate(Guid entityID, NetID peerDestination = default(NetID))
@@ -143,42 +143,38 @@ namespace Spectrum.Framework.Entities
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;
         }
-        public T CreateEntity<T>(params object[] args) where T : Entity
+        public T Create<T>(params object[] args) where T : Entity
         {
-            T output = CreateEntityType(typeof(T), args) as T;
+            T output = CreateEntity(new EntityData(typeof(T).Name, args)) as T;
             return output;
         }
-        public Entity CreateEntityFromData(EntityData data)
+        public Entity CreateEntity(EntityData data)
         {
-            TypeData typeData = TypeHelper.Types.GetData(data.type);
-            if(typeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", data.type)); }
-            Entity e = Construct(typeData.Type, data.args.Select(prim => prim.Object).ToArray());
-            foreach (var field in data.fields)
-            {
-                typeData.Set(e, field.Key, field.Value.Object);
-            }
+            Entity e = Construct(data);
             AddEntity(e);
             return e;
         }
-        public Entity CreateEntityType(string typeName, params object[] args)
+        public Entity CreateEntityType(string typeName)
         {
-            return AddEntity(Construct(typeName, args));
+            return CreateEntity(new EntityData(typeName));
         }
-        public Entity CreateEntityType(Type t, params object[] args)
+        public Entity Construct(EntityData entityData)
         {
-            return AddEntity(Construct(t, args));
-        }
-        public Entity Construct(string typeName, params object[] args)
-        {
-            return Construct(TypeHelper.Types[typeName], args);
-        }
-        public Entity Construct(Type type, params object[] args)
-        {
-            if (type == null || (!type.IsSubclassOf(typeof(Entity)))) { throw new ArgumentException("Type must be non-null and subclass of Entity", "type"); }
-            Entity output = (Entity)TypeHelper.Instantiate(type, args);
-            output.OwnerGuid = mpService.ID;
-            output.ID = Guid.NewGuid();
-            output.creationArgs = args;
+            TypeData typeData = TypeHelper.Types.GetData(entityData.type);
+            if (typeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.type)); }
+            Type type = typeData.Type;
+            Entity output = (Entity)TypeHelper.Instantiate(type, entityData.args.Select(prim => prim.Object).ToArray());
+
+            entityData = entityData.Clone();
+            if (!entityData.fields.ContainsKey("OwnerGuid"))
+                entityData.Set("OwnerGuid", mpService.ID);
+            if (!entityData.fields.ContainsKey("ID"))
+                entityData.Set("ID", Guid.NewGuid());
+            foreach (var field in entityData.fields)
+            {
+                typeData.Set(output, field.Key, field.Value.Object);
+            }
+            output.CreationData = entityData;
             output.SendMessageCallback = SendEntityMessage;
             return output;
         }
@@ -225,9 +221,10 @@ namespace Spectrum.Framework.Entities
         {
             GraphicsEngine.Render(ECollection.updateables, gameTime);
         }
-        public void HandleInput(Spectrum.Framework.Input.InputState input)
+        public void HandleInput(InputState input)
         {
-            foreach (IEntityInput e in ECollection.updateables.Where(e => e is IEntityInput)) {
+            foreach (IEntityInput e in ECollection.updateables.Where(e => e is IEntityInput))
+            {
                 e.HandleInput(input);
             }
         }

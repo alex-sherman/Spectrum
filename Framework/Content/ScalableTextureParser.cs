@@ -14,15 +14,12 @@ namespace Spectrum.Framework.Content
         {
             Prefix = @"Textures\";
         }
-        protected override ScalableTexture LoadData(string path)
+        protected override ScalableTexture LoadData(string path, string name)
         {
-            if (!System.IO.File.Exists(path))
-            {
-                if (System.IO.File.Exists(path + ".png")) path += ".png";
-                else if (System.IO.File.Exists(path + ".jpg")) path += ".jpg";
-                else throw new FileNotFoundException("The texture could not be loaded: ", path);
-            }
-            return new ScalableTexture(Texture2D.FromStream(SpectrumGame.Game.GraphicsDevice, new FileStream(path, FileMode.Open, FileAccess.Read)), 0);
+            Texture2D texture = ContentHelper.ContentParsers[typeof(Texture2D)].Load(path, name) as Texture2D;
+            if (texture == null)
+                throw new FileNotFoundException();
+            return new ScalableTexture(texture, 0);
         }
 
         protected override ScalableTexture SafeCopy(ScalableTexture cache)

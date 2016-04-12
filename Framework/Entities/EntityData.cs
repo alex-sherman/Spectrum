@@ -19,28 +19,27 @@ namespace Spectrum.Framework.Entities
         public Primitive[] args = new Primitive[0];
         public Dictionary<string, Primitive> fields = new Dictionary<string, Primitive>();
         private EntityData() { }
-        public EntityData(string type, Primitive[] args = null, Dictionary<string, Primitive> fields = null)
+        public EntityData(string type, params object[] args)
         {
             this.type = type;
-            this.args = args ?? new Primitive[0];
-            this.fields = fields ?? new Dictionary<string, Primitive>();
-        }
-        public EntityData(Entity e)
-        {
-            fields = new Dictionary<string, Primitive>();
-            this.type = e.GetType().Name;
-            this.fields["ID"] = new Primitive(e.ID);
-            this.fields["OwnerGuid"] = new Primitive(e.OwnerGuid);
-            if (e is GameObject)
-            {
-                this.fields["position"] = new Primitive((e as GameObject).Position);
-            }
-            this.args = e.creationArgs.Select(obj => new Primitive() { Object = obj }).ToArray();
+            this.args = args.Select(obj => new Primitive(obj)).ToArray();
         }
         public EntityData Set(string name, object value)
         {
             fields[name] = new Primitive(value);
             return this;
+        }
+        public EntityData Set(Dictionary<string, object> values)
+        {
+            foreach (var kvp in values)
+            {
+                Set(kvp.Key, kvp.Value);
+            }
+            return this;
+        }
+        public EntityData Clone()
+        {
+            return Serialization.Copy(this);
         }
     }
 }

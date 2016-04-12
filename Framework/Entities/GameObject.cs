@@ -148,7 +148,7 @@ namespace Spectrum.Framework.Entities
         /// </summary>
         public Matrix World
         {
-            get { return orientation * Matrix.CreateTranslation(position); }
+            get { return ModelTransform * orientation * Matrix.CreateTranslation(position); }
         }
 
 
@@ -174,24 +174,8 @@ namespace Spectrum.Framework.Entities
                 Parts = ContentHelper.Load<SpecModel>(value);
             }
         }
-        public Matrix ModelTransform
-        {
-            set
-            {
-                if (Model != null)
-                {
-                    if (Model.SkinningData != null)
-                        Model.SkinningData.Root.transform = value;
-                    else
-                    {
-                        foreach (var part in Parts)
-                        {
-                            part.transform = value;
-                        }
-                    }
-                }
-            }
-        }
+        [Replicate]
+        public Matrix ModelTransform = Matrix.Identity;
 
         public GameObject()
             : base()

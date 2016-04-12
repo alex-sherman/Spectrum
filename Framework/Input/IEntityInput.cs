@@ -7,6 +7,6 @@ namespace Spectrum.Framework.Input
 {
     public interface IEntityInput
     {
-        void HandleInput(Spectrum.Framework.Input.InputState input);
+        void HandleInput(InputState input);
     }
 }

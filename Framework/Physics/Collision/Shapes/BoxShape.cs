@@ -55,7 +55,9 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             get { return position; }
             set { position = value;  UpdateShape(); }
         }
-        
+
+        public BoxShape() { }
+
         /// <summary>
         /// Creates a new instance of the BoxShape class.
         /// </summary>

@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Entities
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
         public NetID OwnerGuid;
-        public object[] creationArgs = new object[0];
+        public EntityData CreationData;
         public EntityManager Manager;
         private bool replicateNextUpdate = false;
 

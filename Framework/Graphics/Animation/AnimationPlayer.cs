@@ -68,9 +68,8 @@ namespace Spectrum.Framework.Graphics.Animation
         {
             currentKeyFrame = 0;
             this.playOnce = playOnce;
+            if (!AnimationClips.ContainsKey(animation)) return;
             AnimationClip clip = AnimationClips[animation];
-            if (clip == null)
-                throw new ArgumentNullException("clip");
 
             currentClipValue = clip;
             currentTimeValue = TimeSpan.Zero;
