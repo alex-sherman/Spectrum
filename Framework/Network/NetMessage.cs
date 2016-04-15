@@ -26,7 +26,6 @@ namespace Spectrum.Framework.Network
     {
         [ProtoMember(1)]
         public MemoryStream stream;
-        public static EntityCollection ECollection;
 
         public NetMessage(byte[] bytes)
         {

@@ -10,26 +10,27 @@ using System.Reflection;
 using Spectrum.Framework.Network;
 using System.Diagnostics;
 using Spectrum.Framework.Input;
+using System.Collections;
 
 namespace Spectrum.Framework.Entities
 {
     public delegate void EntityMessageHandler(NetID peerID, Entity entity, NetMessage message);
     public delegate void EntityReplicationCallback(Entity entity);
     public delegate void FunctionReplicationcallback(Entity entity, int function, NetMessage parameters);
-    public class EntityManager
+    public class EntityManager : IEnumerable<Entity>
     {
+        public event Action<Entity> OnEntityAdded;
+        public event Action<Entity> OnEntityRemoved;
         private float tickTenthTimer = 100;
         private float tickOneTimer = 1000;
-        private EntityCollection ECollection;
-        public MultiplayerService mpService;
+        private EntityCollection Entities;
+        private MultiplayerService mpService;
         public bool Paused = false;
         private static Stopwatch timer = new Stopwatch();
-        public static Dictionary<string, long> updateTimes = new Dictionary<string, long>();
-        public EntityManager(EntityCollection ECollection, MultiplayerService mpService)
+        public EntityManager(MultiplayerService mpService)
         {
-            this.ECollection = ECollection;
+            Entities = new EntityCollection();
             this.mpService = mpService;
-            NetMessage.ECollection = ECollection;
             RegisterCallbacks();
         }
         private void RegisterCallbacks()
@@ -37,7 +38,7 @@ namespace Spectrum.Framework.Entities
             HandshakeHandler entitySender = new HandshakeHandler(
                     delegate (NetID peerGuid, NetMessage message)
                     {
-                        IEnumerable<Entity> replicateable = ECollection.updateables.Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid);
+                        IEnumerable<Entity> replicateable = Entities.UpdateSorted.Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid);
                         message.Write(replicateable.Count());
                         foreach (Entity entity in replicateable)
                         {
@@ -73,7 +74,7 @@ namespace Spectrum.Framework.Entities
         public void HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
             EntityData entityData = message.Read<EntityData>();
-            if (!ECollection.Contains((Guid)entityData.fields["ID"].Object))
+            if (!Entities.Map.ContainsKey((Guid)entityData.fields["ID"].Object))
                 CreateEntity(entityData);
         }
 
@@ -86,8 +87,8 @@ namespace Spectrum.Framework.Entities
         public void HandleShowCreate(NetID peerGuid, NetMessage message)
         {
             Guid entityID = message.Read<Guid>();
-            if (!ECollection.Contains(entityID)) { return; }
-            Entity entity = ECollection.Find(entityID);
+            if (!Entities.Map.ContainsKey(entityID)) { return; }
+            Entity entity = Entities.Map[entityID];
             SendEntityCreation(entity, peerGuid);
         }
 
@@ -103,9 +104,9 @@ namespace Spectrum.Framework.Entities
         {
             Guid entityID = message.Read<Guid>();
             message = message.Read<NetMessage>();
-            if (ECollection.Contains(entityID))
+            if (Entities.Map.ContainsKey(entityID))
             {
-                ECollection.Find(entityID).HandleMessage(peerGuid, message.Read<int>(), message.Read<NetMessage>());
+                Entities.Map[entityID].HandleMessage(peerGuid, message.Read<int>(), message.Read<NetMessage>());
             }
             else
             {
@@ -120,7 +121,7 @@ namespace Spectrum.Framework.Entities
             tickTenthTimer += gameTime.ElapsedGameTime.Milliseconds;
             tickOneTimer += gameTime.ElapsedGameTime.Milliseconds;
 
-            List<Entity> updateables = ECollection.updateables;
+            List<Entity> updateables = Entities.UpdateSorted;
             for (int i = 0; i < updateables.Count; i++)
             {
                 timer.Restart();
@@ -135,7 +136,7 @@ namespace Spectrum.Framework.Entities
                 else
                     updateables[i].DisabledUpdate(gameTime);
                 if (updateables[i].Disposing)
-                    ECollection.Remove(updateables[i].ID);
+                    Entities.Remove(updateables[i].ID);
                 timer.Stop();
                 string itemName = updateables[i].GetType().Name;
                 DebugPrinter.time("Update", itemName, timer.Elapsed.Ticks);
@@ -158,6 +159,11 @@ namespace Spectrum.Framework.Entities
         {
             return CreateEntity(new EntityData(typeName));
         }
+        /// <summary>
+        /// Calls the constructor for the Entity, but does not initialize it or add it to the EntityManager
+        /// </summary>
+        /// <param name="entityData">Creation data for the Entity</param>
+        /// <returns>An initialized</returns>
         public Entity Construct(EntityData entityData)
         {
             TypeData typeData = TypeHelper.Types.GetData(entityData.type);
@@ -181,52 +187,49 @@ namespace Spectrum.Framework.Entities
         public Entity AddEntity(Entity entity)
         {
             entity.Manager = this;
-            ECollection.Add(entity);
+            Entities.Add(entity);
             if (mpService.ID == entity.OwnerGuid)
                 SendEntityCreation(entity);
             entity.Initialize();
+            if (OnEntityAdded != null) { OnEntityAdded(entity); }
             return entity;
+        }
+        public Entity Remove(Guid ID)
+        {
+            Entity removed = Entities.Remove(ID);
+            if (removed == null) return null;
+            if (OnEntityRemoved != null) { OnEntityRemoved(removed); }
+            return removed;
         }
         public void ClearEntities(Func<Entity, bool> predicate = null)
         {
-            foreach (Entity entity in ECollection.updateables)
+            foreach (Entity entity in Entities.UpdateSorted)
             {
                 if (predicate == null || predicate(entity))
-                    RemoveEntity(entity.ID);
+                    Entities.Remove(entity.ID);
             }
         }
-        public IEnumerable<T> FindEntities<T>(Func<T, bool> predicate = null) where T : Entity
-        {
-            predicate = predicate ?? new Func<T, bool>((T f) => (true));
-            if (typeof(T) == typeof(Entity))
-                return ECollection.updateables.Where(predicate as Func<Entity, bool>).ToList() as List<T>;
 
-            return ECollection.updateables
-                .Where((Entity entity) => (entity is T))
-                .Cast<T>()
-                .Where(predicate);
-        }
         public Entity Find(Guid id)
         {
-            if (ECollection.Contains(id))
-                return ECollection.Find(id);
+            if (Entities.Map.ContainsKey(id))
+                return Entities.Map[id];
             return null;
-        }
-        public void RemoveEntity(Guid entityID)
-        {
-            ECollection.Remove(entityID);
         }
 
         public void Draw(GameTime gameTime)
         {
-            GraphicsEngine.Render(ECollection.updateables, gameTime);
+            GraphicsEngine.Render(Entities.DrawSorted, gameTime);
         }
-        public void HandleInput(InputState input)
+
+        public IEnumerator<Entity> GetEnumerator()
         {
-            foreach (IEntityInput e in ECollection.updateables.Where(e => e is IEntityInput))
-            {
-                e.HandleInput(input);
-            }
+            return Entities.UpdateSorted.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

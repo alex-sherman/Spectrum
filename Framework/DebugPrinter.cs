@@ -106,7 +106,7 @@ namespace Spectrum.Framework
             }
             if(SpectrumGame.Game.DebugDrawAll)
             {
-                foreach (var entity in SpectrumGame.Game.EntityCollection)
+                foreach (var entity in SpectrumGame.Game.EntityManager)
                 {
                     if (entity is GameObject)
                         ((GameObject)entity).DebugDraw(gameTime, spritebatch);

@@ -4,60 +4,46 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections;
 
 namespace Spectrum.Framework.Entities
 {
-    public delegate void EntityCollectionUpdated(Entity updated);
 
-    public class EntityCollection
+    class EntityCollection
     {
-        Dictionary<Guid, Entity> entities = new Dictionary<Guid, Entity>();
-        private List<Entity> _updateables = new List<Entity>();
-        public List<Entity> updateables { get { lock (this) { return _updateables.ToList(); } } }
+        public Dictionary<Guid, Entity> Map = new Dictionary<Guid, Entity>();
+        private List<Entity> updatedSorted = new List<Entity>();
+        private List<Entity> drawSroted = new List<Entity>();
+        public List<Entity> UpdateSorted { get { lock (this) { return updatedSorted.ToList(); } } }
+        public List<Entity> DrawSorted { get { lock (this) { return drawSroted.ToList(); } } }
 
         public void Add(Entity entity)
         {
             lock (this)
             {
-                if (OnEntityAdded != null) { OnEntityAdded(entity); }
-                entities[entity.ID] = entity;
-                int i = 0;
-                while (i < _updateables.Count - 1 && _updateables[i].UpdateOrder < entity.UpdateOrder) { i++; }
-                _updateables.Insert(i, entity);
+                Map[entity.ID] = entity;
+                int i;
+                for (i = 0; i < updatedSorted.Count - 1 && updatedSorted[i].UpdateOrder < entity.UpdateOrder; i++) { }
+                updatedSorted.Insert(i, entity);
+
+                
+                drawSroted.Insert(drawSroted.Count(check => check.DrawOrder < entity.DrawOrder), entity);
             }
         }
-        public event EntityCollectionUpdated OnEntityAdded;
-        public void Remove(Guid entityID)
+        public Entity Remove(Guid entityID)
         {
             lock (this)
             {
-                if (entities.ContainsKey(entityID))
+                if (Map.ContainsKey(entityID))
                 {
-                    Entity entity = entities[entityID];
-                    if (OnEntityRemoved != null) { OnEntityRemoved(entity); }
-                    entities.Remove(entityID);
-                    _updateables.Remove(entity);
+                    Entity entity = Map[entityID];
+                    Map.Remove(entityID);
+                    updatedSorted.Remove(entity);
                     entity.Dispose();
+                    return entity;
                 }
+                return null;
             }
-        }
-        public event EntityCollectionUpdated OnEntityRemoved;
-
-        public Entity Find(Guid key)
-        {
-            return entities[key];
-        }
-        public bool Contains(Guid id)
-        {
-            return entities.ContainsKey(id);
-        }
-        public bool Contains(Entity item)
-        {
-            return entities.ContainsKey(item.ID);
-        }
-        public IEnumerator<Entity> GetEnumerator()
-        {
-            return entities.Select(keyvalue => keyvalue.Value).GetEnumerator();
         }
     }
 }

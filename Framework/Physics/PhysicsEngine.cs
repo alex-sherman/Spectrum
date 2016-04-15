@@ -145,7 +145,7 @@ namespace Spectrum.Framework.Physics
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
 
-        public static void Init(EntityCollection collection)
+        public static void Init(EntityManager collection)
         {
             Single = new PhysicsEngine(new CollisionSystemPersistentSAP());
             collection.OnEntityAdded += collection_OnEntityAdded;

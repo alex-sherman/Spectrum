@@ -73,7 +73,6 @@ namespace Spectrum
 
         public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
         GraphicsDeviceManager graphics;
-        public EntityCollection EntityCollection { get; set; }
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }
         public ScreenManager ScreenManager { get; private set; }
@@ -97,10 +96,9 @@ namespace Spectrum
             }
             Game = this;
             InputLayout.Init();
-            EntityCollection = new EntityCollection();
-            PhysicsEngine.Init(EntityCollection);
             MP = new MultiplayerService(ID, nick);
-            EntityManager = new EntityManager(EntityCollection, MP);
+            EntityManager = new EntityManager(MP);
+            PhysicsEngine.Init(EntityManager);
             graphics = new GraphicsDeviceManager(this);
             AudioManager.Init();
             this.Window.AllowUserResizing = true;

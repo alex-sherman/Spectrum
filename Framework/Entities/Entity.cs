@@ -46,6 +46,8 @@ namespace Spectrum.Framework.Entities
         public EntityManager Manager;
         private bool replicateNextUpdate = false;
 
+        public int UpdateOrder { get; protected set; }
+        public int DrawOrder { get; protected set; }
         public bool Enabled { get; protected set; }
         public bool DrawEnabled { get; protected set; }
         public bool Disposing { get; private set; }
@@ -152,7 +154,6 @@ namespace Spectrum.Framework.Entities
             }
         }
 
-        public int UpdateOrder { get; protected set; }
         public virtual void Update(GameTime gameTime)
         {
             foreach (var interpolator in interpolators)
