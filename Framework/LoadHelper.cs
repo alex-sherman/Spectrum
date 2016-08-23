@@ -48,6 +48,7 @@ namespace Spectrum.Framework
         public static void LoadTypes(string LocalDir = null)
         {
             SpectrumGame.Game.Plugins["Main"] = Plugin.CreatePlugin("Main", ContentHelper.Single, Assembly.GetEntryAssembly());
+            SpectrumGame.Game.Plugins["Spectrum"] = Plugin.CreatePlugin("Spectrum", ContentHelper.Single, Assembly.GetExecutingAssembly());
 
             foreach (var pluginName in Plugin.GetPluginNames())
             {

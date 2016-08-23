@@ -21,16 +21,18 @@ namespace Spectrum.Framework.Graphics
         public static RenderTarget2D refractionRenderTarget;
         public static RenderTarget2D reflectionRenderTarget;
         public VertexBuffer waterV;
-        private int size;
+        public int size;
         int numVertices = 32;
-        public Water(int size, Vector3 position)
+        public Water()
             : base()
         {
-            this.position = position;
             IsStatic = true;
             this.Ignore = true;
             this.AllowReplicate = false;
-            this.size = size;
+        }
+        public override void Initialize()
+        {
+            base.Initialize();
             waterV = new VertexBuffer(SpectrumGame.Game.GraphicsDevice, VertexPositionTexture.VertexDeclaration, numVertices * numVertices, BufferUsage.WriteOnly);
             float[,] heights = new float[numVertices, numVertices];
             VertexPositionTexture[] verts = new VertexPositionTexture[numVertices * numVertices];
@@ -56,7 +58,7 @@ namespace Spectrum.Framework.Graphics
         }
         private static VertexPositionTexture Constructor(VertexArgs args)
         {
-            return new VertexPositionTexture(args.pos + Vector3.Up * waterHeight, args.texturePos);
+            return new VertexPositionTexture(args.pos, args.texturePos);
         }
     }
 }

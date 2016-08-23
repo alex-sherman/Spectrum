@@ -71,10 +71,7 @@ namespace Spectrum.Framework.Network
         public static T Copy<T>(T obj) where T : class
         {
             if (obj == null) return null;
-            MemoryStream stream = new MemoryStream();
-            Serializer.NonGeneric.Serialize(stream, obj);
-            stream.Position = 0;
-            return Serializer.Deserialize<T>(stream);
+            return Serializer.NonGeneric.DeepClone(obj) as T;
         }
     }
 }
