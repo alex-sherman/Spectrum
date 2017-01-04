@@ -8,6 +8,10 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
+    public class Texture2DData
+    {
+        public bool HasAlpha = false;
+    }
     public class Texture2DParser : CachedContentParser<Texture2D, Texture2D>
     {
         public Texture2DParser()
@@ -27,6 +31,8 @@ namespace Spectrum.Framework.Content
             //why not. Thanks Monogame.
             bool mipMap = IsPowerOfTwo(loaded.Width) && IsPowerOfTwo(loaded.Height);
             Texture2D output = new Texture2D(SpectrumGame.Game.GraphicsDevice, loaded.Width, loaded.Height, mipMap, loaded.Format);
+            Texture2DData outputTag = new Texture2DData();
+            output.Tag = outputTag;
             Color[] data = new Color[loaded.Height * loaded.Width];
             Color[] lastLevelData = data;
             loaded.GetData<Color>(data);
@@ -48,14 +54,18 @@ namespace Spectrum.Framework.Content
                                 for (int iy = 0; iy < 2; iy++)
                                 {
                                     Color c = lastLevelData[(x * 2 + ix) + (y * 2 + iy) * levelWidth * 2];
-                                    if(c.A < 255) continue;
+                                    if (c.A < 255)
+                                    {
+                                        outputTag.HasAlpha = true;
+                                        continue;
+                                    }
                                     sum.X += c.R;
                                     sum.Y += c.G;
                                     sum.Z += c.B;
                                     sum.W += c.A;
                                 }
                             }
-                            if(sum.W == 0) continue;
+                            if (sum.W == 0) continue;
                             levelData[x + y * levelWidth].R = (byte)(sum.X / (sum.W / 255));
                             levelData[x + y * levelWidth].G = (byte)(sum.Y / (sum.W / 255));
                             levelData[x + y * levelWidth].B = (byte)(sum.Z / (sum.W / 255));

@@ -59,9 +59,26 @@ namespace Spectrum.Framework.Graphics
         public static bool Clip = false;
         public static bool AboveWater = true;
         public static Vector4 ClipPlane;
-        public Texture2D Texture { set { Parameters["Texture"].SetValue(value); } }
+        public Texture2D Texture
+        {
+            set
+            {
+                if ((value.Tag as Texture2DData).HasAlpha)
+                    HasTransparency = true;
+                Parameters["Texture"].SetValue(value);
+            }
+        }
         public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
-        public Texture2D Transparency { set { Parameters["Transparency"].SetValue(value); Parameters["UseTransparency"].SetValue(value != null); } }
+        public bool HasTransparency { get; protected set; } = false;
+        public Texture2D Transparency
+        {
+            set
+            {
+                Parameters["Transparency"].SetValue(value);
+                Parameters["UseTransparency"].SetValue(value != null);
+                HasTransparency = value != null;
+            }
+        }
 
         private string[] BoneNames;
         public Matrix[] BoneTransforms { get; protected set; }
