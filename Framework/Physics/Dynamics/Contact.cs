@@ -219,7 +219,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         public void NewIterate(float contactCount)
         {
             accumulatedNormalImpulse = 0;
-            accumulatedTangentImpulse = 0;
+            accumulatedTangentImpulse = -0.1f;
             if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
             if (noCollide) return;
             float e = 0.5f;
@@ -239,10 +239,10 @@ namespace Spectrum.Framework.Physics.Dynamics
             massTangent = InertiaInDirection(tangent);
             accumulatedNormalImpulse = -(e + 1) * massNormal * dvNormalScalar;
             Vector3 J = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * dvTangent;
-            ApplyImpulse(J / contactCount / 2);
+            ApplyImpulse(J / contactCount);
             if (Penetration > settings.allowedPenetration)
             {
-                ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount / 2);
+                ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount);
             }
 
             ApplyPush((Position1 - Position2) / contactCount);
@@ -269,6 +269,15 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void ApplyImpulse(Vector3 impulse)
         {
+            Vector3 rotationImpulse = impulse;
+            if (!treatBody1AsStatic && !treatBody2AsStatic)
+            {
+                impulse /= 2;
+                if (!body1.IgnoreRotation && !body2.IgnoreRotation)
+                    rotationImpulse /= 2;
+
+            }
+
             if (!treatBody1AsStatic)
             {
                 body1.linearVelocity.X -= (impulse.X * body1.inverseMass);
@@ -278,9 +287,9 @@ namespace Spectrum.Framework.Physics.Dynamics
                 if (!body1.IgnoreRotation)
                 {
                     float num0, num1, num2;
-                    num0 = relativePos1.Y * impulse.Z - relativePos1.Z * impulse.Y;
-                    num1 = relativePos1.Z * impulse.X - relativePos1.X * impulse.Z;
-                    num2 = relativePos1.X * impulse.Y - relativePos1.Y * impulse.X;
+                    num0 = relativePos1.Y * rotationImpulse.Z - relativePos1.Z * rotationImpulse.Y;
+                    num1 = relativePos1.Z * rotationImpulse.X - relativePos1.X * rotationImpulse.Z;
+                    num2 = relativePos1.X * rotationImpulse.Y - relativePos1.Y * rotationImpulse.X;
 
                     float num3 =
                         (((num0 * body1.invInertiaWorld.M11) +
@@ -311,9 +320,9 @@ namespace Spectrum.Framework.Physics.Dynamics
                 if (!body2.IgnoreRotation)
                 {
                     float num0, num1, num2;
-                    num0 = relativePos2.Y * impulse.Z - relativePos2.Z * impulse.Y;
-                    num1 = relativePos2.Z * impulse.X - relativePos2.X * impulse.Z;
-                    num2 = relativePos2.X * impulse.Y - relativePos2.Y * impulse.X;
+                    num0 = relativePos2.Y * rotationImpulse.Z - relativePos2.Z * rotationImpulse.Y;
+                    num1 = relativePos2.Z * rotationImpulse.X - relativePos2.X * rotationImpulse.Z;
+                    num2 = relativePos2.X * rotationImpulse.Y - relativePos2.Y * rotationImpulse.X;
 
                     float num3 =
                         (((num0 * body2.invInertiaWorld.M11) +
@@ -337,25 +346,25 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void ApplyPush(Vector3 push)
         {
-            float inertia = InertiaInDirection(push);
             if (!treatBody1AsStatic)
             {
-                body1.position -= push;
+                body1.position -= push / 2;
                 if (!body1.IgnoreRotation)
                 {
-                    Vector3 rotation = Vector3.Cross(relativePos1, push);
-                    body1.orientation *= Matrix.CreateFromAxisAngle(rotation, rotation.Length());
-                    //body1.angularVelocity += Vector3.Transform(rotation, body1.invInertiaWorld);
+                    Vector3 axis = Vector3.Cross(push, relativePos1);
+                    double angle = Math.Asin(axis.Length());
+
+                    //body1.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
                 }
             }
             if (!treatBody2AsStatic)
             {
-                body2.position += push;
+                body2.position += push / 2;
                 if (!body2.IgnoreRotation)
                 {
-                    Vector3 rotation = -Vector3.Cross(relativePos2, push);
-                    body2.orientation *= Matrix.CreateFromAxisAngle(rotation, rotation.Length());
-                    //body2.angularVelocity += Vector3.Transform(rotation, body2.invInertiaWorld);
+                    Vector3 axis = Vector3.Cross(push, relativePos2);
+                    double angle = Math.Asin(axis.Length());
+                    //body2.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
                 }
             }
         }
@@ -483,13 +492,13 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <param name="point2">The collision point in worldspace</param>
         /// <param name="n">The normal pointing to body2.</param>
         /// <param name="penetration">The estimated penetration depth.</param>
-        public void Initialize(CollisionSystem system, GameObject body1, GameObject body2, ref Vector3 point1, ref Vector3 point2, ref Vector3 n,
+        public void Initialize(CollisionSystem system, GameObject body1, GameObject body2, ref Vector3 point, ref Vector3 n,
             float penetration, bool newContact, ContactSettings settings)
         {
             this.system = system;
             this.body1 = body1; this.body2 = body2;
             this.normal = n; normal.Normalize();
-            this.p1 = point1 + penetration * normal / 2; this.p2 = point2 - penetration * normal / 2;
+            this.p1 = point + penetration * normal / 2; this.p2 = point - penetration * normal / 2;
             //this.p1 = point1;
             //this.p2 = point2;
 

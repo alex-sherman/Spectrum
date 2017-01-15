@@ -28,6 +28,7 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Entities;
+using System.Linq;
 #endregion
 
 namespace Spectrum.Framework.Physics.Dynamics
@@ -118,7 +119,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <summary>
         /// The contact list containing all contacts of both bodies.
         /// </summary>
-        public ContactList ContactList { get { return contactList; } }
+        public List<Contact> ContactList { get { return contactList; } }
 
         /// <summary>
         /// </summary>
@@ -126,14 +127,14 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         // internal values for faster access within the engine
         public GameObject body1, body2;
-        public ContactList contactList;
+        public List<Contact> contactList;
 
         /// <summary>
         /// Initializes a new instance of the Arbiter class.
         /// </summary>
         public Arbiter()
         {
-            this.contactList = new ContactList();
+            this.contactList = new List<Contact>();
         }
 
         /// <summary>
@@ -155,50 +156,53 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <param name="point2">Point on body2. In world space.</param>
         /// <param name="normal">The normal pointing to body2.</param>
         /// <param name="penetration">The estimated penetration depth.</param>
-        public Contact AddContact(Vector3 point1, Vector3 point2, Vector3 normal, float penetration, 
+        public Contact AddContact(Vector3 point, Vector3 normal, float penetration, 
             ContactSettings contactSettings)
         {
             Vector3 relPos1;
-            Vector3.Subtract(ref point1, ref body1.position, out relPos1);
+            Vector3.Subtract(ref point, ref body1.position, out relPos1);
 
-            int index;
+            Contact remove;
 
             lock (contactList)
             {
-                if (this.contactList.Count == 4)
+                Contact contact = Contact.Pool.GetNew();
+                contact.Initialize(system, body1, body2, ref point, ref normal, penetration, true, contactSettings);
+                contactList.Add(contact);
+                if (this.contactList.Count == 5)
                 {
-                    index = SortCachedPoints(ref relPos1, penetration);
-                    if(index >= 0)
-                        ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
-                    return null;
-                }
-
-                index = GetCacheEntry(ref relPos1, contactSettings.breakThreshold);
-
-                if (index >= 0)
-                {
-                    ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
-                    return null;
-                }
-                else
-                {
-                    Contact contact = Contact.Pool.GetNew();
-                    contact.Initialize(system, body1, body2, ref point1, ref point2, ref normal, penetration, true, contactSettings);
-                    contactList.Add(contact);
+                    remove = FindWorstContact();
+                    contactList.Remove(remove);
+                    if (remove == contact)
+                        return null;
                     return contact;
                 }
+                return contact;
             }
-            return null;
         }
 
-        private void ReplaceContact(ref Vector3 point1, ref Vector3 point2, ref Vector3 n, float p, int index,
+        private float ContactScore(Contact test)
+        {
+            return contactList.Sum((other) => other == test ? 0 : (test.Position1 - other.Position1).Length());
+        }
+
+        private Contact FindWorstContact()
+        {
+            var testList = contactList.Select((contact, index) => new Tuple<int, Contact, float>(index, contact, ContactScore(contact)))
+                .OrderByDescending((test) => test.Item2.Penetration)
+                .Skip(1)
+                .OrderBy((test) => test.Item3).ToList();
+            return testList.First().Item2;
+        }
+
+        private void ReplaceContact(ref Vector3 point, ref Vector3 n, float p, int index,
             ContactSettings contactSettings)
         {
             Contact contact = contactList[index];
 
             Debug.Assert(body1 == contact.body1, "Body1 and Body2 not consistent.");
 
-            contact.Initialize(system, body1, body2, ref point1, ref point2, ref n, p, false, contactSettings);
+            contact.Initialize(system, body1, body2, ref point, ref n, p, false, contactSettings);
 
         }
 
@@ -219,72 +223,5 @@ namespace Spectrum.Framework.Physics.Dynamics
             }
             return nearestPoint;
         }
-
-        // sort cached points so most isolated points come first
-        private int SortCachedPoints(ref Vector3 realRelPos1, float pen)
-        {
-            //calculate 4 possible cases areas, and take biggest area
-            //also need to keep 'deepest'
-
-            int maxPenetrationIndex = -1;
-            float maxPenetration = pen;
-            for (int i = 0; i < 4; i++)
-            {
-                if (contactList[i].Penetration > maxPenetration)
-                {
-                    maxPenetrationIndex = i;
-                    maxPenetration = contactList[i].Penetration;
-                }
-            }
-
-            float res0 = 0, res1 = 0, res2 = 0, res3 = 0;
-            if (maxPenetrationIndex != 0)
-            {
-                Vector3 a0; Vector3.Subtract(ref realRelPos1, ref contactList[1].relativePos1, out a0);
-                Vector3 b0; Vector3.Subtract(ref contactList[3].relativePos1, ref contactList[2].relativePos1, out b0);
-                Vector3 cross; Vector3.Cross(ref a0, ref b0, out cross);
-                res0 = cross.LengthSquared();
-            }
-            if (maxPenetrationIndex != 1)
-            {
-                Vector3 a0; Vector3.Subtract(ref realRelPos1, ref contactList[0].relativePos1, out a0);
-                Vector3 b0; Vector3.Subtract(ref contactList[3].relativePos1, ref contactList[2].relativePos1, out b0);
-                Vector3 cross; Vector3.Cross(ref a0, ref b0, out cross);
-                res1 = cross.LengthSquared();
-            }
-
-            if (maxPenetrationIndex != 2)
-            {
-                Vector3 a0; Vector3.Subtract(ref realRelPos1, ref contactList[0].relativePos1, out a0);
-                Vector3 b0; Vector3.Subtract(ref contactList[3].relativePos1, ref contactList[1].relativePos1, out b0);
-                Vector3 cross; Vector3.Cross(ref a0, ref b0, out cross);
-                res2 = cross.LengthSquared();
-            }
-
-            if (maxPenetrationIndex != 3)
-            {
-                Vector3 a0; Vector3.Subtract(ref realRelPos1, ref contactList[0].relativePos1, out a0);
-                Vector3 b0; Vector3.Subtract(ref contactList[2].relativePos1, ref contactList[1].relativePos1, out b0);
-                Vector3 cross; Vector3.Cross(ref a0, ref b0, out cross);
-                res3 = cross.LengthSquared();
-            }
-
-            int biggestarea = MaxAxis(res0, res1, res2, res3);
-            return biggestarea;
-        }
-
-        internal static int MaxAxis(float x, float y, float z, float w)
-        {
-            int maxIndex = -1;
-            float maxVal = float.MinValue;
-
-            if (x > maxVal) { maxIndex = 0; maxVal = x; }
-            if (y > maxVal) { maxIndex = 1; maxVal = y; }
-            if (z > maxVal) { maxIndex = 2; maxVal = z; }
-            if (w > maxVal) { maxIndex = 3; maxVal = w; }
-
-            return maxIndex;
-        }
-
     }
 }

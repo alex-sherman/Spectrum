@@ -286,7 +286,7 @@ namespace Spectrum.Framework.Entities
                 {
                     GraphicsEngine.DrawCircle(contact.Position1, 3, Color.Yellow, spriteBatch);
                     GraphicsEngine.DrawCircle(contact.Position2, 3, Color.HotPink, spriteBatch);
-                    GraphicsEngine.DrawLine(contact.Position1, contact.Position1 - contact.normal * contact.Penetration, Color.Blue, spriteBatch);
+                    GraphicsEngine.DrawLine(contact.Position1, contact.Position1 - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue, spriteBatch);
                     GraphicsEngine.DrawLine(contact.Position1, contact.Position1 + contact.normal * contact.accumulatedNormalImpulse, Color.Green, spriteBatch);
                     GraphicsEngine.DrawLine(contact.Position1, contact.Position1 + contact.tangent * contact.accumulatedTangentImpulse, Color.Red, spriteBatch);
                 }

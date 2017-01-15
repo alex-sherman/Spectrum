@@ -13,9 +13,9 @@ namespace Spectrum.Framework.Entities
     {
         public Dictionary<Guid, Entity> Map = new Dictionary<Guid, Entity>();
         private List<Entity> updatedSorted = new List<Entity>();
-        private List<Entity> drawSroted = new List<Entity>();
+        private List<Entity> drawSorted = new List<Entity>();
         public List<Entity> UpdateSorted { get { lock (this) { return updatedSorted.ToList(); } } }
-        public List<Entity> DrawSorted { get { lock (this) { return drawSroted.ToList(); } } }
+        public List<Entity> DrawSorted { get { lock (this) { return drawSorted.ToList(); } } }
 
         public void Add(Entity entity)
         {
@@ -27,7 +27,7 @@ namespace Spectrum.Framework.Entities
                 updatedSorted.Insert(i, entity);
 
                 
-                drawSroted.Insert(drawSroted.Count(check => check.DrawOrder < entity.DrawOrder), entity);
+                drawSorted.Insert(drawSorted.Count(check => check.DrawOrder < entity.DrawOrder), entity);
             }
         }
         public Entity Remove(Guid entityID)
@@ -39,6 +39,7 @@ namespace Spectrum.Framework.Entities
                     Entity entity = Map[entityID];
                     Map.Remove(entityID);
                     updatedSorted.Remove(entity);
+                    drawSorted.Remove(entity);
                     entity.Dispose();
                     return entity;
                 }

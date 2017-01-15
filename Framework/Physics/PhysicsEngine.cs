@@ -469,6 +469,10 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            CollisionSystem.Detect(multithread);
+            sw.Stop(); debugTimes[(int)DebugType.CollisionDetect] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
             UpdateContacts();
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
@@ -477,10 +481,6 @@ namespace Spectrum.Framework.Physics
             while (removedArbiterQueue.Count > 0)
                 islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
             sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            CollisionSystem.Detect(multithread);
-            sw.Stop(); debugTimes[(int)DebugType.CollisionDetect] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             while (addedArbiterQueue.Count > 0) islands.ArbiterCreated(addedArbiterQueue.Dequeue());
@@ -731,11 +731,11 @@ namespace Spectrum.Framework.Physics
             if (arbiter.body1 == body1)
             {
                 Vector3.Negate(ref normal, out normal);
-                contact = arbiter.AddContact(point, point, normal, penetration, contactSettings);
+                contact = arbiter.AddContact(point, normal, penetration, contactSettings);
             }
             else
             {
-                contact = arbiter.AddContact(point, point, normal, penetration, contactSettings);
+                contact = arbiter.AddContact(point, normal, penetration, contactSettings);
             }
 
             if (contact != null) events.RaiseContactCreated(contact);

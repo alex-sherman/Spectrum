@@ -136,7 +136,7 @@ namespace Spectrum.Framework.Entities
                 else
                     updateables[i].DisabledUpdate(gameTime);
                 if (updateables[i].Disposing)
-                    Entities.Remove(updateables[i].ID);
+                    Remove(updateables[i].ID);
                 timer.Stop();
                 string itemName = updateables[i].GetType().Name;
                 DebugPrinter.time("Update", itemName, timer.Elapsed.Ticks);
