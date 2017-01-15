@@ -177,7 +177,7 @@ namespace Spectrum.Framework.Physics.Collision
         {
             point = Vector3.Zero;
             normal = Vector3.Zero;
-            penetration = -1;
+            penetration = float.MinValue;
 
             int shape1count = 1;
             int shape2count = 1;
@@ -224,7 +224,7 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     if (ms2 != null)
                         ms2.SetCurrentShape(j);
-                    List<EPAVertex> simplex;
+                    List<EPAVertex> simplex, speculativeSimplex;
                     if (GJKCollide.Detect(s1, s2,
                         body1.Orientation, body2.Orientation,
                         body1.Position, body2.Position,
@@ -244,6 +244,30 @@ namespace Spectrum.Framework.Physics.Collision
                             }
                         }
                     }
+                    //TODO: Implement speculative collisions
+                    //else if(GJKCollide.Detect(s1, s2,
+                    //    body1.Orientation, body2.Orientation,
+                    //    body1.Position, body2.Position,
+                    //    body1.Velocity, body2.Velocity,
+                    //    out speculativeSimplex, true))
+                    //{
+                    //    Vector3 p1, p2;
+                    //    GJKCollide.ClosestPoints(s1, s2,
+                    //        body1.Orientation, body2.Orientation,
+                    //        body1.Position, body2.Position,
+                    //        out p1, out p2,
+                    //        out normal);
+                    //    List<EPAFace> faces = EPACollide.FacesFromSimplex(simplex);
+                    //    faces.Sort((f1, f2) => f1.Distance.CompareTo(f2.Distance));
+                    //    EPACollide.CollisionInfo(faces[0], out tempPoint, out tempNormal, out tempPenetration);
+                    //    if (-tempPenetration > penetration)
+                    //    {
+                    //        point = tempPoint;
+                    //        normal = tempNormal;
+                    //        penetration = -tempPenetration;
+                    //        collisionDetected = true;
+                    //    }
+                    //}
                 }
             }
             Debug.Assert(!collisionDetected || normal != Vector3.Zero, "A collision was reported but the normal wasn't properly set");

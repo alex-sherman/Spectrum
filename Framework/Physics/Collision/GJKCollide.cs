@@ -29,6 +29,12 @@ using Microsoft.Xna.Framework;
 
 namespace Spectrum.Framework.Physics.Collision
 {
+    public struct GJKResult
+    {
+        public Vector3 Position;
+        public Vector3 ExtrudedPosition;
+    }
+
 
     /// <summary>
     /// GJK based implementation of Raycasting.
@@ -40,8 +46,7 @@ namespace Spectrum.Framework.Physics.Collision
 
         private static ResourcePool<VoronoiSimplexSolver> simplexSolverPool = new ResourcePool<VoronoiSimplexSolver>();
 
-        #region private static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 direction, out Vector3 result)
-        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out Vector3 result, bool retrievingInformation = false)
+        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out GJKResult result)
         {
             //Vector3.Transform(ref direction, ref invOrientation, out result);
             //support.SupportMapping(ref result, out result);
@@ -52,32 +57,39 @@ namespace Spectrum.Framework.Physics.Collision
             newDirection.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
             newDirection.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
 
-            support.SupportMapping(ref newDirection, out result, retrievingInformation);
-
-            float x = ((result.X * orientation.M11) + (result.Y * orientation.M21)) + (result.Z * orientation.M31);
-            float y = ((result.X * orientation.M12) + (result.Y * orientation.M22)) + (result.Z * orientation.M32);
-            float z = ((result.X * orientation.M13) + (result.Y * orientation.M23)) + (result.Z * orientation.M33);
-
-            result.X = position.X + x;
-            result.Y = position.Y + y;
-            result.Z = position.Z + z;
-            if (!retrievingInformation && Vector3.Dot(velocity, direction) > 0)
+            support.SupportMapping(ref newDirection, out result.Position, false);
+            result.Position = Vector3.Transform(result.Position, orientation);
+            result.Position += position;
+            result.ExtrudedPosition = Vector3.Transform(result.Position, orientation);
+            result.ExtrudedPosition += position;
+            if (Vector3.Dot(velocity, direction) > 0)
             {
-                result.X += velocity.X * Timestep;
-                result.Y += velocity.Y * Timestep;
-                result.Z += velocity.Z * Timestep;
+                result.ExtrudedPosition += velocity * Timestep;
             }
         }
-        #endregion
+        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 direction, out Vector3 result)
+        {
+            //Vector3.Transform(ref direction, ref invOrientation, out result);
+            //support.SupportMapping(ref result, out result);
+            //Vector3.Transform(ref result, ref orientation, out result);
+            //Vector3.Add(ref result, ref position, out result);
+            Vector3 newDirection = direction;
+            newDirection.X = ((direction.X * orientation.M11) + (direction.Y * orientation.M12)) + (direction.Z * orientation.M13);
+            newDirection.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
+            newDirection.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
 
-        /*public static bool ClosestPoints(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
+            support.SupportMapping(ref newDirection, out result, false);
+            result = Vector3.Transform(result, orientation);
+            result += position;
+        }
+
+        public static bool ClosestPoints(ISupportMappable support1, ISupportMappable support2, Matrix orientation1,
             Matrix orientation2, Vector3 position1, Vector3 position2,
             out Vector3 p1, out Vector3 p2, out Vector3 normal)
         {
 
             VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
             simplexSolver.Reset();
-
             p1 = p2 = Vector3.Zero;
 
             Vector3 r = position1 - position2;
@@ -128,7 +140,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             return true;
 
-        }*/
+        }
 
 
         #region GJK Detect
@@ -149,16 +161,18 @@ namespace Spectrum.Framework.Physics.Collision
             Matrix orientation1, Matrix orientation2,
             Vector3 position1, Vector3 position2,
             Vector3 velocity1, Vector3 velocity2,
-            out List<EPAVertex> simplex)
+            out List<EPAVertex> simplex, bool speculative = false)
         {
             simplex = new List<EPAVertex>();
-
+            GJKResult g1, g2;
             Vector3 s, s1, s2;
             Vector3 direction = Vector3.One;
             Vector3 negativeDirection = -direction;
             //Get an initial point on the Minkowski difference.
-            SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1);
-            SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out s2);
+            SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out g1);
+            SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out g2);
+            s1 = speculative ? g1.ExtrudedPosition : g1.Position;
+            s2 = speculative ? g2.ExtrudedPosition : g2.Position;
             s = s2 - s1;
 
             simplex.Add(new EPAVertex(s, s1, s2));
@@ -176,9 +190,13 @@ namespace Spectrum.Framework.Physics.Collision
                 if (direction.LengthSquared() > 0)
                     direction.Normalize();
                 negativeDirection = -direction;
-                SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1);
-                SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out s2);
+                SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out g1);
+                SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out g2);
+                s1 = speculative ? g1.ExtrudedPosition : g1.Position;
+                s2 = speculative ? g2.ExtrudedPosition : g2.Position;
                 Vector3 a = s2 - s1;
+
+                simplex.Add(new EPAVertex(a, s1, s2));
 
                 //If we move toward the origin and didn't pass it 
                 //then we never will and there's no intersection.
@@ -186,10 +204,7 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     return false;
                 }
-                //otherwise we add the new
-                //point to the simplex and
-                //process it.
-                simplex.Add(new EPAVertex(a, s1, s2));
+
                 //Here we either find a collision or we find the closest feature of
                 //the simplex to the origin, make that the new simplex and update the direction
                 //to move toward the origin from that feature.
@@ -296,6 +311,10 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 return true;
             }
+            if(simplex.Count < 3)
+            {
+
+            }
 
             return false;
         }
@@ -332,7 +351,9 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 w, p, v;
 
             Vector3 arbitraryPoint;
-            SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref r, out arbitraryPoint);
+            GJKResult result;
+            SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref r, out result);
+            arbitraryPoint = result.Position;
             Vector3.Subtract(ref x, ref arbitraryPoint, out v);
 
             int maxIter = MaxIterations;
@@ -344,7 +365,8 @@ namespace Spectrum.Framework.Physics.Collision
 
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
-                SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref v, out p);
+                SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref v, out result);
+                p = result.Position;
                 Vector3.Subtract(ref x, ref p, out w);
 
                 float VdotW = Vector3.Dot(v, w);

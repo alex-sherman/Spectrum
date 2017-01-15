@@ -42,6 +42,7 @@ namespace Spectrum.Framework.Physics
     public class PhysicsEngine
     {
 
+        public bool Paused { get; set; }
         public static PhysicsEngine Single { get; private set; }
         public delegate void WorldStep(float timestep);
 
@@ -120,6 +121,7 @@ namespace Spectrum.Framework.Physics
         private int contactIterations = 10;
         private int smallIterations = 4;
         private float timestep = 0.0f;
+        public float Timestep { get; set; }
 
         private Spectrum.Framework.Physics.Collision.IslandManager islands = new IslandManager();
 
@@ -459,17 +461,22 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
+            IntegrateForces();
+            sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
+            Integrate(multithread);
+            sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
             UpdateContacts();
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             double ms = 0;
-            while (removedArbiterQueue.Count > 0) islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
+            while (removedArbiterQueue.Count > 0)
+                islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
             sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            IntegrateForces();
-            sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
             CollisionSystem.Detect(multithread);
@@ -488,39 +495,37 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            Integrate(multithread);
-            sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
             foreach (GameObject body in Collidables) body.PostStep(timestep);
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
         }
 
         public void Update(GameTime gameTime)
         {
-            Step((float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f, true);
+            if (!Paused)
+            {
+                timestep = Timestep == 0 ? (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f : Timestep;
+                Step(timestep, true);
+            }
         }
 
         private void UpdateArbiterContacts(Arbiter arbiter)
         {
-            if (arbiter.contactList.Count == 0)
-            {
-                lock (removedArbiterStack) { removedArbiterStack.Push(arbiter); }
-                return;
-            }
-
             for (int i = arbiter.contactList.Count - 1; i >= 0; i--)
             {
                 Contact c = arbiter.contactList[i];
                 c.UpdatePosition();
-
-                if (c.Penetration < -contactSettings.breakThreshold || (c.p1 - c.p2).LengthSquared() > contactSettings.slipThresholdSquared)
+                float slip = (c.p1 - c.p2 - c.Penetration * c.normal).LengthSquared();
+                if (c.Penetration < -contactSettings.breakThreshold || slip > contactSettings.slipThresholdSquared)
                 {
                     Contact.Pool.GiveBack(c);
                     arbiter.contactList.RemoveAt(i);
-                    continue;
                 }
+            }
 
+            if (arbiter.contactList.Count == 0)
+            {
+                lock (removedArbiterStack) { removedArbiterStack.Push(arbiter); }
+                return;
             }
         }
 
@@ -581,7 +586,7 @@ namespace Spectrum.Framework.Physics
                     int contactCount = arbiter.contactList.Count;
                     for (int e = 0; e < contactCount; e++)
                     {
-                        arbiter.contactList[e].NewIterate();
+                        arbiter.contactList[e].NewIterate(contactCount);
                         //if (i == -1) arbiter.contactList[e].PrepareForIteration(timestep);
                         //arbiter.contactList[e].Iterate();
                     }

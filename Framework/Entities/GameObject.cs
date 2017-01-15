@@ -278,6 +278,19 @@ namespace Spectrum.Framework.Entities
             Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
             Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
             GraphicsEngine.DrawJBBox(boundingBox, Color.Black, spriteBatch);
+            GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
+            GraphicsEngine.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue, spriteBatch);
+            foreach (var arbiter in this.arbiters)
+            {
+                foreach (var contact in arbiter.contactList)
+                {
+                    GraphicsEngine.DrawCircle(contact.Position1, 3, Color.Yellow, spriteBatch);
+                    GraphicsEngine.DrawCircle(contact.Position2, 3, Color.HotPink, spriteBatch);
+                    GraphicsEngine.DrawLine(contact.Position1, contact.Position1 - contact.normal * contact.Penetration, Color.Blue, spriteBatch);
+                    GraphicsEngine.DrawLine(contact.Position1, contact.Position1 + contact.normal * contact.accumulatedNormalImpulse, Color.Green, spriteBatch);
+                    GraphicsEngine.DrawLine(contact.Position1, contact.Position1 + contact.tangent * contact.accumulatedTangentImpulse, Color.Red, spriteBatch);
+                }
+            }
         }
     }
 }

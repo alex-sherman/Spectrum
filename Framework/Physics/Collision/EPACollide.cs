@@ -101,42 +101,11 @@ namespace Spectrum.Framework.Physics.Collision
             w = (d00 * d21 - d01 * d20) / denom;
             u = 1.0f - v - w;
         }
-        public static bool Detect(ISupportMappable support1, ISupportMappable support2, List<EPAVertex> simplex, Matrix orientation1,
-             Matrix orientation2, Vector3 position1, Vector3 position2, Vector3 velocity1, Vector3 velocity2,
-             out Vector3 point, out Vector3 normal, out float penetration)
+        public static void CollisionInfo(EPAFace face, out Vector3 point, out Vector3 normal, out float penetration)
         {
-            point = Vector3.Zero;
-            normal = Vector3.Zero;
-            penetration = 0;
-            List<EPAFace> faces = new List<EPAFace>();
-            List<EPAVertex> vertices = simplex;
-            faces.Add(new EPAFace(vertices[2], vertices[1], vertices[0]));
-            faces.Add(new EPAFace(vertices[3], vertices[2], vertices[0]));
-            faces.Add(new EPAFace(vertices[0], vertices[1], vertices[3]));
-            faces.Add(new EPAFace(vertices[1], vertices[2], vertices[3]));
-            int iterationLimit = 50;
-            Vector3 s1, s2;
-            while (true)
-            {
-                //TODO: The 0 faces case should be looked at, probably I shouldn't return false
-                if (faces.Count == 0 || faces.Any(face => face.Degenerate))
-                    return false;
-                faces.Sort((f1, f2) => f1.Distance.CompareTo(f2.Distance));
-                EPAFace closestFace = faces[0];
-                normal = faces[0].Normal;
-                Vector3 negativeDirection = -normal;
-                GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out s1, true);
-                GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out s2, true);
-                Vector3 s = s2 - s1;
-                penetration = Vector3.Dot(normal, s);
-                if (penetration - faces[0].Distance < 0.001)
-                    break;
-                SimplexInsert(faces, vertices, new EPAVertex(s, s1, s2));
-
-                if (iterationLimit-- == 0)
-                    return false;
-            }
-            EPAVertex[] points = faces[0].Points;
+            normal = face.Normal;
+            penetration = face.Distance;
+            EPAVertex[] points = face.Points;
             float u, v, w;
             Barycentric(normal * penetration,
                 points[0].Position,
@@ -147,7 +116,51 @@ namespace Spectrum.Framework.Physics.Collision
                 points[1].Position1 * v + points[1].Position2 * v +
                 points[2].Position1 * w + points[2].Position2 * w;
             point /= 2;
-            //point = (s1 + s2) / 2;
+        }
+        public static List<EPAFace> FacesFromSimplex(List<EPAVertex> simplex)
+        {
+            List<EPAFace> faces = new List<EPAFace>();
+            faces.Add(new EPAFace(simplex[2], simplex[1], simplex[0]));
+            faces.Add(new EPAFace(simplex[3], simplex[2], simplex[0]));
+            faces.Add(new EPAFace(simplex[0], simplex[1], simplex[3]));
+            faces.Add(new EPAFace(simplex[1], simplex[2], simplex[3]));
+            return faces;
+        }
+        public static bool Detect(ISupportMappable support1, ISupportMappable support2, List<EPAVertex> simplex, Matrix orientation1,
+             Matrix orientation2, Vector3 position1, Vector3 position2, Vector3 velocity1, Vector3 velocity2,
+             out Vector3 point, out Vector3 normal, out float penetration)
+        {
+            point = Vector3.Zero;
+            normal = Vector3.Zero;
+            penetration = 0;
+            int iterationLimit = 50;
+            List<EPAFace> faces = FacesFromSimplex(simplex);
+            List<EPAVertex> vertices = simplex.ToList();
+            GJKResult g1, g2;
+            Vector3 s1, s2;
+            while (true)
+            {
+                //TODO: The 0 faces case should be looked at, probably I shouldn't return false
+                if (faces.Count == 0 || faces.Any(face => face.Degenerate))
+                    return false;
+                faces.Sort((f1, f2) => f1.Distance.CompareTo(f2.Distance));
+                EPAFace closestFace = faces[0];
+                normal = faces[0].Normal;
+                Vector3 negativeDirection = -normal;
+                GJKCollide.SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out g1);
+                GJKCollide.SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref normal, out g2);
+                s1 = g1.Position;
+                s2 = g2.Position;
+                Vector3 s = s2 - s1;
+                penetration = Vector3.Dot(normal, s);
+                if (penetration - faces[0].Distance < 0.001)
+                    break;
+                SimplexInsert(faces, vertices, new EPAVertex(s, s1, s2));
+
+                if (iterationLimit-- == 0)
+                    return false;
+            }
+            CollisionInfo(faces[0], out point, out normal, out penetration);
             return true;
         }
         private static void SimplexInsert(List<EPAFace> faces, List<EPAVertex> vertices, EPAVertex newVertex)

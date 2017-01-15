@@ -302,6 +302,13 @@ namespace Spectrum.Framework.Graphics
                 (float)Math.Atan2(edge.Y, edge.X);
             spriteBatch.Draw(ContentHelper.Blank, start, null, color, angle, Vector2.Zero, new Vector2(edge.Length(), 1.2f), SpriteEffects.None, 0);
         }
+        public static void DrawCircle(Vector3 P1, float radius, Color color, SpriteBatch spriteBatch)
+        {
+            if (FullScreenPos(P1).Z >= 1) { return; }
+
+            Vector2 start = ScreenPos(P1);
+            spriteBatch.Draw(ContentHelper.Blank, start, null, color, 0, Vector2.Zero, radius, SpriteEffects.None, 0);
+        }
         public static void DrawSprite(Texture2D tex, Vector3 P1, Vector3 P2, Color color, SpriteBatch batch, int height = -1)
         {
             Vector2 start = ScreenPos(P1);

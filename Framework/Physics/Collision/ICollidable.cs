@@ -16,4 +16,14 @@ namespace Spectrum.Framework.Physics.Collision
         Matrix Orientation { get; }
         JBBox BoundingBox { get;  }
     }
+    public static class ICollidableExtension
+    {
+        public static JBBox SweptBoundingBox(this ICollidable col)
+        {
+            JBBox box = col.BoundingBox;
+            box.AddPoint(box.Max + col.Velocity);
+            box.AddPoint(box.Min + col.Velocity);
+            return box;
+        }
+    }
 }

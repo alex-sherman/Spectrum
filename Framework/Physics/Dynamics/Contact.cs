@@ -47,8 +47,8 @@ namespace Spectrum.Framework.Physics.Dynamics
         internal float bias = 0.25f;
         internal float minVelocity = 0.001f;
         internal float allowedPenetration = 0.01f;
-        internal float breakThreshold = 0.01f;
-        internal float slipThresholdSquared = 1f;
+        internal float breakThreshold = 0.05f;
+        internal float slipThresholdSquared = 0.01f;
 
         internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.UseAverage;
 
@@ -216,26 +216,36 @@ namespace Spectrum.Framework.Physics.Dynamics
             ApplyImpulse(impulse);
         }
 
-        public void NewIterate()
+        public void NewIterate(float contactCount)
         {
+            accumulatedNormalImpulse = 0;
+            accumulatedTangentImpulse = 0;
             if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
-            if (noCollide || Penetration < 0) return;
+            if (noCollide) return;
             float e = 0.5f;
             Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
             dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
-            Vector3 dvNormal = normal * Vector3.Dot(dv, normal);
+            float dvNormalScalar = Vector3.Dot(dv, normal);
+            if (dvNormalScalar > 0)
+            {
+                return;
+            }
+            Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
             tangent = dvTangent;
             tangent.Normalize();
 
             massNormal = InertiaInDirection(normal);
             massTangent = InertiaInDirection(tangent);
-            Vector3 J = -(e + 1) * dvNormal * massNormal - 0.1f * dvTangent * massTangent;
-            ApplyImpulse(J);
-            if (!body1.IsStatic)
-                body1.position -= (Penetration / 2 - settings.allowedPenetration) * normal;
-            if (!body2.IsStatic)
-                body2.position += (Penetration / 2 - settings.allowedPenetration) * normal;
+            accumulatedNormalImpulse = -(e + 1) * massNormal * dvNormalScalar;
+            Vector3 J = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * dvTangent;
+            ApplyImpulse(J / contactCount / 2);
+            if (Penetration > settings.allowedPenetration)
+            {
+                ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount / 2);
+            }
+
+            ApplyPush((Position1 - Position2) / contactCount);
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
@@ -325,6 +335,31 @@ namespace Spectrum.Framework.Physics.Dynamics
             }
         }
 
+        public void ApplyPush(Vector3 push)
+        {
+            float inertia = InertiaInDirection(push);
+            if (!treatBody1AsStatic)
+            {
+                body1.position -= push;
+                if (!body1.IgnoreRotation)
+                {
+                    Vector3 rotation = Vector3.Cross(relativePos1, push);
+                    body1.orientation *= Matrix.CreateFromAxisAngle(rotation, rotation.Length());
+                    //body1.angularVelocity += Vector3.Transform(rotation, body1.invInertiaWorld);
+                }
+            }
+            if (!treatBody2AsStatic)
+            {
+                body2.position += push;
+                if (!body2.IgnoreRotation)
+                {
+                    Vector3 rotation = -Vector3.Cross(relativePos2, push);
+                    body2.orientation *= Matrix.CreateFromAxisAngle(rotation, rotation.Length());
+                    //body2.angularVelocity += Vector3.Transform(rotation, body2.invInertiaWorld);
+                }
+            }
+        }
+
         private float InertiaInDirection(Vector3 direction)
         {
             float kNormal = 0.0f;
@@ -334,10 +369,10 @@ namespace Spectrum.Framework.Physics.Dynamics
             {
                 kNormal += body1.inverseMass;
 
-                Vector3.Cross(ref relativePos1, ref normal, out rantra);
+                Vector3.Cross(ref relativePos1, ref direction, out rantra);
                 Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
                 Vector3.Cross(ref rantra, ref relativePos1, out rantra);
-                kNormal += rantra.X * normal.X + rantra.Y * normal.Y + rantra.Z * normal.Z;
+                kNormal += rantra.X * direction.X + rantra.Y * direction.Y + rantra.Z * direction.Z;
 
             }
 
@@ -346,10 +381,10 @@ namespace Spectrum.Framework.Physics.Dynamics
             {
                 kNormal += body2.inverseMass;
 
-                Vector3.Cross(ref relativePos2, ref normal, out rbntrb);
+                Vector3.Cross(ref relativePos2, ref direction, out rbntrb);
                 Vector3.Transform(ref rbntrb, ref body2.invInertiaWorld, out rbntrb);
                 Vector3.Cross(ref rbntrb, ref relativePos2, out rbntrb);
-                kNormal += rbntrb.X * normal.X + rbntrb.Y * normal.Y + rbntrb.Z * normal.Z;
+                kNormal += rbntrb.X * direction.X + rbntrb.Y * direction.Y + rbntrb.Z * direction.Z;
             }
 
             return 1.0f / kNormal;
@@ -430,8 +465,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
             impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
 
-            //ApplyImpulse(impulse);
-            ApplyImpulse(normal * normalImpulse);
+            ApplyImpulse(impulse);
+            //ApplyImpulse(normal * normalImpulse);
 
             lastTimeStep = timestep;
 

@@ -168,7 +168,8 @@ namespace Spectrum.Framework.Physics.Dynamics
                 if (this.contactList.Count == 4)
                 {
                     index = SortCachedPoints(ref relPos1, penetration);
-                    ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
+                    if(index >= 0)
+                        ReplaceContact(ref point1, ref point2, ref normal, penetration, index, contactSettings);
                     return null;
                 }
 
@@ -187,6 +188,7 @@ namespace Spectrum.Framework.Physics.Dynamics
                     return contact;
                 }
             }
+            return null;
         }
 
         private void ReplaceContact(ref Vector3 point1, ref Vector3 point2, ref Vector3 n, float p, int index,
@@ -238,7 +240,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             float res0 = 0, res1 = 0, res2 = 0, res3 = 0;
             if (maxPenetrationIndex != 0)
             {
-                Vector3 a0; Vector3.Subtract(ref realRelPos1,ref contactList[1].relativePos1,out a0);
+                Vector3 a0; Vector3.Subtract(ref realRelPos1, ref contactList[1].relativePos1, out a0);
                 Vector3 b0; Vector3.Subtract(ref contactList[3].relativePos1, ref contactList[2].relativePos1, out b0);
                 Vector3 cross; Vector3.Cross(ref a0, ref b0, out cross);
                 res0 = cross.LengthSquared();
