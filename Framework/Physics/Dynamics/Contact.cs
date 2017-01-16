@@ -220,7 +220,6 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             accumulatedNormalImpulse = 0;
             accumulatedTangentImpulse = -0.1f;
-            if (Vector3.Dot(body1.linearVelocity - body2.linearVelocity, normal) < 0) return;
             if (noCollide) return;
             float e = 0.5f;
             Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
@@ -353,8 +352,11 @@ namespace Spectrum.Framework.Physics.Dynamics
                 {
                     Vector3 axis = Vector3.Cross(push, relativePos1);
                     double angle = Math.Asin(axis.Length());
-
-                    //body1.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
+                    if (angle != 0)
+                    {
+                        axis.Normalize();
+                        body1.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
+                    }
                 }
             }
             if (!treatBody2AsStatic)
@@ -364,7 +366,11 @@ namespace Spectrum.Framework.Physics.Dynamics
                 {
                     Vector3 axis = Vector3.Cross(push, relativePos2);
                     double angle = Math.Asin(axis.Length());
-                    //body2.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
+                    if (angle != 0)
+                    {
+                        axis.Normalize();
+                        body2.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
+                    }
                 }
             }
         }
