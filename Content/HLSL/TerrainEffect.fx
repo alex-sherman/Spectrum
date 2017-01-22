@@ -75,8 +75,8 @@ MultiTex_VS_OUT TransformMulti(MultiTex_VS_IN vin)
     vin.Position = lerp(vin.Position, vin.Position2, VertexBlend);
 	float4 worldPosition = 	CommonVS((CommonVSInput)vin, (CommonVSOut)Out);
 	Out.blend = lerp(vin.blend, vin.blend2, VertexBlend);
-	float blendDistance1 = 300;
-	Out.depthBlend.x = clamp((Out.depth)/blendDistance1, 0, 1);
+	float blendDistance1 = 100;
+	Out.depthBlend.x = clamp((Out.depth - blendDistance1) / blendDistance1, 0, 1);
 	return Out;
 }
 CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
@@ -87,10 +87,14 @@ CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 	float2 coorda = vsout.textureCoordinate * 2;
 	float2 coordb = vsout.textureCoordinate / 4;
 	float3 sampled = 0;
-	sampled += tex2D(sand, coordb) * vsout.blend[0];
-	sampled += tex2D(grass, coordb) * vsout.blend[1];
-	sampled += tex2D(rock, coordb) * vsout.blend[2];
-	sampled += tex2D(snow, coordb) * vsout.blend[3];
+	sampled += tex2D(sand, coorda) * vsout.blend[0] * (1 - vsout.depthBlend.x);
+	sampled += tex2D(sand, coordb) * vsout.blend[0] * vsout.depthBlend.x;
+	sampled += tex2D(grass, coorda) * vsout.blend[1] * (1 - vsout.depthBlend.x);
+	sampled += tex2D(grass, coordb) * vsout.blend[1] * vsout.depthBlend.x;
+	sampled += tex2D(rock, coorda) * vsout.blend[2] * (1 - vsout.depthBlend.x);
+	sampled += tex2D(rock, coordb) * vsout.blend[2] * vsout.depthBlend.x;
+	sampled += tex2D(snow, coorda) * vsout.blend[3] * (1 - vsout.depthBlend.x);
+	sampled += tex2D(snow, coordb) * vsout.blend[3] * vsout.depthBlend.x;
 	float4 toReturn = (float4)0;
 	toReturn.rgb = sampled;
 

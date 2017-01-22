@@ -161,61 +161,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// </summary>
         public Vector3 Normal { get { return normal; } }
         #endregion
-
-        /// <summary>
-        /// Solves the contact iteratively.
-        /// </summary>
-        public void Iterate()
-        {
-            if (noCollide) return;
-            if (treatBody1AsStatic && treatBody2AsStatic) return;
-
-            float dvx, dvy, dvz;
-
-            dvx = body2.linearVelocity.X - body1.linearVelocity.X;
-            dvy = body2.linearVelocity.Y - body1.linearVelocity.Y;
-            dvz = body2.linearVelocity.Z - body1.linearVelocity.Z;
-
-            dvx = dvx - (body1.angularVelocity.Y * relativePos1.Z) + (body1.angularVelocity.Z * relativePos1.Y);
-            dvy = dvy - (body1.angularVelocity.Z * relativePos1.X) + (body1.angularVelocity.X * relativePos1.Z);
-            dvz = dvz - (body1.angularVelocity.X * relativePos1.Y) + (body1.angularVelocity.Y * relativePos1.X);
-
-            dvx = dvx + (body2.angularVelocity.Y * relativePos2.Z) - (body2.angularVelocity.Z * relativePos2.Y);
-            dvy = dvy + (body2.angularVelocity.Z * relativePos2.X) - (body2.angularVelocity.X * relativePos2.Z);
-            dvz = dvz + (body2.angularVelocity.X * relativePos2.Y) - (body2.angularVelocity.Y * relativePos2.X);
-
-            // this gets us some performance
-            if (dvx * dvx + dvy * dvy + dvz * dvz < settings.minVelocity * settings.minVelocity)
-            { return; }
-
-            float vn = normal.X * dvx + normal.Y * dvy + normal.Z * dvz;
-            float normalImpulse = massNormal * (-vn + restitutionBias + speculativeVelocity);
-
-            float oldNormalImpulse = accumulatedNormalImpulse;
-            accumulatedNormalImpulse = oldNormalImpulse + normalImpulse;
-            if (accumulatedNormalImpulse < 0.0f) accumulatedNormalImpulse = 0.0f;
-            normalImpulse = accumulatedNormalImpulse - oldNormalImpulse;
-
-            float vt = dvx * tangent.X + dvy * tangent.Y + dvz * tangent.Z;
-            float maxTangentImpulse = friction * accumulatedNormalImpulse;
-            float tangentImpulse = massTangent * (-vt);
-
-            float oldTangentImpulse = accumulatedTangentImpulse;
-            accumulatedTangentImpulse = oldTangentImpulse + tangentImpulse;
-            if (accumulatedTangentImpulse < -maxTangentImpulse) accumulatedTangentImpulse = -maxTangentImpulse;
-            else if (accumulatedTangentImpulse > maxTangentImpulse) accumulatedTangentImpulse = maxTangentImpulse;
-
-            tangentImpulse = accumulatedTangentImpulse - oldTangentImpulse;
-
-            // Apply contact impulse
-            Vector3 impulse;
-            impulse.X = normal.X * normalImpulse + tangent.X * tangentImpulse;
-            impulse.Y = normal.Y * normalImpulse + tangent.Y * tangentImpulse;
-            impulse.Z = normal.Z * normalImpulse + tangent.Z * tangentImpulse;
-
-            ApplyImpulse(impulse);
-        }
-
+        
         public void NewIterate(float contactCount)
         {
             accumulatedNormalImpulse = 0;
@@ -244,14 +190,14 @@ namespace Spectrum.Framework.Physics.Dynamics
                 ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount);
             }
 
-            ApplyPush((Position1 - Position2) / contactCount);
+            ApplyPush((Position1 - Position2) * 0.9f / contactCount);
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
         public float AppliedTangentImpulse { get { return accumulatedTangentImpulse; } }
 
         /// <summary>
-        /// The points in wolrd space gets recalculated by transforming the
+        /// The points in world space gets recalculated by transforming the
         /// local coordinates. Also new penetration depth is estimated.
         /// </summary>
         public void UpdatePosition()
@@ -345,9 +291,13 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void ApplyPush(Vector3 push)
         {
+            if(!treatBody1AsStatic && !treatBody2AsStatic)
+            {
+                push /= 2;
+            }
             if (!treatBody1AsStatic)
             {
-                body1.position -= push / 2;
+                body1.position -= push;
                 if (!body1.IgnoreRotation)
                 {
                     Vector3 axis = Vector3.Cross(push, relativePos1);
@@ -361,7 +311,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             }
             if (!treatBody2AsStatic)
             {
-                body2.position += push / 2;
+                body2.position += push;
                 if (!body2.IgnoreRotation)
                 {
                     Vector3 axis = Vector3.Cross(push, relativePos2);
@@ -404,90 +354,6 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             return 1.0f / kNormal;
         }
-
-        /// <summary>
-        /// PrepareForIteration has to be called before <see cref="Iterate"/>.
-        /// </summary>
-        /// <param name="timestep">The timestep of the simulation.</param>
-        public void PrepareForIteration(float timestep)
-        {
-            if (noCollide) return;
-
-            Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
-            dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
-            Vector3 dvNormal = normal * Vector3.Dot(dv, normal);
-
-            massNormal = InertiaInDirection(normal);
-            float normalImpulse = massNormal * (-dvNormal.Length() + restitutionBias + speculativeVelocity);
-
-            tangent = dv - dvNormal;
-            tangent.Normalize();
-
-            massTangent = InertiaInDirection(tangent);
-
-            restitutionBias = lostSpeculativeBounce;
-
-            speculativeVelocity = 0.0f;
-
-            float relNormalVel = Vector3.Dot(normal, dv);
-
-            if (Penetration > settings.allowedPenetration)
-            {
-                restitutionBias = settings.bias * (1.0f / timestep) * JMath.Max(0.0f, Penetration - settings.allowedPenetration);
-                restitutionBias = JMath.Clamp(restitutionBias, 0.0f, settings.maximumBias);
-            }
-
-
-            float timeStepRatio = timestep / lastTimeStep;
-            accumulatedNormalImpulse *= timeStepRatio;
-            accumulatedTangentImpulse *= timeStepRatio;
-
-            // Static/Dynamic friction
-            float relTangentVel = -(Vector3.Dot(tangent, dv));
-            float tangentImpulse = massTangent * relTangentVel;
-            float maxTangentImpulse = -staticFriction * accumulatedNormalImpulse;
-
-            if (tangentImpulse < maxTangentImpulse) friction = dynamicFriction;
-            else friction = staticFriction;
-
-            Vector3 impulse;
-
-            // Simultaneos solving and restitution is simply not possible
-            // so fake it a bit by just applying restitution impulse when there
-            // is a new contact.
-            if (relNormalVel < -1.0f && newContact)
-            {
-                restitutionBias = Math.Max(-Restitution * relNormalVel, restitutionBias);
-            }
-
-            // Speculative Contacts!
-            // if the penetration is negative (which means the bodies are not already in contact, but they will
-            // be in the future) we store the current bounce bias in the variable 'lostSpeculativeBounce'
-            // and apply it the next frame, when the speculative contact was already solved.
-            if (Penetration < -settings.allowedPenetration)
-            {
-                speculativeVelocity = Penetration / timestep;
-
-                lostSpeculativeBounce = restitutionBias;
-                restitutionBias = 0.0f;
-            }
-            else
-            {
-                lostSpeculativeBounce = 0.0f;
-            }
-
-            impulse.X = normal.X * accumulatedNormalImpulse + tangent.X * accumulatedTangentImpulse;
-            impulse.Y = normal.Y * accumulatedNormalImpulse + tangent.Y * accumulatedTangentImpulse;
-            impulse.Z = normal.Z * accumulatedNormalImpulse + tangent.Z * accumulatedTangentImpulse;
-
-            ApplyImpulse(impulse);
-            //ApplyImpulse(normal * normalImpulse);
-
-            lastTimeStep = timestep;
-
-            newContact = false;
-        }
-
 
         /// <summary>
         /// Initializes a contact.
