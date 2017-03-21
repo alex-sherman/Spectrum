@@ -3,7 +3,7 @@
 #define SKINNED_EFFECT_MAX_BONES   64
 float4x3 Bones[SKINNED_EFFECT_MAX_BONES];
 
-CommonVSOut Transform(CommonVSInput input){
+CommonVSOut Transform(CommonVSInput input) {
 	CommonVSOut Out = (CommonVSOut)0;
 	float4 worldPosition = CommonVS((CommonVSInput)input, (CommonVSOut)Out);
 	return Out;
@@ -11,8 +11,9 @@ CommonVSOut Transform(CommonVSInput input){
 CommonVSOut InstanceTransform(CommonVSInput input, float4x4 instanceWorld : POSITION1) {
 	CommonVSOut Out = (CommonVSOut)0;
 	CommonVSInput tInput = (CommonVSInput)input;
-	tInput.Position = mul(tInput.Position, transpose(instanceWorld));
-	float4 worldPosition = CommonVS((CommonVSInput)tInput, (CommonVSOut)Out);
+	//tInput.Position = mul(tInput.Position, transpose(instanceWorld));
+	//tInput.normal = normalize(mul(tInput.normal, transpose(instanceWorld)));
+	float4 worldPosition = CommonVS((CommonVSInput)tInput, mul(transpose(instanceWorld), world), (CommonVSOut)Out);
 	Out.clipDistance = length(worldPosition - cameraPosition) < 120 ? 1 : -1;
 	return Out;
 }
@@ -21,13 +22,19 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 	if(Clip) { clip(vsout.clipDistance); }
 	if(vsout.fog >=.99f){ clip(-1); }
 	float4 color;
-	if (UseTransparency) {
-		color.rgb = tex2D(customTexture, vsout.textureCoordinate).rgb;
-		color.a = 1 - tex2D(transparencySampler, vsout.textureCoordinate).r;
-		color.rgb *= color.a;
+	if (UseTexture) {
+		if (UseTransparency) {
+			color.rgb = tex2D(customTexture, vsout.textureCoordinate).rgb;
+			color.a = 1 - tex2D(transparencySampler, vsout.textureCoordinate).r;
+			color.rgb *= color.a;
+		}
+		else
+			color = tex2D(customTexture, vsout.textureCoordinate);
 	}
-	else
-		color = tex2D(customTexture, vsout.textureCoordinate);
+	else {
+		color.rgb = diffuseColor;
+		color.a = 1;
+	}
 	clip(color.a <= 0 ? -1:1);
 	if(!aboveWater){
 		color.b+=.1f;

@@ -15,7 +15,7 @@ namespace Spectrum.Framework
     {
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
-        private static Dictionary<string, Dictionary<string, double>> timings = new Dictionary<string, Dictionary<string, double>>();
+        private static Dictionary<string, Dictionary<string, List<double>>> timings = new Dictionary<string, Dictionary<string, List<double>>>();
         public static void display(IDebug o)
         {
             if (o != null)
@@ -52,10 +52,12 @@ namespace Spectrum.Framework
         public static void time(string group, string name, double miliseconds)
         {
             if (!timings.ContainsKey(group))
-                timings[group] = new Dictionary<string, double>();
+                timings[group] = new Dictionary<string, List<double>>();
             if (!timings[group].ContainsKey(name))
-                timings[group][name] = 0;
-            timings[group][name] += miliseconds;
+                timings[group][name] = new List<double>();
+            timings[group][name].Add(miliseconds);
+            if (timings[group][name].Count > 60)
+                timings[group][name].RemoveAt(0);
         }
         private void DrawTimes(int startLine, SpriteBatch spritebatch)
         {
@@ -65,12 +67,12 @@ namespace Spectrum.Framework
                 string toPrint = timeGroup.Key+"\n---------------";
                 spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                 curPos += Font.MeasureString(toPrint).Y;
-                List<KeyValuePair<string, double>> renderTimes = timeGroup.Value.ToList();
+                List<KeyValuePair<string, double>> renderTimes = timeGroup.Value.ToList().ConvertAll((kvp) => new KeyValuePair<string, double>(kvp.Key, kvp.Value.Average()));
                 renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
                 double sum = renderTimes.Sum(item => item.Value);
                 for (int i = 0; i < 10 && i < renderTimes.Count; i++)
                 {
-                    toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value / 1000.0f);
+                    toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value);
                     spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                     curPos += Font.LineSpacing;
                 }
@@ -119,7 +121,7 @@ namespace Spectrum.Framework
                     objects[i].DebugDraw(gameTime, spritebatch);
                 }
             }
-            timings = new Dictionary<string, Dictionary<string, double>>();
+            //timings = new Dictionary<string, Dictionary<string, double>>();
         }
     }
 }

@@ -139,7 +139,7 @@ namespace Spectrum.Framework.Entities
                     Remove(updateables[i].ID);
                 timer.Stop();
                 string itemName = updateables[i].GetType().Name;
-                DebugPrinter.time("Update", itemName, timer.Elapsed.Ticks);
+                DebugPrinter.time("Update", itemName, timer.Elapsed.TotalMilliseconds);
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;

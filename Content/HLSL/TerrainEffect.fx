@@ -54,8 +54,8 @@ struct MultiTex_VS_OUT
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
 	float clipDistance : TEXCOORD2;
 	float depth : TEXCOORD3;
-	float fog	: COLOR0;
-	float light : COLOR1;
+	float color : COLOR0;
+	float fog : COLOR1;
 	float4 blend : TEXCOORD4;
 	float4 depthBlend : TEXCOORD5;
 };
@@ -82,21 +82,23 @@ MultiTex_VS_OUT TransformMulti(MultiTex_VS_IN vin)
 CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 {
 	DoClip((CommonVSOut)vsout);
-	float texw = vsout.blend.x;
-	float lodw = vsout.depthBlend.x;
-	float2 coorda = vsout.textureCoordinate * 2;
-	float2 coordb = vsout.textureCoordinate / 4;
-	float3 sampled = 0;
-	sampled += tex2D(sand, coorda) * vsout.blend[0] * (1 - vsout.depthBlend.x);
-	sampled += tex2D(sand, coordb) * vsout.blend[0] * vsout.depthBlend.x;
-	sampled += tex2D(grass, coorda) * vsout.blend[1] * (1 - vsout.depthBlend.x);
-	sampled += tex2D(grass, coordb) * vsout.blend[1] * vsout.depthBlend.x;
-	sampled += tex2D(rock, coorda) * vsout.blend[2] * (1 - vsout.depthBlend.x);
-	sampled += tex2D(rock, coordb) * vsout.blend[2] * vsout.depthBlend.x;
-	sampled += tex2D(snow, coorda) * vsout.blend[3] * (1 - vsout.depthBlend.x);
-	sampled += tex2D(snow, coordb) * vsout.blend[3] * vsout.depthBlend.x;
 	float4 toReturn = (float4)0;
-	toReturn.rgb = sampled;
+	if (UseTexture) {
+		float texw = vsout.blend.x;
+		float lodw = vsout.depthBlend.x;
+		float2 coorda = vsout.textureCoordinate * 2;
+		float2 coordb = vsout.textureCoordinate / 4;
+		float3 sampled = 0;
+		sampled += tex2D(sand, coorda) * vsout.blend[0] * (1 - vsout.depthBlend.x);
+		sampled += tex2D(sand, coordb) * vsout.blend[0] * vsout.depthBlend.x;
+		sampled += tex2D(grass, coorda) * vsout.blend[1] * (1 - vsout.depthBlend.x);
+		sampled += tex2D(grass, coordb) * vsout.blend[1] * vsout.depthBlend.x;
+		sampled += tex2D(rock, coorda) * vsout.blend[2] * (1 - vsout.depthBlend.x);
+		sampled += tex2D(rock, coordb) * vsout.blend[2] * vsout.depthBlend.x;
+		sampled += tex2D(snow, coorda) * vsout.blend[3] * (1 - vsout.depthBlend.x);
+		sampled += tex2D(snow, coordb) * vsout.blend[3] * vsout.depthBlend.x;
+		toReturn.rgb = sampled;
+	}
 
 	toReturn.rgb = lerp(toReturn.rgb, (float4)0,vsout.fog);
 	toReturn.a = 1-vsout.fog;

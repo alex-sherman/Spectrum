@@ -20,6 +20,7 @@ namespace Spectrum.Framework.Graphics
     {
         private class RenderTask
         {
+            public float z;
             public DrawablePart part;
             public SpectrumEffect effect;
             public Matrix world;
@@ -244,7 +245,13 @@ namespace Spectrum.Framework.Graphics
                 {
                     SpectrumEffect partEffect = effect ?? part.effect;
                     if (partEffect != null)
-                        renderTasks.Add(new RenderTask() { effect = partEffect, part = part, projection = Projection, view = View, world = drawable.World });
+                    {
+                        Vector4 p = new Vector4(drawable.position, 1);
+                        p = Vector4.Transform(p, View * Projection);
+                        float z = p.Z / p.W;
+                        z = FullScreenPos(drawable.position).Z;
+                        renderTasks.Add(new RenderTask() { z = z, effect = partEffect, part = part, projection = Projection, view = View, world = drawable.World });
+                    }
                 }
             }
         }
@@ -260,6 +267,8 @@ namespace Spectrum.Framework.Graphics
         public static void BeginRender(GameTime gameTime)
         {
             device.DepthStencilState = new DepthStencilState();
+
+            device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
             UpdateRasterizer();
         }
         public static void DrawJBBox(JBBox box, Color color, SpriteBatch spriteBatch)
@@ -357,9 +366,10 @@ namespace Spectrum.Framework.Graphics
                     GraphicsEngine.PushDrawable(drawable as GameObject, Camera.View, Camera.Projection);
                 timer.Stop();
                 string itemName = drawable.GetType().Name;
-                DebugPrinter.time("render", itemName, timer.Elapsed.Ticks);
+                DebugPrinter.time("render", itemName, timer.Elapsed.TotalMilliseconds);
             }
-            renderTasks.Sort((a, b) => (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
+            renderTasks.Sort((a, b) =>
+                a.effect.HasTransparency && b.effect.HasTransparency ? Math.Sign(b.z - a.z) : (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
             RenderQueue();
             spriteBatch.End();
             //Clear the screen and perform anti aliasing

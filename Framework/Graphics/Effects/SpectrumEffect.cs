@@ -59,10 +59,19 @@ namespace Spectrum.Framework.Graphics
         public static bool Clip = false;
         public static bool AboveWater = true;
         public static Vector4 ClipPlane;
+        public Color DiffuseColor
+        {
+            set
+            {
+                Vector4 color = value.ToVector4();
+                Parameters["diffuseColor"].SetValue(color);
+            }
+        }
         public Texture2D Texture
         {
             set
             {
+                Parameters["UseTexture"].SetValue(value != null);
                 if ((value.Tag as Texture2DData).HasAlpha)
                     HasTransparency = true;
                 Parameters["Texture"].SetValue(value);

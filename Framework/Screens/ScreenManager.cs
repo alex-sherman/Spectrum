@@ -90,6 +90,14 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public override void Update(GameTime gameTime)
         {
+            foreach(var addScreen in addScreens)
+                Root.AddElement(addScreen, 0);
+            addScreens.Clear();
+
+            foreach(var removeScreen in removeScreens)
+                Root.RemoveElement(removeScreen);
+            removeScreens.Clear();
+
             // Read the keyboard and gamepad.
             input.Update();
             Root.UpdateFocus(IsActive);
@@ -116,15 +124,16 @@ namespace Spectrum.Framework.Screens
         #endregion
 
         #region Public Methods
-
+        private List<GameScreen> addScreens = new List<GameScreen>();
         /// <summary>
         /// Adds a new screen to the screen manager.
         /// </summary>
         public void AddScreen(GameScreen screen)
         {
-            Root.AddElement(screen, 0);
+            addScreens.Add(screen);
         }
 
+        private List<GameScreen> removeScreens = new List<GameScreen>();
         /// <summary>
         /// Removes a screen from the screen manager. You should normally
         /// use GameScreen.ExitScreen instead of calling this directly, so
@@ -133,7 +142,7 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public void RemoveScreen(GameScreen screen)
         {
-            Root.RemoveElement(screen);
+            removeScreens.Add(screen);
         }
 
         /// <summary>

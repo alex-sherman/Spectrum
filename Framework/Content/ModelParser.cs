@@ -13,6 +13,12 @@ using System.Text.RegularExpressions;
 
 namespace Spectrum.Framework.Content
 {
+    public class MaterialData
+    {
+        public List<MaterialTexture> textures = new List<MaterialTexture>();
+        public Color diffuseColor = Color.HotPink;
+        public Color specularColor = Color.Black;
+    }
     public struct MaterialTexture
     {
         public string Id;
@@ -23,7 +29,7 @@ namespace Spectrum.Framework.Content
     {
         public JObject jobj;
         public Dictionary<string, MeshPartData> parts = new Dictionary<string, MeshPartData>();
-        public Dictionary<string, List<MaterialTexture>> materials = new Dictionary<string, List<MaterialTexture>>();
+        public Dictionary<string, MaterialData> materials = new Dictionary<string, MaterialData>();
         public string Directory;
         public string FileName;
 
@@ -58,7 +64,7 @@ namespace Spectrum.Framework.Content
         {
             Prefix = @"Models\";
         }
-        
+
         protected override ModelParserCache LoadData(string path, string name)
         {
             path = TryExtensions(path, ".g3dj");
@@ -67,7 +73,7 @@ namespace Spectrum.Framework.Content
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             modelData.jobj = JObject.Load(reader);
             if (modelData.jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
-            
+
             foreach (JObject mesh in modelData.jobj["meshes"])
             {
                 List<string> attributes = new List<string>();
@@ -159,15 +165,20 @@ namespace Spectrum.Framework.Content
             return vertex;
         }
 
-        public Dictionary<string, List<MaterialTexture>> ReadMaterials(JObject jobj)
+        public Dictionary<string, MaterialData> ReadMaterials(JObject jobj)
         {
-            Dictionary<string, List<MaterialTexture>> output = new Dictionary<string, List<MaterialTexture>>();
+            Dictionary<string, MaterialData> output = new Dictionary<string, MaterialData>();
             if (jobj["materials"] != null)
             {
                 foreach (JObject material in jobj["materials"])
                 {
-                    List<MaterialTexture> textures = new List<MaterialTexture>();
-                    output[(string)material["id"]] = textures;
+                    MaterialData materialData = new MaterialData();
+                    output[(string)material["id"]] = materialData;
+                    if (material["emissive"] != null)
+                    {
+                        JArray diffuseColor = (JArray)material["emissive"];
+                        materialData.diffuseColor = new Color((float)Math.Pow((float)diffuseColor[0], .45), (float)Math.Pow((float)diffuseColor[1], .45), (float)Math.Pow((float)diffuseColor[2], .45));
+                    }
                     if (material["textures"] != null)
                     {
                         foreach (JObject texture in material["textures"])
@@ -176,7 +187,7 @@ namespace Spectrum.Framework.Content
                             materialTexture.Id = (string)texture["id"];
                             materialTexture.Filename = (string)texture["filename"];
                             materialTexture.Type = (string)texture["type"];
-                            textures.Add(materialTexture);
+                            materialData.textures.Add(materialTexture);
                         }
                     }
                 }
@@ -248,7 +259,9 @@ namespace Spectrum.Framework.Content
 
                 if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
                 {
-                    List<MaterialTexture> materialTextures = data.materials[(string)nodePart["materialid"]];
+                    MaterialData materialData = data.materials[(string)nodePart["materialid"]];
+                    part.effect.DiffuseColor = materialData.diffuseColor;
+                    List<MaterialTexture> materialTextures = materialData.textures;
                     foreach (MaterialTexture texture in materialTextures)
                     {
                         if (texture.Type == "NONE" || texture.Type == "DIFFUSE")
@@ -286,7 +299,7 @@ namespace Spectrum.Framework.Content
             {
                 parseNode(node, data, parts);
             }
-            
+
             return new SpecModel(data.FileName, parts, GetSkinningData(data.jobj));
         }
     }

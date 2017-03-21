@@ -10,13 +10,15 @@ float fogDistance = 6400;
 float fogWidth = 100;
 bool Clip = false;
 uniform extern texture Texture;
+uniform bool UseTexture = false;
 uniform extern texture NormalMap;
 uniform bool UseNormalMap = false;
 uniform extern texture Transparency;
 uniform bool UseTransparency = false;
-float3 ambientLightColor = float3(0.3,.3,.3);
-float3 diffuseLightColor = float3(1,1,1);
-float3 specularLightColor = float3(1,1,1);
+uniform float4 diffuseColor = float4(1, 0, 1, 1);
+uniform float3 ambientLightColor = float3(0.3,.3,.3);
+uniform float3 diffuseLightColor = float3(1,1,1);
+uniform float3 specularLightColor = float3(1,1,1);
 bool aboveWater = true;
 float4x4 lightViewProjectionMatrix;
 bool shadowMapEnabled = false;
@@ -78,7 +80,8 @@ struct CommonVSOut
 	float4 Pos2DAsSeenByLight : TEXCOORD1;
 	float clipDistance : TEXCOORD2;
 	float depth : TEXCOORD3;
-	float fog	: COLOR0;
+	float4 color : COLOR0;
+	float fog	: COLOR1;
 };
 struct CommonPSOut
 {
@@ -99,7 +102,7 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 		else {
 			normal = vsout.normal;
 		}
-		float3 light = clamp(ambientLightColor + clamp(dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)),0,1), 0, 1);
+		float3 light = (dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)) + 1) / 2;
 		output.rgb += color.rgb * light;
 	}
 	return output;
@@ -123,7 +126,7 @@ void DoClip(CommonVSOut vsout){
 	if(Clip) { clip(vsout.clipDistance); }
 	if(vsout.fog >=.99f){ clip(-1); }
 }
-float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout){
+float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
 	vsout = (CommonVSOut)0;
 	float4 HworldPosition = mul(vin.Position, world);
 	vsout.worldPosition = HworldPosition.xyz / HworldPosition.w;
@@ -133,8 +136,11 @@ float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout){
 	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
 	vsout.Pos2DAsSeenByLight = VSCalcPos2DAsSeenByLight(HworldPosition);
 	vsout.textureCoordinate = vin.TextureCoordinate;
-	vsout.normal = normalize(mul(vin.normal, (float3x3)world));
+	vsout.normal = normalize(mul(vin.normal, world));
 	vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));
 	vsout.binormal = cross(vsout.tangent, vsout.normal);
 	return HworldPosition;
+}
+float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout) {
+	return CommonVS(vin, world, vsout);
 }
