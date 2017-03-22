@@ -130,7 +130,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             inertia.M22 = (1.0f / 12.0f) * mass * (size.X * size.X + size.Z * size.Z);
             inertia.M33 = (1.0f / 12.0f) * mass * (size.X * size.X + size.Y * size.Y);
 
-            this.geomCen = Vector3.Zero;
+            this.geomCen = position;
         }
 
         /// <summary>

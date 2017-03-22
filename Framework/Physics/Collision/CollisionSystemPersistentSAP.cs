@@ -321,7 +321,8 @@ namespace Spectrum.Framework.Physics.Collision
         private void DetectCallback(object obj)
         {
             BroadphasePair pair = obj as BroadphasePair;
-            base.Detect(pair.Entity1, pair.Entity2);
+            if (pair.Entity1.Shape != null && pair.Entity2.Shape != null)
+                base.Detect(pair.Entity1, pair.Entity2);
             BroadphasePair.Pool.GiveBack(pair);
         }
 

@@ -332,6 +332,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             Vector3 rantra = Vector3.Zero;
             if (!treatBody1AsStatic)
             {
+                //TODO: This is completely wrong and should use the inertia provided by the shape
                 kNormal += body1.inverseMass;
 
                 Vector3.Cross(ref relativePos1, ref direction, out rantra);
