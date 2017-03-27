@@ -25,8 +25,13 @@ namespace Spectrum.Framework.Graphics
             }
             set
             {
-                if (AnimationPlayer != null && AnimationPlayer.AnimationNames.Contains(value)) { AnimationPlayer.StartClip(value); }
+                if (AnimationPlayer != null && AnimationPlayer.AnimationNames.Contains(value)) { AnimationPlayer.StartClip(value, SkinningData); }
             }
+        }
+        public void StartAnimation(string animation, bool playOnce = false)
+        {
+            if (AnimationPlayer != null)
+                AnimationPlayer.StartClip(animation, SkinningData, playOnce);
         }
         public SpecModel(string path, Dictionary<string, DrawablePart> meshParts, SkinningData skinningData)
         {
@@ -49,7 +54,7 @@ namespace Spectrum.Framework.Graphics
         {
             if (AnimationPlayer != null)
             {
-                AnimationPlayer.Update(gameTime.ElapsedGameTime);
+                AnimationPlayer.Update(gameTime.ElapsedGameTime, SkinningData);
             }
             foreach (var part in this)
             {

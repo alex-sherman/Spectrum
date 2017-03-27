@@ -100,7 +100,7 @@ namespace Spectrum.Framework
                 for (int i = 0; i < objects.Count; i++)
                 {
                     string toPrint = objects[i].Debug();
-                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Blue, Z);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
                 DrawTimes(2, spritebatch);

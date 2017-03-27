@@ -30,6 +30,7 @@ namespace Spectrum.Framework.Content
         public JObject jobj;
         public Dictionary<string, MeshPartData> parts = new Dictionary<string, MeshPartData>();
         public Dictionary<string, MaterialData> materials = new Dictionary<string, MaterialData>();
+        public Dictionary<string, AnimationClip> animations = new Dictionary<string, AnimationClip>();
         public string Directory;
         public string FileName;
 
@@ -102,6 +103,10 @@ namespace Spectrum.Framework.Content
             }
 
             modelData.materials = ReadMaterials(modelData.jobj);
+            if(modelData.jobj["animations"] != null)
+            {
+                modelData.animations = AnimationParser.GetAnimations(modelData.jobj);
+            }
             return modelData;
         }
 
@@ -208,7 +213,6 @@ namespace Spectrum.Framework.Content
             {
                 bone.inverseBindPose = Matrix.Invert(bone.withParentTransform);
             }
-            output.Root.defaultRotation = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             return output;
         }
 
@@ -294,13 +298,15 @@ namespace Spectrum.Framework.Content
             foreach (KeyValuePair<string, MeshPartData> part in data.parts)
             {
                 parts[part.Key] = new DrawablePart(part.Value.vbuffer, part.Value.ibuffer);
+                parts[part.Key].transform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             }
             foreach (var node in ((JArray)data.jobj["nodes"]).Where(node => node["parts"] != null))
             {
                 parseNode(node, data, parts);
             }
-
-            return new SpecModel(data.FileName, parts, GetSkinningData(data.jobj));
+            SpecModel model = new SpecModel(data.FileName, parts, GetSkinningData(data.jobj));
+            model.AnimationPlayer = new AnimationPlayer(data.animations);
+            return model;
         }
     }
 }

@@ -214,6 +214,8 @@ namespace Spectrum.Framework.Physics.Collision
             bool collisionDetected = false;
             ISupportMappable s1 = ms1 == null ? body1.Shape : ms1;
             ISupportMappable s2 = ms2 == null ? body2.Shape : ms2;
+            if (s1 == null || s2 == null)
+                return false;
             Vector3 tempPoint, tempNormal;
             float tempPenetration;
             for (int i = 0; i < shape1count; i++)

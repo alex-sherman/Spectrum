@@ -57,19 +57,11 @@ namespace Spectrum.Framework.Content
                                     if (c.A < 255)
                                     {
                                         outputTag.HasAlpha = true;
-                                        continue;
                                     }
-                                    sum.X += c.R;
-                                    sum.Y += c.G;
-                                    sum.Z += c.B;
-                                    sum.W += c.A;
+                                    sum += c.ToVector4();
                                 }
                             }
-                            if (sum.W == 0) continue;
-                            levelData[x + y * levelWidth].R = (byte)(sum.X / (sum.W / 255));
-                            levelData[x + y * levelWidth].G = (byte)(sum.Y / (sum.W / 255));
-                            levelData[x + y * levelWidth].B = (byte)(sum.Z / (sum.W / 255));
-                            levelData[x + y * levelWidth].A = (byte)(sum.W / (sum.W / 255));
+                            levelData[x + y * levelWidth] = new Color(sum / 4);
                         }
                     }
                 }

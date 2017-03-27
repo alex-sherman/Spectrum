@@ -42,6 +42,10 @@ namespace Spectrum.Framework.Screens
         }
 
         public static List<Tuple<string, string, string>> TagOverrides = new List<Tuple<string, string, string>>();
+        public static void OverrideTag(string tag, string name, string value)
+        {
+            TagOverrides.Add(new Tuple<string, string, string>(tag, name, value));
+        }
         private static string FindTagOverride(Element element, string fieldName)
         {
             string output = null;

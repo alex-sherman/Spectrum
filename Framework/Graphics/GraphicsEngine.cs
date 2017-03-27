@@ -237,22 +237,27 @@ namespace Spectrum.Framework.Graphics
                 }
             }
         }
+        public static void QueueParts(List<DrawablePart> parts, Vector3 worldCenter, Matrix World)
+        {
+            QueueParts(parts, worldCenter, World, Camera.View, Camera.Projection);
+        }
+        public static void QueueParts(List<DrawablePart> parts, Vector3 worldCenter, Matrix World, Matrix View, Matrix Projection, SpectrumEffect effect = null)
+        {
+            foreach (DrawablePart part in parts)
+            {
+                SpectrumEffect partEffect = effect ?? part.effect;
+                if (partEffect != null)
+                {
+                    float z = FullScreenPos(worldCenter).Z;
+                    renderTasks.Add(new RenderTask() { z = z, effect = partEffect, part = part, projection = Projection, view = View, world = World });
+                }
+            }
+        }
         public static void PushDrawable(GameObject drawable, Matrix View, Matrix Projection, SpectrumEffect effect = null)
         {
             if (drawable != null && drawable.Parts != null)
             {
-                foreach (DrawablePart part in drawable.Parts)
-                {
-                    SpectrumEffect partEffect = effect ?? part.effect;
-                    if (partEffect != null)
-                    {
-                        Vector4 p = new Vector4(drawable.position, 1);
-                        p = Vector4.Transform(p, View * Projection);
-                        float z = p.Z / p.W;
-                        z = FullScreenPos(drawable.position).Z;
-                        renderTasks.Add(new RenderTask() { z = z, effect = partEffect, part = part, projection = Projection, view = View, world = drawable.World });
-                    }
-                }
+                QueueParts(drawable.Parts, drawable.position, drawable.World, View, Projection, effect);
             }
         }
         private static void RenderQueue()

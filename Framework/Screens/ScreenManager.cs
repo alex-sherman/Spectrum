@@ -114,7 +114,7 @@ namespace Spectrum.Framework.Screens
         {
             GraphicsDevice.Clear(Color.White);
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
-                SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
+                SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             Root.PositionUpdate();
             Root.DrawWithChildren(gameTime, SpriteBatch, 1.0f);
             SpriteBatch.End();

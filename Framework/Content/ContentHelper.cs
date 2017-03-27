@@ -43,6 +43,7 @@ namespace Spectrum.Framework.Content
         public static T Load<T>(string name, bool usePrefix) where T : class
         {
             if (name == null) return null;
+            name = name.Replace('/', '\\');
             if (usePrefix && name.Contains('@'))
             {
                 string[] split = name.Split('@');

@@ -61,8 +61,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         private JBBox boundings;
 
-        private float sphericalExpansion = 0.1f;
-        private const float planarExpansion = 0.5f;
+        private float sphericalExpansion = 0.01f;
+        private const float planarExpansion = 0.05f;
 
         /// <summary>
         /// Expands the triangles by the specified amount.

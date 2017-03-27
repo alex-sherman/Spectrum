@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Physics.Collision
     public sealed class GJKCollide
     {
         public static float Timestep = 1 / 60f;
-        private const int MaxIterations = 15;
+        private const int MaxIterations = 20;
 
         private static ResourcePool<VoronoiSimplexSolver> simplexSolverPool = new ResourcePool<VoronoiSimplexSolver>();
 
@@ -389,10 +389,13 @@ namespace Spectrum.Framework.Physics.Collision
                         normal = v;
                     }
                 }
-                if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, x, p);
+                if (!simplexSolver.InSimplex(w))
+                    simplexSolver.AddVertex(w, x, p);
                 if (simplexSolver.Closest(out v)) { distSq = v.LengthSquared(); }
                 else distSq = 0.0f;
             }
+            if (maxIter <= 0 && distSq > epsilon * 20)
+                return false;
 
             #region Retrieving hitPoint
 

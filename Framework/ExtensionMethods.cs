@@ -11,6 +11,11 @@ namespace Spectrum.Framework
 {
     public static class ExtensionMethods
     {
+        public static string FixedLenString(this Vector3 vector)
+        {
+            return "{" + vector.X.ToString("0.00") + ", " + vector.Y.ToString("0.00") + ", " + vector.Z.ToString("0.00") + "}";
+        }
+
         public static bool IsInSameDirection(this Vector3 vector, Vector3 otherVector)
         {
             return Vector3.Dot(vector, otherVector) > 0;

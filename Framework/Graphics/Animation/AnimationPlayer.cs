@@ -35,7 +35,6 @@ namespace Spectrum.Framework.Graphics.Animation
         int currentKeyFrame;
         // Backlink to the bind pose and skeleton hierarchy data.
         Dictionary<string, AnimationClip> AnimationClips;
-        public SkinningData SkinningData { get; set; }
         private bool playOnce = false;
         public string DefaultClip = "Default";
 
@@ -64,7 +63,7 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Starts decoding the specified animation clip.
         /// </summary>
-        public void StartClip(string animation, bool playOnce = false)
+        public void StartClip(string animation, SkinningData SkinningData, bool playOnce = false)
         {
             currentKeyFrame = 0;
             this.playOnce = playOnce;
@@ -76,18 +75,18 @@ namespace Spectrum.Framework.Graphics.Animation
 
             SkinningData.ToDefault();
 
-            Update(TimeSpan.Zero);
+            Update(TimeSpan.Zero, SkinningData);
         }
 
 
         /// <summary>
         /// Advances the current animation position.
         /// </summary>
-        public void Update(TimeSpan time)
+        public void Update(TimeSpan time, SkinningData SkinningData)
         {
             if (currentClipValue != null)
             {
-                UpdateTime(time);
+                UpdateTime(time, SkinningData);
                 List<Keyframe> Keyframes = currentClipValue.Keyframes;
                 for (; currentKeyFrame < Keyframes.Count && Keyframes[currentKeyFrame].Time <= currentTimeValue; currentKeyFrame++)
                 {
@@ -99,7 +98,7 @@ namespace Spectrum.Framework.Graphics.Animation
             }
         }
 
-        public void UpdateTime(TimeSpan time)
+        private void UpdateTime(TimeSpan time, SkinningData SkinningData)
         {
             if (currentClipValue.Duration == TimeSpan.Zero) { return; }
             currentTimeValue += time;
@@ -110,7 +109,7 @@ namespace Spectrum.Framework.Graphics.Animation
                 if (playOnce)
                 {
                     if (AnimationClips.ContainsKey(DefaultClip))
-                        StartClip(DefaultClip);
+                        StartClip(DefaultClip, SkinningData);
                     else
                         currentClipValue = null;
                     return;

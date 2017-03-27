@@ -26,7 +26,8 @@ namespace Spectrum.Framework.Content
         {
             Prefix = @"Models\";
         }
-        public Dictionary<string, AnimationClip> GetAnimations(JObject jobj)
+
+        public static Dictionary<string, AnimationClip> GetAnimations(JObject jobj)
         {
             Dictionary<string, AnimationClip> output = new Dictionary<string, AnimationClip>();
             foreach (JToken animationNode in (JArray)jobj["animations"])
