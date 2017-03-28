@@ -68,7 +68,7 @@ namespace Spectrum.Framework.Content
 
         protected override ModelParserCache LoadData(string path, string name)
         {
-            path = TryExtensions(path, ".g3dj");
+            path = TryThrowExtensions(path, ".g3dj");
             ModelParserCache modelData = new ModelParserCache(name);
             modelData.Directory = Path.GetDirectoryName(path);
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));

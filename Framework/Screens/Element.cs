@@ -56,9 +56,9 @@ namespace Spectrum.Framework.Screens
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
         public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
-        public Texture2D Texture { get { return Fields["image"].ObjValue as Texture2D; } }
+        public ImageAsset Texture { get { return Fields["image"].ObjValue as ImageAsset; } }
         public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
-        public Texture2D Background { get { return Fields["background"].ObjValue as Texture2D; } }
+        public ImageAsset Background { get { return Fields["background"].ObjValue as ImageAsset; } }
         public Color BackgroundColor { get { return (Color)(Fields["background-color"].ObjValue ?? Color.White); } }
 
         protected Element(ScreenManager manager) : this() { Manager = manager; }
@@ -80,7 +80,7 @@ namespace Spectrum.Framework.Screens
             this.Fields["background"] = new ElementField(
                 this,
                 "background",
-                ElementField.ContentSetter<Texture2D>,
+                ElementField.ContentSetter<ImageAsset>,
                 false
                 );
             this.Fields["background-color"] = new ElementField(
@@ -92,7 +92,7 @@ namespace Spectrum.Framework.Screens
             this.Fields["image"] = new ElementField(
                 this,
                 "image",
-                ElementField.ContentSetter<Texture2D>,
+                ElementField.ContentSetter<ImageAsset>,
                 false
                 );
             this.Fields["image-color"] = new ElementField(
@@ -121,7 +121,7 @@ namespace Spectrum.Framework.Screens
         public string this[string key]
         {
             get { return Fields[key].StrValue; }
-            set { Fields[key].StrValue = value; }
+            set { if (Fields[key].StrValue != value) Fields[key].StrValue = value; }
         }
 
         public List<Element> FindAll(Func<Element, bool> Predicate)
@@ -242,13 +242,11 @@ namespace Spectrum.Framework.Screens
         {
             if (Texture != null)
             {
-                //Texture.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Layer(1), color: TextureColor);
-                ScreenManager.CurrentManager.SpriteBatch.Draw(Texture, Rect, TextureColor, Layer(1));
+                Texture.Draw(spritebatch, Rect, TextureColor, Layer(1));
             }
             if (Background != null)
             {
-                ScreenManager.CurrentManager.SpriteBatch.Draw(Background, Rect, BackgroundColor, Z);
-                //Background.Draw(Rect, ScreenManager.CurrentManager.SpriteBatch, Z, color: BackgroundColor);
+                Background.Draw(spritebatch, Rect, BackgroundColor, Z);
             }
         }
 

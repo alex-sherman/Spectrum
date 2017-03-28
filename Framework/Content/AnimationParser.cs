@@ -61,7 +61,7 @@ namespace Spectrum.Framework.Content
 
         protected override AnimationData LoadData(string path, string name)
         {
-            path = TryExtensions(path, ".g3dj");
+            path = TryThrowExtensions(path, ".g3dj");
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             JObject jobj = JObject.Load(reader);
 

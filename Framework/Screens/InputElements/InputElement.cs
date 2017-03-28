@@ -13,6 +13,7 @@ namespace Spectrum.Framework.Screens.InputElements
     public class InputElement : Element
     {
         public event InterfaceEventHandler OnClick;
+        public event InterfaceEventHandler OnRightClick;
         public object Data;
 
         public string TitleText { get { return this["title"]; } }
@@ -42,14 +43,16 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             otherTookInput |= base.HandleInput(otherTookInput, input);
             if (otherTookInput) { return true; }
-            if (input.IsNewMousePress(0))
+            if (MouseInside())
             {
-                if (MouseInside())
+                if (OnClick != null && input.IsNewMousePress(0))
                 {
-                    if (OnClick != null)
-                    {
-                        OnClick(this);
-                    }
+                    OnClick(this);
+                    return true;
+                }
+                if (OnRightClick != null && input.IsNewMousePress(1))
+                {
+                    OnRightClick(this);
                     return true;
                 }
             }

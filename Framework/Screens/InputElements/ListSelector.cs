@@ -40,7 +40,8 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         private void optionClicked(InputElement clicked)
         {
-            OnPick(clicked);
+            if (OnPick != null)
+                OnPick(clicked);
             Close();
         }
 
@@ -55,12 +56,11 @@ namespace Spectrum.Framework.Screens.InputElements
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
             otherTookInput |= base.HandleInput(otherTookInput, input);
-            if (input.IsNewMousePress(0) && !Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
+            if (otherTookInput || input.IsNewMousePress(0) && !Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
             {
                 Close();
             }
-            otherTookInput |= MouseInside();
-            return otherTookInput;
+            return true;
         }
         public void Close()
         {

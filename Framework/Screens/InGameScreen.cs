@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Screens
         Vector2 dragMouseBegin;
         Vector2 dragBegin;
         public string Title;
-        public InGameScreen(string title, ScalableTexture background = null, ScalableTexture topBar = null, ScalableTexture closeButton = null)
+        public InGameScreen(string title)
         {
             if (title == null)
                 throw new ArgumentNullException("Title cannot be null");

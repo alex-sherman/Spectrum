@@ -30,7 +30,14 @@ namespace Spectrum.Framework.Content
             {
                 if (File.Exists(path + extension)) return path + extension;
             }
-            throw new FileNotFoundException("The texture could not be loaded: ", path);
+            return null;
+        }
+        public string TryThrowExtensions(string path, params string[] extensions)
+        {
+            string full_path = TryExtensions(path, extensions);
+            if(full_path == null)
+                throw new FileNotFoundException("The texture could not be loaded: ", path);
+            return full_path;
         }
         public virtual void Cache(string path, string name)
         {

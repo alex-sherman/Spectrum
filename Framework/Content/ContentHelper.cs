@@ -29,8 +29,8 @@ namespace Spectrum.Framework.Content
             {
                 {typeof(SpecModel), new ModelParser()},
                 {typeof(AnimationPlayer), new AnimationParser()},
+                {typeof(ImageAsset), new ImageAssetParser()},
                 {typeof(Texture2D), new Texture2DParser()},
-                {typeof(ScalableTexture), new ScalableTextureParser()},
                 {typeof(float[,]), new HeightmapParser()},
                 {typeof(SoundEffect), new SoundParser()}
             };

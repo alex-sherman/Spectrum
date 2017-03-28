@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Content
 
         protected override SoundStream LoadData(string path, string name)
         {
-            name = TryExtensions(path, ".wav", ".m4a");
+            name = TryThrowExtensions(path, ".wav", ".m4a");
             var nativefilestream = new NativeFileStream(
                 name,
                 NativeFileMode.Open,

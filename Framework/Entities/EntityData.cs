@@ -31,7 +31,11 @@ namespace Spectrum.Framework.Entities
         }
         public EntityData Clone()
         {
-            return Serialization.Copy(this);
+            EntityData output = new EntityData();
+            output.type = type.ToString();
+            output.args = args.Select(prim => new Primitive(prim.Object)).ToArray();
+            output.fields = fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
+            return output;
         }
         public ImmutableEntityData ToImmutable()
         {
@@ -42,6 +46,7 @@ namespace Spectrum.Framework.Entities
             return output;
         }
     }
+    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     public class ImmutableEntityData : EntityData
     {
         internal ImmutableEntityData() { }

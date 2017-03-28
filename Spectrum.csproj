@@ -121,6 +121,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\Steamworks\Steamworks.NET.dll</HintPath>
     </Reference>
+    <Reference Include="Svg, Version=2.2.1.39233, Culture=neutral, PublicKeyToken=12a0bac221edeae2, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dependencies\Svg.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -147,8 +151,10 @@
     <Compile Include="Framework\Content\AnimationParser.cs" />
     <Compile Include="Framework\Content\ContentParser.cs" />
     <Compile Include="Framework\Content\HeightmapParser.cs" />
-    <Compile Include="Framework\Content\ScalableTextureParser.cs" />
+    <Compile Include="Framework\Content\ImageAsset.cs" />
+    <Compile Include="Framework\Content\ImageAssetParser.cs" />
     <Compile Include="Framework\Content\SoundParser.cs" />
+    <Compile Include="Framework\Content\SVGParser.cs" />
     <Compile Include="Framework\Content\Texture2DParser.cs" />
     <Compile Include="Framework\Content\ModelParser.cs" />
     <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
@@ -231,7 +237,6 @@
     <Compile Include="Framework\Screens\MenuScreen.cs" />
     <Compile Include="Framework\Screens\MessageBoxScreen.cs" />
     <Compile Include="Framework\Screens\RectOffset.cs" />
-    <Compile Include="Framework\Screens\ScalableTexture.cs" />
     <Compile Include="Framework\Screens\ScreenManager.cs" />
     <Compile Include="Framework\Content\ContentHelper.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationPlayer.cs" />

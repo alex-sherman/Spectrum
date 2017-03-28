@@ -16,17 +16,15 @@ namespace Spectrum.Framework.Content
     {
         public Texture2DParser()
         {
-
             Prefix = @"Textures\";
         }
-        bool IsPowerOfTwo(int x)
+        static bool IsPowerOfTwo(int x)
         {
             return (x & (x - 1)) == 0;
         }
-        protected override Texture2D LoadData(string path, string name)
+        public static Texture2D Load(string full_path)
         {
-            name = TryExtensions(path, ".jpg", ".png");
-            Texture2D loaded = Texture2D.FromStream(SpectrumGame.Game.GraphicsDevice, new FileStream(name, FileMode.Open, FileAccess.Read));
+            Texture2D loaded = Texture2D.FromStream(SpectrumGame.Game.GraphicsDevice, new FileStream(full_path, FileMode.Open, FileAccess.Read));
             //Of course you have to generate your own mip maps when you import from a file
             //why not. Thanks Monogame.
             bool mipMap = IsPowerOfTwo(loaded.Width) && IsPowerOfTwo(loaded.Height);
@@ -69,6 +67,11 @@ namespace Spectrum.Framework.Content
                 lastLevelData = levelData;
             }
             return output;
+        }
+        protected override Texture2D LoadData(string path, string name)
+        {
+            string full_path = TryThrowExtensions(path, ".jpg", ".png");
+            return Load(full_path);
         }
 
         protected override Texture2D SafeCopy(Texture2D cache)
