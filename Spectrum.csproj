@@ -87,7 +87,39 @@
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>Dependencies\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <Reference Include="IronPython, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IronPython.Modules, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.Modules.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IronPython.SQLite, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.SQLite.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IronPython.Wpf, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.Wpf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Dynamic">
+      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Dynamic.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Scripting">
+      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.AspNet">
+      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.AspNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Scripting.Metadata">
+      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.Metadata.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Nat">
       <HintPath>Dependencies\Mono.Nat.dll</HintPath>
     </Reference>
@@ -153,6 +185,8 @@
     <Compile Include="Framework\Content\HeightmapParser.cs" />
     <Compile Include="Framework\Content\ImageAsset.cs" />
     <Compile Include="Framework\Content\ImageAssetParser.cs" />
+    <Compile Include="Framework\Content\ScriptAsset.cs" />
+    <Compile Include="Framework\Content\ScriptParser.cs" />
     <Compile Include="Framework\Content\SoundParser.cs" />
     <Compile Include="Framework\Content\SVGParser.cs" />
     <Compile Include="Framework\Content\Texture2DParser.cs" />
@@ -160,7 +194,7 @@
     <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
     <Compile Include="Framework\Content\ScreenParser.cs" />
     <Compile Include="Framework\DebugPrinter.cs" />
-    <Compile Include="Framework\Entities\EntityData.cs" />
+    <Compile Include="Framework\Entities\InitData.cs" />
     <Compile Include="Framework\Entities\Interpolator.cs" />
     <Compile Include="Framework\Entities\ReplicateAttribute.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationClip.cs" />
@@ -335,6 +369,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\HLSL\Common.fxh" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

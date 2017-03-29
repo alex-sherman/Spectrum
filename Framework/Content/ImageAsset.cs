@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Content
         public ImageAsset(SvgDocument svg) { this.svg = svg; }
         public ImageAsset(Texture2D texture) { this.texture = texture; }
         private ImageAsset() { }
-        private void Rasterize(int width, int height)
+        public void Rasterize(int width, int height)
         {
             System.Drawing.Bitmap bitmap = svg.Draw(width, height);
             rasterized = new Texture2D(SpectrumGame.Game.GraphicsDevice, bitmap.Width, bitmap.Height);

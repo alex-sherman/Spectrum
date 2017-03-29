@@ -73,7 +73,7 @@ namespace Spectrum.Framework.Entities
         }
         public void HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
-            EntityData entityData = message.Read<EntityData>();
+            InitData entityData = message.Read<InitData>();
             if (!Entities.Map.ContainsKey((Guid)entityData.fields["ID"].Object))
                 CreateEntity(entityData);
         }
@@ -146,10 +146,10 @@ namespace Spectrum.Framework.Entities
         }
         public T Create<T>(params object[] args) where T : Entity
         {
-            T output = CreateEntity(new EntityData(typeof(T).Name, args)) as T;
+            T output = CreateEntity(new InitData(typeof(T).Name, args)) as T;
             return output;
         }
-        public Entity CreateEntity(EntityData data)
+        public Entity CreateEntity(InitData data)
         {
             Entity e = Construct(data);
             AddEntity(e);
@@ -157,29 +157,25 @@ namespace Spectrum.Framework.Entities
         }
         public Entity CreateEntityType(string typeName)
         {
-            return CreateEntity(new EntityData(typeName));
+            return CreateEntity(new InitData(typeName));
         }
         /// <summary>
         /// Calls the constructor for the Entity, but does not initialize it or add it to the EntityManager
         /// </summary>
         /// <param name="entityData">Creation data for the Entity</param>
         /// <returns>An initialized</returns>
-        public Entity Construct(EntityData entityData)
+        public Entity Construct(InitData entityData)
         {
-            TypeData typeData = TypeHelper.Types.GetData(entityData.type);
-            if (typeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.type)); }
-            Type type = typeData.Type;
-            Entity output = (Entity)TypeHelper.Instantiate(type, entityData.args.Select(prim => prim.Object).ToArray());
+            if (entityData.TypeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.type)); }
 
             entityData = entityData.Clone();
             if (!entityData.fields.ContainsKey("OwnerGuid"))
                 entityData.Set("OwnerGuid", mpService.ID);
             if (!entityData.fields.ContainsKey("ID"))
                 entityData.Set("ID", Guid.NewGuid());
-            foreach (var field in entityData.fields)
-            {
-                typeData.Set(output, field.Key, field.Value.Object);
-            }
+
+            Entity output = entityData.Construct() as Entity;
+
             output.CreationData = entityData;
             output.SendMessageCallback = SendEntityMessage;
             return output;

@@ -1,4 +1,6 @@
-﻿using Spectrum.Framework.Entities;
+﻿using IronPython.Runtime.Types;
+using Spectrum.Framework.Content;
+using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,50 @@ namespace Spectrum.Framework
         private Dictionary<string, MemberInfo> members = new Dictionary<string, MemberInfo>();
         public List<string> ReplicatedMemebers = new List<string>();
         public Type Type { get; private set; }
+        private IronPythonTypeWrapper pythonWrapper;
+        public TypeData(IronPythonTypeWrapper type)
+            : this(type.Type)
+        {
+            pythonWrapper = type;
+        }
+        public object Instantiate(params object[] args)
+        {
+            if (pythonWrapper != null)
+                return pythonWrapper.Activator();
+
+            if (args == null) args = new object[0];
+            Type[] types = new Type[args.Length];
+            for (int i = 0; i < args.Length; i++)
+            {
+                types[i] = args[i].GetType();
+            }
+            ConstructorInfo cinfo = Type.GetConstructor(types);
+            if (cinfo == null)
+            {
+                throw new InvalidOperationException("Unable to construct an entity with the given parameters");
+            }
+            try
+            {
+                object output = cinfo.Invoke(args);
+
+                foreach (FieldInfo field in output.GetType().GetFields())
+                {
+                    foreach (object attribute in field.GetCustomAttributes(true).ToList())
+                    {
+                        PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
+                        if (preload != null)
+                        {
+                            field.SetValue(output, ContentHelper.LoadType(field.FieldType, preload.Path));
+                        }
+                    }
+                }
+                return output;
+            }
+            catch
+            {
+                throw new Exception("An error occured constructing the entity");
+            }
+        }
         public TypeData(Type type)
         {
             Type = type;
@@ -52,11 +98,17 @@ namespace Spectrum.Framework
                 MemberInfo info = members[name];
                 if (info.MemberType.IsAssignableFrom(value.GetType()))
                     members[name].SetValue(obj, value);
-                else if(value is string)
+                else if (info.MemberType.IsSubclassOf(typeof(Enum)) && value is int)
+                    members[name].SetValue(obj, Enum.ToObject(info.MemberType, (int)value));
+                else if (value is InitData)
                 {
-                    object new_value = TypeHelper.Instantiate<object>(value as string);
-                    if (info.MemberType.IsAssignableFrom(new_value.GetType()))
-                        members[name].SetValue(obj, new_value);
+                    InitData initData = value as InitData;
+                    if (info.MemberType.IsAssignableFrom(initData.TypeData.Type))
+                        members[name].SetValue(obj, initData.Construct());
+                }
+                else if (ContentHelper.ContentParsers.ContainsKey(info.MemberType) && value is string)
+                {
+                    members[name].SetValue(obj, ContentHelper.LoadType(info.MemberType, value as string));
                 }
             }
         }

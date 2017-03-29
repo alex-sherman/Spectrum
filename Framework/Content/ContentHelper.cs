@@ -31,6 +31,7 @@ namespace Spectrum.Framework.Content
                 {typeof(AnimationPlayer), new AnimationParser()},
                 {typeof(ImageAsset), new ImageAssetParser()},
                 {typeof(Texture2D), new Texture2DParser()},
+                {typeof(ScriptAsset), new ScriptParser()},
                 {typeof(float[,]), new HeightmapParser()},
                 {typeof(SoundEffect), new SoundParser()}
             };

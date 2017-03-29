@@ -31,6 +31,7 @@ namespace Spectrum.Framework
             }
             catch { }
         }
+        public static void log(string msg, params object[] args) { print(msg, args); }
         public static void print(string msg, params object[] args)
         {
             msg = String.Format(msg, args);

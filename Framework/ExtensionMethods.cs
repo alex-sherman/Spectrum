@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Screens;
 using System;
@@ -11,6 +12,11 @@ namespace Spectrum.Framework
 {
     public static class ExtensionMethods
     {
+        public static Plugin GetPlugin(this Type type)
+        {
+            return TypeHelper.GetPlugin(type);
+        }
+
         public static string FixedLenString(this Vector3 vector)
         {
             return "{" + vector.X.ToString("0.00") + ", " + vector.Y.ToString("0.00") + ", " + vector.Z.ToString("0.00") + "}";

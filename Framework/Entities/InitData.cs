@@ -13,33 +13,46 @@ using System.Text;
 namespace Spectrum.Framework.Entities
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    public class EntityData
+    public class InitData
     {
         public string type;
         public Primitive[] args = new Primitive[0];
         public Dictionary<string, Primitive> fields = new Dictionary<string, Primitive>();
-        internal EntityData() { }
-        public EntityData(string type, params object[] args)
+        internal InitData() { }
+        public InitData(string type, params object[] args)
         {
             this.type = type;
             this.args = args.Select(obj => new Primitive(obj)).ToArray();
         }
-        public virtual EntityData Set(string name, object value)
+        [ProtoIgnore]
+        public TypeData TypeData { get { return TypeHelper.Types.GetData(type); } }
+        public object Construct()
         {
+            object output = TypeData.Instantiate(args.Select(prim => prim.Object).ToArray());
+            foreach (var field in fields)
+            {
+                TypeData.Set(output, field.Key, field.Value.Object);
+            }
+            return output;
+        }
+        public virtual InitData Set(string name, object value)
+        {
+            if (value is Enum)
+                value = (int)value;
             fields[name] = new Primitive(value);
             return this;
         }
-        public EntityData Clone()
+        public InitData Clone()
         {
-            EntityData output = new EntityData();
+            InitData output = new InitData();
             output.type = type.ToString();
             output.args = args.Select(prim => new Primitive(prim.Object)).ToArray();
             output.fields = fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
             return output;
         }
-        public ImmutableEntityData ToImmutable()
+        public ImmultableInitData ToImmutable()
         {
-            ImmutableEntityData output = new ImmutableEntityData();
+            ImmultableInitData output = new ImmultableInitData();
             output.args = args;
             output.type = type;
             output.fields = new Dictionary<string, Primitive>(fields);
@@ -47,13 +60,13 @@ namespace Spectrum.Framework.Entities
         }
     }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    public class ImmutableEntityData : EntityData
+    public class ImmultableInitData : InitData
     {
-        internal ImmutableEntityData() { }
-        public ImmutableEntityData(string type, params object[] args) : base(type, args) { }
-        public override EntityData Set(string name, object value)
+        internal ImmultableInitData() { }
+        public ImmultableInitData(string type, params object[] args) : base(type, args) { }
+        public override InitData Set(string name, object value)
         {
-            EntityData output = new EntityData();
+            InitData output = new InitData();
             output.args = args;
             output.type = type;
             output.fields = new Dictionary<string, Primitive>(fields);

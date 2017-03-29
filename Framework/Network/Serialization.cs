@@ -36,7 +36,7 @@ namespace Spectrum.Framework.Network
             RegisterType(typeof(Matrix));
             RegisterType(typeof(JToken));
             RegisterType(typeof(NetID));
-            RegisterType(typeof(EntityData));
+            RegisterType(typeof(InitData));
             RegisterType(typeof(BoxShape));
             //RegisterType(typeof(List<>));
             //RegisterType(typeof(Dictionary<>));
