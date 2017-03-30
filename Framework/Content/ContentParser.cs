@@ -43,7 +43,9 @@ namespace Spectrum.Framework.Content
         {
             try
             {
+                var timer = DebugTiming.Content.Time(GetType().Name);
                 cachedData[name] = LoadData(path, name);
+                timer.Stop();
             }
             catch (FileNotFoundException)
             {

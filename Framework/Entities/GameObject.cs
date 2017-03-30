@@ -161,19 +161,8 @@ namespace Spectrum.Framework.Entities
         #endregion
 
         public List<DrawablePart> Parts;
-        public SpecModel Model { get { return Parts as SpecModel; } }
-        public string ModelName
-        {
-            get
-            {
-                if (Model == null) return null;
-                return Model.Path;
-            }
-            set
-            {
-                Parts = ContentHelper.Load<SpecModel>(value);
-            }
-        }
+        public SpecModel Model { get { return Parts as SpecModel; } set { Parts = value; } }
+
         [Replicate]
         public Matrix ModelTransform = Matrix.Identity;
 

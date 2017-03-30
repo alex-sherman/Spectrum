@@ -53,10 +53,10 @@ namespace Spectrum.Framework.Screens
             get { return new Rectangle(Rect.X, Rect.Y, Rect.Width, TopBarHeight); }
         }
 
-        public override ElementDisplay Toggle()
+        public override ElementDisplay Toggle(bool? show = null)
         {
             Parent.MoveElement(this, 0);
-            return base.Toggle();
+            return base.Toggle(show);
         }
 
         public override bool HandleInput(bool otherTookInput, InputState input)

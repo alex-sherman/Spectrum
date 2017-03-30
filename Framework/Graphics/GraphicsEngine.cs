@@ -36,13 +36,10 @@ namespace Spectrum.Framework.Graphics
         private static RenderTarget2D shadowMap;
         private static RenderTarget2D AATarget;
         private static RenderTarget2D DepthTarget;
-        private static Stopwatch timer;
-        public static Dictionary<string, long> renderTimes = new Dictionary<string, long>();
         private static List<RenderTask> renderTasks = new List<RenderTask>();
         //TODO: Add a settings thing for multisample count
         public static void Initialize(Camera camera)
         {
-            timer = new Stopwatch();
             Camera = camera;
             GraphicsEngine.device = SpectrumGame.Game.GraphicsDevice;
             Settings.Init(device);
@@ -340,7 +337,6 @@ namespace Spectrum.Framework.Graphics
         }
         public static void Render(List<Entity> drawables, GameTime gameTime)
         {
-            renderTimes.Clear();
             BeginRender(gameTime);
             WaterEffect.ReflectionView = Camera.ReflectionView;
             WaterEffect.ReflectionProj = Camera.ReflectionProjection;
@@ -363,15 +359,14 @@ namespace Spectrum.Framework.Graphics
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTargets(AATarget, DepthTarget);
             GraphicsEngine.device.Clear(clearColor);
+            TimingResult timer;
             foreach (Entity drawable in drawables)
             {
-                timer.Restart();
+                timer = DebugTiming.Render.Time(drawable.GetType().Name);
                 drawable.Draw(gameTime, spriteBatch);
                 if (drawable is GameObject)
                     GraphicsEngine.PushDrawable(drawable as GameObject, Camera.View, Camera.Projection);
                 timer.Stop();
-                string itemName = drawable.GetType().Name;
-                DebugPrinter.time("render", itemName, timer.Elapsed.TotalMilliseconds);
             }
             renderTasks.Sort((a, b) =>
                 a.effect.HasTransparency && b.effect.HasTransparency ? Math.Sign(b.z - a.z) : (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
@@ -379,14 +374,13 @@ namespace Spectrum.Framework.Graphics
             spriteBatch.End();
             //Clear the screen and perform anti aliasing
             device.SetRenderTarget(null);
-            timer.Restart();
+            timer = DebugTiming.Render.Time("Post Process");
             GraphicsEngine.device.Clear(clearColor);
             PostProcessEffect.Technique = "AAPP";
             spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
             spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
             spriteBatch.End();
             timer.Stop();
-            renderTimes["Post Process"] = timer.ElapsedTicks;
         }
     }
 }

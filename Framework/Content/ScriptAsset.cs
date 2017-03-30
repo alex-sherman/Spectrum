@@ -72,8 +72,10 @@ namespace Spectrum.Framework.Content
         public Dictionary<string, FunctionWrapper> Functions;
         public Dictionary<string, object> variables = new Dictionary<string, object>();
         public Plugin Plugin { get; private set; }
-        public ScriptAsset(string source_text)
+        public string Path { get; private set; }
+        public ScriptAsset(string path, string source_text)
         {
+            Path = path;
             scope = engine.CreateScope();
             ObjectOperations op = engine.Operations;
             source = engine.CreateScriptSourceFromString(source_text);
@@ -91,15 +93,10 @@ namespace Spectrum.Framework.Content
         {
             try
             {
-                Stopwatch time = new Stopwatch();
-                time.Restart();
+                var timer = DebugTiming.Scripts.Time(Path);
                 Func<object, object[]> f = scope.GetVariable<Func<object, object[]>>(function);
-                time.Stop();
-                DebugPrinter.time("scripts", "faff", time.Elapsed.TotalMilliseconds);
-                time.Restart();
                 object o = f(args);
-                time.Stop();
-                DebugPrinter.time("scripts", "faff2", time.Elapsed.TotalMilliseconds);
+                timer.Stop();
                 return o;
             }
             catch(Exception e)

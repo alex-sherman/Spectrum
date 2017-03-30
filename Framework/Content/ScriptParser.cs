@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Content
         {
             path = TryThrowExtensions(path, ".py");
             StreamReader reader = new StreamReader(path);
-            return new ScriptAsset(reader.ReadToEnd());
+            return new ScriptAsset(path, reader.ReadToEnd());
         }
 
         protected override ScriptAsset SafeCopy(ScriptAsset data)

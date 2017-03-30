@@ -285,9 +285,9 @@ namespace Spectrum.Framework.Screens
             _children.Remove(element);
         }
 
-        public virtual ElementDisplay Toggle()
+        public virtual ElementDisplay Toggle(bool? show = null)
         {
-            Display = Display == ElementDisplay.Visible ? ElementDisplay.Hidden : ElementDisplay.Visible;
+            Display = (!show ?? (Display == ElementDisplay.Visible)) ? ElementDisplay.Hidden : ElementDisplay.Visible;
             return Display;
         }
     }

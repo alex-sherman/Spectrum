@@ -15,7 +15,6 @@ namespace Spectrum.Framework
     {
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
-        private static Dictionary<string, Dictionary<string, List<double>>> timings = new Dictionary<string, Dictionary<string, List<double>>>();
         public static void display(IDebug o)
         {
             if (o != null)
@@ -46,34 +45,22 @@ namespace Spectrum.Framework
                 for (int i = 0; i < msgStrings.Length; i++)
                 {
                     string filename = sf.GetFileName();
-                    strings.Add(String.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last()));
+                    strings.Add(string.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last()));
                 }
             }
-        }
-        public static void time(string group, string name, double miliseconds)
-        {
-            if (!timings.ContainsKey(group))
-                timings[group] = new Dictionary<string, List<double>>();
-            if (!timings[group].ContainsKey(name))
-                timings[group][name] = new List<double>();
-            timings[group][name].Add(miliseconds);
-            if (timings[group][name].Count > 60)
-                timings[group][name].RemoveAt(0);
         }
         private void DrawTimes(int startLine, SpriteBatch spritebatch)
         {
             float curPos = (startLine) * Font.LineSpacing;
-            foreach (var timeGroup in timings)
+            foreach (var timeGroup in DebugTiming.Groups)
             {
-                string toPrint = timeGroup.Key+"\n---------------";
+                string toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
                 spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                 curPos += Font.MeasureString(toPrint).Y;
-                List<KeyValuePair<string, double>> renderTimes = timeGroup.Value.ToList().ConvertAll((kvp) => new KeyValuePair<string, double>(kvp.Key, kvp.Value.Average()));
-                renderTimes.Sort((item, other) => -item.Value.CompareTo(other.Value));
-                double sum = renderTimes.Sum(item => item.Value);
-                for (int i = 0; i < 10 && i < renderTimes.Count; i++)
+                var times = timeGroup.ShowCumulative ? timeGroup.CumulativeTimes : timeGroup.AverageTimes(1).Take(10);
+                foreach (var time in times)
                 {
-                    toPrint = renderTimes[i].Key + ": " + String.Format("{0:0.00}", renderTimes[i].Value);
+                    toPrint = time.Item1 + ": " + String.Format("{0:0.00}", time.Item2);
                     spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                     curPos += Font.LineSpacing;
                 }

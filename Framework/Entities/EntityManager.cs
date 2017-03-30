@@ -124,7 +124,7 @@ namespace Spectrum.Framework.Entities
             List<Entity> updateables = Entities.UpdateSorted;
             for (int i = 0; i < updateables.Count; i++)
             {
-                timer.Restart();
+                var timer = DebugTiming.Update.Time(updateables[i].GetType().Name);
                 if (updateables[i].Enabled)
                 {
                     updateables[i].Update(gameTime);
@@ -138,8 +138,6 @@ namespace Spectrum.Framework.Entities
                 if (updateables[i].Disposing)
                     Remove(updateables[i].ID);
                 timer.Stop();
-                string itemName = updateables[i].GetType().Name;
-                DebugPrinter.time("Update", itemName, timer.Elapsed.TotalMilliseconds);
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;
