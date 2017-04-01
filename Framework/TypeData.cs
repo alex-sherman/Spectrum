@@ -87,7 +87,7 @@ namespace Spectrum.Framework
             foreach (var property in type.GetProperties())
             {
                 members[property.Name] = new MemberInfo(property);
-                if(property.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
+                if (property.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
                     ReplicatedMemebers.Add(property.Name);
             }
         }
@@ -100,16 +100,27 @@ namespace Spectrum.Framework
                     members[name].SetValue(obj, value);
                 else if (info.MemberType.IsSubclassOf(typeof(Enum)) && value is int)
                     members[name].SetValue(obj, Enum.ToObject(info.MemberType, (int)value));
-                else if (value is InitData)
-                {
-                    InitData initData = value as InitData;
-                    if (info.MemberType.IsAssignableFrom(initData.TypeData.Type))
-                        members[name].SetValue(obj, initData.Construct());
-                }
                 else if (ContentHelper.ContentParsers.ContainsKey(info.MemberType) && value is string)
                 {
                     members[name].SetValue(obj, ContentHelper.LoadType(info.MemberType, value as string));
                 }
+                else
+                {
+                    // Try assigning a prefab or InitData
+                    if (value is string && Prefab.Prefabs.ContainsKey(value as string))
+                        value = Prefab.Prefabs[value as string];
+                    if (value is InitData)
+                    {
+                        InitData initData = value as InitData;
+                        // Maybe the target field is type InitData
+                        if (info.MemberType.IsAssignableFrom(value.GetType()))
+                            members[name].SetValue(obj, value);
+                        // Construct an object to fill the field if we can
+                        else if (info.MemberType.IsAssignableFrom(initData.TypeData.Type))
+                            members[name].SetValue(obj, initData.Construct());
+                    }
+                }
+
             }
         }
         public object Get(object obj, string name)

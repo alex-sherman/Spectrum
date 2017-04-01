@@ -36,6 +36,10 @@ namespace Spectrum.Framework.Entities
 
         public Guid ID;
         public TypeData TypeData { get; private set; }
+        /// <summary>
+        /// Gets automatically set when constructing with InitData
+        /// </summary>
+        public string TypeName { get; set; }
         public bool AllowReplicate { get; set; }
         public bool AutoReplicate { get; set; }
         public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }

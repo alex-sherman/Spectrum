@@ -16,7 +16,7 @@ namespace Spectrum.Framework.Graphics
     }
     public class VertexHelper
     {
-        public static void ComputeTangents<T>(List<T> vertices, List<uint> indices) where T : struct, ICommonTex
+        public static void ComputeTangents<T>(List<T> vertices, List<ushort> indices) where T : struct, ICommonTex
         {
             for (int i = 0; i < indices.Count; i += 3)
             {

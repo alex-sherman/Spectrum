@@ -6,14 +6,18 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens.InputElements
 {
-    public class ListOption : InputElement
+    public class ListOption<T> : InputElement
     {
-        public TextElement text;
-        public ListOption(object tag, string text)
+        public int Id { get; private set; }
+        public T Option { get; private set; }
+        private TextElement text;
+
+        public ListOption(int id, string text, T tag)
             : base()
         {
             this.text = new TextElement(text);
-            this.Data = tag;
+            Id = id;
+            Option = tag;
         }
         public override void Initialize()
         {

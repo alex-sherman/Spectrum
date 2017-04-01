@@ -20,6 +20,11 @@ namespace Spectrum.Framework.Graphics
     {
         private class RenderTask
         {
+            public RenderTask(string tag)
+            {
+                this.tag = tag;
+            }
+            public string tag;
             public float z;
             public DrawablePart part;
             public SpectrumEffect effect;
@@ -179,7 +184,7 @@ namespace Spectrum.Framework.Graphics
             {
                 effect.View = view;
                 effect.Projection = projection;
-                effect.World = part.transform * world;
+                effect.World = part.permanentTransform * part.transform * world;
                 //Draw vertex component
                 if (part.VBuffer != null)
                 {
@@ -234,11 +239,11 @@ namespace Spectrum.Framework.Graphics
                 }
             }
         }
-        public static void QueueParts(List<DrawablePart> parts, Vector3 worldCenter, Matrix World)
+        public static void QueueParts(IEnumerable<DrawablePart> parts, Vector3 worldCenter, Matrix World)
         {
             QueueParts(parts, worldCenter, World, Camera.View, Camera.Projection);
         }
-        public static void QueueParts(List<DrawablePart> parts, Vector3 worldCenter, Matrix World, Matrix View, Matrix Projection, SpectrumEffect effect = null)
+        public static void QueueParts(IEnumerable<DrawablePart> parts, Vector3 worldCenter, Matrix World, Matrix View, Matrix Projection, SpectrumEffect effect = null, string tag = "Misc")
         {
             foreach (DrawablePart part in parts)
             {
@@ -246,7 +251,7 @@ namespace Spectrum.Framework.Graphics
                 if (partEffect != null)
                 {
                     float z = FullScreenPos(worldCenter).Z;
-                    renderTasks.Add(new RenderTask() { z = z, effect = partEffect, part = part, projection = Projection, view = View, world = World });
+                    renderTasks.Add(new RenderTask(tag) { z = z, effect = partEffect, part = part, projection = Projection, view = View, world = World });
                 }
             }
         }
@@ -254,14 +259,16 @@ namespace Spectrum.Framework.Graphics
         {
             if (drawable != null && drawable.Parts != null)
             {
-                QueueParts(drawable.Parts, drawable.position, drawable.World, View, Projection, effect);
+                QueueParts(drawable.Parts, drawable.position, drawable.World, View, Projection, effect, drawable.GetType().Name);
             }
         }
         private static void RenderQueue()
         {
             foreach (var task in renderTasks)
             {
+                var timer = DebugTiming.Render.Time("Render " + task.tag);
                 Render(task);
+                timer.Stop();
             }
             renderTasks.Clear();
         }
@@ -371,7 +378,9 @@ namespace Spectrum.Framework.Graphics
             renderTasks.Sort((a, b) =>
                 a.effect.HasTransparency && b.effect.HasTransparency ? Math.Sign(b.z - a.z) : (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
             RenderQueue();
+            timer = DebugTiming.Render.Time("Sprite batch end");
             spriteBatch.End();
+            timer.Stop();
             //Clear the screen and perform anti aliasing
             device.SetRenderTarget(null);
             timer = DebugTiming.Render.Time("Post Process");

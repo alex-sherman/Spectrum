@@ -334,11 +334,13 @@ namespace Spectrum.Framework.Physics.Dynamics
             {
                 //TODO: This is completely wrong and should use the inertia provided by the shape
                 kNormal += body1.inverseMass;
-
-                Vector3.Cross(ref relativePos1, ref direction, out rantra);
-                Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                Vector3.Cross(ref rantra, ref relativePos1, out rantra);
-                kNormal += rantra.X * direction.X + rantra.Y * direction.Y + rantra.Z * direction.Z;
+                if (!body1.IgnoreRotation)
+                {
+                    Vector3.Cross(ref relativePos1, ref direction, out rantra);
+                    Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
+                    Vector3.Cross(ref rantra, ref relativePos1, out rantra);
+                    kNormal += rantra.X * direction.X + rantra.Y * direction.Y + rantra.Z * direction.Z;
+                }
 
             }
 
@@ -347,10 +349,13 @@ namespace Spectrum.Framework.Physics.Dynamics
             {
                 kNormal += body2.inverseMass;
 
-                Vector3.Cross(ref relativePos2, ref direction, out rbntrb);
-                Vector3.Transform(ref rbntrb, ref body2.invInertiaWorld, out rbntrb);
-                Vector3.Cross(ref rbntrb, ref relativePos2, out rbntrb);
-                kNormal += rbntrb.X * direction.X + rbntrb.Y * direction.Y + rbntrb.Z * direction.Z;
+                if (!body2.IgnoreRotation)
+                {
+                    Vector3.Cross(ref relativePos2, ref direction, out rbntrb);
+                    Vector3.Transform(ref rbntrb, ref body2.invInertiaWorld, out rbntrb);
+                    Vector3.Cross(ref rbntrb, ref relativePos2, out rbntrb);
+                    kNormal += rbntrb.X * direction.X + rbntrb.Y * direction.Y + rbntrb.Z * direction.Z;
+                }
             }
 
             return 1.0f / kNormal;

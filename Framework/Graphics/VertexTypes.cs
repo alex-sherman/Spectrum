@@ -16,12 +16,16 @@ namespace Spectrum.Framework.Graphics
         Vector3 Normal { get; set; }
         Vector3 Tangent { get; set; }
     }
-    public struct CommonTex : IVertexType
+    public struct CommonTex : ICommonTex
     {
-        public Vector3 Position;
-        public Vector2 TextureCoordinate;
-        public Vector3 Normal;
-        public Vector3 Tangent;
+        public Vector3 position;
+        public Vector3 Position { get { return position; } set { position = value; } }
+        public Vector2 textureCoordinate;
+        public Vector2 TextureCoordinate { get { return textureCoordinate; } set { textureCoordinate = value; } }
+        public Vector3 normal;
+        public Vector3 Normal { get { return normal; } set { normal = value; } }
+        public Vector3 tangent;
+        public Vector3 Tangent { get { return tangent; } set { tangent = value; } }
 
         public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration
         (
@@ -32,20 +36,24 @@ namespace Spectrum.Framework.Graphics
         );
         public CommonTex(Vector3 pos, Vector3 normal, Vector2 texPos)
         {
-            Position = pos;
-            TextureCoordinate = texPos;
-            Normal = normal;
-            Tangent = Vector3.Zero;
+            position = pos;
+            textureCoordinate = texPos;
+            this.normal = normal;
+            tangent = Vector3.Zero;
         }
 
         VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
     };
-    public struct MultiTex : IVertexType
+    public struct MultiTex : ICommonTex
     {
-        public Vector3 Position;
-        public Vector2 TextureCoordinate;
-        public Vector3 Normal;
-        public Vector3 Tangent;
+        public Vector3 position;
+        public Vector3 Position { get { return position; } set { position = value; } }
+        public Vector2 textureCoordinate;
+        public Vector2 TextureCoordinate { get { return textureCoordinate; } set { textureCoordinate = value; } }
+        public Vector3 normal;
+        public Vector3 Normal { get { return normal; } set { normal = value; } }
+        public Vector3 tangent;
+        public Vector3 Tangent { get { return tangent; } set { tangent = value; } }
         public Vector4 BlendWeight;
         public Vector3 Position2;
         public Vector4 BlendWeight2;
@@ -63,10 +71,10 @@ namespace Spectrum.Framework.Graphics
 
         public MultiTex(Vector3 pos, Vector3 normal, Vector2 texPos, Vector4 blendWeights)
         {
-            Position = pos;
-            TextureCoordinate = texPos;
-            Normal = normal;
-            Tangent = Vector3.Zero;
+            position = pos;
+            textureCoordinate = texPos;
+            this.normal = normal;
+            tangent = Vector3.Zero;
             BlendWeight = blendWeights;
             Position2 = pos;
             BlendWeight2 = blendWeights;

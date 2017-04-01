@@ -9,11 +9,11 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens.InputElements
 {
-    public delegate void PickedEventHandler(object picked);
-    public class ListSelector : InputElement
+    public delegate void PickedEventHandler<T>(int id, T picked);
+    public class ListSelector<T>  : InputElement
     {
-        public event InterfaceEventHandler OnPick;
-        private List<ListOption> options = new List<ListOption>();
+        public event PickedEventHandler<T> OnPick;
+        private List<ListOption<T>> options = new List<ListOption<T>>();
         private int stringHeight;
         //The list selector's _rect is in absolute coordinates unlike other interface elements
         public ListSelector(Element parent, int x, int y, int width)
@@ -29,10 +29,15 @@ namespace Spectrum.Framework.Screens.InputElements
             Parent.MoveElement(this, 0);
             stringHeight = (int)Font.LineSpacing;
         }
-        public void AddOption(object tag, string text)
+        public void AddOption(string text, T tag)
+        {
+            int id = Children.Select(ele => ele is ListOption<T> ? (ele as ListOption<T>).Id : 0).DefaultIfEmpty(0).Max() + 1;
+            AddOption(id, text, tag);
+        }
+        public void AddOption(int id, string text, T tag = default(T))
         {
             int optionHeight = stringHeight;
-            ListOption option = new ListOption(tag, text);
+            ListOption<T> option = new ListOption<T>(id, text, tag);
             option.OnClick += new InterfaceEventHandler(optionClicked);
             this.options.Add(option);
             Height.Flat += optionHeight;
@@ -41,7 +46,10 @@ namespace Spectrum.Framework.Screens.InputElements
         private void optionClicked(InputElement clicked)
         {
             if (OnPick != null)
-                OnPick(clicked);
+            {
+                var option = clicked as ListOption<T>;
+                OnPick(option.Id, option.Option);
+            }
             Close();
         }
 

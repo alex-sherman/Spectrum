@@ -37,14 +37,14 @@ namespace Spectrum.Framework.Graphics
         {
             Path = path;
             MeshParts = meshParts;
-            this.AddRange(meshParts.Values);
+            AddRange(meshParts.Values);
             SkinningData = skinningData;
         }
         public Texture2D Texture
         {
             set
             {
-                foreach (var part in MeshParts.Values)
+                foreach (var part in this)
                 {
                     part.effect.Texture = value;
                 }

@@ -25,6 +25,7 @@ namespace Spectrum.Framework.Content
         private static ContentHelper single;
         public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game.Content); } return single; } }
         public static Texture2D Blank { get { return ContentHelper.Load<Texture2D>("blank"); } }
+        public static Texture2D Missing { get { return ContentHelper.Load<Texture2D>("missing"); } }
         public static Dictionary<Type, ICachedContentParser> ContentParsers = new Dictionary<Type, ICachedContentParser>()
             {
                 {typeof(SpecModel), new ModelParser()},

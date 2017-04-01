@@ -162,6 +162,26 @@ namespace Spectrum.Framework.Entities
 
         public List<DrawablePart> Parts;
         public SpecModel Model { get { return Parts as SpecModel; } set { Parts = value; } }
+        public JBBox ModelBounds
+        {
+            get
+            {
+                JBBox output = new JBBox();
+                if (Parts == null) return output;
+                foreach (var part in Parts)
+                {
+                    output.AddPoint(part.Bounds.Min);
+                    output.AddPoint(part.Bounds.Max);
+                }
+                return output;
+            }
+        }
+        public void SetPartTransform(Matrix matrix)
+        {
+            if (Parts != null)
+                foreach (var part in Parts)
+                    part.transform = matrix;
+        }
 
         [Replicate]
         public Matrix ModelTransform = Matrix.Identity;
@@ -264,7 +284,7 @@ namespace Spectrum.Framework.Entities
 
         public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)
         {
-            if(Shape != null)
+            if (Shape != null)
             {
                 JBBox boundingBox;
                 Shape.GetBoundingBox(ref orientation, out boundingBox);

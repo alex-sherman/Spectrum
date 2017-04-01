@@ -28,25 +28,16 @@ namespace Spectrum.Framework.Content
     class ModelParserCache
     {
         public JObject jobj;
-        public Dictionary<string, MeshPartData> parts = new Dictionary<string, MeshPartData>();
+        public Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
         public Dictionary<string, MaterialData> materials = new Dictionary<string, MaterialData>();
         public Dictionary<string, AnimationClip> animations = new Dictionary<string, AnimationClip>();
+        public List<string> vertexAttributes = new List<string>();
         public string Directory;
         public string FileName;
 
         public ModelParserCache(string fileName)
         {
             this.FileName = fileName;
-        }
-    }
-    struct MeshPartData
-    {
-        public VertexBuffer vbuffer;
-        public IndexBuffer ibuffer;
-        public MeshPartData(VertexBuffer vbuffer, IndexBuffer ibuffer)
-        {
-            this.vbuffer = vbuffer;
-            this.ibuffer = ibuffer;
         }
     }
     struct BoneWeight
@@ -77,33 +68,31 @@ namespace Spectrum.Framework.Content
 
             foreach (JObject mesh in modelData.jobj["meshes"])
             {
-                List<string> attributes = new List<string>();
+                modelData.vertexAttributes = new List<string>();
                 foreach (string attribute in mesh["attributes"])
                 {
-                    attributes.Add(attribute);
+                    modelData.vertexAttributes.Add(attribute);
                 }
 
                 JArray jsonVertices = (JArray)mesh["vertices"];
                 List<SkinnedVertex> vertices = new List<SkinnedVertex>();
                 for (int i = 0; i < jsonVertices.Count;)
                 {
-                    SkinnedVertex vertex = ParseVertex(attributes, jsonVertices, ref i);
+                    SkinnedVertex vertex = ParseVertex(modelData.vertexAttributes, jsonVertices, ref i);
                     vertices.Add(vertex);
                 }
-                VertexBuffer vbuffer = VertexHelper.MakeVertexBuffer(SkinnedVertex.VertexDeclaration, vertices.Count);
 
                 foreach (JObject meshPart in mesh["parts"])
                 {
-                    List<uint> indices = ((JArray)meshPart["indices"]).ToList().ConvertAll(x => (uint)x);
+                    List<ushort> indices = ((JArray)meshPart["indices"]).ToList().ConvertAll(x => (ushort)x);
                     VertexHelper.ComputeTangents(vertices, indices);
                     IndexBuffer ibuffer = VertexHelper.MakeIndexBuffer(indices);
-                    modelData.parts[(string)meshPart["id"]] = new MeshPartData(vbuffer, ibuffer);
+                    modelData.parts[(string)meshPart["id"]] = DrawablePart.From(vertices, indices);
                 }
-                vbuffer.SetData(vertices.ToArray());
             }
 
             modelData.materials = ReadMaterials(modelData.jobj);
-            if(modelData.jobj["animations"] != null)
+            if (modelData.jobj["animations"] != null)
             {
                 modelData.animations = AnimationParser.GetAnimations(modelData.jobj);
             }
@@ -246,7 +235,6 @@ namespace Spectrum.Framework.Content
 
             return rootBone;
         }
-
         private void parseNode(JToken node, ModelParserCache data, Dictionary<string, DrawablePart> parts)
         {
             foreach (JToken nodePart in node["parts"])
@@ -255,31 +243,34 @@ namespace Spectrum.Framework.Content
                 meshpartids.Add((string)nodePart["meshpartid"]);
                 DrawablePart part = parts[(string)nodePart["meshpartid"]];
                 part.effect = new SpectrumEffect();
+                if (!data.vertexAttributes.Contains("NORMAL"))
+                    part.effect.LightingEnabled = false;
                 if (nodePart["bones"] != null)
                 {
                     part.effect.SetBoneNames((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
                     part.effect.SetTechnique("Skinned");
                 }
-
+                MaterialData materialData;
                 if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
+                    materialData = data.materials[(string)nodePart["materialid"]];
+                else
+                    materialData = new MaterialData();
+
+                part.effect.DiffuseColor = materialData.diffuseColor;
+                List<MaterialTexture> materialTextures = materialData.textures;
+                foreach (MaterialTexture texture in materialTextures)
                 {
-                    MaterialData materialData = data.materials[(string)nodePart["materialid"]];
-                    part.effect.DiffuseColor = materialData.diffuseColor;
-                    List<MaterialTexture> materialTextures = materialData.textures;
-                    foreach (MaterialTexture texture in materialTextures)
+                    if (texture.Type == "NONE" || texture.Type == "DIFFUSE")
                     {
-                        if (texture.Type == "NONE" || texture.Type == "DIFFUSE")
-                        {
-                            part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
-                        }
-                        if (texture.Type == "NORMAL")
-                        {
-                            part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
-                        }
-                        if (texture.Type == "TRANSPARENCY")
-                        {
-                            part.effect.Transparency = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
-                        }
+                        part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
+                    }
+                    if (texture.Type == "NORMAL")
+                    {
+                        part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
+                    }
+                    if (texture.Type == "TRANSPARENCY")
+                    {
+                        part.effect.Transparency = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
                     }
                 }
             }
@@ -295,10 +286,10 @@ namespace Spectrum.Framework.Content
         protected override SpecModel SafeCopy(ModelParserCache data)
         {
             Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
-            foreach (KeyValuePair<string, MeshPartData> part in data.parts)
+            foreach (KeyValuePair<string, DrawablePart> part in data.parts)
             {
-                parts[part.Key] = new DrawablePart(part.Value.vbuffer, part.Value.ibuffer);
-                parts[part.Key].transform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
+                parts[part.Key] = part.Value.CreateReference();
+                parts[part.Key].permanentTransform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             }
             foreach (var node in ((JArray)data.jobj["nodes"]).Where(node => node["parts"] != null))
             {

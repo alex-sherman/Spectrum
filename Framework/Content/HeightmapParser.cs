@@ -39,7 +39,7 @@ namespace Spectrum.Framework.Content
             }
             return heightmap;
         }
-        public static List<DrawablePart> CreateParts<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor, int sectionCountX, int sectionCountZ) where T : struct, IVertexType
+        public static List<DrawablePart> CreateParts<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor, int sectionCountX, int sectionCountZ) where T : struct, ICommonTex
         {
             List<DrawablePart> output = new List<DrawablePart>();
             int width = heightmap.GetLength(0);
@@ -58,11 +58,11 @@ namespace Spectrum.Framework.Content
             }
             return output;
         }
-        public static DrawablePart CreatePart<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor) where T : struct, IVertexType
+        public static DrawablePart CreatePart<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor) where T : struct, ICommonTex
         {
             return CreatePart<T>(heightmap, scaleXZ, vertexConstructor, 0, heightmap.GetLength(0), 0, heightmap.GetLength(1));
         }
-        public static DrawablePart CreatePart<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor, int minX, int maxX, int minZ, int maxZ) where T : struct, IVertexType
+        public static DrawablePart CreatePart<T>(float[,] heightmap, float scaleXZ, VertexConstructor<T> vertexConstructor, int minX, int maxX, int minZ, int maxZ) where T : struct, ICommonTex
         {
             List<T> vertices = new List<T>();
             for (int y = minZ; y < maxZ; y++)
