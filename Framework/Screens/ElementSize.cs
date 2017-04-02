@@ -6,38 +6,60 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens
 {
+    public enum SizeType
+    {
+        WrapContent = 0,
+        Flat,
+        Relative,
+        MatchParent
+    }
     public struct ElementSize
     {
         public static ElementSize Zero = new ElementSize(0, 0);
-        public float Relative;
-        public float Flat;
-        public ElementSize(float flat = 0, float relative = 0)
+        public SizeType Type;
+        public float Size { get; set; }
+        public ElementSize(SizeType type, float size)
         {
-            Relative = relative;
-            Flat = flat;
+            Type = type;
+            Size = size;
         }
-        public float Apply(float size = 1, float offset = 0)
+        public float Measure(float parent, float content)
         {
-            return Relative * size + Flat + offset;
+            switch (Type)
+            {
+                case SizeType.Flat:
+                    return Size;
+                case SizeType.Relative:
+                    return Size * parent;
+                case SizeType.MatchParent:
+                    return parent;
+                case SizeType.WrapContent:
+                    return content;
+            }
+            return 0;
         }
-    }
-    public struct ElementSize2D
-    {
-        public static ElementSize2D Zero = new ElementSize2D(ElementSize.Zero, ElementSize.Zero);
-        public ElementSize X;
-        public ElementSize Y;
-        public ElementSize2D(float XFlat = 0, float XRelative = 0, float YFlat = 0, float YRelative = 0)
-            : this(new ElementSize(XFlat, XRelative), new ElementSize(YFlat, YRelative)) { }
-        public ElementSize2D(ElementSize X, ElementSize Y)
+        public float Flat { set { Size = value; Type = SizeType.Flat; } }
+        public float Relative { set { Size = value; Type = SizeType.Relative; } }
+        public static bool operator ==(ElementSize a, ElementSize b)
         {
-            this.X = X;
-            this.Y = Y;
+            return a.Equals(b);
         }
-        public Vector2 Apply(Vector2? size = null, Vector2? offset = null)
+        public static bool operator !=(ElementSize a, ElementSize b)
         {
-            Vector2 sizeValue = size ?? Vector2.One;
-            Vector2 offsetValue = offset ?? Vector2.Zero;
-            return new Vector2(X.Relative, Y.Relative) * sizeValue + offsetValue + new Vector2(X.Flat, Y.Flat);
+            return !(a == b);
+        }
+        public override bool Equals(object obj)
+        {
+            if(obj is ElementSize)
+            {
+                var size = (ElementSize)obj;
+                return size.Type == Type && size.Size == Size;
+            }
+            return false;
+        }
+        public override int GetHashCode()
+        {
+            return Type.GetHashCode() << 5 ^ Size.GetHashCode();
         }
     }
 }

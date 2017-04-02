@@ -10,6 +10,7 @@ namespace Spectrum.Framework.Screens.InputElements
     {
         public int Id { get; private set; }
         public T Option { get; private set; }
+        public string Text { get { return text?.Text; } }
         private TextElement text;
 
         public ListOption(int id, string text, T tag)
@@ -24,8 +25,7 @@ namespace Spectrum.Framework.Screens.InputElements
             base.Initialize();
             AddElement(text);
             text.Center();
-            Height.Flat = text.Height.Flat;
-            Width.Relative = 1.0f;
+            Width.Type = SizeType.MatchParent;
         }
     }
 }

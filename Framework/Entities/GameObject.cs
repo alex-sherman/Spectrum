@@ -139,7 +139,7 @@ namespace Spectrum.Framework.Entities
 
         public int marker = 0;
         public Shape Shape { get; set; }
-        public virtual void OnCollide(GameObject other, Vector3 normal, float penetration) { }
+        public virtual void OnCollide(GameObject other, Vector3 point, Vector3 normal, float penetration) { }
         public virtual void OnEndCollide(GameObject other) { }
 
 

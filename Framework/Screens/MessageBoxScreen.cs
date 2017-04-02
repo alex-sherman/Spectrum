@@ -45,8 +45,8 @@ namespace Spectrum.Framework.Screens
             base.Initialize();
             Width.Flat = 400;
             Height.Flat = 100;
-            X.Flat = Manager.Viewport.Width / 2 - TotalWidth / 2;
-            Y.Flat = Manager.Viewport.Height / 2 - TotalHeight / 2;
+            X.Flat = Manager.Viewport.Width / 2 - MeasuredWidth / 2;
+            Y.Flat = Manager.Viewport.Height / 2 - MeasuredHeight / 2;
             Button button = new Button(_option1);
             button.OnClick += (InputElement clicked) => { Exit(); };
             if (Option1 != null)

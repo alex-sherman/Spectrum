@@ -7,6 +7,24 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework
 {
+    class TimingInfo
+    {
+        public int Count;
+        public double TotalTime;
+        public double AvgerageTime { get { return Count == 0 ? 0 : TotalTime / Count; } }
+    }
+    class FrameTiming
+    {
+        public Dictionary<string, TimingInfo> times = new Dictionary<string, TimingInfo>();
+        public void LogTime(TimingResult result)
+        {
+            string name = result.name;
+            if (!times.ContainsKey(name))
+                times[name] = new TimingInfo();
+            times[name].Count += 1;
+            times[name].TotalTime += result.ElapsedTime;
+        }
+    }
     public class DebugTiming
     {
         public static readonly DebugTiming Render = new DebugTiming("Render");
@@ -15,25 +33,55 @@ namespace Spectrum.Framework
         public static readonly DebugTiming Content = new DebugTiming("Content", true);
         public static readonly DebugTiming Scripts = new DebugTiming("Scripts");
         public static readonly List<DebugTiming> Groups = new List<DebugTiming>() { Main, Render, Update, Content };
-        Dictionary<string, List<TimingResult>> times = new Dictionary<string, List<TimingResult>>();
-        public int MaxStorage = 100;
+        List<FrameTiming> frames = new List<FrameTiming>();
+        public static int MaxFrameStorage = 10;
         public string Name { get; private set; }
         public bool ShowCumulative;
+
+        public static double Now()
+        {
+            return DateTime.UtcNow.Second + DateTime.UtcNow.Millisecond / 1000.0;
+        }
+        public static void StartFrame()
+        {
+            foreach (var group in Groups)
+            {
+                if (group.ShowCumulative) continue;
+                group.frames.Add(new FrameTiming());
+                if (group.frames.Count > MaxFrameStorage)
+                    group.frames.RemoveAt(0);
+            }
+        }
+
         public DebugTiming(string name, bool showCumulative = false)
         {
             Name = name;
             ShowCumulative = showCumulative;
+            frames.Add(new FrameTiming());
+        }
+        public IEnumerable<Tuple<string, double>> FrameAverages()
+        {
+            return frames.SelectMany(f => f.times).GroupBy(r => r.Key)
+                .Select(g => new Tuple<string, double>(g.Key,
+                    g.Select(kvp => kvp.Value.TotalTime).DefaultIfEmpty(0).Average()))
+                .OrderByDescending(t => t.Item2);
         }
         public IEnumerable<Tuple<string, double>> AverageTimes(double previousWindow)
         {
-            return times.Select(kvp => new Tuple<string, double>(kvp.Key, 
-                kvp.Value.Where(result => result.Age < previousWindow)
-                .Select(result => result.ElapsedTime).DefaultIfEmpty(0).Average()))
+            return frames.SelectMany(f => f.times).GroupBy(r => r.Key)
+                .Select(g => new Tuple<string, double>(g.Key,
+                    g.Select(kvp => kvp.Value.AvgerageTime).DefaultIfEmpty(0).Average()))
                 .OrderByDescending(t => t.Item2);
         }
         public IEnumerable<Tuple<string, double>> CumulativeTimes
         {
-            get { return times.Select(kvp => new Tuple<string, double>(kvp.Key, kvp.Value.Select(result => result.ElapsedTime).Sum())).OrderBy(t => t.Item2); }
+            get
+            {
+                return frames.SelectMany(f => f.times).GroupBy(r => r.Key)
+              .Select(g => new Tuple<string, double>(g.Key,
+                  g.Select(kvp => kvp.Value.TotalTime).DefaultIfEmpty(0).Sum()))
+              .OrderByDescending(t => t.Item2);
+            }
         }
         public TimingResult Time(string name)
         {
@@ -41,12 +89,7 @@ namespace Spectrum.Framework
         }
         public void LogTime(TimingResult result)
         {
-            string name = result.name;
-            if (!times.ContainsKey(name))
-                times[name] = new List<TimingResult>();
-            times[name].Add(result);
-            if (times[name].Count > MaxStorage)
-                times[name].RemoveAt(0);
+            frames.Last().LogTime(result);
         }
     }
 
@@ -58,20 +101,23 @@ namespace Spectrum.Framework
         public string name;
         public double StartTime { get; private set; }
         public double ElapsedTime { get; private set; }
-        public double Age { get { return DateTime.UtcNow.Second + DateTime.UtcNow.Millisecond / 1000.0 - StartTime; } }
+        public double Age { get { return DebugTiming.Now() - StartTime; } }
         public TimingResult(DebugTiming group, string name)
         {
             this.group = group;
             this.name = name;
-            StartTime = DateTime.UtcNow.Second + DateTime.UtcNow.Millisecond / 1000.0;
+            StartTime = DebugTiming.Now();
             timer.Start();
         }
         public void Stop()
         {
-            timer.Stop();
-            ElapsedTime = timer.Elapsed.TotalMilliseconds;
-            timer = null;
-            group.LogTime(this);
+            if (timer != null)
+            {
+                timer.Stop();
+                ElapsedTime = timer.Elapsed.TotalMilliseconds;
+                timer = null;
+                group.LogTime(this);
+            }
         }
     }
 }

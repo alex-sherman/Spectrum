@@ -173,8 +173,7 @@ namespace Spectrum.Framework.Entities
                 entityData.Set("ID", Guid.NewGuid());
 
             Entity output = entityData.Construct() as Entity;
-
-            output.CreationData = entityData;
+            
             output.SendMessageCallback = SendEntityMessage;
             return output;
         }

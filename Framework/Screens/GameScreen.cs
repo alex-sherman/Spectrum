@@ -31,8 +31,6 @@ namespace Spectrum.Framework.Screens
     {
         public GameScreen()
         {
-            Height.Relative = 1;
-            Width.Relative = 1;
             Positioning = PositionType.Relative;
         }
         public virtual void Exit()

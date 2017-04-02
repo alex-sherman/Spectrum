@@ -32,20 +32,28 @@ namespace Spectrum.Framework
             return Vector3.Dot(vector, otherVector) < 0;
         }
 
+        public static Vector3 Project(this Vector3 source, Vector3 normal)
+        {
+            normal.Normalize();
+            return source - Vector3.Dot(source, normal) * normal;
+        }
+
         public static void DrawString(this SpriteBatch spritebatch, SpriteFont font, string text, Vector2 pos, Color textColor, float layer)
         {
             spritebatch.DrawString(font, text, pos, textColor, 0, Vector2.Zero, 1, SpriteEffects.None, layer);
         }
 
-        public static void DrawString(this SpriteBatch spritebatch, SpriteFont font, string text, Vector3 position, Color textColor, float scale = 1, ElementSize2D? offset = null, float layer = 1)
+        public static void DrawString(this SpriteBatch spritebatch, SpriteFont font, string text, Vector3 position, Color textColor, float scale = 1, float layer = 1)
         {
-            ElementSize2D offsetValue = offset ?? ElementSize2D.Zero;
             Vector3 cameraPosition = GraphicsEngine.ViewPosition(position);
             Vector3 screenPos = GraphicsEngine.ViewToScreenPosition(cameraPosition);
             float size = scale * (screenPos - GraphicsEngine.ViewToScreenPosition(cameraPosition + Vector3.Up)).Length() / font.LineSpacing / font.LineSpacing;
             if (screenPos.Z < 1 && screenPos.Z > 0)
-                spritebatch.DrawString(font, text, offsetValue.Apply(font.MeasureString(text) * size, new Vector2(screenPos.X, screenPos.Y)),
+            {
+                
+                spritebatch.DrawString(font, text, new Vector2(screenPos.X, screenPos.Y) - font.MeasureString(text) * size / 2,
                     textColor, 0, Vector2.Zero, size, SpriteEffects.None, layer);
+            }
         }
 
         public static void Draw(this SpriteBatch spritebatch, Texture2D tex, Rectangle rect, Color c, float layer)

@@ -14,23 +14,20 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public Button(int width, int height)
         {
-            Width.Flat = width;
-            Height.Flat = height;
+            Width.Type = SizeType.Flat;
+            Width.Size = width;
+            Height.Type = SizeType.Flat;
+            Height.Size = height;
         }
 
         public Button(string text)
         {
-            Text = text;
+            AddElement(new TextElement(text));
         }
 
         public override void Initialize()
         {
             base.Initialize();
-            if (Text != null)
-            {
-                Width.Flat = (int)Font.MeasureString(Text).X;
-                Height.Flat = (int)Font.LineSpacing;
-            }
         }
 
         public override void Draw(GameTime time, SpriteBatch spritebatch)

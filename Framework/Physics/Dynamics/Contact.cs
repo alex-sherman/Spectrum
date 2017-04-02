@@ -50,7 +50,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         internal float breakThreshold = 0.05f;
         internal float slipThresholdSquared = 0.01f;
 
-        internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.UseAverage;
+        internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.TakeMinimum;
 
         public float MaximumBias { get { return maximumBias; } set { maximumBias = value; } }
 
@@ -165,7 +165,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         public void NewIterate(float contactCount)
         {
             accumulatedNormalImpulse = 0;
-            accumulatedTangentImpulse = -0.1f;
+            accumulatedTangentImpulse = -dynamicFriction;
             if (noCollide) return;
             float e = 0.5f;
             Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
@@ -190,7 +190,7 @@ namespace Spectrum.Framework.Physics.Dynamics
                 ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount);
             }
 
-            ApplyPush((Position1 - Position2) * 0.9f / contactCount);
+            ApplyPush((Position1 - Position2) * 0.1f / contactCount);
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }

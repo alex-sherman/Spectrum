@@ -221,6 +221,7 @@ namespace Spectrum
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            DebugTiming.StartFrame();
             if (UsingSteam)
             {
                 Steamworks.SteamAPI.RunCallbacks();

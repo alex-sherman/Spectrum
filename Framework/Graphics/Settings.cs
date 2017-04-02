@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Graphics
         public static Matrix projection;
         public static Matrix reflectionProjection;
         public static Matrix lightProjection;
-        public static bool enableWater = true;
+        public static bool enableWater = false;
         public static int waterQuality = 0;
         public static int thirdPersonDistance = 10;
         public const String WaterBumpMapBase = "waterbump";

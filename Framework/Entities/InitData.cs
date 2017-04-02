@@ -12,6 +12,10 @@ using System.Text;
 
 namespace Spectrum.Framework.Entities
 {
+    public interface IInitable
+    {
+        InitData CreationData { get; set; }
+    }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [LoadableType]
     public class InitData
@@ -37,6 +41,8 @@ namespace Spectrum.Framework.Entities
                 TypeData.Set(output, field.Key, field.Value.Object);
             }
             TypeData.Set(output, "TypeName", TypeName);
+            if (output is IInitable)
+                (output as IInitable).CreationData = this.Clone();
             return output;
         }
         public virtual InitData Set(string name, object value)

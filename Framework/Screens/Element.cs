@@ -17,21 +17,44 @@ namespace Spectrum.Framework.Screens
     }
     public enum PositionType
     {
-        Inline,
+        InlineLeft,
+        InlineRight,
+        Center,
         Relative,
         Absolute
+    }
+    public enum LayoutType
+    {
+        Vertical,
+        Horizontal,
+        Grid
+    }
+    public enum SizeConstraint
+    {
+        AtMost,
+        Unspecified
+    }
+    public struct MeasureSpec
+    {
+        public SizeConstraint constraint;
+        public int size;
+        public MeasureSpec(int size, SizeConstraint constraint = SizeConstraint.AtMost)
+        {
+            this.size = size;
+            this.constraint = constraint;
+        }
     }
     public class RootElement : Element
     {
         public RootElement(ScreenManager manager) : base(manager) { }
-        public override int TotalWidth
+        public override int MeasuredWidth
         {
             get
             {
                 return Manager.Viewport.Width;
             }
         }
-        public override int TotalHeight
+        public override int MeasuredHeight
         {
             get
             {
@@ -39,11 +62,11 @@ namespace Spectrum.Framework.Screens
             }
         }
     }
-    public class LineBreak : Element { }
     #endregion
 
     public class Element
     {
+        public static SpriteFont DefaultFont;
         public ScreenManager Manager { get; private set; }
         public Element Parent { get; private set; }
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
@@ -51,6 +74,7 @@ namespace Spectrum.Framework.Screens
         public List<Element> Children { get { return _children.ToList(); } }
         public ElementDisplay Display { get; set; }
         public PositionType Positioning { get; set; }
+        public LayoutType LayoutType { get; set; }
         public bool HasFocus { get; protected set; }
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
@@ -66,11 +90,12 @@ namespace Spectrum.Framework.Screens
         public Element()
         {
             Display = ElementDisplay.Visible;
-            Positioning = PositionType.Inline;
+            Positioning = PositionType.InlineLeft;
             this.Fields["font"] = new ElementField(
                 this,
                 "font",
-                ElementField.ContentSetter<SpriteFont>
+                ElementField.ContentSetter<SpriteFont>,
+                defaultValue: DefaultFont
                 );
             this.Fields["font-color"] = new ElementField(
                 this,
@@ -150,17 +175,17 @@ namespace Spectrum.Framework.Screens
         public RectOffset Padding;
 
         public ElementSize Width;
-        public virtual int TotalWidth { get { return (int)Width.Apply(size: Parent == null ? ScreenManager.CurrentManager.Viewport.Width : Parent.TotalWidth); } }
+        public virtual int MeasuredWidth { get; protected set; }
 
         public ElementSize Height;
-        public virtual int TotalHeight { get { return (int)Height.Apply(size: Parent == null ? ScreenManager.CurrentManager.Viewport.Height : Parent.TotalHeight); } }
+        public virtual int MeasuredHeight { get; protected set; }
 
         public void Center()
         {
             Margin.LeftRelative = .5f;
             Margin.RightRelative = .5f;
-            Margin.LeftOffset = -TotalWidth / 2;
-            Margin.RightOffset = TotalWidth / 2;
+            Margin.LeftOffset = -MeasuredWidth / 2;
+            Margin.RightOffset = MeasuredWidth / 2;
         }
 
         public ElementSize X;
@@ -177,7 +202,7 @@ namespace Spectrum.Framework.Screens
 
         public Rectangle Rect
         {
-            get { return new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)TotalWidth, (int)TotalHeight); }
+            get { return new Rectangle((int)AbsoluteX, (int)AbsoluteY, (int)MeasuredWidth, (int)MeasuredHeight); }
         }
 
         public virtual void Update(GameTime gameTime)
@@ -190,7 +215,63 @@ namespace Spectrum.Framework.Screens
                     child.Update(gameTime);
             }
         }
-
+        public virtual void OnMeasure(MeasureSpec width, MeasureSpec height, float contentWidth, float contentHeight)
+        {
+            MeasuredWidth = (int)Width.Measure(width.size, contentWidth);
+            MeasuredHeight = (int)Height.Measure(height.size, contentHeight);
+        }
+        private void MeasureChildren(MeasureSpec width, MeasureSpec height, out float contentWidth, out float contentHeight)
+        {
+            foreach (var child in Children)
+            {
+                child.Measure(width, height);
+            }
+            contentWidth = 0;
+            contentHeight = 0;
+            switch (LayoutType)
+            {
+                case LayoutType.Vertical:
+                    contentHeight = Children.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
+                    contentWidth = Children.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
+                    break;
+                case LayoutType.Horizontal:
+                    contentHeight = Children.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
+                    contentWidth = Children.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
+                    break;
+                case LayoutType.Grid:
+                default:
+                    break;
+            }
+        }
+        public virtual void Measure(MeasureSpec width, MeasureSpec height)
+        {
+            switch (Width.Type)
+            {
+                case SizeType.WrapContent:
+                    width.size = 0;
+                    width.constraint = SizeConstraint.Unspecified;
+                    break;
+                case SizeType.Flat:
+                    width.size = (int)Width.Size;
+                    width.constraint = SizeConstraint.AtMost;
+                    break;
+                case SizeType.Relative:
+                    width.size = (int)Width.Size * width.size;
+                    break;
+                case SizeType.MatchParent:
+                default:
+                    break;
+            }
+            if (Height.Type == SizeType.WrapContent)
+            {
+                height.size = 0;
+                height.constraint = SizeConstraint.Unspecified;
+            }
+            float contentWidth, contentHeight;
+            MeasureChildren(width, height, out contentWidth, out contentHeight);
+            OnMeasure(width, height, contentWidth, contentHeight);
+            MeasureChildren(new MeasureSpec(MeasuredWidth), new MeasureSpec(MeasuredHeight), out contentWidth, out contentHeight);
+        }
         public virtual void PositionUpdate()
         {
             int XOffset = 0;
@@ -200,28 +281,26 @@ namespace Spectrum.Framework.Screens
             {
                 switch (child.Positioning)
                 {
-                    case PositionType.Inline:
-                        if ((XOffset > 0 && XOffset + child.TotalWidth + child.Margin.Left(TotalWidth) > TotalWidth) || child is LineBreak)
+                    case PositionType.InlineLeft:
+                        if ((XOffset > 0 && XOffset + child.MeasuredWidth + child.Margin.Left(MeasuredWidth) > MeasuredWidth))
                         {
                             XOffset = 0;
                             YOffset += MaxRowHeight;
                             MaxRowHeight = 0;
-                            if (child is LineBreak)
-                                continue;
                         }
-                        MaxRowHeight = Math.Max(MaxRowHeight, child.TotalHeight + child.Margin.Top(TotalHeight) + child.Margin.Bottom(TotalWidth));
-                        child.AbsoluteX = XOffset + AbsoluteX + child.Margin.Left(TotalWidth);
-                        child.AbsoluteY = YOffset + AbsoluteY + child.Margin.Top(TotalHeight);
-                        XOffset += child.TotalWidth + child.Margin.Left(TotalWidth) + child.Margin.Right(TotalWidth);
+                        MaxRowHeight = Math.Max(MaxRowHeight, child.MeasuredHeight + child.Margin.Top(MeasuredHeight) + child.Margin.Bottom(MeasuredWidth));
+                        child.AbsoluteX = XOffset + AbsoluteX + child.Margin.Left(MeasuredWidth);
+                        child.AbsoluteY = YOffset + AbsoluteY + child.Margin.Top(MeasuredHeight);
+                        XOffset += child.MeasuredWidth + child.Margin.Left(MeasuredWidth) + child.Margin.Right(MeasuredWidth);
                         break;
-                    case PositionType.Absolute:
-                        child.AbsoluteY = (int)child.Y.Apply(size: Manager.Root.TotalHeight);
-                        child.AbsoluteX = (int)child.X.Apply(size: Manager.Root.TotalWidth);
-                        break;
-                    case PositionType.Relative:
-                        child.AbsoluteY = (int)child.Y.Apply(size: TotalHeight, offset: AbsoluteY);
-                        child.AbsoluteX = (int)child.X.Apply(size: TotalWidth, offset: AbsoluteX);
-                        break;
+                    //case PositionType.Absolute:
+                    //    child.AbsoluteY = (int)child.Y.Apply(size: Manager.Root.MeasuredHeight);
+                    //    child.AbsoluteX = (int)child.X.Apply(size: Manager.Root.MeasuredWidth);
+                    //    break;
+                    //case PositionType.Relative:
+                    //    child.AbsoluteY = (int)child.Y.Apply(size: MeasuredHeight, offset: AbsoluteY);
+                    //    child.AbsoluteX = (int)child.X.Apply(size: MeasuredWidth, offset: AbsoluteX);
+                    //    break;
                     default:
                         break;
                 }

@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Entities
     /// Entities are just collections of components.
     /// They have more specific definitions as game objects which are specific sets of components.
     /// </summary>
-    public class Entity : IDisposable
+    public class Entity : IDisposable, IInitable
     {
         #region Replication
         const int StateReplicationMessage = 0;
@@ -46,7 +46,7 @@ namespace Spectrum.Framework.Entities
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
         public NetID OwnerGuid;
-        public InitData CreationData;
+        public InitData CreationData { get; set; }
         public EntityManager Manager;
         private bool replicateNextUpdate = false;
 

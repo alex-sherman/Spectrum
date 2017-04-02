@@ -54,7 +54,7 @@ namespace Spectrum.Framework.Screens
             {
                 for (int i = matchIndex + 1; i < TagOverrides.Count; i++)
                 {
-                    if (TagOverrides[i].Item1 == tag && TagOverrides[i].Item2 == fieldName)
+                    if ((TagOverrides[i].Item1 == null || TagOverrides[i].Item1 == tag) && TagOverrides[i].Item2 == fieldName)
                     {
                         output = TagOverrides[i].Item3;
                         matchIndex = i;

@@ -57,7 +57,7 @@ namespace Spectrum.Framework
                 string toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
                 spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Blue, Z);
                 curPos += Font.MeasureString(toPrint).Y;
-                var times = timeGroup.ShowCumulative ? timeGroup.CumulativeTimes : timeGroup.AverageTimes(1).Take(10);
+                var times = timeGroup.ShowCumulative ? timeGroup.CumulativeTimes : timeGroup.FrameAverages().Take(10);
                 foreach (var time in times)
                 {
                     toPrint = time.Item1 + ": " + String.Format("{0:0.00}", time.Item2);
