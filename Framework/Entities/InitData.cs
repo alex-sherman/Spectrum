@@ -35,6 +35,11 @@ namespace Spectrum.Framework.Entities
         public TypeData TypeData { get { return TypeHelper.Types.GetData(type); } }
         public virtual object Construct()
         {
+            if(TypeData == null)
+            {
+                DebugPrinter.print(string.Format("Failed to construct {0} for {1}", type, TypeName));
+                return null;
+            }
             object output = TypeData.Instantiate(args.Select(prim => prim.Object).ToArray());
             foreach (var field in fields)
             {

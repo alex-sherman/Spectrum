@@ -10,15 +10,14 @@ namespace Spectrum.Framework.Screens
     {
         WrapContent = 0,
         Flat,
-        Relative,
         MatchParent
     }
     public struct ElementSize
     {
         public static ElementSize Zero = new ElementSize(0, 0);
         public SizeType Type;
-        public float Size { get; set; }
-        public ElementSize(SizeType type, float size)
+        public int Size { get; set; }
+        public ElementSize(SizeType type, int size)
         {
             Type = type;
             Size = size;
@@ -29,8 +28,6 @@ namespace Spectrum.Framework.Screens
             {
                 case SizeType.Flat:
                     return Size;
-                case SizeType.Relative:
-                    return Size * parent;
                 case SizeType.MatchParent:
                     return parent;
                 case SizeType.WrapContent:
@@ -38,8 +35,7 @@ namespace Spectrum.Framework.Screens
             }
             return 0;
         }
-        public float Flat { set { Size = value; Type = SizeType.Flat; } }
-        public float Relative { set { Size = value; Type = SizeType.Relative; } }
+        public int Flat { set { Size = value; Type = SizeType.Flat; } }
         public static bool operator ==(ElementSize a, ElementSize b)
         {
             return a.Equals(b);

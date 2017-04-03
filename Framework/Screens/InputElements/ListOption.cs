@@ -8,11 +8,12 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class ListOption<T> : InputElement
     {
-        public int Id { get; private set; }
-        public T Option { get; private set; }
-        public string Text { get { return text?.Text; } }
+        public int Id { get; set; }
+        public T Option { get; set; }
+        public string Text { get { return text?.Text; } set { text.Text = value; } }
         private TextElement text;
 
+        public ListOption() : this(0, null, default(T)) { }
         public ListOption(int id, string text, T tag)
             : base()
         {

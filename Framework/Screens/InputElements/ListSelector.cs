@@ -19,8 +19,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public ListSelector(Element parent, int x, int y, int width)
         {
             Positioning = PositionType.Absolute;
-            X.Flat = x;
-            Y.Flat = y;
+            X = x;
+            Y = y;
             Width.Flat = width;
         }
         public override void Initialize()
@@ -52,13 +52,16 @@ namespace Spectrum.Framework.Screens.InputElements
             Close();
         }
 
-        public override void PositionUpdate()
+        public override void Measure(int width, int height)
         {
-            base.PositionUpdate();
-            //int distFromBottom = Manager.Root.MeasuredHeight - ((int)Y.Flat + MeasuredHeight);
-            //if (distFromBottom < 0)
-            //    Y.Flat += distFromBottom;
+            base.Measure(width, height);
         }
+
+        public override void Layout(Rectangle bounds)
+        {
+            base.Layout(bounds);
+        }
+
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {

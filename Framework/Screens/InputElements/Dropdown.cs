@@ -17,16 +17,10 @@ namespace Spectrum.Framework.Screens.InputElements
         public DropdownOptionSource<T> OptionSource = null;
         private List<ListOption<T>> options = new List<ListOption<T>>();
         private ListOption<T> selected = null;
-        public ListOption<T> Selected
+        private ListOption<T> childOption = new ListOption<T>();
+        public T Selected
         {
-            get { return selected; }
-            set
-            {
-                Expanded = false;
-                selected = value;
-                if (OnSelectedChanged != null)
-                    OnSelectedChanged(selected);
-            }
+            get { return childOption.Option; }
         }
         private bool _expanded;
         private bool Expanded
@@ -37,30 +31,17 @@ namespace Spectrum.Framework.Screens.InputElements
                 if (_expanded != value)
                 {
                     _expanded = value;
-                    if (value)
+                    foreach (ListOption<T> option in Children.Where(c => c != childOption))
                     {
-                        foreach (ListOption<T> option in Children)
-                        {
-                            option.Display = ElementDisplay.Visible;
-                        }
-                    }
-                    else
-                    {
-                        foreach (ListOption<T> option in Children.Where(e => e != Selected))
-                        {
-                            option.Display = ElementDisplay.Hidden;
-                        }
+                        option.Display = value ? ElementDisplay.Visible : ElementDisplay.Hidden;
                     }
                 }
             }
         }
 
-        private Rectangle optionRect(int i)
-        {
-            return new Rectangle(Rect.X, Rect.Y + Rect.Height * (i + 1), Rect.Width, Rect.Height);
-        }
         public Dropdown(params ListOption<T>[] options)
         {
+            AddElement(childOption);
             SetOptions(options.ToList());
             OnClick += Dropdown_OnClick;
         }
@@ -72,12 +53,6 @@ namespace Spectrum.Framework.Screens.InputElements
                 SetOptions(OptionSource());
             }
             Expanded = !Expanded;
-        }
-        public override void Initialize()
-        {
-            base.Initialize();
-            Width.Flat = 100;
-            Height.Flat = (int)Font.LineSpacing;
         }
         public void ClearOptions()
         {
@@ -107,18 +82,35 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             RemoveElement(option);
             options.Remove(option);
-            if (Selected == option)
-                Selected = null;
+            if (selected == option)
+            {
+                childOption.Text = null;
+                childOption.Option = default(T);
+            }
         }
 
         void option_OnClick(InputElement clicked)
         {
-            if (!Expanded && clicked == Selected)
+            if (!Expanded && clicked == childOption)
                 Expanded = true;
             else
-                Selected = clicked as ListOption<T>;
+            {
+                selected = clicked as ListOption<T>;
+                childOption.Option = selected.Option;
+                childOption.Text = selected.Text;
+                childOption.Id = selected.Id;
+                Expanded = false;
+            }
         }
-
+        public override void OnMeasure(int width, int height)
+        {
+            base.OnMeasure(width, height);
+            MeasuredWidth = Math.Max(100, MeasuredWidth);
+        }
+        public override void Layout(Rectangle bounds)
+        {
+            base.Layout(bounds);
+        }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
             if (base.HandleInput(otherTookInput, input)) return true;
@@ -129,15 +121,6 @@ namespace Spectrum.Framework.Screens.InputElements
                 Expanded = false;
             }
             return false;
-        }
-        public override void Draw(GameTime time, SpriteBatch spritebatch)
-        {
-            base.Draw(time, spritebatch);
-            if (selected != null)
-            {
-                spritebatch.DrawString(Font, selected.Text, new Vector2(AbsoluteX, AbsoluteY),
-                    Color.Black, Layer(3));
-            }
         }
     }
 }

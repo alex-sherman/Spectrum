@@ -43,7 +43,7 @@ namespace Spectrum.Framework.Network
         private volatile int counter = 0;
         private readonly string name;
 
-        private static RealDict<string, NetworkMutex> Mutexes = new RealDict<string, NetworkMutex>();
+        private static DefaultDict<string, NetworkMutex> Mutexes = new DefaultDict<string, NetworkMutex>();
         private static MultiplayerService MPService;
         public static void Init(MultiplayerService mpService)
         {

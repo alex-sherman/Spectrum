@@ -90,11 +90,11 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            foreach(var addScreen in addScreens)
+            foreach (var addScreen in addScreens)
                 Root.AddElement(addScreen, 0);
             addScreens.Clear();
 
-            foreach(var removeScreen in removeScreens)
+            foreach (var removeScreen in removeScreens)
                 Root.RemoveElement(removeScreen);
             removeScreens.Clear();
 
@@ -115,8 +115,8 @@ namespace Spectrum.Framework.Screens
             GraphicsDevice.Clear(Color.White);
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
-            Root.Measure(new MeasureSpec(Viewport.Width), new MeasureSpec(Viewport.Height));
-            Root.PositionUpdate();
+            Root.Measure((int)Viewport.Width, (int)Viewport.Height);
+            Root.Layout(new Rectangle(0, 0, Viewport.Width, Viewport.Height));
             Root.DrawWithChildren(gameTime, SpriteBatch, 1.0f);
             SpriteBatch.End();
         }

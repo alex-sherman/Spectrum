@@ -14,8 +14,8 @@ namespace Spectrum.Framework
     public class TypeHelper
     {
         public static TypeHelper Types = new TypeHelper();
-        private static RealDict<string, TypeData> types = new RealDict<string, TypeData>();
-        private static RealDict<Type, Plugin> plugins = new RealDict<Type, Plugin>();
+        private static DefaultDict<string, TypeData> types = new DefaultDict<string, TypeData>();
+        private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
         public List<String> GetTypes() { return types.Keys.ToList(); }
 
         public static void RegisterType(string name, IronPythonTypeWrapper type, Plugin plugin)

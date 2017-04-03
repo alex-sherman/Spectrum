@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Screens
 {
     public class InGameScreen : GameScreen
     {
-        protected int TopBarHeight = 40;
+        protected Element TitleContainer;
         bool dragging = false;
         Vector2 dragMouseBegin;
         Vector2 dragBegin;
@@ -28,8 +28,8 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
-
-            Element TitleContainer = new Element();
+            LayoutManager = new LinearLayoutManager();
+            TitleContainer = new Element();
             TitleContainer.Width.Type = SizeType.MatchParent;
             TitleContainer.Tags.Add("ingame-window-title-container");
             AddElement(TitleContainer);
@@ -42,11 +42,7 @@ namespace Spectrum.Framework.Screens
 
         public Rectangle CloseButtonRect
         {
-            get { return new Rectangle(Rect.X + Rect.Width - TopBarHeight, Rect.Y + TopBarRect.Height / 2 - 18, 38, 36); }
-        }
-        public Rectangle TopBarRect
-        {
-            get { return new Rectangle(Rect.X, Rect.Y, Rect.Width, TopBarHeight); }
+            get { return new Rectangle(Rect.X + Rect.Width - TitleContainer.Rect.Height, Rect.Y + TitleContainer.Rect.Height / 2 - 18, 38, 36); }
         }
 
         public override ElementDisplay Toggle(bool? show = null)
@@ -83,7 +79,7 @@ namespace Spectrum.Framework.Screens
                     {
                         Display = ElementDisplay.Hidden;
                     }
-                    if (TopBarRect.Contains(input.MouseState.X, input.MouseState.Y))
+                    if (TitleContainer.Rect.Contains(input.MouseState.X, input.MouseState.Y))
                     {
                         dragging = true;
                         dragMouseBegin.X = input.MouseState.X;
@@ -102,8 +98,8 @@ namespace Spectrum.Framework.Screens
                     otherTookInput = true;
                     Vector2 newPos = new Vector2(input.MouseState.X, input.MouseState.Y) - dragMouseBegin + dragBegin;
 
-                    X.Size = (int)newPos.X;
-                    Y.Size = (int)newPos.Y;
+                    X = (int)newPos.X;
+                    Y = (int)newPos.Y;
                 }
             }
             return otherTookInput;

@@ -261,6 +261,7 @@
     <Compile Include="Framework\Screens\Element.cs" />
     <Compile Include="Framework\Screens\ElementField.cs" />
     <Compile Include="Framework\Screens\GameScreen.cs" />
+    <Compile Include="Framework\Screens\GridLayout.cs" />
     <Compile Include="Framework\Screens\InGameScreen.cs" />
     <Compile Include="Framework\Input\InputState.cs" />
     <Compile Include="Framework\Screens\InputElements\Button.cs" />
@@ -270,6 +271,8 @@
     <Compile Include="Framework\Screens\InputElements\ListSelector.cs" />
     <Compile Include="Framework\Screens\InputElements\TextBox.cs" />
     <Compile Include="Framework\Screens\InputElements\TextElement.cs" />
+    <Compile Include="Framework\Screens\LayoutManager.cs" />
+    <Compile Include="Framework\Screens\LinearLayout.cs" />
     <Compile Include="Framework\Screens\MenuScreen.cs" />
     <Compile Include="Framework\Screens\MessageBoxScreen.cs" />
     <Compile Include="Framework\Screens\RectOffset.cs" />
@@ -288,7 +291,7 @@
     <Compile Include="Framework\Network\UDPReceiver.cs" />
     <Compile Include="Framework\Network\UDPSender.cs" />
     <Compile Include="Framework\Content\Plugin.cs" />
-    <Compile Include="Framework\RealDict.cs" />
+    <Compile Include="Framework\DefaultDict.cs" />
     <Compile Include="Framework\LoadHelper.cs" />
     <Compile Include="Framework\JConvert.cs" />
     <Compile Include="Framework\Screens\ElementSize.cs" />

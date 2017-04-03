@@ -17,10 +17,17 @@ namespace Spectrum.Framework.Screens.InputElements
             Text = text;
         }
 
-        public override void OnMeasure(MeasureSpec width, MeasureSpec height, float contentWidth, float contentHeight)
+        public override void OnMeasure(int width, int height)
         {
-            MeasuredWidth = (int)Width.Measure(width.size, Font.MeasureString(Text).X);
-            MeasuredHeight = (int)Height.Measure(height.size, Font.MeasureString(Text).Y);
+            if (Text == null)
+            {
+                MeasuredWidth = 0;
+                MeasuredHeight = Font.LineSpacing;
+            }
+            else {
+                MeasuredWidth = (int)Width.Measure(width, Font.MeasureString(Text).X);
+                MeasuredHeight = (int)Height.Measure(height, Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+            }
         }
 
         public override void Draw(GameTime time, SpriteBatch spritebatch)
