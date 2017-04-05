@@ -12,6 +12,11 @@ namespace Spectrum.Framework
 {
     public static class ExtensionMethods
     {
+        public static float DT(this GameTime time)
+        {
+            return (float)time.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+        }
+
         public static Plugin GetPlugin(this Type type)
         {
             return TypeHelper.GetPlugin(type);

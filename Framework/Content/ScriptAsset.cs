@@ -89,12 +89,26 @@ namespace Spectrum.Framework.Content
                 .Where(kvp => kvp.Value is PythonFunction && !kvp.Key.StartsWith("__"))
                 .ToDictionary(kvp => kvp.Key, kvp => new FunctionWrapper(engine, kvp.Key, kvp.Value, scope.GetVariableHandle(kvp.Key)));
         }
+        public void SetVariable(string name, object value)
+        {
+            scope.SetVariable(name, value);
+        }
+        public bool HasFunction(string function)
+        {
+            try
+            {
+                scope.GetVariable<Func<object[], object>>(function);
+                return true;
+            }
+            catch { }
+            return false;
+        }
         public object TryCall(string function, params object[] args)
         {
             try
             {
                 var timer = DebugTiming.Scripts.Time(Path);
-                Func<object, object[]> f = scope.GetVariable<Func<object, object[]>>(function);
+                Func<object[], object> f = scope.GetVariable<Func<object[], object>>(function);
                 object o = f(args);
                 timer.Stop();
                 return o;
