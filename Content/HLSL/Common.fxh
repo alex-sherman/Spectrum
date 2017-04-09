@@ -16,8 +16,8 @@ uniform bool UseNormalMap = false;
 uniform extern texture Transparency;
 uniform bool UseTransparency = false;
 uniform float4 diffuseColor = float4(1, 0, 1, 1);
-uniform float3 ambientLightColor = float3(0.3,.3,.3);
-uniform float3 diffuseLightColor = float3(1,1,1);
+uniform float3 ambientLightColor = float3(0.2,.2,.2);
+uniform float3 diffuseLightColor = float3(0.8,0.8,0.8);
 uniform float3 specularLightColor = float3(1,1,1);
 bool aboveWater = true;
 float4x4 lightViewProjectionMatrix;
@@ -102,8 +102,8 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 		else {
 			normal = vsout.normal;
 		}
-		float3 light = (dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)) + 1) / 2;
-		output.rgb += color.rgb * light;
+		float diffuseMagnitude = (dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)) + 1) / 2;
+		output.rgb += color.rgb * min(1, (diffuseMagnitude * diffuseLightColor + ambientLightColor));
 	}
 	return output;
 }

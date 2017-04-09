@@ -20,7 +20,7 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public InputElement()
         {
-            this.Fields["title"] = new ElementField(
+            Fields["title"] = new ElementField(
                 this,
                 "title",
                 (value) => (value)

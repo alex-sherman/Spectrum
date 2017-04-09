@@ -105,6 +105,7 @@ CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 	if(!aboveWater){
 		toReturn.b+=.1f;
 	}
+	toReturn = PSLighting(toReturn, (CommonVSOut)vsout);
 	return PSReturn(toReturn, (CommonVSOut)vsout);
 }
 technique MultiTexture

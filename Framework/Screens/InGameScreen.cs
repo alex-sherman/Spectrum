@@ -28,7 +28,7 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
-            LayoutManager = new LinearLayoutManager();
+            LayoutManager = new LinearLayoutManager(LinearLayoutType.Vertical);
             TitleContainer = new Element();
             TitleContainer.Width.Type = SizeType.MatchParent;
             TitleContainer.Tags.Add("ingame-window-title-container");

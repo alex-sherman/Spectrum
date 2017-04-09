@@ -360,7 +360,7 @@ namespace Spectrum.Framework.Graphics
             //    UpdateShadowMap(drawables);
             //}
             PostProcessEffect.Technique = "PassThrough";
-            spriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, effect: PostProcessEffect.effect);
+            spriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.LinearClamp, null, null, effect: PostProcessEffect.effect);
             if (Settings.enableWater) { UpdateWater(drawable3D); }
 
             //Begin rendering this to the Anti Aliasing texture

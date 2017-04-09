@@ -369,6 +369,13 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="result">The result.</param>
         public abstract void SupportMapping(ref Vector3 direction, out Vector3 result);
 
+        public Vector3 SupportMapping(Vector3 direction)
+        {
+            Vector3 result;
+            SupportMapping(ref direction, out result);
+            return result;
+        }
+
         /// <summary>
         /// The center of the SupportMap.
         /// </summary>

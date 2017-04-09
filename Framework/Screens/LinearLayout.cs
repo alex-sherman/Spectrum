@@ -10,19 +10,22 @@ namespace Spectrum.Framework.Screens
     public enum LinearLayoutType
     {
         Vertical,
-        Horizontal,
-        Grid
+        Horizontal
     }
     public class LinearLayout : Element
     {
-        public LinearLayout()
+        public LinearLayout(LinearLayoutType type = LinearLayoutType.Vertical)
         {
-
+            this.LayoutManager = new LinearLayoutManager(type);
         }
     }
     public class LinearLayoutManager : LayoutManager
     {
-        LinearLayoutType LayoutType;
+        public LinearLayoutType LayoutType;
+        public LinearLayoutManager(LinearLayoutType type)
+        {
+            LayoutType = type;
+        }
         public void OnLayout(Element element, Rectangle bounds)
         {
             int currentX = 0;

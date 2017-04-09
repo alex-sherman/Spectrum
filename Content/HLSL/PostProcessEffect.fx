@@ -75,6 +75,7 @@ float3 Blur(float3 color, float2 texCoord)
 {
 	float3 output = (float3)0;
 	float centerDepth = tex2D(DepthSampler, texCoord);
+	if (centerDepth == 1) { return color; }
 	float weightSum = 0;
 	for(int i = -2; i <= 2; i++) {
 		for(int j = -2; j <= 2; j++) {
@@ -122,7 +123,7 @@ CommonPSOut PassThrough2D(float4 position : SV_Position, float4 inputColor : COL
 	CommonPSOut output = (CommonPSOut)0;
 	//I have no idea how alpha blending works
 	output.color = inputColor * tex2D(TextureSampler, texCoord);
-	output.depth = output.color == 1 ? (float4)1 : 0;
+	output.depth = output.color.a > 0 ? 1 : 0;
 	return output;
 }
 

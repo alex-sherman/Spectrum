@@ -53,8 +53,9 @@ namespace Spectrum.Framework.Graphics
             set { Parameters["lightingEnabled"].SetValue(value); }
         }
         public static Vector3 LightPos;
-
-        public static Vector3 SpecularLightColor;
+        public static Vector3 DiffuseLightColor = new Vector3(0.8f);
+        public static Vector3 AmbientLightColor = new Vector3(0.2f);
+        public static Vector3 SpecularLightColor = new Vector3(1);
         public static Vector3 CameraPos = new Vector3();
         public static bool Clip = false;
         public static bool AboveWater = true;
@@ -72,7 +73,7 @@ namespace Spectrum.Framework.Graphics
             set
             {
                 Parameters["UseTexture"].SetValue(value != null);
-                if ((value.Tag as Texture2DData).HasAlpha)
+                if (value != null && (value.Tag as Texture2DData).HasAlpha)
                     HasTransparency = true;
                 Parameters["Texture"].SetValue(value);
             }
@@ -99,6 +100,8 @@ namespace Spectrum.Framework.Graphics
             Parameters["cameraPosition"].SetValue(CameraPos);
             Parameters["ClipPlane"].SetValue(ClipPlane);
             Parameters["specularLightColor"].SetValue(SpecularLightColor);
+            Parameters["ambientLightColor"].SetValue(AmbientLightColor);
+            Parameters["diffuseLightColor"].SetValue(DiffuseLightColor);
             Parameters["lightPosition"].SetValue(LightPos);
             if (BoneTransforms != null)
                 Parameters["Bones"].SetValue(BoneTransforms);
@@ -109,9 +112,9 @@ namespace Spectrum.Framework.Graphics
             : base(effect)
         {
             Parameters["ambientLightColor"].SetValue(
-                Color.White.ToVector3() * 0.6f);
+                Color.White.ToVector3() * 0.2f);
             Parameters["diffuseLightColor"].SetValue(
-                Color.White.ToVector3());
+                Color.White.ToVector3() * 0.8f);
             Parameters["specularLightColor"].SetValue(
                 Color.White.ToVector3() / 3);
             effect.Parameters["lightPosition"].SetValue(

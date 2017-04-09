@@ -268,6 +268,9 @@ namespace Spectrum.Framework.Screens
                             MaxRowHeight = Math.Max(MaxRowHeight, child.MeasuredHeight + child.Margin.Top(MeasuredHeight) + child.Margin.Bottom(MeasuredWidth));
                             XOffset += child.MeasuredWidth + child.Margin.Left(MeasuredWidth) + child.Margin.Right(MeasuredWidth);
                             break;
+                        case PositionType.Center:
+                            child.Layout(new Rectangle(MeasuredWidth / 2 - child.MeasuredWidth / 2, MeasuredHeight / 2 - child.MeasuredHeight / 2, child.MeasuredWidth, child.MeasuredHeight));
+                            break;
                         case PositionType.Absolute:
                         case PositionType.Relative:
                             child.Layout(new Rectangle(child.X, child.Y, child.MeasuredWidth, child.MeasuredHeight));
