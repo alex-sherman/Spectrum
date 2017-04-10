@@ -47,25 +47,26 @@ namespace Spectrum.Framework.Graphics
             if (SpectrumGame.Game.GraphicsDevice == null) { throw new NullReferenceException("Graphics device must have been initialized before this operation can be performed"); }
             return new VertexBuffer(SpectrumGame.Game.GraphicsDevice, decleration, count, BufferUsage.WriteOnly);
         }
-        public static VertexBuffer MakeVertexBuffer<T>(List<T> vertices) where T : struct, IVertexType
+        public static VertexBuffer MakeVertexBuffer<T>(IEnumerable<T> vertices) where T : struct, IVertexType
         {
-            VertexBuffer vBuffer = MakeVertexBuffer(vertices[0].VertexDeclaration, vertices.Count);
-            vBuffer.SetData(vertices.ToArray());
+            T[] vertArray = vertices.ToArray();
+            VertexBuffer vBuffer = MakeVertexBuffer(vertArray[0].VertexDeclaration, vertArray.Count());
+            vBuffer.SetData(vertArray);
             return vBuffer;
         }
-        public static IndexBuffer MakeIndexBuffer(List<ushort> indices)
+        public static IndexBuffer MakeIndexBuffer(IEnumerable<ushort> indices)
         {
             if (SpectrumGame.Game.GraphicsDevice == null) { throw new NullReferenceException("Graphics device must have been initialized before this operation can be performed"); }
-            if (indices.Count == 0) { throw new ArgumentException("Indices must have length greater than 0"); }
-            IndexBuffer iBuffer = new IndexBuffer(SpectrumGame.Game.GraphicsDevice, IndexElementSize.SixteenBits, indices.Count, BufferUsage.WriteOnly);
+            if (indices.Count() == 0) { throw new ArgumentException("Indices must have length greater than 0"); }
+            IndexBuffer iBuffer = new IndexBuffer(SpectrumGame.Game.GraphicsDevice, IndexElementSize.SixteenBits, indices.Count(), BufferUsage.WriteOnly);
             iBuffer.SetData(indices.ToArray());
             return iBuffer;
         }
-        public static IndexBuffer MakeIndexBuffer(List<uint> indices)
+        public static IndexBuffer MakeIndexBuffer(IEnumerable<uint> indices)
         {
             if (SpectrumGame.Game.GraphicsDevice == null) { throw new NullReferenceException("Graphics device must have been initialized before this operation can be performed"); }
-            if (indices.Count == 0 || SpectrumGame.Game.GraphicsDevice == null) { return null; }
-            IndexBuffer iBuffer = new IndexBuffer(SpectrumGame.Game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indices.Count, BufferUsage.WriteOnly);
+            if (indices.Count() == 0) { return null; }
+            IndexBuffer iBuffer = new IndexBuffer(SpectrumGame.Game.GraphicsDevice, IndexElementSize.ThirtyTwoBits, indices.Count(), BufferUsage.WriteOnly);
             iBuffer.SetData(indices.ToArray());
             return iBuffer;
         }

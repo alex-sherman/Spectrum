@@ -335,8 +335,8 @@ namespace Spectrum.Framework.Physics.Collision
         /// ray the collision occured. The hitPoint is calculated by: origin+friction*direction.</param>
         /// <param name="normal">The normal from the ray collision.</param>
         /// <returns>Returns true if the ray hit the shape, false otherwise.</returns>
-        public static bool Raycast(ISupportMappable support, ref Matrix orientation, ref Matrix invOrientation,
-            ref Vector3 position, ref Vector3 velocity, ref Vector3 origin, ref Vector3 direction, out float fraction, out Vector3 normal)
+        public static bool Raycast(ISupportMappable support, Matrix orientation, Matrix invOrientation,
+            Vector3 position, Vector3 velocity, Vector3 origin, Vector3 direction, out float fraction, out Vector3 normal)
         {
             VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();
             simplexSolver.Reset();

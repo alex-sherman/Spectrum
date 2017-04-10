@@ -79,7 +79,7 @@ namespace Spectrum.Framework.Graphics
             }
         }
         public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
-        public bool HasTransparency { get; protected set; } = false;
+        public bool HasTransparency { get; set; } = false;
         public Texture2D Transparency
         {
             set

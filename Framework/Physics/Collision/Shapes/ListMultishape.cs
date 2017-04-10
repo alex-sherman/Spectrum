@@ -10,7 +10,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         private List<Shape> shapes;
         private int currentShape;
 
-        private ListMultishape() { }
+        public ListMultishape() : this(new List<Shape>()) { }
 
         public ListMultishape(List<Shape> shapes)
         {
@@ -19,6 +19,16 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 throw new ArgumentException("Cannot use Multishapes in a ListMultishape");
             }
             this.shapes = shapes;
+        }
+
+        public void AddShape(Shape shape)
+        {
+            shapes.Add(shape);
+        }
+
+        public void RemoveShape(Shape shape)
+        {
+            shapes.Add(shape);
         }
 
         public override void SetCurrentShape(int index)

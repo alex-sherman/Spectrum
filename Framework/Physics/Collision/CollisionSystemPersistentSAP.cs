@@ -365,7 +365,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// against rays (rays are of infinite length). They are checked against segments
         /// which start at rayOrigin and end in rayOrigin + rayDirection.
         /// </summary>
-        public override bool Raycast(GameObject body, Vector3 rayOrigin, Vector3 rayDirection, out Vector3 normal, out float fraction)
+        public override bool Raycast(ICollidable body, Vector3 rayOrigin, Vector3 rayDirection, out Vector3 normal, out float fraction)
         {
             fraction = float.MaxValue; normal = Vector3.Zero;
 
@@ -378,9 +378,9 @@ namespace Spectrum.Framework.Physics.Collision
                 Vector3 tempNormal; float tempFraction;
                 bool multiShapeCollides = false;
 
-                Vector3 transformedOrigin; Vector3.Subtract(ref rayOrigin, ref body.position, out transformedOrigin);
-                Vector3.Transform(ref transformedOrigin, ref body.invOrientation, out transformedOrigin);
-                Vector3 transformedDirection; Vector3.Transform(ref rayDirection, ref body.invOrientation, out transformedDirection);
+                Vector3 transformedOrigin = Vector3.Subtract(rayOrigin, body.Position);
+                transformedOrigin = Vector3.Transform(transformedOrigin, body.InvOrientation);
+                Vector3 transformedDirection = Vector3.Transform(rayDirection, body.InvOrientation);
 
                 int msLength = ms.Prepare(ref transformedOrigin, ref transformedDirection);
 
@@ -388,8 +388,8 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     ms.SetCurrentShape(i);
 
-                    if (GJKCollide.Raycast(ms, ref body.orientation, ref body.invOrientation, ref body.position, ref body.linearVelocity,
-                        ref rayOrigin, ref rayDirection, out tempFraction, out tempNormal))
+                    if (GJKCollide.Raycast(ms, body.Orientation, body.InvOrientation, body.Position, body.Velocity,
+                        rayOrigin, rayDirection, out tempFraction, out tempNormal))
                     {
                         if (tempFraction < fraction)
                         {
@@ -412,8 +412,8 @@ namespace Spectrum.Framework.Physics.Collision
             }
             else
             {
-                return (GJKCollide.Raycast(body.Shape, ref body.orientation, ref body.invOrientation, ref body.position, ref body.linearVelocity,
-                    ref rayOrigin, ref rayDirection, out fraction, out normal));
+                return (GJKCollide.Raycast(body.Shape, body.Orientation, body.InvOrientation, body.Position, body.Velocity,
+                    rayOrigin, rayDirection, out fraction, out normal));
             }
 
 
