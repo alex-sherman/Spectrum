@@ -18,5 +18,10 @@ namespace Spectrum.Framework.Entities
             prefabs[name] = data.ToImmutable();
             prefabs[name].TypeName = name;
         }
+        public static object Construct(string name)
+        {
+            if (!prefabs.ContainsKey(name)) return null;
+            return prefabs[name].Construct();
+        }
     }
 }

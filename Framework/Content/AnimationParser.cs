@@ -10,26 +10,17 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    class AnimationData 
-    {
-        public JObject jobj;
-        public Dictionary<string, AnimationClip> animations;
-        public AnimationData(JObject jobj, Dictionary<string, AnimationClip> animations)
-        {
-            this.jobj = jobj;
-            this.animations = animations;
-        }
-    }
-    class AnimationParser : CachedContentParser<AnimationData, AnimationPlayer>
+    public class AnimationData : DefaultDict<string, AnimationClip> { }
+    class AnimationParser : CachedContentParser<AnimationData, AnimationData>
     {
         public AnimationParser()
         {
             Prefix = @"Models\";
         }
 
-        public static Dictionary<string, AnimationClip> GetAnimations(JObject jobj)
+        public static AnimationData GetAnimations(JObject jobj)
         {
-            Dictionary<string, AnimationClip> output = new Dictionary<string, AnimationClip>();
+            AnimationData output = new AnimationData();
             foreach (JToken animationNode in (JArray)jobj["animations"])
             {
                 List<Keyframe> keyframes = new List<Keyframe>();
@@ -66,12 +57,12 @@ namespace Spectrum.Framework.Content
             JObject jobj = JObject.Load(reader);
 
 
-            return new AnimationData(jobj, GetAnimations(jobj));
+            return GetAnimations(jobj);
         }
 
-        protected override AnimationPlayer SafeCopy(AnimationData data)
+        protected override AnimationData SafeCopy(AnimationData data)
         {
-            return new AnimationPlayer(data.animations);
+            return data;
         }
     }
 }

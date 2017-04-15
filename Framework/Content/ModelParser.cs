@@ -13,24 +13,12 @@ using System.Text.RegularExpressions;
 
 namespace Spectrum.Framework.Content
 {
-    public class MaterialData
-    {
-        public List<MaterialTexture> textures = new List<MaterialTexture>();
-        public Color diffuseColor = Color.HotPink;
-        public Color specularColor = Color.Black;
-    }
-    public struct MaterialTexture
-    {
-        public string Id;
-        public string Filename;
-        public string Type;
-    }
     class ModelParserCache
     {
         public JObject jobj;
         public Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
         public Dictionary<string, MaterialData> materials = new Dictionary<string, MaterialData>();
-        public Dictionary<string, AnimationClip> animations = new Dictionary<string, AnimationClip>();
+        public AnimationData animations = new AnimationData();
         public List<string> vertexAttributes = new List<string>();
         public string Directory;
         public string FileName;
@@ -250,13 +238,11 @@ namespace Spectrum.Framework.Content
                     part.effect.SetBoneNames((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
                     part.effect.SetTechnique("Skinned");
                 }
-                MaterialData materialData;
+                MaterialData materialData = new MaterialData();
                 if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
                     materialData = data.materials[(string)nodePart["materialid"]];
-                else
-                    materialData = new MaterialData();
 
-                part.effect.DiffuseColor = materialData.diffuseColor;
+                part.material = materialData;
                 List<MaterialTexture> materialTextures = materialData.textures;
                 foreach (MaterialTexture texture in materialTextures)
                 {
@@ -296,7 +282,7 @@ namespace Spectrum.Framework.Content
                 parseNode(node, data, parts);
             }
             SpecModel model = new SpecModel(data.FileName, parts, GetSkinningData(data.jobj));
-            model.AnimationPlayer = new AnimationPlayer(data.animations);
+            model.Animations = data.animations;
             return model;
         }
     }

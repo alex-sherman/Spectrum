@@ -11,12 +11,11 @@ using Spectrum.Framework.Network;
 using System.Diagnostics;
 using Spectrum.Framework.Input;
 using System.Collections;
+using Spectrum.Framework.Network.Surrogates;
 
 namespace Spectrum.Framework.Entities
 {
     public delegate void EntityMessageHandler(NetID peerID, Entity entity, NetMessage message);
-    public delegate void EntityReplicationCallback(Entity entity);
-    public delegate void FunctionReplicationcallback(Entity entity, int function, NetMessage parameters);
     public class EntityManager : IEnumerable<Entity>
     {
         public event Action<Entity> OnEntityAdded;
@@ -44,21 +43,30 @@ namespace Spectrum.Framework.Entities
                         {
                             message.Write(entity.CreationData);
                         }
+                        foreach (Entity entity in replicateable)
+                        {
+                            entity.WriteReplicationData(message);
+                        }
                     },
                     delegate (NetID peerGuid, NetMessage message)
                     {
                         int count = message.Read<int>();
+                        Entity[] entities = new Entity[count];
                         for (int i = 0; i < count; i++)
                         {
-                            HandleEntityCreation(peerGuid, message);
+                            entities[i] = HandleEntityCreation(peerGuid, message);
+                        }
+                        for (int i = 0; i < count; i++)
+                        {
+                            entities[i].ReadReplicationData(message);
                         }
                     }
                 );
             Handshake.RegisterHandshakeHandler(HandshakeStage.PartialResponse, entitySender);
             Handshake.RegisterHandshakeHandler(HandshakeStage.Completed, entitySender);
-            mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, HandleEntityCreation);
+            mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, (peer, message) => HandleEntityCreation(peer, message));
             mpService.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
-            mpService.RegisterMessageCallback(FrameworkMessages.EntityMessage, HandleEntityMessage);
+            mpService.RegisterMessageCallback(FrameworkMessages.EntityReplication, HandleEntityReplication);
         }
 
         #region Network Functions
@@ -70,15 +78,20 @@ namespace Spectrum.Framework.Entities
             NetMessage eData = new NetMessage();
             eData.Write(entity.CreationData);
             mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
+
+            SendEntityReplication(entity, peerDestination);
         }
-        public void HandleEntityCreation(NetID peerGuid, NetMessage message)
+        public Entity HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
             InitData entityData = message.Read<InitData>();
-            if (!Entities.Map.ContainsKey((Guid)entityData.fields["ID"].Object))
-                CreateEntity(entityData);
+            Guid id = (Guid)entityData.fields["ID"].Object;
+            if (!Entities.Map.ContainsKey(id))
+                return CreateEntity(entityData);
+            else
+                return Entities.Map[id];
         }
 
-        public void SendShowCreate(Guid entityID, NetID peerDestination = default(NetID))
+        public void RequestShowCreate(Guid entityID, NetID peerDestination = default(NetID))
         {
             NetMessage message = new NetMessage();
             message.Write(entityID);
@@ -91,26 +104,44 @@ namespace Spectrum.Framework.Entities
             Entity entity = Entities.Map[entityID];
             SendEntityCreation(entity, peerGuid);
         }
-
-        public void SendEntityMessage(NetID peerID, Entity entity, NetMessage message)
+        public void SendFunctionReplication(Entity entity, string method, params object[] args)
         {
-            if (!entity.CanReplicate) { return; }
-            NetMessage toSend = new NetMessage();
-            toSend.Write(entity.ID);
-            toSend.Write(message);
-            mpService.SendMessage(FrameworkMessages.EntityMessage, toSend);
+            NetMessage replicationMessage = new NetMessage();
+            replicationMessage.Write(entity.ID);
+            replicationMessage.Write(0);
+            replicationMessage.Write(method);
+            replicationMessage.Write(args.Select(obj => new Primitive(obj)).ToArray());
+            mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
         }
-        public void HandleEntityMessage(NetID peerGuid, NetMessage message)
+        public void SendEntityReplication(Entity entity, NetID peer)
+        {
+            NetMessage replicationMessage = new NetMessage();
+            replicationMessage.Write(entity.ID);
+            replicationMessage.Write(1);
+            entity.WriteReplicationData(replicationMessage);
+            mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
+        }
+        public void HandleEntityReplication(NetID peerGuid, NetMessage message)
         {
             Guid entityID = message.Read<Guid>();
-            message = message.Read<NetMessage>();
             if (Entities.Map.ContainsKey(entityID))
             {
-                Entities.Map[entityID].HandleMessage(peerGuid, message.Read<int>(), message.Read<NetMessage>());
+                int type = message.Read<int>();
+                Entity entity = Entities.Map[entityID];
+                if (type == 0)
+                {
+                    string method = message.Read<string>();
+                    Primitive[] args = message.Read<Primitive[]>();
+                    entity.replicatedMethods[method].Invoke(entity, args.Select(prim => prim.Object).ToArray());
+                }
+                else if (type == 1)
+                {
+                    entity.ReadReplicationData(message);
+                }
             }
             else
             {
-                SendShowCreate(entityID, peerGuid);
+                RequestShowCreate(entityID, peerGuid);
             }
         }
         #endregion
@@ -173,8 +204,6 @@ namespace Spectrum.Framework.Entities
                 entityData.Set("ID", Guid.NewGuid());
 
             Entity output = entityData.Construct() as Entity;
-            
-            output.SendMessageCallback = SendEntityMessage;
             return output;
         }
         public Entity AddEntity(Entity entity)

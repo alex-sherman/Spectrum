@@ -503,7 +503,7 @@ namespace Spectrum.Framework.Physics
         {
             if (!Paused)
             {
-                timestep = Timestep == 0 ? (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f : Timestep;
+                timestep = Math.Min(1 / 30.0f, Timestep == 0 ? (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f : Timestep);
                 Step(timestep, true);
             }
         }

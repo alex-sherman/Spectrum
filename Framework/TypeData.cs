@@ -96,7 +96,7 @@ namespace Spectrum.Framework
             if (members.ContainsKey(name))
             {
                 MemberInfo info = members[name];
-                if (info.MemberType.IsAssignableFrom(value.GetType()))
+                if (value == null || info.MemberType.IsAssignableFrom(value.GetType()))
                     members[name].SetValue(obj, value);
                 else if (info.MemberType.IsSubclassOf(typeof(Enum)) && value is int)
                     members[name].SetValue(obj, Enum.ToObject(info.MemberType, (int)value));

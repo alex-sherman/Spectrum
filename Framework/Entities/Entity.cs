@@ -27,7 +27,7 @@ namespace Spectrum.Framework.Entities
         /// </summary>
         public const int DefaultReplicationPeriod = 200;
 
-        private Dictionary<string, MethodInfo> replicatedMethods = new Dictionary<string, MethodInfo>();
+        public Dictionary<string, MethodInfo> replicatedMethods = new Dictionary<string, MethodInfo>();
         private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
 
         protected int ReplicationPeriod = DefaultReplicationPeriod;
@@ -86,12 +86,12 @@ namespace Spectrum.Framework.Entities
             interpolators[attributeName] = new Interpolator(interpolator);
         }
 
-        protected virtual void getData(NetMessage output)
+        public virtual void WriteReplicationData(NetMessage output)
         {
             Primitive[] fields = TypeData.ReplicatedMemebers.ToList().ConvertAll(x => new Primitive(TypeData.Get(this, x))).ToArray();
             output.Write(fields);
         }
-        protected virtual void setData(NetMessage input)
+        public virtual void ReadReplicationData(NetMessage input)
         {
             Primitive[] fields = input.Read<Primitive[]>();
             var properties = TypeData.ReplicatedMemebers.ToList();
@@ -105,56 +105,11 @@ namespace Spectrum.Framework.Entities
             }
         }
 
-        public void SendMessage(NetID peer, int type, NetMessage message)
-        {
-            if (SendMessageCallback != null)
-            {
-                NetMessage toSend = new NetMessage();
-                toSend.Write(type);
-                toSend.Write(message);
-                SendMessageCallback(peer, this, toSend);
-            }
-        }
-        public virtual void HandleMessage(NetID peer, int type, NetMessage message)
-        {
-            if (type == StateReplicationMessage)
-            {
-                setData(message);
-            }
-            else if (type == FunctionReplicationMessage)
-            {
-                string method = message.Read<string>();
-                Primitive[] args = message.Read<Primitive[]>();
-                replicatedMethods[method].Invoke(this, args.Select(prim => prim.Object).ToArray());
-            }
-            else
-            {
-                DebugPrinter.print("Received invalid message type " + type + " for entity type " + this.GetType().Name);
-            }
-        }
-
         public void RPC(string method, params object[] args)
         {
             if (CanReplicate)
             {
-                NetMessage replicationMessage = new NetMessage();
-                replicationMessage.Write(method);
-                replicationMessage.Write(args.Select(obj => new Primitive(obj)).ToArray());
-                SendMessage(default(NetID), FunctionReplicationMessage, replicationMessage);
-            }
-        }
-        private void _replicate()
-        {
-            replicateCounter = ReplicationPeriod;
-            NetMessage replicationMessage = new NetMessage();
-            getData(replicationMessage);
-            SendMessage(default(NetID), StateReplicationMessage, replicationMessage);
-        }
-        public void Replicate(bool force = false)
-        {
-            if ((force || replicateCounter <= 0))
-            {
-                replicateNextUpdate = true;
+                Manager.SendFunctionReplication(this, method, args);
             }
         }
 
@@ -166,13 +121,16 @@ namespace Spectrum.Framework.Entities
                 if (value != null)
                     TypeData.Set(this, interpolator.Key, value);
             }
-            if (replicateCounter > 0)
-                replicateCounter -= gameTime.ElapsedGameTime.Milliseconds;
-
-            if (replicateCounter <= 0 && (replicateNextUpdate || AutoReplicate))
+            if (CanReplicate)
             {
-                replicateCounter = ReplicationPeriod;
-                _replicate();
+                if (replicateCounter > 0)
+                    replicateCounter -= gameTime.ElapsedGameTime.Milliseconds;
+
+                if (replicateCounter <= 0 && (replicateNextUpdate || AutoReplicate))
+                {
+                    replicateCounter = ReplicationPeriod;
+                    Manager.SendEntityReplication(this, default(NetID));
+                }
             }
         }
         public virtual void DisabledUpdate(GameTime time) { }

@@ -9,8 +9,22 @@ using Spectrum.Framework.Physics.LinearMath;
 
 namespace Spectrum.Framework.Graphics
 {
+    public class MaterialData
+    {
+        public static MaterialData Missing { get; } = new MaterialData();
+        public List<MaterialTexture> textures = new List<MaterialTexture>();
+        public Color diffuseColor = Color.HotPink;
+        public Color specularColor = Color.Black;
+    }
+    public struct MaterialTexture
+    {
+        public string Id;
+        public string Filename;
+        public string Type;
+    }
     public class DrawablePart
     {
+        public MaterialData material = null;
         public Matrix permanentTransform = Matrix.Identity;
         public Matrix transform = Matrix.Identity;
         public SpectrumEffect effect;

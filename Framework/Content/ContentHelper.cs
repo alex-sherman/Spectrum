@@ -29,7 +29,7 @@ namespace Spectrum.Framework.Content
         public static Dictionary<Type, ICachedContentParser> ContentParsers = new Dictionary<Type, ICachedContentParser>()
             {
                 {typeof(SpecModel), new ModelParser()},
-                {typeof(AnimationPlayer), new AnimationParser()},
+                {typeof(AnimationData), new AnimationParser()},
                 {typeof(ImageAsset), new ImageAssetParser()},
                 {typeof(Texture2D), new Texture2DParser()},
                 {typeof(ScriptAsset), new ScriptParser()},

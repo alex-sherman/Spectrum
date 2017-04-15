@@ -18,73 +18,65 @@ using Newtonsoft.Json.Linq;
 namespace Spectrum.Framework.Graphics.Animation
 {
 
-
+    public interface IAnimationSource
+    {
+        AnimationClip GetAnimation(string name);
+        SkinningData GetSkinningData();
+    }
     /// <summary>
     /// The animation player is in charge of decoding bone position
     /// matrices from an animation clip.
     /// </summary>
     public class AnimationPlayer
     {
-
         #region Fields
-
-
         // Information about the currently playing animation clip.
         AnimationClip currentClipValue;
         TimeSpan currentTimeValue;
         int currentKeyFrame;
-        // Backlink to the bind pose and skeleton hierarchy data.
-        Dictionary<string, AnimationClip> AnimationClips;
-        private bool playOnce = false;
         public string DefaultClip = "Default";
+        IAnimationSource animationSource;
 
         #endregion
 
-
-        public string[] AnimationNames
+        public AnimationPlayer(IAnimationSource animationSource)
         {
-            get
-            {
-                string[] output = new string[AnimationClips.Count];
-                AnimationClips.Keys.CopyTo(output, 0);
-                return output;
-            }
+            this.animationSource = animationSource;
         }
 
-        /// <summary>
-        /// Constructs a new animation player.
-        /// </summary>
-        public AnimationPlayer(Dictionary<string, AnimationClip> Animations)
+        public string CurrentClip()
         {
-            this.AnimationClips = Animations;
+            return currentClipValue?.Name;
         }
 
+        public void StartClip(string animation)
+        {
+            StartClip(animationSource?.GetAnimation(animation));
+        }
 
         /// <summary>
         /// Starts decoding the specified animation clip.
         /// </summary>
-        public void StartClip(string animation, SkinningData SkinningData, bool playOnce = false)
+        public void StartClip(AnimationClip clip)
         {
             currentKeyFrame = 0;
-            this.playOnce = playOnce;
-            if (!AnimationClips.ContainsKey(animation)) return;
-            AnimationClip clip = AnimationClips[animation];
-
             currentClipValue = clip;
+
+            if (clip == null) return;
+
             currentTimeValue = TimeSpan.Zero;
-
-            SkinningData.ToDefault();
-
-            Update(TimeSpan.Zero, SkinningData);
+            animationSource?.GetSkinningData()?.ToDefault();
+            Update(TimeSpan.Zero);
         }
 
 
         /// <summary>
         /// Advances the current animation position.
         /// </summary>
-        public void Update(TimeSpan time, SkinningData SkinningData)
+        public void Update(TimeSpan time)
         {
-            if (currentClipValue != null)
+            SkinningData SkinningData = animationSource?.GetSkinningData();
+            if (SkinningData != null && currentClipValue != null)
             {
                 UpdateTime(time, SkinningData);
                 List<Keyframe> Keyframes = currentClipValue.Keyframes;
@@ -106,20 +98,7 @@ namespace Spectrum.Framework.Graphics.Animation
             {
                 currentTimeValue -= currentClipValue.Duration;
                 currentKeyFrame = 0;
-                if (playOnce)
-                {
-                    if (AnimationClips.ContainsKey(DefaultClip))
-                        StartClip(DefaultClip, SkinningData);
-                    else
-                        currentClipValue = null;
-                    return;
-                }
             }
-        }
-
-        public AnimationClip CurrentClip
-        {
-            get { return currentClipValue; }
         }
     }
 }

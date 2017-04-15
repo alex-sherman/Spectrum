@@ -18,13 +18,12 @@ namespace Spectrum.Framework.Network
     {
         public const byte Handshake = 0;
         public const byte KeepAlive = 1;
-        public const byte EntityMessage = 2;
         public const byte ShowCreate = 3;
         public const byte EntityCreation = 4;
         public const byte EntityDeletion = 5;
         public const byte EntityReplication = 6;
-        public const byte Termination = 7;
-        public const byte FunctionReplication = 8;
+        public const byte FunctionReplication = 7;
+        public const byte Termination = 8;
         public const byte RequestMutex = 9;
         public const byte ReplyMutex = 10;
         public const byte RequestPositions = 11;
@@ -404,7 +403,7 @@ namespace Spectrum.Framework.Network
                             }
                             catch (Exception e)
                             {
-                                DebugPrinter.print("Message handler " + received.MessageType + " failed: " + e.Message);
+                               DebugPrinter.print("Message handler " + received.MessageType + " failed: " + e.Message);
                             }
                         }
                     }

@@ -32,7 +32,7 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 			color = tex2D(customTexture, vsout.textureCoordinate);
 	}
 	else {
-		color = diffuseColor;
+		color = diffuseColor * materialDiffuse;
 	}
 	clip(color.a <= 0 ? -1:1);
 	if(!aboveWater){

@@ -17,6 +17,7 @@ using Spectrum.Framework.Physics.Dynamics.Constraints;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Audio;
 using Spectrum.Framework.Content;
+using Spectrum.Framework.Graphics.Animation;
 
 namespace Spectrum.Framework.Entities
 {
@@ -26,7 +27,7 @@ namespace Spectrum.Framework.Entities
         Static,
         Ignore
     }
-    public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable
+    public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource
     {
         #region Physics Fields/Properties
         [Flags]
@@ -185,13 +186,23 @@ namespace Spectrum.Framework.Entities
 
         [Replicate]
         public Matrix ModelTransform = Matrix.Identity;
+        public AnimationPlayer AnimationPlayer;
+        public AnimationClip GetAnimation(string name)
+        {
+            return Model?.Animations[name] ?? Animations[name];
+        }
+        public SkinningData GetSkinningData()
+        {
+            return Model?.SkinningData;
+        }
+        public AnimationData Animations;
 
         public GameObject()
             : base()
         {
             this.Parts = new List<DrawablePart>();
             IsActive = true;
-
+            AnimationPlayer = new AnimationPlayer(this);
             orientation = Matrix.Identity;
             inertia = new Matrix();
             invInertia = this.invInertiaWorld = new Matrix();
@@ -270,6 +281,7 @@ namespace Spectrum.Framework.Entities
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+            AnimationPlayer.Update(gameTime.ElapsedGameTime);
             Emitter.Position = position;
             Emitter.Up = Vector3.Up;
             Emitter.Forward = Vector3.Forward;

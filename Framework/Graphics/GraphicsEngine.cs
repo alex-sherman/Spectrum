@@ -182,6 +182,8 @@ namespace Spectrum.Framework.Graphics
             Matrix world = task.world;
             if (task.effect != null)
             {
+                MaterialData material = part.material ?? MaterialData.Missing;
+                effect.MaterialDiffuse = material.diffuseColor;
                 effect.View = view;
                 effect.Projection = projection;
                 effect.World = part.permanentTransform * part.transform * world;
@@ -252,9 +254,9 @@ namespace Spectrum.Framework.Graphics
                 renderTasks.Add(new RenderTask(tag) { z = z, effect = partEffect, part = part, projection = Projection, view = View, world = World });
             }
         }
-        public static void QueueParts(IEnumerable<DrawablePart> parts, Vector3 worldCenter, Matrix World)
+        public static void QueueParts(IEnumerable<DrawablePart> parts, Vector3 worldCenter, Matrix World, SpectrumEffect effect = null)
         {
-            QueueParts(parts, worldCenter, World, Camera.View, Camera.Projection);
+            QueueParts(parts, worldCenter, World, Camera.View, Camera.Projection, effect);
         }
         public static void QueueParts(IEnumerable<DrawablePart> parts, Vector3 worldCenter, Matrix World, Matrix View, Matrix Projection, SpectrumEffect effect = null, string tag = "Misc")
         {

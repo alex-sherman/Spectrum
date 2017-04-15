@@ -190,7 +190,7 @@ namespace Spectrum.Framework.Physics.Dynamics
                 ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount);
             }
 
-            ApplyPush((Position1 - Position2) * 0.1f / contactCount);
+            ApplyPush(Vector3.Dot((Position1 - Position2), normal) * normal / contactCount);
         }
 
         public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
