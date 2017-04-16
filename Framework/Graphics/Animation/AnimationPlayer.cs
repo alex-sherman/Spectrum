@@ -32,8 +32,7 @@ namespace Spectrum.Framework.Graphics.Animation
         #region Fields
         // Information about the currently playing animation clip.
         AnimationClip currentClipValue;
-        TimeSpan currentTimeValue;
-        int currentKeyFrame;
+        float currentTimeValue;
         public string DefaultClip = "Default";
         IAnimationSource animationSource;
 
@@ -59,45 +58,58 @@ namespace Spectrum.Framework.Graphics.Animation
         /// </summary>
         public void StartClip(AnimationClip clip)
         {
-            currentKeyFrame = 0;
             currentClipValue = clip;
 
             if (clip == null) return;
 
-            currentTimeValue = TimeSpan.Zero;
+            currentTimeValue = 0;
             animationSource?.GetSkinningData()?.ToDefault();
-            Update(TimeSpan.Zero);
+            Update(0);
         }
 
 
         /// <summary>
         /// Advances the current animation position.
         /// </summary>
-        public void Update(TimeSpan time)
+        public void Update(float time)
         {
             SkinningData SkinningData = animationSource?.GetSkinningData();
             if (SkinningData != null && currentClipValue != null)
             {
                 UpdateTime(time, SkinningData);
-                List<Keyframe> Keyframes = currentClipValue.Keyframes;
-                for (; currentKeyFrame < Keyframes.Count && Keyframes[currentKeyFrame].Time <= currentTimeValue; currentKeyFrame++)
+                foreach (var kvp in currentClipValue.Keyframes)
                 {
-                    Bone currentBone = SkinningData.Bones[Keyframes[currentKeyFrame].Bone];
-                    Matrix rotation = Keyframes[currentKeyFrame].Rotation ?? currentBone.defaultRotation;
-                    Matrix translation = Keyframes[currentKeyFrame].Translation ?? currentBone.defaultTranslation;
+                    if (!SkinningData.Bones.ContainsKey(kvp.Key)) continue;
+                    Bone currentBone = SkinningData.Bones[kvp.Key];
+                    var translation1 = kvp.Value.FindLast((kf) => kf.Time <= currentTimeValue && kf.Translation.HasValue);
+                    var translation2 = kvp.Value.Find((kf) => kf.Time > currentTimeValue && kf.Translation.HasValue);
+
+                    Matrix translation = currentBone.defaultTranslation;
+                    if (translation1 != null && translation2 != null)
+                    {
+                        float w = (currentTimeValue - translation1.Time) / (translation2.Time - translation1.Time);
+                        translation = Matrix.Add(Matrix.Multiply(translation1.Translation.Value, 1 - w), Matrix.Multiply(translation2.Translation.Value, w));
+                    }
+                    var rotation1 = kvp.Value.FindLast((kf) => kf.Time <= currentTimeValue && kf.Rotation.HasValue);
+                    var rotation2 = kvp.Value.Find((kf) => kf.Time > currentTimeValue && kf.Rotation.HasValue);
+                    Matrix rotation = currentBone.defaultRotation;
+                    if (rotation1 != null && rotation2 != null)
+                    {
+                        float w = (currentTimeValue - rotation1.Time) / (rotation2.Time - rotation1.Time);
+                        rotation = Matrix.Add(Matrix.Multiply(rotation1.Rotation.Value, 1 - w), Matrix.Multiply(rotation2.Rotation.Value, w));
+                    }
                     currentBone.transform = rotation * translation;
                 }
             }
         }
 
-        private void UpdateTime(TimeSpan time, SkinningData SkinningData)
+        private void UpdateTime(float time, SkinningData SkinningData)
         {
-            if (currentClipValue.Duration == TimeSpan.Zero) { return; }
+            if (currentClipValue.Duration == 0) { return; }
             currentTimeValue += time;
             if (currentTimeValue > currentClipValue.Duration)
             {
                 currentTimeValue -= currentClipValue.Duration;
-                currentKeyFrame = 0;
             }
         }
     }

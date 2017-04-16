@@ -189,7 +189,7 @@ namespace Spectrum.Framework.Entities
         public AnimationPlayer AnimationPlayer;
         public AnimationClip GetAnimation(string name)
         {
-            return Model?.Animations[name] ?? Animations[name];
+            return Model?.Animations[name] ?? Animations?[name];
         }
         public SkinningData GetSkinningData()
         {
@@ -281,7 +281,7 @@ namespace Spectrum.Framework.Entities
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            AnimationPlayer.Update(gameTime.ElapsedGameTime);
+            AnimationPlayer.Update(gameTime.DT());
             Emitter.Position = position;
             Emitter.Up = Vector3.Up;
             Emitter.Forward = Vector3.Forward;

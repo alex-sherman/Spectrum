@@ -10,6 +10,7 @@
 #region Using Statements
 using System;
 using System.Collections.Generic;
+using System.Linq;
 #endregion
 
 namespace Spectrum.Framework.Graphics.Animation
@@ -24,11 +25,11 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Constructs a new animation clip object.
         /// </summary>
-        public AnimationClip(string name, TimeSpan duration, List<Keyframe> keyframes)
+        public AnimationClip(string name, float duration, List<Keyframe> keyframes)
         {
             Name = name;
             Duration = duration;
-            Keyframes = keyframes;
+            Keyframes = keyframes.GroupBy((kf) => kf.Bone).ToDictionary((g) => g.Key, (g) => g.OrderBy((kf) => kf.Time).ToList());
         }
 
 
@@ -44,13 +45,13 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Gets the total length of the animation.
         /// </summary>
-        public TimeSpan Duration { get; private set; }
+        public float Duration { get; private set; }
 
 
         /// <summary>
         /// Gets a combined list containing all the keyframes for all bones,
         /// sorted by time.
         /// </summary>
-        public List<Keyframe> Keyframes { get; private set; }
+        public Dictionary<string, List<Keyframe>> Keyframes { get; private set; }
     }
 }

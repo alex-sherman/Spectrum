@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Constructs a new keyframe object.
         /// </summary>
-        public Keyframe(string bone, TimeSpan time, Matrix? rotation, Matrix? translation)
+        public Keyframe(string bone, float time, Matrix? rotation, Matrix? translation)
         {
             Bone = bone;
             Time = time;
@@ -48,7 +48,7 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Gets the time offset from the start of the animation to this keyframe.
         /// </summary>
-        public TimeSpan Time { get; private set; }
+        public float Time { get; private set; }
 
 
         /// <summary>

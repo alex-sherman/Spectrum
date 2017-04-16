@@ -36,14 +36,14 @@ namespace Spectrum.Framework.Content
                         JToken translationNode = keyFrameNode["translation"];
                         if (translationNode != null)
                             translation = MatrixHelper.CreateTranslation(translationNode);
-                        keyframes.Add(new Keyframe((string)boneNode["boneId"], new TimeSpan(0, 0, 0, 0, (int)keyFrameNode["keytime"]), rotation, translation));
+                        keyframes.Add(new Keyframe((string)boneNode["boneId"], ((float)keyFrameNode["keytime"]) / 1000.0f, rotation, translation));
                     }
                 }
                 keyframes.Sort(delegate(Keyframe x, Keyframe y)
                 {
                     return x.Time.CompareTo(y.Time);
                 });
-                TimeSpan duration = keyframes.Last().Time;
+                float duration = keyframes.Last().Time;
                 string name = (string)animationNode["id"];
                 output[name] = new AnimationClip(name, duration, keyframes);
             }
