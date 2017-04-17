@@ -42,11 +42,18 @@ namespace Spectrum.Framework.Graphics
                 (float)device.Viewport.Height,
                 1f, 10000);
             lightProjection = Matrix.CreatePerspectiveFieldOfView(
-                (float)Math.PI/2.0f,
+                (float)Math.PI / 20f,
                 1,
-                1f, 100000);
-            ScreenSize.X = device.Viewport.Width;
-            ScreenSize.Y = device.Viewport.Height;
+                100, 1100f);
+            //lightProjection = new Matrix();
+            //float e = (float)(1 / Math.Tan((float)Math.PI / 4.0f));
+            //lightProjection.M11 = e;
+            //lightProjection.M22 = e;
+            //lightProjection.M33 = 0.001f - 1;
+            //lightProjection.M34 = 0.001f - 2;
+            //lightProjection.M43 = -1;
+            //ScreenSize.X = device.Viewport.Width;
+            //ScreenSize.Y = device.Viewport.Height;
         }
         public static float WaterPerturbation
         {
@@ -59,6 +66,6 @@ namespace Spectrum.Framework.Graphics
                 WaterEffect.WaterPerturbation = value;
             }
         }
-        
+
     }
 }

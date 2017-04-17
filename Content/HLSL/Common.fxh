@@ -9,6 +9,8 @@ float3 cameraPosition;
 float fogDistance = 6400;
 float fogWidth = 100;
 bool Clip = false;
+float4x4 ShadowViewProjection;
+uniform extern bool UseShadowMap;
 uniform extern texture Texture;
 uniform bool UseTexture = false;
 uniform extern texture NormalMap;
@@ -21,10 +23,8 @@ uniform float3 ambientLightColor = float3(0.2,.2,.2);
 uniform float3 diffuseLightColor = float3(0.8,0.8,0.8);
 uniform float3 specularLightColor = float3(1,1,1);
 bool aboveWater = true;
-float4x4 lightViewProjectionMatrix;
-bool shadowMapEnabled = false;
-uniform extern texture ShadowMapTex;
 bool lightingEnabled = true;
+Texture2D<float> ShadowMapTexture;
 
 sampler customTexture = sampler_state
 {
@@ -55,10 +55,10 @@ sampler transparencySampler = sampler_state
 };
 sampler shadowMapSampler = sampler_state
 {
-	Texture = <ShadowMapTex>;
-	magfilter = LINEAR;
-	minfilter = LINEAR;
-	mipfilter=LINEAR;
+	Texture = <ShadowMapTexture>;
+	magfilter = POINT;
+	minfilter = POINT;
+	mipfilter = POINT;
 	AddressU = clamp;
 	AddressV = clamp;
 };
@@ -104,6 +104,15 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 			normal = vsout.normal;
 		}
 		float diffuseMagnitude = (dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)) + 1) / 2;
+		if(UseShadowMap) {
+			vsout.Pos2DAsSeenByLight /= vsout.Pos2DAsSeenByLight.w;
+			float2 shadowCoord = vsout.Pos2DAsSeenByLight.xy;
+			shadowCoord.y *= -1;
+			shadowCoord = (shadowCoord + 1) / 2;
+			float shadowDepth = 1 - ShadowMapTexture.Sample(shadowMapSampler, shadowCoord);
+			float depth = vsout.Pos2DAsSeenByLight.z;
+			if(shadowDepth - depth < -0.0001) { diffuseMagnitude = 0; }
+		}
 		output.rgb += color.rgb * min(1, (diffuseMagnitude * diffuseLightColor + ambientLightColor));
 	}
 	return output;
@@ -111,12 +120,9 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
 	CommonPSOut output = (CommonPSOut)0;
 	output.color = color;
-	output.depth.rgb = max(0, (vsout.position.w - 1000) / 10000);
+	output.depth.rgb = vsout.position.z / vsout.position.w;
 	output.depth.a = 1;
 	return output;
-}
-float4 VSCalcPos2DAsSeenByLight(float4 worldPosition){
-	return mul(worldPosition, lightViewProjectionMatrix);
 }
 float3 VSCalculateLight(float3 normal, float3 worldPosition){
 	float3 lightDirection = worldPosition - lightPosition;
@@ -130,12 +136,13 @@ void DoClip(CommonVSOut vsout){
 float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
 	vsout = (CommonVSOut)0;
 	float4 HworldPosition = mul(vin.Position, world);
+	HworldPosition.w = 1;
 	vsout.worldPosition = HworldPosition.xyz / HworldPosition.w;
 	vsout.position =mul(mul(HworldPosition, view), proj);
 	vsout.depth = length(vsout.worldPosition-cameraPosition);
 	vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
 	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
-	vsout.Pos2DAsSeenByLight = VSCalcPos2DAsSeenByLight(HworldPosition);
+	vsout.Pos2DAsSeenByLight = mul(HworldPosition, ShadowViewProjection);
 	vsout.textureCoordinate = vin.TextureCoordinate;
 	vsout.normal = normalize(mul(vin.normal, world));
 	vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));

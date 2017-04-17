@@ -17,29 +17,24 @@ namespace Spectrum.Framework.Graphics
             effect.Parameters["darkness"].SetValue(0.0f);
             ResetViewPort();
         }
-        public static bool ShadowMapEnabled
-        {
-            get { return effect.Parameters["shadowMapEnabled"].GetValueBoolean(); }
-            set { effect.Parameters["shadowMapEnabled"].SetValue(value); }
-        }
         public static void ResetViewPort()
         {
             effect.Parameters["viewPort"].SetValue(new Vector2(SpectrumGame.Game.GraphicsDevice.Viewport.Width, SpectrumGame.Game.GraphicsDevice.Viewport.Height));
         }
-        public static Matrix LightViewProj
+        public static float DepthBlurStart
         {
-            get { return effect.Parameters["lightViewProjectionMatrix"].GetValueMatrix(); }
-            set { effect.Parameters["lightViewProjectionMatrix"].SetValue(value); }
+            get { return effect.Parameters["depthBlurStart"].GetValueSingle(); }
+            set { effect.Parameters["depthBlurStart"].SetValue(value); }
+        }
+        public static float DepthBlurScale
+        {
+            get { return effect.Parameters["depthBlurScale"].GetValueSingle(); }
+            set { effect.Parameters["depthBlurScale"].SetValue(value); }
         }
         public static Texture2D DepthTarget
         {
             get { return effect.Parameters["DepthTarget"].GetValueTexture2D(); }
             set { effect.Parameters["DepthTarget"].SetValue(value); }
-        }
-        public static Texture2D ShadowMap
-        {
-            get { return effect.Parameters["ShadowMapTex"].GetValueTexture2D(); }
-            set { effect.Parameters["ShadowMapTex"].SetValue(value); }
         }
         public static bool AAEnabled
         {

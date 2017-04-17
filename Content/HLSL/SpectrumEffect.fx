@@ -19,8 +19,8 @@ CommonVSOut InstanceTransform(CommonVSInput input, float4x4 instanceWorld : POSI
 }
 CommonPSOut ApplyTexture(CommonVSOut vsout)
 {
-	if(Clip) { clip(vsout.clipDistance); }
-	if(vsout.fog >=.99f){ clip(-1); }
+	if (Clip) { clip(vsout.clipDistance); }
+	if (vsout.fog >= .99f) { clip(-1); }
 	float4 color;
 	if (UseTexture) {
 		if (UseTransparency) {
@@ -34,13 +34,21 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 	else {
 		color = diffuseColor * materialDiffuse;
 	}
-	clip(color.a <= 0 ? -1:1);
-	if(!aboveWater){
-		color.b+=.1f;
+	clip(color.a <= 0 ? -1 : 1);
+	if (!aboveWater) {
+		color.b += .1f;
 	}
 	color = PSLighting(color, vsout);
-	color.a *= 1-vsout.fog;
+	color.a *= 1 - vsout.fog;
 	return PSReturn(color, vsout);
+}
+CommonVSOut DepthTransform(CommonVSInput vin) {
+	CommonVSOut Out = (CommonVSOut)0;
+	float4 worldPosition = CommonVS((CommonVSInput)vin, (CommonVSOut)Out);
+	return Out;
+}
+float4 Depth(CommonVSOut vsout) : COLOR0 {
+	return float4(1 - vsout.Pos2DAsSeenByLight.z / vsout.Pos2DAsSeenByLight.w, 0, 0, 1);
 }
 
 void Skin(inout CommonVSInput vin, float4 Indices, float4 Weights, uniform int boneCount)
@@ -68,7 +76,15 @@ technique TextureDraw
 	pass P0
 	{
 		vertexShader = compile vs_4_0 Transform();
-		pixelShader  = compile ps_4_0 ApplyTexture();
+		pixelShader = compile ps_4_0 ApplyTexture();
+	}
+}
+technique ShadowMap
+{
+	pass P0
+	{
+		vertexShader = compile vs_4_0 DepthTransform();
+		pixelShader = compile ps_4_0 Depth();
 	}
 }
 technique InstanceTextureDraw

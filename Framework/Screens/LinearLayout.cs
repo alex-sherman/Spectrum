@@ -50,8 +50,8 @@ namespace Spectrum.Framework.Screens
         }
         public void OnMeasure(Element element, int width, int height)
         {
-            float contentWidth = 0;
-            float contentHeight = 0;
+            int contentWidth = 0;
+            int contentHeight = 0;
             var layoutChildren = element.Children.Where(c => c.Positioning != PositionType.Relative && c.Positioning != PositionType.Absolute);
             switch (LayoutType)
             {
@@ -66,8 +66,8 @@ namespace Spectrum.Framework.Screens
                 default:
                     break;
             }
-            element.MeasuredWidth = (int)element.Width.Measure(width, contentWidth);
-            element.MeasuredHeight = (int)element.Height.Measure(height, contentHeight);
+            element.MeasuredWidth = element.Width.Measure(width, contentWidth);
+            element.MeasuredHeight = element.Height.Measure(height, contentHeight);
         }
     }
 }

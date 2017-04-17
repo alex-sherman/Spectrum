@@ -25,8 +25,8 @@ namespace Spectrum.Framework.Screens.InputElements
                 MeasuredHeight = Font.LineSpacing;
             }
             else {
-                MeasuredWidth = (int)Width.Measure(width, Font.MeasureString(Text).X);
-                MeasuredHeight = (int)Height.Measure(height, Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+                MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
+                MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
             }
         }
 

@@ -12,6 +12,10 @@ namespace Spectrum.Framework
 {
     public static class ExtensionMethods
     {
+        public static IEnumerable<T> Union<T>(this IEnumerable<T> source, T item)
+        {
+            return source.Union(Enumerable.Repeat(item, 1));
+        }
         public static float DT(this GameTime time)
         {
             return (float)time.ElapsedGameTime.TotalMilliseconds / 1000.0f;
@@ -26,7 +30,10 @@ namespace Spectrum.Framework
         {
             return "{" + vector.X.ToString("0.00") + ", " + vector.Y.ToString("0.00") + ", " + vector.Z.ToString("0.00") + "}";
         }
-
+        public static Vector3 Homogeneous(this Vector4 vector)
+        {
+            return new Vector3(vector.X, vector.Y, vector.Z) / vector.W;
+        }
         public static bool IsInSameDirection(this Vector3 vector, Vector3 otherVector)
         {
             return Vector3.Dot(vector, otherVector) > 0;

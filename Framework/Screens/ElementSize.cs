@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Screens
             Type = type;
             Size = size;
         }
-        public float Measure(float parent, float content)
+        public int Measure(int parent, int content)
         {
             switch (Type)
             {
@@ -31,11 +31,18 @@ namespace Spectrum.Framework.Screens
                 case SizeType.MatchParent:
                     return parent;
                 case SizeType.WrapContent:
-                    return content;
+                    return Math.Max(content, Size);
             }
             return 0;
         }
+        /// <summary>
+        /// Sets a flat size for the element
+        /// </summary>
         public int Flat { set { Size = value; Type = SizeType.Flat; } }
+        /// <summary>
+        /// Sets a minimum size for the element and otherwise wraps its contents
+        /// </summary>
+        public int MinWidth { set { Size = value; Type = SizeType.WrapContent; } }
         public static bool operator ==(ElementSize a, ElementSize b)
         {
             return a.Equals(b);

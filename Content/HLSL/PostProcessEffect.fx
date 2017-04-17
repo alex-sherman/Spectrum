@@ -8,6 +8,8 @@ float specularPower;
 float specularIntensity;
 //For AA
 bool AAEnabled = true;
+float depthBlurStart = 0.95f;
+float depthBlurScale = 0.5f;
 uniform extern texture AATarget;
 uniform extern texture DepthTarget;
 float2 viewPort;
@@ -71,17 +73,20 @@ float4 CalcAA(float2 texCoord)
 	color.rgb = value/total;
 	return color;
 }
+float getDepth(float2 coord) {
+	return clamp((tex2D(DepthSampler, coord) - depthBlurStart) * depthBlurScale, 0, 1);
+}
 float3 Blur(float3 color, float2 texCoord)
 {
 	float3 output = (float3)0;
-	float centerDepth = tex2D(DepthSampler, texCoord);
-	if (centerDepth == 1) { return color; }
+	float centerDepth = getDepth(texCoord);
+	if (centerDepth == 0) { return color; }
 	float weightSum = 0;
 	for(int i = -2; i <= 2; i++) {
 		for(int j = -2; j <= 2; j++) {
-			float depth = tex2D(DepthSampler, texCoord + float2(i / viewPort.x, j / viewPort.y));
+			float depth = getDepth(texCoord + float2(i / viewPort.x, j / viewPort.y));
 			if (centerDepth < depth) continue;
-			float weight = i == 0 && j == 0 ? (1 - depth / 2) : (depth / 2);
+			float weight = i == 0 && j == 0 ? (1 - depth) : (depth);
 			float3 lerpColor = i == 0 && j == 0 ? color : tex2D(AASampler, texCoord + float2(i/viewPort.x, j/viewPort.y)).rgb;
 			output += lerpColor * weight;
 			weightSum += weight;
@@ -123,7 +128,7 @@ CommonPSOut PassThrough2D(float4 position : SV_Position, float4 inputColor : COL
 	CommonPSOut output = (CommonPSOut)0;
 	//I have no idea how alpha blending works
 	output.color = inputColor * tex2D(TextureSampler, texCoord);
-	output.depth = output.color.a > 0 ? 1 : 0;
+	output.depth = output.color.a > 0 ? 0 : 1;
 	return output;
 }
 

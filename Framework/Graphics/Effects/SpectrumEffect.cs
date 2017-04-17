@@ -53,6 +53,7 @@ namespace Spectrum.Framework.Graphics
             set { Parameters["lightingEnabled"].SetValue(value); }
         }
         public static Vector3 LightPos;
+        public static Matrix LightView;
         public static Vector3 DiffuseLightColor = new Vector3(0.8f);
         public static Vector3 AmbientLightColor = new Vector3(0.2f);
         public static Vector3 SpecularLightColor = new Vector3(1);
@@ -86,6 +87,15 @@ namespace Spectrum.Framework.Graphics
                 Parameters["Texture"].SetValue(value);
             }
         }
+        public Texture2D ShadowMap
+        {
+            get { return Parameters["ShadowMapTexture"].GetValueTexture2D(); }
+            set
+            {
+                Parameters["UseShadowMap"].SetValue(value != null);
+                Parameters["ShadowMapTexture"].SetValue(value);
+            }
+        }
         public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
         public bool HasTransparency { get; set; } = false;
         public Texture2D Transparency
@@ -111,6 +121,7 @@ namespace Spectrum.Framework.Graphics
             Parameters["ambientLightColor"].SetValue(AmbientLightColor);
             Parameters["diffuseLightColor"].SetValue(DiffuseLightColor);
             Parameters["lightPosition"].SetValue(LightPos);
+            Parameters["ShadowViewProjection"].SetValue(LightView * Settings.lightProjection);
             if (BoneTransforms != null)
                 Parameters["Bones"].SetValue(BoneTransforms);
             return base.OnApply();

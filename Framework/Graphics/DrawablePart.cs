@@ -25,6 +25,7 @@ namespace Spectrum.Framework.Graphics
     public class DrawablePart
     {
         public MaterialData material = null;
+        public bool ShadowEnabled = true;
         public Matrix permanentTransform = Matrix.Identity;
         public Matrix transform = Matrix.Identity;
         public SpectrumEffect effect;

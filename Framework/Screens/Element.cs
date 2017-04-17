@@ -45,7 +45,11 @@ namespace Spectrum.Framework.Screens
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
         public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
-        public ImageAsset Texture { get { return Fields["image"].ObjValue as ImageAsset; } }
+        public ImageAsset Texture
+        {
+            get { return Fields["image"].ObjValue as ImageAsset; }
+            set { Fields["image"].SetValue("", value); }
+        }
         public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
         public ImageAsset Background { get { return Fields["background"].ObjValue as ImageAsset; } }
         public Color BackgroundColor { get { return (Color)(Fields["background-color"].ObjValue ?? Color.White); } }
@@ -183,18 +187,8 @@ namespace Spectrum.Framework.Screens
                 LayoutManager.OnMeasure(this, width, height);
             else
             {
-                if (Width.Type == SizeType.WrapContent || (width == 0 && Width.Type == SizeType.MatchParent))
-                {
-                    MeasuredWidth = Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max();
-                }
-                else
-                    MeasuredWidth = width;
-                if (Height.Type == SizeType.WrapContent || (height == 0 && Height.Type == SizeType.MatchParent))
-                {
-                    MeasuredHeight = Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max();
-                }
-                else
-                    MeasuredHeight = height;
+                MeasuredWidth = Width.Measure(width, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max());
+                MeasuredHeight = Height.Measure(height, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max());
             }
         }
         public virtual void Measure(int width, int height)

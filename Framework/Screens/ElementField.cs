@@ -106,6 +106,12 @@ namespace Spectrum.Framework.Screens
             }
             initialized = true;
         }
+        public void SetValue(string strValue, object objValue)
+        {
+            initialized = true;
+            _strValue = strValue;
+            _value = objValue;
+        }
         public string StrValue
         {
             get
@@ -114,9 +120,7 @@ namespace Spectrum.Framework.Screens
             }
             set
             {
-                initialized = true;
-                _strValue = value;
-                _value = setter(value);
+                SetValue(value, setter(value));
             }
         }
     }
