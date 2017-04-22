@@ -28,7 +28,7 @@ namespace Spectrum.Framework
         public TValue this[TKey key] {
             get
             {
-                if (!internalDict.ContainsKey(key)) { this[key] = Constructor(); }
+                if (!internalDict.ContainsKey(key)) { return Constructor(); }
                 return internalDict[key];
             }
             set

@@ -131,5 +131,9 @@ namespace Spectrum.Framework
             }
             return null;
         }
+        public Type MemberType(string name)
+        {
+            return members.ContainsKey(name) ? members[name].MemberType : null;
+        }
     }
 }

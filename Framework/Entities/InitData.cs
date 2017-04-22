@@ -12,10 +12,6 @@ using System.Text;
 
 namespace Spectrum.Framework.Entities
 {
-    public interface IInitable
-    {
-        InitData CreationData { get; set; }
-    }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [LoadableType]
     public class InitData
@@ -33,7 +29,7 @@ namespace Spectrum.Framework.Entities
         }
         [ProtoIgnore]
         public TypeData TypeData { get { return TypeHelper.Types.GetData(type); } }
-        public virtual object Construct()
+        public object Construct()
         {
             if(TypeData == null)
             {
@@ -46,9 +42,17 @@ namespace Spectrum.Framework.Entities
                 TypeData.Set(output, field.Key, field.Value.Object);
             }
             TypeData.Set(output, "TypeName", TypeName);
-            if (output is IInitable)
-                (output as IInitable).CreationData = this.Clone();
+            if (output is IReplicatable)
+            {
+                var rep = (output as IReplicatable);
+                rep.ReplicationData = new ReplicationData(this.Clone(), rep);
+                rep.Initialize();
+            }
             return output;
+        }
+        public T Construct<T>() where T : class
+        {
+            return Construct() as T;
         }
         public virtual InitData Set(string name, object value)
         {
@@ -69,8 +73,9 @@ namespace Spectrum.Framework.Entities
         public ImmultableInitData ToImmutable()
         {
             ImmultableInitData output = new ImmultableInitData();
-            output.args = args;
             output.type = type;
+            output.TypeName = TypeName;
+            output.args = args;
             output.fields = new Dictionary<string, Primitive>(fields);
             return output;
         }
@@ -83,11 +88,7 @@ namespace Spectrum.Framework.Entities
         public ImmultableInitData(string type, params object[] args) : base(type, args) { }
         public override InitData Set(string name, object value)
         {
-            InitData output = new InitData();
-            output.TypeName = TypeName;
-            output.args = args;
-            output.type = type;
-            output.fields = new Dictionary<string, Primitive>(fields);
+            InitData output = Clone();
             return output.Set(name, value);
         }
     }

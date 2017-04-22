@@ -79,6 +79,7 @@ namespace Spectrum.Framework.Graphics.Animation
                 UpdateTime(time, SkinningData);
                 foreach (var kvp in currentClipValue.Keyframes)
                 {
+                    //TODO: Optimize, kinda slow with just 10 characters, slow part is the LINQ searchers
                     if (!SkinningData.Bones.ContainsKey(kvp.Key)) continue;
                     Bone currentBone = SkinningData.Bones[kvp.Key];
                     var translation1 = kvp.Value.FindLast((kf) => kf.Time <= currentTimeValue && kf.Translation.HasValue);

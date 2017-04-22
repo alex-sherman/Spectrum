@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Entities
     /// Entities are just collections of components.
     /// They have more specific definitions as game objects which are specific sets of components.
     /// </summary>
-    public class Entity : IDisposable, IInitable
+    public class Entity : IDisposable, IReplicatable
     {
         #region Replication
         const int StateReplicationMessage = 0;
@@ -25,13 +25,10 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// The default replication period of entities in miliseconds
         /// </summary>
-        public const int DefaultReplicationPeriod = 200;
 
         public Dictionary<string, MethodInfo> replicatedMethods = new Dictionary<string, MethodInfo>();
-        private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
-
-        protected int ReplicationPeriod = DefaultReplicationPeriod;
-        private int replicateCounter = 0;
+        
+        private float replicateCounter = 0;
         #endregion
 
         public Guid ID;
@@ -46,7 +43,7 @@ namespace Spectrum.Framework.Entities
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
         public NetID OwnerGuid;
-        public InitData CreationData { get; set; }
+        public ReplicationData ReplicationData { get; set; }
         public EntityManager Manager;
         private bool replicateNextUpdate = false;
 
@@ -81,30 +78,6 @@ namespace Spectrum.Framework.Entities
             Disposing = true;
         }
 
-        public void SetInterpolator(string attributeName, Func<float, object, object, object> interpolator)
-        {
-            interpolators[attributeName] = new Interpolator(interpolator);
-        }
-
-        public virtual void WriteReplicationData(NetMessage output)
-        {
-            Primitive[] fields = TypeData.ReplicatedMemebers.ToList().ConvertAll(x => new Primitive(TypeData.Get(this, x))).ToArray();
-            output.Write(fields);
-        }
-        public virtual void ReadReplicationData(NetMessage input)
-        {
-            Primitive[] fields = input.Read<Primitive[]>();
-            var properties = TypeData.ReplicatedMemebers.ToList();
-            for (int i = 0; i < fields.Count(); i++)
-            {
-                var replicate = properties[i];
-                if (interpolators.ContainsKey(replicate))
-                    interpolators[replicate].BeginInterpolate(ReplicationPeriod * 2, fields[i].Object);
-                else
-                    TypeData.Set(this, replicate, fields[i].Object);
-            }
-        }
-
         public void RPC(string method, params object[] args)
         {
             if (CanReplicate)
@@ -115,20 +88,15 @@ namespace Spectrum.Framework.Entities
 
         public virtual void Update(GameTime gameTime)
         {
-            foreach (var interpolator in interpolators)
-            {
-                object value = interpolator.Value.Update(gameTime.ElapsedGameTime.Milliseconds, TypeData.Get(this, interpolator.Key));
-                if (value != null)
-                    TypeData.Set(this, interpolator.Key, value);
-            }
+            ReplicationData.Interpolate(gameTime.DT());
             if (CanReplicate)
             {
                 if (replicateCounter > 0)
-                    replicateCounter -= gameTime.ElapsedGameTime.Milliseconds;
+                    replicateCounter -= gameTime.DT();
 
                 if (replicateCounter <= 0 && (replicateNextUpdate || AutoReplicate))
                 {
-                    replicateCounter = ReplicationPeriod;
+                    replicateCounter = ReplicationData.DefaultReplicationPeriod;
                     Manager.SendEntityReplication(this, default(NetID));
                 }
             }

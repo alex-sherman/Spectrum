@@ -41,11 +41,11 @@ namespace Spectrum.Framework.Entities
                         message.Write(replicateable.Count());
                         foreach (Entity entity in replicateable)
                         {
-                            message.Write(entity.CreationData);
+                            message.Write(entity.ReplicationData.InitData);
                         }
                         foreach (Entity entity in replicateable)
                         {
-                            entity.WriteReplicationData(message);
+                            entity.ReplicationData?.WriteReplicationData(message);
                         }
                     },
                     delegate (NetID peerGuid, NetMessage message)
@@ -58,7 +58,7 @@ namespace Spectrum.Framework.Entities
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            entities[i].ReadReplicationData(message);
+                            entities[i].ReplicationData?.ReadReplicationData(message);
                         }
                     }
                 );
@@ -76,7 +76,7 @@ namespace Spectrum.Framework.Entities
             if (!entity.AllowReplicate) { return; }
 
             NetMessage eData = new NetMessage();
-            eData.Write(entity.CreationData);
+            eData.Write(entity.ReplicationData.InitData);
             mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
 
             SendEntityReplication(entity, peerDestination);
@@ -118,7 +118,7 @@ namespace Spectrum.Framework.Entities
             NetMessage replicationMessage = new NetMessage();
             replicationMessage.Write(entity.ID);
             replicationMessage.Write(1);
-            entity.WriteReplicationData(replicationMessage);
+            entity.ReplicationData?.WriteReplicationData(replicationMessage);
             mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
         }
         public void HandleEntityReplication(NetID peerGuid, NetMessage message)
@@ -136,7 +136,7 @@ namespace Spectrum.Framework.Entities
                 }
                 else if (type == 1)
                 {
-                    entity.ReadReplicationData(message);
+                    entity.ReplicationData?.ReadReplicationData(message);
                 }
             }
             else
@@ -212,7 +212,6 @@ namespace Spectrum.Framework.Entities
             Entities.Add(entity);
             if (mpService.ID == entity.OwnerGuid)
                 SendEntityCreation(entity);
-            entity.Initialize();
             if (OnEntityAdded != null) { OnEntityAdded(entity); }
             return entity;
         }

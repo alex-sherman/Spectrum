@@ -410,9 +410,11 @@ namespace Spectrum.Framework.Graphics
                     GraphicsEngine.PushDrawable(drawable as GameObject, new RenderTaskArgs() { shadowMap = shadowMap });
                 timer.Stop();
             }
+            timer = DebugTiming.Render.Time("Main Render");
             renderTasks.Sort((a, b) =>
                 a.effect.HasTransparency && b.effect.HasTransparency ? Math.Sign(b.z - a.z) : (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
             RenderQueue();
+            timer.Stop();
             timer = DebugTiming.Render.Time("Sprite batch end");
             spriteBatch.End();
             timer.Stop();

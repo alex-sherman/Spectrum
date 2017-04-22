@@ -397,6 +397,7 @@ namespace Spectrum.Framework.Network
                     {
                         foreach (NetMessageHandler handler in handlers)
                         {
+#if !DEBUG
                             try
                             {
                                 handler(received.PeerID, Serialization.Copy(received.Message));
@@ -405,6 +406,9 @@ namespace Spectrum.Framework.Network
                             {
                                DebugPrinter.print("Message handler " + received.MessageType + " failed: " + e.Message);
                             }
+#else
+                                handler(received.PeerID, Serialization.Copy(received.Message));
+#endif
                         }
                     }
                 }

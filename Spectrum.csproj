@@ -219,6 +219,7 @@
     <Compile Include="Framework\Network\Handshake.cs" />
     <Compile Include="Framework\Network\NetID.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />
+    <Compile Include="Framework\Network\ReplicationData.cs" />
     <Compile Include="Framework\Network\Serialization.cs" />
     <Compile Include="Framework\Network\SteamP2PReceiver.cs" />
     <Compile Include="Framework\Network\Surrogates\EntitySurrogate.cs" />

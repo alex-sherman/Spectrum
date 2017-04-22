@@ -209,8 +209,13 @@ namespace Spectrum.Framework.Entities
             invOrientation = this.orientation = Matrix.Identity;
             inverseMass = 1.0f;
             material = new Material();
-            SetInterpolator("Position", (w, current, target) => Vector3.Lerp((Vector3)current, (Vector3)target, w));
-            SetInterpolator("Orientation", (w, current, target) => Matrix.CreateFromQuaternion(Quaternion.Slerp(Quaternion.CreateFromRotationMatrix((Matrix)current),
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            ReplicationData.SetInterpolator("Position", (w, current, target) => Vector3.Lerp((Vector3)current, (Vector3)target, w));
+            ReplicationData.SetInterpolator("Orientation", (w, current, target) => Matrix.CreateFromQuaternion(Quaternion.Slerp(Quaternion.CreateFromRotationMatrix((Matrix)current),
                 Quaternion.CreateFromRotationMatrix((Matrix)target), w)));
         }
 
