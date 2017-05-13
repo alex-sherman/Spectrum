@@ -79,10 +79,14 @@ namespace Spectrum.Framework.Content
                 }
             }
 
-            modelData.materials = ReadMaterials(modelData.jobj);
+            modelData.materials = ReadMaterials(modelData.Directory, modelData.jobj);
             if (modelData.jobj["animations"] != null)
             {
                 modelData.animations = AnimationParser.GetAnimations(modelData.jobj);
+            }
+            foreach (var node in ((JArray)modelData.jobj["nodes"]).Where(node => node["parts"] != null))
+            {
+                parseNode(node, modelData, modelData.parts);
             }
             return modelData;
         }
@@ -147,7 +151,23 @@ namespace Spectrum.Framework.Content
             return vertex;
         }
 
-        public Dictionary<string, MaterialData> ReadMaterials(JObject jobj)
+        private static void LoadTexture(MaterialData material, string path, string type)
+        {
+            if (type == "NONE" || type == "DIFFUSE")
+            {
+                material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
+            }
+            if (type == "NORMAL")
+            {
+                material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
+            }
+            if (type == "TRANSPARENCY")
+            {
+                material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
+            }
+        }
+
+        public Dictionary<string, MaterialData> ReadMaterials(string directory, JObject jobj)
         {
             Dictionary<string, MaterialData> output = new Dictionary<string, MaterialData>();
             if (jobj["materials"] != null)
@@ -165,11 +185,7 @@ namespace Spectrum.Framework.Content
                     {
                         foreach (JObject texture in material["textures"])
                         {
-                            MaterialTexture materialTexture = new MaterialTexture();
-                            materialTexture.Id = (string)texture["id"];
-                            materialTexture.Filename = (string)texture["filename"];
-                            materialTexture.Type = (string)texture["type"];
-                            materialData.textures.Add(materialTexture);
+                            LoadTexture(materialData, directory + "\\" + (string)texture["filename"], (string)texture["type"]);
                         }
                     }
                 }
@@ -230,35 +246,20 @@ namespace Spectrum.Framework.Content
                 List<string> meshpartids = new List<string>();
                 meshpartids.Add((string)nodePart["meshpartid"]);
                 DrawablePart part = parts[(string)nodePart["meshpartid"]];
-                part.effect = new SpectrumEffect();
+                SpectrumEffect effect = new SpectrumEffect();
                 if (!data.vertexAttributes.Contains("NORMAL"))
-                    part.effect.LightingEnabled = false;
+                    effect.LightingEnabled = false;
                 if (nodePart["bones"] != null)
                 {
-                    part.effect.SetBoneNames((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
-                    part.effect.SetTechnique("Skinned");
+                    var skinned = new SpectrumSkinnedEffect(); effect = skinned;
+                    skinned.SetBoneNames((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
                 }
+                part.effect = effect;
                 MaterialData materialData = new MaterialData();
                 if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
                     materialData = data.materials[(string)nodePart["materialid"]];
 
                 part.material = materialData;
-                List<MaterialTexture> materialTextures = materialData.textures;
-                foreach (MaterialTexture texture in materialTextures)
-                {
-                    if (texture.Type == "NONE" || texture.Type == "DIFFUSE")
-                    {
-                        part.effect.Texture = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
-                    }
-                    if (texture.Type == "NORMAL")
-                    {
-                        part.effect.NormalMap = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
-                    }
-                    if (texture.Type == "TRANSPARENCY")
-                    {
-                        part.effect.Transparency = ContentHelper.Load<Texture2D>(data.Directory + "\\" + texture.Filename, false) ?? ContentHelper.Blank;
-                    }
-                }
             }
             if (node["children"] != null)
             {
@@ -277,11 +278,7 @@ namespace Spectrum.Framework.Content
                 parts[part.Key] = part.Value.CreateReference();
                 parts[part.Key].permanentTransform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             }
-            foreach (var node in ((JArray)data.jobj["nodes"]).Where(node => node["parts"] != null))
-            {
-                parseNode(node, data, parts);
-            }
-            SpecModel model = new SpecModel(data.FileName, parts, GetSkinningData(data.jobj));
+            SpecModel model = new SpecModel(data.FileName, parts, data.materials, GetSkinningData(data.jobj));
             model.Animations = data.animations;
             return model;
         }

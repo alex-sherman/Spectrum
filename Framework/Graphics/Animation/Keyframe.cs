@@ -56,5 +56,7 @@ namespace Spectrum.Framework.Graphics.Animation
         /// </summary>
         public Matrix? Rotation { get; private set; }
         public Matrix? Translation { get; private set; }
+        public Keyframe NextRotation;
+        public Keyframe NextTranslation;
     }
 }

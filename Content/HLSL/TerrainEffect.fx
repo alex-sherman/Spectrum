@@ -1,5 +1,4 @@
 #include "Common.fxh"
-
 uniform extern texture MultiTextureA;
 uniform extern texture MultiTextureB;
 uniform extern texture MultiTextureC;
@@ -102,9 +101,6 @@ CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 
 	toReturn.rgb = lerp(toReturn.rgb, (float4)0,vsout.fog);
 	toReturn.a = 1-vsout.fog;
-	if(!aboveWater){
-		toReturn.b+=.1f;
-	}
 	toReturn = PSLighting(toReturn, (CommonVSOut)vsout);
 	return PSReturn(toReturn, (CommonVSOut)vsout);
 }

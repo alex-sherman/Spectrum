@@ -203,6 +203,7 @@
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
     <Compile Include="Framework\Graphics\Animation\Keyframe.cs" />
     <Compile Include="Framework\Graphics\Animation\SkinningData.cs" />
+    <Compile Include="Framework\Graphics\Effects\SkinnedEffect.cs" />
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\IDebug.cs" />
     <Compile Include="Framework\Graphics\Camera.cs" />
@@ -315,6 +316,7 @@
     <Compile Include="Framework\Graphics\Water.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\HLSL\SkinnedEffect.fx" />
     <Content Include="Content\Textures\missing.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -382,6 +384,9 @@
     <Content Include="Content\HLSL\Common.fxh" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\HLSL\SkinnedEffect.mgfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

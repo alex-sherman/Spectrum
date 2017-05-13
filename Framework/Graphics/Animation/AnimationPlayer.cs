@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Spectrum.Framework.Graphics.Animation;
 using Newtonsoft.Json.Linq;
+using System.Linq;
 #endregion
 
 namespace Spectrum.Framework.Graphics.Animation
@@ -34,6 +35,8 @@ namespace Spectrum.Framework.Graphics.Animation
         AnimationClip currentClipValue;
         float currentTimeValue;
         public string DefaultClip = "Default";
+        private Dictionary<string, Keyframe> translations = new Dictionary<string, Keyframe>();
+        private Dictionary<string, Keyframe> rotations = new Dictionary<string, Keyframe>();
         IAnimationSource animationSource;
 
         #endregion
@@ -64,6 +67,9 @@ namespace Spectrum.Framework.Graphics.Animation
 
             currentTimeValue = 0;
             animationSource?.GetSkinningData()?.ToDefault();
+
+            translations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+            rotations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
             Update(0);
         }
 
@@ -79,25 +85,39 @@ namespace Spectrum.Framework.Graphics.Animation
                 UpdateTime(time, SkinningData);
                 foreach (var kvp in currentClipValue.Keyframes)
                 {
-                    //TODO: Optimize, kinda slow with just 10 characters, slow part is the LINQ searchers
                     if (!SkinningData.Bones.ContainsKey(kvp.Key)) continue;
                     Bone currentBone = SkinningData.Bones[kvp.Key];
-                    var translation1 = kvp.Value.FindLast((kf) => kf.Time <= currentTimeValue && kf.Translation.HasValue);
-                    var translation2 = kvp.Value.Find((kf) => kf.Time > currentTimeValue && kf.Translation.HasValue);
 
                     Matrix translation = currentBone.defaultTranslation;
-                    if (translation1 != null && translation2 != null)
-                    {
-                        float w = (currentTimeValue - translation1.Time) / (translation2.Time - translation1.Time);
-                        translation = Matrix.Add(Matrix.Multiply(translation1.Translation.Value, 1 - w), Matrix.Multiply(translation2.Translation.Value, w));
+                    if (translations.ContainsKey(kvp.Key)) {
+                        var translation1 = translations[kvp.Key];
+                        while (translation1.NextTranslation != null && currentTimeValue > translation1.NextTranslation.Time)
+                        {
+                            translation1 = translation1.NextTranslation;
+                            translations[kvp.Key] = translation1;
+                        }
+                        var translation2 = translations[kvp.Key].NextTranslation;
+                        if (translation1 != null && translation2 != null)
+                        {
+                            float w = (currentTimeValue - translation1.Time) / (translation2.Time - translation1.Time);
+                            translation = Matrix.Add(Matrix.Multiply(translation1.Translation.Value, 1 - w), Matrix.Multiply(translation2.Translation.Value, w));
+                        }
                     }
-                    var rotation1 = kvp.Value.FindLast((kf) => kf.Time <= currentTimeValue && kf.Rotation.HasValue);
-                    var rotation2 = kvp.Value.Find((kf) => kf.Time > currentTimeValue && kf.Rotation.HasValue);
                     Matrix rotation = currentBone.defaultRotation;
-                    if (rotation1 != null && rotation2 != null)
+                    if (rotations.ContainsKey(kvp.Key))
                     {
-                        float w = (currentTimeValue - rotation1.Time) / (rotation2.Time - rotation1.Time);
-                        rotation = Matrix.Add(Matrix.Multiply(rotation1.Rotation.Value, 1 - w), Matrix.Multiply(rotation2.Rotation.Value, w));
+                        var rotation1 = rotations[kvp.Key];
+                        while (rotation1.NextRotation != null && currentTimeValue > rotation1.NextRotation.Time)
+                        {
+                            rotation1 = rotation1.NextRotation;
+                            rotations[kvp.Key] = rotation1;
+                        }
+                        var rotation2 = rotations[kvp.Key].NextRotation;
+                        if (rotation1 != null && rotation2 != null)
+                        {
+                            float w = (currentTimeValue - rotation1.Time) / (rotation2.Time - rotation1.Time);
+                            rotation = Matrix.Add(Matrix.Multiply(rotation1.Rotation.Value, 1 - w), Matrix.Multiply(rotation2.Rotation.Value, w));
+                        }
                     }
                     currentBone.transform = rotation * translation;
                 }
@@ -111,6 +131,11 @@ namespace Spectrum.Framework.Graphics.Animation
             if (currentTimeValue > currentClipValue.Duration)
             {
                 currentTimeValue -= currentClipValue.Duration;
+                if (currentClipValue != null)
+                {
+                    translations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+                    rotations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+                }
             }
         }
     }

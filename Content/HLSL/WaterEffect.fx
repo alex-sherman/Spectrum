@@ -112,10 +112,7 @@ float4 ApplyWaterTexture(WaterVSOutput vsout) : COLOR
 	float4 color;
 	reflectionColor = tex2D(waterReflection,perturbatedTexCoords);
 	refractionColor = tex2D(waterRefraction,perturbatedRefrTexCoords);
-	if(aboveWater){
-		color = lerp(reflectionColor, refractionColor, fresnelTerm);
-	}
-	else{color = refractionColor;}
+	color = lerp(reflectionColor, refractionColor, fresnelTerm);
 	color = lerp(color,float4(.3f, 0.3f, 1.0f, 0),.2f);
     //TODO: This is broken for some reason in DX11
 	//color.rgb += specular*specularLightColor;

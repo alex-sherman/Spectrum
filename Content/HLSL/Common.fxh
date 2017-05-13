@@ -3,8 +3,6 @@ float4x4 world;
 float4x4 proj;
 float4 ClipPlane;
 float3 lightPosition;
-float mixLerp;
-float3 mixColor;
 float3 cameraPosition;
 float fogDistance = 6400;
 float fogWidth = 100;
@@ -12,6 +10,7 @@ bool Clip = false;
 float4x4 ShadowViewProjection;
 uniform extern bool UseShadowMap;
 uniform extern texture Texture;
+uniform bool TextureMagFilter = true;
 uniform bool UseTexture = false;
 uniform extern texture NormalMap;
 uniform bool UseNormalMap = false;
@@ -22,7 +21,6 @@ uniform float4 materialDiffuse = float4(1, 0, 1, 1);
 uniform float3 ambientLightColor = float3(0.2,.2,.2);
 uniform float3 diffuseLightColor = float3(0.8,0.8,0.8);
 uniform float3 specularLightColor = float3(1,1,1);
-bool aboveWater = true;
 bool lightingEnabled = true;
 Texture2D<float> ShadowMapTexture;
 
@@ -34,6 +32,15 @@ sampler customTexture = sampler_state
 	mipfilter = LINEAR;
 	AddressU = mirror;
 	AddressV = mirror;
+};
+sampler customTextureNoFilter = sampler_state
+{
+	Texture = <Texture>;
+	magfilter = POINT;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = clamp;
+	AddressV = clamp;
 };
 sampler normalMap = sampler_state
 {
@@ -111,7 +118,7 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 			shadowCoord = (shadowCoord + 1) / 2;
 			float shadowDepth = 1 - ShadowMapTexture.Sample(shadowMapSampler, shadowCoord);
 			float depth = vsout.Pos2DAsSeenByLight.z;
-			if(shadowDepth - depth < -0.0001) { diffuseMagnitude = 0; }
+			if(shadowDepth - depth < -0.0001) { diffuseMagnitude *= 0.5f; }
 		}
 		output.rgb += color.rgb * min(1, (diffuseMagnitude * diffuseLightColor + ambientLightColor));
 	}
@@ -152,3 +159,49 @@ float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
 float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout) {
 	return CommonVS(vin, world, vsout);
 }
+CommonPSOut ApplyTexture(CommonVSOut vsout)
+{
+	if (Clip)
+	{
+		clip(vsout.clipDistance);
+	}
+	if (vsout.fog >= .99f)
+	{
+		clip(-1);
+	}
+	float4 color;
+	if (UseTexture)
+	{
+		float4 textureColor = TextureMagFilter ? tex2D(customTexture, vsout.textureCoordinate) : tex2D(customTextureNoFilter, vsout.textureCoordinate);
+		if (UseTransparency)
+		{
+			color.rgb = textureColor.rgb;
+			color.a = 1 - tex2D(transparencySampler, vsout.textureCoordinate).r;
+			color.rgb *= color.a;
+		}
+		else
+			color = textureColor;
+	}
+	else
+	{
+		color = diffuseColor * materialDiffuse;
+	}
+	clip(color.a <= 0 ? -1 : 1);
+	color = PSLighting(color, vsout);
+	color.a *= 1 - vsout.fog;
+	return PSReturn(color, vsout);
+}
+CommonVSOut Transform(CommonVSInput input)
+{
+	CommonVSOut Out = (CommonVSOut) 0;
+	float4 worldPosition = CommonVS((CommonVSInput) input, (CommonVSOut) Out);
+	return Out;
+}
+CommonVSOut InstanceTransform(CommonVSInput input, float4x4 instanceWorld : POSITION1)
+{
+	CommonVSOut Out = (CommonVSOut) 0;
+    float4 worldPosition = CommonVS(input, mul(transpose(instanceWorld), world), Out);
+	Out.clipDistance = length(worldPosition.xyz - cameraPosition) < 120 ? 1 : -1;
+	return Out;
+}
+

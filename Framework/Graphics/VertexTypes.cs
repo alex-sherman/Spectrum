@@ -34,6 +34,14 @@ namespace Spectrum.Framework.Graphics
             new VertexElement(20, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
             new VertexElement(32, VertexElementFormat.Vector3, VertexElementUsage.Tangent, 0)
         );
+
+        public readonly static VertexDeclaration instanceVertexDeclaration = new VertexDeclaration
+        (
+            new VertexElement(0, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
+            new VertexElement(16, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
+            new VertexElement(32, VertexElementFormat.Vector4, VertexElementUsage.Position, 0),
+            new VertexElement(48, VertexElementFormat.Vector4, VertexElementUsage.Position, 0)
+        );
         public CommonTex(Vector3 pos, Vector3 normal, Vector2 texPos)
         {
             position = pos;

@@ -52,7 +52,7 @@ namespace Spectrum.Framework
         {
             get
             {
-                return types[name].Type;
+                return types[name]?.Type;
             }
         }
         public static Plugin GetPlugin(Type type)

@@ -18,40 +18,34 @@ namespace Spectrum.Framework.Graphics
 {
     public struct RenderTaskArgs
     {
+        public RenderTaskArgs(DrawablePart part, string tag = "Misc") : this() { this.part = part; this.tag = tag; }
+        public DrawablePart part;
         public string tag;
         public float? z;
         public SpectrumEffect effect;
+        public DynamicVertexBuffer instanceBuffer;
         public Matrix? world;
-        public Matrix? view;
-        public Matrix? projection;
-        public Texture2D shadowMap;
-        public Matrix? shadowViewProjection;
     }
     public class GraphicsEngine
     {
         private class RenderTask
         {
-            public RenderTask(DrawablePart part, RenderTaskArgs args)
+            public RenderTask(RenderTaskArgs args)
             {
-                this.part = part;
+                part = args.part;
                 world = part.permanentTransform * part.transform * (args.world ?? Matrix.Identity);
                 z = args.z ?? FullScreenPos(Vector4.Transform(Vector4.UnitW, world).Homogeneous()).Z;
                 tag = args.tag ?? "Misc";
                 effect = args.effect ?? part.effect;
-                view = args.view ?? Camera.View;
-                projection = args.projection ?? Camera.Projection;
-                shadowMap = args.shadowMap;
-                shadowViewProjection = args.shadowViewProjection ?? Matrix.Identity;
+                instanceBuffer = args.instanceBuffer;
             }
             public string tag;
             public float z;
             public DrawablePart part;
             public SpectrumEffect effect;
+            public string technique = null;
+            public DynamicVertexBuffer instanceBuffer;
             public Matrix world;
-            public Matrix view;
-            public Matrix projection;
-            public Texture2D shadowMap;
-            public Matrix shadowViewProjection;
         }
         private static GraphicsDevice device;
         public static float darkness = 1f;
@@ -64,6 +58,9 @@ namespace Spectrum.Framework.Graphics
         private static RenderTarget2D AATarget;
         private static RenderTarget2D DepthTarget;
         private static List<RenderTask> renderTasks = new List<RenderTask>();
+        private static Matrix view;
+        private static Matrix projection;
+        private static Texture2D phaseShadowMap;
         //TODO: Add a settings thing for multisample count
         public static void Initialize(Camera camera)
         {
@@ -144,16 +141,20 @@ namespace Spectrum.Framework.Graphics
                 if (drawable.Parts == null) continue;
                 foreach (DrawablePart part in drawable.Parts.Where((p) => p.ShadowEnabled))
                 {
-                    QueuePart(part, new RenderTaskArgs()
+                    QueuePart(part, new RenderTaskArgs(part)
                     {
                         world = drawable.World,
-                        view = Matrix.Identity,
-                        projection = SpectrumEffect.LightView * Settings.lightProjection,
                         tag = "Shadow",
                         effect = shadowEffect
                     });
                 }
             }
+            var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
+            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.effect == group.First().effect) ? MergeGroup(group, "ShadowMapInstance") : group);
+            renderTasks = grouped.SelectMany(group => group).ToList();
+            view = Matrix.Identity;
+            projection = SpectrumEffect.LightView * Settings.lightProjection;
+            phaseShadowMap = null;
             RenderQueue();
             device.SetRenderTarget(null);
         }
@@ -165,9 +166,12 @@ namespace Spectrum.Framework.Graphics
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs() { view = Camera.View, projection = Camera.ReflectionProjection });
+                    GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs());
                 }
             }
+            view = Camera.View;
+            projection = Camera.ReflectionProjection;
+            phaseShadowMap = null;
             RenderQueue();
             device.SetRenderTarget(Water.reflectionRenderTarget);
             GraphicsEngine.device.Clear(clearColor);
@@ -177,9 +181,12 @@ namespace Spectrum.Framework.Graphics
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs() { view = Camera.ReflectionView, projection = Camera.ReflectionProjection });
+                    GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs());
                 }
             }
+            view = Camera.ReflectionView;
+            projection = Camera.ReflectionProjection;
+            phaseShadowMap = null;
             RenderQueue();
             SpectrumEffect.Clip = false;
             device.SetRenderTarget(null);
@@ -209,35 +216,37 @@ namespace Spectrum.Framework.Graphics
         {
             DrawablePart part = task.part;
             SpectrumEffect effect = task.effect;
-            Matrix view = task.view;
-            Matrix projection = task.projection;
-            if (task.effect != null)
+            if (effect != null)
             {
+                var lastTechnique = effect.CurrentTechnique;
+                if (task.technique != null)
+                    effect.CurrentTechnique = effect.Techniques[task.technique];
                 MaterialData material = part.material ?? MaterialData.Missing;
                 effect.MaterialDiffuse = material.diffuseColor;
+                if (material.diffuseTexture != null)
+                    effect.Texture = material.diffuseTexture;
                 effect.View = view;
                 effect.Projection = projection;
                 effect.World = task.world;
-                effect.ShadowMap = task.shadowMap;
+                effect.ShadowMap = phaseShadowMap;
                 //Draw vertex component
                 if (effect.CurrentTechnique != null && part.VBuffer != null)
                 {
                     if (part.IBuffer != null)
                     {
-                        ///TODO: Upgrade monogame to a version that supports hardware instancing
-                        if (part.InstanceBuffer != null)
+                        if (task.instanceBuffer != null)
                         {
-                            setBuffers(part.VBuffer, part.IBuffer, part.InstanceBuffer);
+                            setBuffers(part.VBuffer, part.IBuffer, task.instanceBuffer);
                             foreach (var pass in effect.CurrentTechnique.Passes)
                             {
                                 pass.Apply();
                                 if (part.primType == PrimitiveType.TriangleStrip)
                                 {
-                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2, part.InstanceBuffer.VertexCount);
+                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2, task.instanceBuffer.VertexCount);
                                 }
                                 if (part.primType == PrimitiveType.TriangleList)
                                 {
-                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3, part.InstanceBuffer.VertexCount);
+                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3, task.instanceBuffer.VertexCount);
                                 }
                             }
                         }
@@ -271,15 +280,13 @@ namespace Spectrum.Framework.Graphics
                         }
                     }
                 }
+                effect.CurrentTechnique = lastTechnique;
             }
-        }
-        public static void QueuePart(DrawablePart part, Matrix World)
-        {
-            QueuePart(part, new RenderTaskArgs() { world = World });
         }
         public static void QueuePart(DrawablePart part, RenderTaskArgs args)
         {
-            RenderTask task = new RenderTask(part, args);
+            args.part = part;
+            RenderTask task = new RenderTask(args);
             if (task.effect != null)
             {
                 renderTasks.Add(task);
@@ -381,13 +388,20 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
+        private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group, string technique = "Instance")
+        {
+            DynamicVertexBuffer buffer = new DynamicVertexBuffer(device, CommonTex.instanceVertexDeclaration, group.Count(), BufferUsage.WriteOnly);
+            Matrix[] worlds = group.Select(task => task.world).ToArray();
+            buffer.SetData(worlds);
+            RenderTask newTask = new RenderTask(new RenderTaskArgs(group.First().part) { instanceBuffer = buffer }) { world = Matrix.Identity, technique = technique };
+            return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();
+        }
         public static void Render(List<Entity> drawables, GameTime gameTime)
         {
             BeginRender(gameTime);
             WaterEffect.ReflectionView = Camera.ReflectionView;
             WaterEffect.ReflectionProj = Camera.ReflectionProjection;
             SpectrumEffect.CameraPos = Camera.Position;
-            SpectrumEffect.AboveWater = Camera.Position.Y > Water.waterHeight;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
             drawables = drawables.Where(e => e.DrawEnabled).ToList();
             List<GameObject> drawable3D = drawables.Where(e => e is GameObject).Cast<GameObject>().ToList();
@@ -407,12 +421,25 @@ namespace Spectrum.Framework.Graphics
                 timer = DebugTiming.Render.Time(drawable.GetType().Name);
                 drawable.Draw(gameTime, spriteBatch);
                 if (drawable is GameObject)
-                    GraphicsEngine.PushDrawable(drawable as GameObject, new RenderTaskArgs() { shadowMap = shadowMap });
+                {
+                    var tasks = (drawable as GameObject).GetRenderTasks(gameTime, false);
+                    if (tasks != null)
+                        renderTasks.AddRange(tasks.Select((args) => new RenderTask(args)));
+                }
                 timer.Stop();
             }
             timer = DebugTiming.Render.Time("Main Render");
             renderTasks.Sort((a, b) =>
                 a.effect.HasTransparency && b.effect.HasTransparency ? Math.Sign(b.z - a.z) : (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
+
+            // TODO: Group tasks that can be instanced
+            var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
+            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.effect == group.First().effect) ? MergeGroup(group) : group);
+            renderTasks = grouped.SelectMany(group => group).ToList();
+            //renderTasks = herp.Select(derp => derp.First()).ToList();
+            view = Camera.View;
+            projection = Camera.Projection;
+            phaseShadowMap = shadowMap;
             RenderQueue();
             timer.Stop();
             timer = DebugTiming.Render.Time("Sprite batch end");

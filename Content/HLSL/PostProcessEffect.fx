@@ -1,5 +1,4 @@
 
-#include "Common.fxh"
 float4x4 rotation;
 //light properties
 float darkness = 0;
@@ -123,6 +122,12 @@ float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 te
 	return color;
 }
 sampler TextureSampler : register(s0);
+
+struct CommonPSOut
+{
+	float4 color : COLOR0;
+	float4 depth : COLOR1;
+};
 CommonPSOut PassThrough2D(float4 position : SV_Position, float4 inputColor : COLOR0, float2 texCoord : TEXCOORD0)
 {
 	CommonPSOut output = (CommonPSOut)0;

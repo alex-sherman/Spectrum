@@ -11,10 +11,14 @@ namespace Spectrum.Framework.Graphics
 {
     public class MaterialData
     {
-        public static MaterialData Missing { get; } = new MaterialData();
+        public static MaterialData Missing { get; } = new MaterialData() { diffuseColor = Color.HotPink };
+        public string Id;
         public List<MaterialTexture> textures = new List<MaterialTexture>();
-        public Color diffuseColor = Color.HotPink;
+        public Color diffuseColor = Color.White;
+        public Texture2D diffuseTexture;
         public Color specularColor = Color.Black;
+        public Texture2D normalMap;
+        public Texture2D transparencyMap;
     }
     public struct MaterialTexture
     {
@@ -24,6 +28,8 @@ namespace Spectrum.Framework.Graphics
     }
     public class DrawablePart
     {
+        private static int LastReferenceID = 0;
+        public int ReferenceID { get; private set; }
         public MaterialData material = null;
         public bool ShadowEnabled = true;
         public Matrix permanentTransform = Matrix.Identity;
@@ -31,7 +37,6 @@ namespace Spectrum.Framework.Graphics
         public SpectrumEffect effect;
         public VertexBuffer VBuffer;
         public IndexBuffer IBuffer;
-        public DynamicVertexBuffer InstanceBuffer;
         public PrimitiveType primType = PrimitiveType.TriangleList;
         public JBBox Bounds { get; private set; }
         public static JBBox GetBounds<T>(List<T> vertices) where T : struct, ICommonTex
@@ -60,14 +65,15 @@ namespace Spectrum.Framework.Graphics
         }
         public DrawablePart CreateReference()
         {
-            return new DrawablePart(VBuffer, IBuffer, Bounds);
+            return new DrawablePart(VBuffer, IBuffer, Bounds) { ReferenceID = ReferenceID, effect = effect, material = material };
         }
         public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer, JBBox bounds = default(JBBox))
+            : this()
         {
             this.VBuffer = vBuffer;
             this.IBuffer = iBuffer;
             Bounds = bounds;
         }
-        public DrawablePart() { }
+        public DrawablePart() { ReferenceID = LastReferenceID++; }
     }
 }

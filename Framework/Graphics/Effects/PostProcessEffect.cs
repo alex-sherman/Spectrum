@@ -10,10 +10,10 @@ namespace Spectrum.Framework.Graphics
 {
     public class PostProcessEffect
     {
-        public static SpectrumEffect effect;
+        public static Effect effect;
         public static void Initialize()
         {
-            effect = new SpectrumEffect(ContentHelper.Load<Effect>(@"PostProcessEffect"));
+            effect = ContentHelper.Load<Effect>(@"PostProcessEffect");
             effect.Parameters["darkness"].SetValue(0.0f);
             ResetViewPort();
         }
@@ -51,14 +51,10 @@ namespace Spectrum.Framework.Graphics
             get { return effect.Parameters["vingette"].GetValueBoolean(); }
             set { effect.Parameters["vingette"].SetValue(value); }
         }
-        public static String Technique
+        public static string Technique
         {
             get { return effect.CurrentTechnique.Name; }
             set { effect.CurrentTechnique = effect.Techniques[value]; }
-        }
-        public static void ApplyPass(int pass)
-        {
-            effect.CurrentTechnique.Passes[pass].Apply();
         }
     }
 }

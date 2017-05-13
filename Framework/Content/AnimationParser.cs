@@ -43,6 +43,12 @@ namespace Spectrum.Framework.Content
                 {
                     return x.Time.CompareTo(y.Time);
                 });
+                foreach (var keyframe in keyframes)
+                {
+
+                    keyframe.NextTranslation = keyframes.Find((kf) => kf.Time > keyframe.Time && kf.Translation.HasValue && kf.Bone == keyframe.Bone);
+                    keyframe.NextRotation = keyframes.Find((kf) => kf.Time > keyframe.Time && kf.Rotation.HasValue && kf.Bone == keyframe.Bone);
+                }
                 float duration = keyframes.Last().Time;
                 string name = (string)animationNode["id"];
                 output[name] = new AnimationClip(name, duration, keyframes);

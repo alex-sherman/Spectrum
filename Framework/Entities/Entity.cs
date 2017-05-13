@@ -22,11 +22,6 @@ namespace Spectrum.Framework.Entities
         #region Replication
         const int StateReplicationMessage = 0;
         const int FunctionReplicationMessage = 1;
-        /// <summary>
-        /// The default replication period of entities in miliseconds
-        /// </summary>
-
-        public Dictionary<string, MethodInfo> replicatedMethods = new Dictionary<string, MethodInfo>();
         
         private float replicateCounter = 0;
         #endregion
@@ -59,13 +54,6 @@ namespace Spectrum.Framework.Entities
             DrawEnabled = true;
             AllowReplicate = true;
             TypeData = TypeHelper.Types.GetData(this.GetType().Name);
-            foreach (MethodInfo method in this.GetType().GetMethods())
-            {
-                if (method.GetCustomAttributes(true).ToList().Any(x => x is ReplicateAttribute))
-                {
-                    replicatedMethods[method.Name] = method;
-                }
-            }
         }
 
         public virtual void Initialize() { }
@@ -82,7 +70,7 @@ namespace Spectrum.Framework.Entities
         {
             if (CanReplicate)
             {
-                Manager.SendFunctionReplication(this, method, args);
+                Manager?.SendFunctionReplication(this, method, args);
             }
         }
 

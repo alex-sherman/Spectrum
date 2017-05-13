@@ -39,14 +39,6 @@ namespace Spectrum.Framework.Graphics
             }
         }
 
-        public float MixLerp
-        {
-            set { Parameters["mixLerp"].SetValue(value); }
-        }
-        public Color MixColor
-        {
-            set { Parameters["mixColor"].SetValue(value.ToVector3()); }
-        }
         public bool LightingEnabled
         {
             get { return Parameters["lightingEnabled"].GetValueBoolean(); }
@@ -59,7 +51,6 @@ namespace Spectrum.Framework.Graphics
         public static Vector3 SpecularLightColor = new Vector3(1);
         public static Vector3 CameraPos = new Vector3();
         public static bool Clip = false;
-        public static bool AboveWater = true;
         public static Vector4 ClipPlane;
         public Color DiffuseColor
         {
@@ -87,6 +78,13 @@ namespace Spectrum.Framework.Graphics
                 Parameters["Texture"].SetValue(value);
             }
         }
+        public bool TextureMagFilter
+        {
+            set
+            {
+                Parameters["TextureMagFilter"].SetValue(value);
+            }
+        }
         public Texture2D ShadowMap
         {
             get { return Parameters["ShadowMapTexture"].GetValueTexture2D(); }
@@ -108,12 +106,9 @@ namespace Spectrum.Framework.Graphics
             }
         }
 
-        private string[] BoneNames;
-        public Matrix[] BoneTransforms { get; protected set; }
         //TODO: Set values only when necessary
         protected override bool OnApply()
         {
-            Parameters["aboveWater"].SetValue(AboveWater);
             Parameters["Clip"].SetValue(Clip);
             Parameters["cameraPosition"].SetValue(CameraPos);
             Parameters["ClipPlane"].SetValue(ClipPlane);
@@ -122,44 +117,13 @@ namespace Spectrum.Framework.Graphics
             Parameters["diffuseLightColor"].SetValue(DiffuseLightColor);
             Parameters["lightPosition"].SetValue(LightPos);
             Parameters["ShadowViewProjection"].SetValue(LightView * Settings.lightProjection);
-            if (BoneTransforms != null)
-                Parameters["Bones"].SetValue(BoneTransforms);
             return base.OnApply();
         }
         public SpectrumEffect() : this(ContentHelper.Load<Effect>("SpectrumEffect")) { }
-        public SpectrumEffect(Effect effect)
-            : base(effect)
-        {
-            Parameters["ambientLightColor"].SetValue(
-                Color.White.ToVector3() * 0.2f);
-            Parameters["diffuseLightColor"].SetValue(
-                Color.White.ToVector3() * 0.8f);
-            Parameters["specularLightColor"].SetValue(
-                Color.White.ToVector3() / 3);
-            effect.Parameters["lightPosition"].SetValue(
-                    new Vector3(10f, 10f, 0));
-            Parameters["ClipPlane"].SetValue(new Vector4(0, 1, 0, -Water.waterHeight));
-            Parameters["world"].SetValue(Matrix.Identity);
-        }
+        public SpectrumEffect(Effect effect) : base(effect) { }
         public void SetTechnique(string technique)
         {
             CurrentTechnique = Techniques[technique];
-        }
-        public void SetBoneNames(params string[] boneNames)
-        {
-            BoneTransforms = new Matrix[boneNames.Count()];
-            for (int i = 0; i < boneNames.Count(); i++)
-            {
-                BoneTransforms[i] = Matrix.Identity;
-            }
-            BoneNames = boneNames;
-        }
-        public void UpdateBoneTransforms(SkinningData SkinningData)
-        {
-            for (int i = 0; i < BoneTransforms.Count(); i++)
-            {
-                BoneTransforms[i] = SkinningData.Bones[BoneNames[i]].absoluteTransform;
-            }
         }
     }
 }

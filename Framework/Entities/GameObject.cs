@@ -161,7 +161,7 @@ namespace Spectrum.Framework.Entities
 
         #endregion
 
-        public List<DrawablePart> Parts;
+        public SpecModel Parts;
         public SpecModel Model { get { return Parts as SpecModel; } set { Parts = value; } }
         public JBBox ModelBounds
         {
@@ -200,7 +200,7 @@ namespace Spectrum.Framework.Entities
         public GameObject()
             : base()
         {
-            this.Parts = new List<DrawablePart>();
+            this.Parts = null;
             IsActive = true;
             AnimationPlayer = new AnimationPlayer(this);
             orientation = Matrix.Identity;
@@ -251,8 +251,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual void PostStep(float step) { }
         #endregion
-
-        protected List<SoundEffect> Sounds = new List<SoundEffect>();
+        
         protected Emitter Emitter = new Emitter();
         public void PlaySound(SoundEffect sound)
         {
@@ -292,6 +291,10 @@ namespace Spectrum.Framework.Entities
             Emitter.Forward = Vector3.Forward;
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
+        }
+        public virtual IEnumerable<RenderTaskArgs> GetRenderTasks(GameTime gameTime, bool shadowMap)
+        {
+            return Parts?.Select((part) => new RenderTaskArgs(part, TypeName) { world = World });
         }
         public override void Dispose()
         {

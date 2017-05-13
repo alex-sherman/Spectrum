@@ -18,10 +18,12 @@ namespace Spectrum.Framework.Network
     {
         public const float DefaultReplicationPeriod = .2f;
         public InitData InitData { get; private set; }
+        public TypeData TypeData { get; private set; }
         public IReplicatable Replicated { get; private set; }
         public ReplicationData(InitData initData, IReplicatable replicated)
         {
             InitData = initData;
+            TypeData = InitData.TypeData;
             Replicated = replicated;
         }
         private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
@@ -29,6 +31,12 @@ namespace Spectrum.Framework.Network
         public void SetInterpolator(string attributeName, Func<float, object, object, object> interpolator)
         {
             interpolators[attributeName] = new Interpolator(interpolator);
+        }
+
+        public void HandleRPC(string name, object[] args)
+        {
+            if (TypeData.ReplicatedMethods.Contains(name))
+                TypeData.Call(Replicated, name, args);
         }
 
         public virtual NetMessage WriteReplicationData(NetMessage output)

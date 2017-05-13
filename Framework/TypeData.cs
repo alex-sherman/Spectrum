@@ -29,7 +29,9 @@ namespace Spectrum.Framework
     public class TypeData
     {
         private Dictionary<string, MemberInfo> members = new Dictionary<string, MemberInfo>();
+        private Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         public List<string> ReplicatedMemebers = new List<string>();
+        public List<string> ReplicatedMethods = new List<string>();
         public Type Type { get; private set; }
         private IronPythonTypeWrapper pythonWrapper;
         public TypeData(IronPythonTypeWrapper type)
@@ -53,8 +55,10 @@ namespace Spectrum.Framework
             {
                 throw new InvalidOperationException("Unable to construct an entity with the given parameters");
             }
+#if !DEBUG
             try
             {
+#endif
                 object output = cinfo.Invoke(args);
 
                 foreach (FieldInfo field in output.GetType().GetFields())
@@ -69,11 +73,13 @@ namespace Spectrum.Framework
                     }
                 }
                 return output;
+#if !DEBUG
             }
             catch
             {
                 throw new Exception("An error occured constructing the entity");
             }
+#endif
         }
         public TypeData(Type type)
         {
@@ -90,36 +96,64 @@ namespace Spectrum.Framework
                 if (property.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
                     ReplicatedMemebers.Add(property.Name);
             }
+            //TODO: Check for overloaded methods
+            foreach (var method in type.GetMethods())
+            {
+                if (!method.IsStatic && method.IsPublic)
+                    methods[method.Name] = method;
+                if (method.GetCustomAttributes(true).ToList().Any(x => x is ReplicateAttribute))
+                {
+                    ReplicatedMethods.Add(method.Name);
+                }
+            }
+        }
+        private bool Coerce(Type type, object value, out object output)
+        {
+            output = value;
+            if (value == null || type.IsAssignableFrom(value.GetType()))
+                return true;
+            else if (type.IsSubclassOf(typeof(Enum)) && value is int)
+            {
+                output = Enum.ToObject(type, (int)value);
+                return true;
+            }
+            else if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)
+            {
+                output = ContentHelper.LoadType(type, value as string);
+                return true;
+            }
+            else
+            {
+                // Try assigning a prefab or InitData
+                if (value is string && Prefab.Prefabs.ContainsKey(value as string))
+                    output = Prefab.Prefabs[value as string];
+                if (value is string && TypeHelper.Types[value as string] != null)
+                    output = new InitData(value as string);
+                // Maybe the target field is type InitData
+                if (type.IsAssignableFrom(output.GetType()))
+                    return true;
+
+                if (output is InitData)
+                {
+                    InitData initData = output as InitData;
+                    // Construct an object to fill the field if we can
+                    if (type.IsAssignableFrom(initData.TypeData.Type))
+                    {
+                        output = initData.Construct();
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
         public void Set(object obj, string name, object value)
         {
             if (members.ContainsKey(name))
             {
                 MemberInfo info = members[name];
-                if (value == null || info.MemberType.IsAssignableFrom(value.GetType()))
-                    members[name].SetValue(obj, value);
-                else if (info.MemberType.IsSubclassOf(typeof(Enum)) && value is int)
-                    members[name].SetValue(obj, Enum.ToObject(info.MemberType, (int)value));
-                else if (ContentHelper.ContentParsers.ContainsKey(info.MemberType) && value is string)
-                {
-                    members[name].SetValue(obj, ContentHelper.LoadType(info.MemberType, value as string));
-                }
-                else
-                {
-                    // Try assigning a prefab or InitData
-                    if (value is string && Prefab.Prefabs.ContainsKey(value as string))
-                        value = Prefab.Prefabs[value as string];
-                    if (value is InitData)
-                    {
-                        InitData initData = value as InitData;
-                        // Maybe the target field is type InitData
-                        if (info.MemberType.IsAssignableFrom(value.GetType()))
-                            members[name].SetValue(obj, value);
-                        // Construct an object to fill the field if we can
-                        else if (info.MemberType.IsAssignableFrom(initData.TypeData.Type))
-                            members[name].SetValue(obj, initData.Construct());
-                    }
-                }
+                object coercedValue;
+                if (Coerce(info.MemberType, value, out coercedValue))
+                    members[name].SetValue(obj, coercedValue);
 
             }
         }
@@ -128,6 +162,25 @@ namespace Spectrum.Framework
             if (members.ContainsKey(name))
             {
                 return members[name].GetValue(obj);
+            }
+            return null;
+        }
+        public object Call(object obj, string name, params object[] args)
+        {
+            if (methods.ContainsKey(name))
+            {
+                var method = methods[name];
+                var methodArgs = method.GetParameters();
+                if (args.Length != methodArgs.Length) { return null; }
+                var coercedArgs = new List<object>();
+                foreach (var argPair in methodArgs.Zip(args, (a, b) => new Tuple<Type, object>(a.ParameterType, b)))
+                {
+                    object coerced;
+                    if (!Coerce(argPair.Item1, argPair.Item2, out coerced))
+                        return null;
+                    coercedArgs.Add(coerced);
+                }
+                return methods[name].Invoke(obj, coercedArgs.ToArray());
             }
             return null;
         }

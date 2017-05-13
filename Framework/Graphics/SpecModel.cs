@@ -7,39 +7,54 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections;
 
 namespace Spectrum.Framework.Graphics
 {
-    public class SpecModel : List<DrawablePart>
+    public class SpecModel : IEnumerable<DrawablePart>
     {
         public string Path { get; private set; }
         public AnimationData Animations { get; set; }
         public SkinningData SkinningData { get; protected set; }
+        private int _partIndex = 0;
         public Dictionary<string, DrawablePart> MeshParts { get; private set; }
-        public SpecModel(string path, Dictionary<string, DrawablePart> meshParts, SkinningData skinningData)
+        public Dictionary<string, MaterialData> Materials { get; private set; }
+        public SpecModel()
+        {
+            Path = null;
+            MeshParts = new Dictionary<string, DrawablePart>();
+            Materials = new Dictionary<string, MaterialData>();
+            SkinningData = null;
+        }
+        public SpecModel(string path, Dictionary<string, DrawablePart> meshParts, Dictionary<string, MaterialData> materials, SkinningData skinningData)
         {
             Path = path;
             MeshParts = meshParts;
-            AddRange(meshParts.Values);
+            Materials = materials;
             SkinningData = skinningData;
         }
-        public Texture2D Texture
+        public void Add(DrawablePart part)
         {
-            set
-            {
-                foreach (var part in this)
-                {
-                    part.effect.Texture = value;
-                }
-            }
+            MeshParts["part_" + _partIndex] = part;
+            _partIndex++;
         }
         public void Update(GameTime gameTime)
         {
-            foreach (var part in this)
+            foreach (var part in MeshParts.Values)
             {
                 if (SkinningData != null)
-                    part.effect.UpdateBoneTransforms(SkinningData);
+                    (part.effect as SpectrumSkinnedEffect)?.UpdateBoneTransforms(SkinningData);
             }
+        }
+
+        public IEnumerator<DrawablePart> GetEnumerator()
+        {
+            return MeshParts.Values.GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

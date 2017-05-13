@@ -132,7 +132,7 @@ namespace Spectrum.Framework.Entities
                 {
                     string method = message.Read<string>();
                     Primitive[] args = message.Read<Primitive[]>();
-                    entity.replicatedMethods[method].Invoke(entity, args.Select(prim => prim.Object).ToArray());
+                    entity.ReplicationData.HandleRPC(method, args.Select(prim => prim.Object).ToArray());
                 }
                 else if (type == 1)
                 {
