@@ -116,10 +116,16 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 			float2 shadowCoord = vsout.Pos2DAsSeenByLight.xy;
 			shadowCoord.y *= -1;
 			shadowCoord = (shadowCoord + 1) / 2;
-			float shadowDepth = 1 - ShadowMapTexture.Sample(shadowMapSampler, shadowCoord);
-			float depth = vsout.Pos2DAsSeenByLight.z;
-			if(shadowDepth - depth < -0.0001) { diffuseMagnitude *= 0.5f; }
-		}
+            if (shadowCoord.x >= 0 && shadowCoord.x <= 1 && shadowCoord.y >= 0 && shadowCoord.y <= 1)
+            {
+                float shadowDepth = 1 - ShadowMapTexture.Sample(shadowMapSampler, shadowCoord);
+                float depth = vsout.Pos2DAsSeenByLight.z;
+                if (shadowDepth - depth < -0.0001)
+                {
+                    diffuseMagnitude *= 0.5f;
+                }
+            }
+        }
 		output.rgb += color.rgb * min(1, (diffuseMagnitude * diffuseLightColor + ambientLightColor));
 	}
 	return output;

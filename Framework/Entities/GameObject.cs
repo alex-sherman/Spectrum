@@ -292,7 +292,7 @@ namespace Spectrum.Framework.Entities
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
         }
-        public virtual List<RenderTaskArgs> GetRenderTasks(GameTime gameTime, bool shadowMap)
+        public virtual List<RenderTaskArgs> GetRenderTasks(RenderPhaseInfo phase)
         {
             return Parts?.Select((part) => new RenderTaskArgs(part, TypeName) { world = World }).ToList();
         }

@@ -26,6 +26,14 @@ namespace Spectrum.Framework.Graphics
         public DynamicVertexBuffer instanceBuffer;
         public Matrix? world;
     }
+    public class RenderPhaseInfo
+    {
+        public Matrix View = Matrix.Identity;
+        public Matrix Projection = Matrix.Identity;
+        public Texture2D ShadowMapSource;
+        public Matrix ShadowViewProjection = Matrix.Identity;
+        public bool GenerateShadowMap;
+    }
     public class GraphicsEngine
     {
         private class RenderTask
@@ -44,6 +52,7 @@ namespace Spectrum.Framework.Graphics
             public DrawablePart part;
             public SpectrumEffect effect;
             public string technique = null;
+            public bool merged = false;
             public DynamicVertexBuffer instanceBuffer;
             public Matrix world;
         }
@@ -58,6 +67,9 @@ namespace Spectrum.Framework.Graphics
         private static RenderTarget2D AATarget;
         private static RenderTarget2D DepthTarget;
         private static List<RenderTask> renderTasks = new List<RenderTask>();
+        private static RenderPhaseInfo sceneRenderPhase = new RenderPhaseInfo();
+        private static RenderPhaseInfo shadowRenderPhase = new RenderPhaseInfo() { GenerateShadowMap = true };
+        private static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
         private static Matrix view;
         private static Matrix projection;
         private static Texture2D phaseShadowMap;
@@ -136,26 +148,22 @@ namespace Spectrum.Framework.Graphics
             device.SetRenderTarget(shadowMap);
             GraphicsEngine.device.Clear(Color.Black);
             shadowEffect.CurrentTechnique = shadowEffect.Techniques["ShadowMap"];
-            foreach (GameObject drawable in scene)
-            {
-                if (drawable.Parts == null) continue;
-                foreach (DrawablePart part in drawable.Parts.Where((p) => p.ShadowEnabled))
+            IEnumerable<RenderTask> renderTasks = scene.Select(drawable => drawable.GetRenderTasks(null))
+                .Where(tasks => tasks != null)
+                .SelectMany(t => t)
+                .Where(task => task.part.ShadowEnabled)
+                .Select(args =>
                 {
-                    QueuePart(part, new RenderTaskArgs(part)
-                    {
-                        world = drawable.World,
-                        tag = "Shadow",
-                        effect = shadowEffect
-                    });
+                    args.effect = shadowEffect;
+                    return new RenderTask(args);
                 }
-            }
+            );
             var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
             grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.effect == group.First().effect) ? MergeGroup(group, "ShadowMapInstance") : group);
-            renderTasks = grouped.SelectMany(group => group).ToList();
-            view = Matrix.Identity;
-            projection = SpectrumEffect.LightView * Settings.lightProjection;
+            renderTasks = grouped.SelectMany(group => group);
+            shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
             phaseShadowMap = null;
-            RenderQueue();
+            RenderQueue(shadowRenderPhase, renderTasks);
             device.SetRenderTarget(null);
         }
         public static void UpdateWater(List<GameObject> scene)
@@ -169,10 +177,8 @@ namespace Spectrum.Framework.Graphics
                     GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs());
                 }
             }
-            view = Camera.View;
-            projection = Camera.ReflectionProjection;
-            phaseShadowMap = null;
-            RenderQueue();
+            RenderQueue(sceneRenderPhase, renderTasks);
+            renderTasks.Clear();
             device.SetRenderTarget(Water.reflectionRenderTarget);
             GraphicsEngine.device.Clear(clearColor);
             SpectrumEffect.Clip = true;
@@ -184,10 +190,10 @@ namespace Spectrum.Framework.Graphics
                     GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs());
                 }
             }
-            view = Camera.ReflectionView;
-            projection = Camera.ReflectionProjection;
-            phaseShadowMap = null;
-            RenderQueue();
+            reflectionRenderPhase.View = Camera.ReflectionView;
+            reflectionRenderPhase.Projection = Camera.ReflectionProjection;
+            RenderQueue(reflectionRenderPhase, renderTasks);
+            renderTasks.Clear();
             SpectrumEffect.Clip = false;
             device.SetRenderTarget(null);
         }
@@ -212,7 +218,7 @@ namespace Spectrum.Framework.Graphics
             device.RasterizerState = foo;
             device.BlendState = BlendState.AlphaBlend;
         }
-        private static void Render(RenderTask task)
+        private static void Render(RenderTask task, RenderPhaseInfo phase)
         {
             DrawablePart part = task.part;
             SpectrumEffect effect = task.effect;
@@ -225,8 +231,8 @@ namespace Spectrum.Framework.Graphics
                 effect.MaterialDiffuse = material.diffuseColor;
                 if (material.diffuseTexture != null)
                     effect.Texture = material.diffuseTexture;
-                effect.View = view;
-                effect.Projection = projection;
+                effect.View = phase.View;
+                effect.Projection = phase.Projection;
                 effect.World = task.world;
                 effect.ShadowMap = phaseShadowMap;
                 //Draw vertex component
@@ -308,15 +314,17 @@ namespace Spectrum.Framework.Graphics
                 QueueParts(drawable.Parts, args);
             }
         }
-        private static void RenderQueue()
+        private static void RenderQueue(RenderPhaseInfo phase, IEnumerable<RenderTask> renderTasks)
         {
             foreach (var task in renderTasks)
             {
                 var timer = DebugTiming.Render.Time("Render " + task.tag);
-                Render(task);
+                Render(task, phase);
+                // TODO: Maybe don't create a new instance buffer every frame when merging tasks
+                if (task.merged)
+                    task.instanceBuffer.Dispose();
                 timer.Stop();
             }
-            renderTasks.Clear();
         }
 
         public static void BeginRender(GameTime gameTime)
@@ -393,7 +401,11 @@ namespace Spectrum.Framework.Graphics
             DynamicVertexBuffer buffer = new DynamicVertexBuffer(device, CommonTex.instanceVertexDeclaration, group.Count(), BufferUsage.WriteOnly);
             Matrix[] worlds = group.Select(task => task.world).ToArray();
             buffer.SetData(worlds);
-            RenderTask newTask = new RenderTask(new RenderTaskArgs(group.First().part) { instanceBuffer = buffer }) { world = Matrix.Identity, technique = technique };
+            RenderTask newTask = new RenderTask(new RenderTaskArgs(group.First().part) { instanceBuffer = buffer }) {
+                world = Matrix.Identity,
+                technique = technique,
+                merged = true
+            };
             return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();
         }
         public static void Render(List<Entity> drawables, GameTime gameTime)
@@ -422,7 +434,7 @@ namespace Spectrum.Framework.Graphics
                 drawable.Draw(gameTime, spriteBatch);
                 if (drawable is GameObject)
                 {
-                    var tasks = (drawable as GameObject).GetRenderTasks(gameTime, false);
+                    var tasks = (drawable as GameObject).GetRenderTasks(null);
                     if (tasks != null)
                         renderTasks.AddRange(tasks.Select((args) => new RenderTask(args)));
                 }
@@ -436,11 +448,11 @@ namespace Spectrum.Framework.Graphics
             var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
             grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.effect == group.First().effect) ? MergeGroup(group) : group);
             renderTasks = grouped.SelectMany(group => group).ToList();
-            //renderTasks = herp.Select(derp => derp.First()).ToList();
-            view = Camera.View;
-            projection = Camera.Projection;
+            sceneRenderPhase.View = Camera.View;
+            sceneRenderPhase.Projection = Camera.Projection;
             phaseShadowMap = shadowMap;
-            RenderQueue();
+            RenderQueue(sceneRenderPhase, renderTasks);
+            renderTasks.Clear();
             timer.Stop();
             timer = DebugTiming.Render.Time("Sprite batch end");
             spriteBatch.End();
