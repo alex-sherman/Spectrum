@@ -40,7 +40,8 @@ namespace Spectrum.Framework
 
         public static double Now()
         {
-            return DateTime.UtcNow.Second + DateTime.UtcNow.Millisecond / 1000.0;
+            // Apparently windows ticks are tenths of a millisecond
+            return DateTime.UtcNow.ToFileTimeUtc() / 1e7;
         }
         public static void StartFrame()
         {
