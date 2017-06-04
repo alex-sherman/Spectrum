@@ -1,9 +1,11 @@
-﻿using ProtoBuf;
+﻿using Newtonsoft.Json.Linq;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,12 +24,17 @@ namespace Spectrum.Framework.Network.Surrogates
         public int type;
         public byte[] buffer;
 
+        static BinaryFormatter binarySerializer = new BinaryFormatter();
+
         private object Object
         {
             get
             {
                 if (type == 0) return null;
                 MemoryStream stream = new MemoryStream(buffer);
+                var objType = TypeMap[type];
+                if (objType == typeof(JToken))
+                    return (JToken)(JSONSurrogate)Serializer.NonGeneric.Deserialize(typeof(JSONSurrogate), stream);
                 return Serializer.NonGeneric.Deserialize(TypeMap[type], stream);
             }
         }
@@ -37,8 +44,9 @@ namespace Spectrum.Framework.Network.Surrogates
             if (obj.Object != null)
             {
                 int type = GetID(obj.Object.GetType());
-                byte[] buffer = GetBytes(obj.Object);
-                return new PrimitiveSurrogate() { type = type, buffer = buffer };
+                MemoryStream buffer = new MemoryStream();
+                Serialize(buffer, obj.Object);
+                return new PrimitiveSurrogate() { type = type, buffer = buffer.ToArray() };
             }
             return new PrimitiveSurrogate() { type = 0 };
         }
@@ -50,13 +58,14 @@ namespace Spectrum.Framework.Network.Surrogates
         public static int GetID(Type type)
         {
             return TypeMap.Where(typeMap => type == typeMap.Value || type.IsSubclassOf(typeMap.Value))
-                .Select(typeMap => typeMap.Key).First();
+                .Select(typeMap => (int?)typeMap.Key).FirstOrDefault() ?? -1;
         }
-        public static byte[] GetBytes(object obj)
+        public static MemoryStream Serialize(MemoryStream stream, object obj)
         {
-            MemoryStream stream = new MemoryStream();
+            if (obj is JToken)
+                obj = (JSONSurrogate)(JToken)obj;
             Serializer.NonGeneric.Serialize(stream, obj);
-            return stream.ToArray();
+            return stream;
         }
         public static void RegisterType(Type type)
         {

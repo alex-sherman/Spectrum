@@ -74,6 +74,11 @@ namespace Spectrum.Framework.Entities
             }
         }
 
+        public void Replicate()
+        {
+            replicateNextUpdate = true;
+        }
+
         public virtual void Update(GameTime gameTime)
         {
             ReplicationData.Interpolate(gameTime.DT());
@@ -82,8 +87,9 @@ namespace Spectrum.Framework.Entities
                 if (replicateCounter > 0)
                     replicateCounter -= gameTime.DT();
 
-                if (replicateCounter <= 0 && (replicateNextUpdate || AutoReplicate))
+                if (replicateNextUpdate || (replicateCounter <= 0 && AutoReplicate))
                 {
+                    replicateNextUpdate = false;
                     replicateCounter = ReplicationData.DefaultReplicationPeriod;
                     Manager.SendEntityReplication(this, default(NetID));
                 }

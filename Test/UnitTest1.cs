@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Entities;
 using Spectrum;
+using Spectrum.Framework.Network;
+using Newtonsoft.Json.Linq;
+using Spectrum.Framework.Network.Surrogates;
 
 namespace SpectrumTest
 {
@@ -25,6 +28,12 @@ namespace SpectrumTest
             float penetration;
             system.GetContact(go1, go2, out point, out normal, out penetration);
             Assert.IsTrue(Vector3.Dot(normal, new Vector3(0, -0.7f, 0.7f)) > 0.8f);
+        }
+        [TestMethod]
+        public void TestMethod2()
+        {
+            Serialization.InitSurrogates();
+            var output = Serialization.Copy(new Primitive(JToken.Parse("{\"herp\": 3}")));
         }
     }
 }

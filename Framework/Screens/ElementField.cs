@@ -72,7 +72,7 @@ namespace Spectrum.Framework.Screens
         {
             get
             {
-                return _value;
+                return _value ?? defaultValue;
             }
         }
         private string fieldName;

@@ -225,6 +225,7 @@
     <Compile Include="Framework\Network\SteamP2PReceiver.cs" />
     <Compile Include="Framework\Network\Surrogates\EntitySurrogate.cs" />
     <Compile Include="Framework\Network\Surrogates\FloatArraySurrogate.cs" />
+    <Compile Include="Framework\Network\Surrogates\JSONSurrogate.cs" />
     <Compile Include="Framework\Network\Surrogates\PrimitiveSurrogate.cs" />
     <Compile Include="Framework\Network\Surrogates\StreamSurrogate.cs" />
     <Compile Include="Framework\Physics\Collision\CollisionIsland.cs" />
