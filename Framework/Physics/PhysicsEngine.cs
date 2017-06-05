@@ -123,7 +123,7 @@ namespace Spectrum.Framework.Physics
         private float timestep = 0.0f;
         public float Timestep { get; set; }
 
-        private Spectrum.Framework.Physics.Collision.IslandManager islands = new IslandManager();
+        private IslandManager islands = new IslandManager();
 
         public HashSet<GameObject> Collidables { get; private set; }
         public HashSet<Constraint> Constraints { get; private set; }

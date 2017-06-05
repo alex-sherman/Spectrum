@@ -28,7 +28,7 @@ namespace Spectrum.Framework
 
         public static string FixedLenString(this Vector3 vector)
         {
-            return "{" + vector.X.ToString("0.00") + ", " + vector.Y.ToString("0.00") + ", " + vector.Z.ToString("0.00") + "}";
+            return "<" + vector.X.ToString("0.00") + ", " + vector.Y.ToString("0.00") + ", " + vector.Z.ToString("0.00") + ">";
         }
         public static Vector3 Homogeneous(this Vector4 vector)
         {

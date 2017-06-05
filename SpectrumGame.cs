@@ -17,6 +17,8 @@ using Spectrum.Framework.Entities;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Audio;
 using Spectrum.Framework.Input;
+using Valve.VR;
+using Spectrum.Framework.VR;
 
 namespace Spectrum
 {
@@ -82,6 +84,7 @@ namespace Spectrum
 
         public SpectrumGame(Guid? guid = null, string nick = "Player")
         {
+            SpecVR.Init();
             NetID ID;
             UsingSteam = guid == null;
             if (UsingSteam)
@@ -235,6 +238,10 @@ namespace Spectrum
                     OnScreenResize(this, EventArgs.Empty);
                 }
                 newResize = false;
+            }
+            if(SpecVR.Running)
+            {
+                SpecVR.Update(gameTime);
             }
             base.Update(gameTime);
         }

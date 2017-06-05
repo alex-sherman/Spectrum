@@ -13,7 +13,6 @@ namespace Spectrum.Framework.Screens
     public class MenuScreen : GameScreen
     {
         private string MenuTitle;
-
         public MenuScreen(string menuTitle)
         {
             MenuTitle = menuTitle;

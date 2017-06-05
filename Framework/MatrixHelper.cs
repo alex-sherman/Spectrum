@@ -7,8 +7,17 @@ using System.Text;
 
 namespace Spectrum.Framework
 {
-    public class MatrixHelper
+    public static class MatrixHelper
     {
+        public static Matrix YUpToZUp()
+        {
+            var output = Matrix.Identity;
+            output[1, 1] = 0;
+            output[1, 2] = 1;
+            output[2, 2] = 0;
+            output[2, 1] = -1;
+            return output;
+        }
         public static Matrix CreateTranslation(JToken jobj)
         {
             return Matrix.CreateTranslation(

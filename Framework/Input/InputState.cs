@@ -11,6 +11,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SharpDX.DirectInput;
+using Spectrum.Framework.VR;
 using System;
 using System.Collections.Generic;
 #endregion
@@ -28,6 +29,8 @@ namespace Spectrum.Framework.Input
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
         public SpectrumMouseState MouseState;
         public Gamepad[] Gamepads = new Gamepad[4];
+        public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
+
         private InputState LastInputState;
 
 
@@ -46,6 +49,7 @@ namespace Spectrum.Framework.Input
             {
                 Gamepads[i] = new Gamepad(new SharpDX.XInput.Controller((SharpDX.XInput.UserIndex)i));
             }
+
         }
 
 
@@ -65,6 +69,11 @@ namespace Spectrum.Framework.Input
             {
                 LastInputState.Gamepads[i] = Gamepads[i];
                 Gamepads[i].Update();
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                LastInputState.VRControllers[i] = VRControllers[i];
+                VRControllers[i].Update();
             }
         }
         public bool IsKeyDown(string bindingName)
@@ -89,6 +98,12 @@ namespace Spectrum.Framework.Input
                     if (bindingInfo.buttonModifier != null && !IsButtonDown((GamepadButton)bindingInfo.buttonModifier, gamepadIndex)) { continue; }
                     if (bindingInfo.button != null && IsButtonDown((GamepadButton)bindingInfo.button, gamepadIndex)) { return true; }
                 }
+                if(SpecVR.Running && bindingInfo.vrButton != null)
+                {
+                    var button = bindingInfo.vrButton.Value;
+                    if (button.Hand.HasFlag(VRHand.Left) && IsButtonDown(button.Button, VRHand.Left)) { return true; }
+                    if (button.Hand.HasFlag(VRHand.Right) && IsButtonDown(button.Button, VRHand.Right)) { return true; }
+                }
             }
             return false;
         }
@@ -99,6 +114,10 @@ namespace Spectrum.Framework.Input
         private bool IsButtonDown(GamepadButton button, int gamepadIndex)
         {
             return Gamepads[gamepadIndex].IsButtonPressed(button);
+        }
+        private bool IsButtonDown(VRButton button, VRHand hand)
+        {
+            return VRControllers[(int)hand - 1].IsButtonPressed(button);
         }
 
         public bool IsNewKeyPress(string bindingName)
