@@ -11,29 +11,31 @@ namespace Spectrum.Framework.Input
         public static Dictionary<string, InputLayout> Profiles = new Dictionary<string, InputLayout>();
         public static InputLayout Default;
 
-        public Dictionary<string, KeyBinding> KeyBindings = new Dictionary<string, KeyBinding>();
+        public DefaultDict<string, List<BindingOption>> KeyBindings = new DefaultDict<string, List<BindingOption>>(() => new List<BindingOption>(), true);
         public Dictionary<string, Axis1> Axes1 = new Dictionary<string, Axis1>();
 
         public static void Init()
         {
             Default = new InputLayout("Default");
-            Default.KeyBindings = new Dictionary<string, KeyBinding>()
-                {
-                    {"MenuLeft", new KeyBinding(Keys.Left)},
-                    {"MenuRight", new KeyBinding(Keys.Right)},
-                    {"MenuUp", new KeyBinding(Keys.Up)},
-                    {"MenuDown", new KeyBinding(Keys.Down)},
-                    {"MenuCycleF", new KeyBinding(Keys.Tab)},
-                    {"MenuCycleB", new KeyBinding(Keys.Tab, keyModifier: Keys.LeftShift)},
-                    {"GoBack", new KeyBinding(Keys.Escape)},
-                    {"Continue", new KeyBinding(Keys.Enter)},
-                };
+            Default.Add("MenuLeft", new BindingOption(Keys.Left));
+            Default.Add("MenuRight", new BindingOption(Keys.Right));
+            Default.Add("MenuUp", new BindingOption(Keys.Up));
+            Default.Add("MenuDown", new BindingOption(Keys.Down));
+            Default.Add("MenuCycleF", new BindingOption(Keys.Tab));
+            Default.Add("MenuCycleB", new BindingOption(Keys.Tab, keyModifier: Keys.LeftShift));
+            Default.Add("GoBack", new BindingOption(Keys.Escape));
+            Default.Add("Continue", new BindingOption(Keys.Enter));
         }
 
         public InputLayout(string name)
         {
             if (Profiles.ContainsKey(name)) throw new ArgumentException("An input profile with that name already exists");
             Profiles[name] = this;
+        }
+
+        public void Add(string binding, BindingOption option)
+        {
+            KeyBindings[binding].Add(option);
         }
     }
 }

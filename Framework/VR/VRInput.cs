@@ -20,8 +20,15 @@ namespace Spectrum.Framework.VR
     {
         public VRHand Hand;
         public VRButton Button;
+        public VRPressType PressType;
+        public VRButtonBinding(VRButton button, VRHand hand = VRHand.Left | VRHand.Right, VRPressType pressType = VRPressType.Pressed)
+        {
+            Hand = hand;
+            Button = button;
+            PressType = pressType;
+        }
     }
-    [Flags]
+    
     public enum VRButton
     {
         System = 0,
@@ -42,6 +49,7 @@ namespace Spectrum.Framework.VR
         SteamVR_Trigger = 33,
         Dashboard_Back = 2,
         Max = 64,
+        BetterTrigger = 65,
     }
     [Flags]
     public enum VRHand
@@ -49,24 +57,55 @@ namespace Spectrum.Framework.VR
         Left = 1,
         Right = 2
     }
+    [Flags]
+    public enum VRPressType
+    {
+        Pressed = 1,
+        Touched = 2
+    }
     public struct VRController
     {
         public VRHand Hand { get; private set; }
-        private ulong buttons;
+        public ulong pressedButtons;
+        public ulong touchedButtons;
+        public VRControllerState_t state;
         public VRController(VRHand hand)
         {
             Hand = hand;
-            buttons = 0;
+            pressedButtons = 0;
+            touchedButtons = 0;
+            state = new VRControllerState_t();
         }
         public void Update()
         {
-            VRControllerState_t state = new VRControllerState_t();
-            OpenVR.System.GetControllerState(3, ref state, 64);
-            buttons = state.ulButtonPressed;
+            int index = Hand == VRHand.Left ? SpecVR.LeftHandIndex : SpecVR.RightHandIndex;
+            if(index != -1)
+                OpenVR.System.GetControllerState((uint)index, ref state, 64);
+            pressedButtons = state.ulButtonPressed;
+            touchedButtons = state.ulButtonTouched;
         }
-        public bool IsButtonPressed(VRButton button)
+        private bool CheckFlag(bool touched, VRButton check)
         {
-            return (buttons & ((1ul) << (int)button)) != 0;
+            var flags = touched ? touchedButtons : pressedButtons;
+            if(check > VRButton.Max)
+            {
+                switch (check)
+                {
+                    case VRButton.BetterTrigger:
+                        return touched ? state.rAxis1.x > 0.1 : state.rAxis1.x > 0.95;
+                    default:
+                        return false;
+                }
+            }
+            return (flags & ((1ul) << (int)check)) != 0;
+        }
+        public bool IsButtonPressed(VRButtonBinding binding)
+        {
+            return binding.Hand.HasFlag(Hand) && 
+                (
+                    (binding.PressType.HasFlag(VRPressType.Pressed) && CheckFlag(false, binding.Button))
+                    || (binding.PressType.HasFlag(VRPressType.Touched) && CheckFlag(true, binding.Button))
+                );
         }
     }
 }

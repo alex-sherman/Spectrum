@@ -434,7 +434,7 @@ namespace Spectrum.Framework.Graphics
             device.SetRenderTarget(VRTarget);
             GraphicsEngine.device.Clear(clearColor);
             RenderPhaseInfo vrPhase = new RenderPhaseInfo();
-            vrPhase.View = Camera.View * SpecVR.HeadPose * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(eye));
+            vrPhase.View = Camera.View * Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(eye));
             vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 1000);
             RenderQueue(vrPhase, renderTasks);
             OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);

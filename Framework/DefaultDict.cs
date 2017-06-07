@@ -15,9 +15,11 @@ namespace Spectrum.Framework
     {
         Dictionary<TKey, TValue> internalDict = new Dictionary<TKey, TValue>();
         Func<TValue> Constructor = () => default(TValue);
-        public DefaultDict(Func<TValue> constructor)
+        bool _addToDictionary;
+        public DefaultDict(Func<TValue> constructor, bool addToDictionary = false)
         {
             Constructor = constructor;
+            _addToDictionary = addToDictionary;
         }
         public DefaultDict() { }
         /// <summary>
@@ -25,10 +27,17 @@ namespace Spectrum.Framework
         /// </summary>
         /// <param name="key">Location in dictionary</param>
         /// <returns>Value at key location</returns>
-        public TValue this[TKey key] {
+        public TValue this[TKey key]
+        {
             get
             {
-                if (!internalDict.ContainsKey(key)) { return Constructor(); }
+                if (!internalDict.ContainsKey(key))
+                {
+                    if (!_addToDictionary)
+                        return Constructor();
+                    else
+                        internalDict[key] = Constructor();
+                }
                 return internalDict[key];
             }
             set

@@ -176,9 +176,9 @@ namespace Spectrum.Framework.Content
                 {
                     MaterialData materialData = new MaterialData();
                     output[(string)material["id"]] = materialData;
-                    if (material["emissive"] != null)
+                    if (material["diffuse"] != null)
                     {
-                        JArray diffuseColor = (JArray)material["emissive"];
+                        JArray diffuseColor = (JArray)material["diffuse"];
                         materialData.diffuseColor = new Color((float)Math.Pow((float)diffuseColor[0], .45), (float)Math.Pow((float)diffuseColor[1], .45), (float)Math.Pow((float)diffuseColor[2], .45));
                     }
                     if (material["textures"] != null)
@@ -255,7 +255,7 @@ namespace Spectrum.Framework.Content
                     skinned.SetBoneNames((nodePart["bones"]).ToList().ConvertAll(x => (string)x["node"]).ToArray());
                 }
                 part.effect = effect;
-                MaterialData materialData = new MaterialData();
+                MaterialData materialData = MaterialData.Missing;
                 if (nodePart["materialid"] != null && data.materials.ContainsKey((string)nodePart["materialid"]))
                     materialData = data.materials[(string)nodePart["materialid"]];
 

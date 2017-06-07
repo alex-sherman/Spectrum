@@ -84,7 +84,6 @@ namespace Spectrum
 
         public SpectrumGame(Guid? guid = null, string nick = "Player")
         {
-            SpecVR.Init();
             NetID ID;
             UsingSteam = guid == null;
             if (UsingSteam)

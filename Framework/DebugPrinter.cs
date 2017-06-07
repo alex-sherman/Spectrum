@@ -13,8 +13,33 @@ namespace Spectrum.Framework
 {
     public class DebugPrinter : Element
     {
+        private class DebugHolder : IDebug
+        {
+            Func<string> text;
+            Action<GameTime, SpriteBatch> draw;
+            public DebugHolder(Func<string> text, Action<GameTime,SpriteBatch> draw)
+            {
+                this.text = text;
+                this.draw = draw;
+            }
+            public string Debug()
+            {
+                return text?.Invoke();
+            }
+
+            public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)
+            {
+                draw?.Invoke(gameTime, spriteBatch);
+            }
+        }
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
+        public static IDebug display(Func<string> text = null, Action<GameTime, SpriteBatch> draw = null)
+        {
+            IDebug output = new DebugHolder(text, draw);
+            display(output);
+            return output;
+        }
         public static void display(IDebug o)
         {
             if (o != null)

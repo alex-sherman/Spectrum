@@ -12,23 +12,54 @@ namespace Spectrum.Framework.VR
     {
         public static bool Init()
         {
-            EVRInitError error = EVRInitError.Init_Internal;
-            OpenVR.Init(ref error);
-            Running = error == EVRInitError.None;
+            if (OpenVR.IsHmdPresent())
+            {
+                EVRInitError error = EVRInitError.Init_Internal;
+                OpenVR.Init(ref error);
+                Running = error == EVRInitError.None;
+                if (!Running)
+                    OpenVR.Shutdown();
+            }
             return Running;
         }
         public static bool Running { get; private set; }
+        public static int HMDIndex { get; private set; } = -1;
         public static Matrix HeadPose { get; private set; }
+        public static int LeftHandIndex { get; private set; } = -1;
         public static Matrix LeftHand { get; private set; }
+        public static int RightHandIndex { get; private set; } = -1;
         public static Matrix RightHand { get; private set; }
         public static void Update(GameTime time)
         {
             TrackedDevicePose_t[] poses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
             TrackedDevicePose_t[] poses2 = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
             OpenVR.Compositor.WaitGetPoses(poses, poses2);
-            //TODO: Why invert?
-            HeadPose = Matrix.Invert(poses[0].mDeviceToAbsoluteTracking);
-            LeftHand = poses[3].mDeviceToAbsoluteTracking;
+            LeftHandIndex = -1;
+            RightHandIndex = -1;
+            for (uint i = 0; i < OpenVR.k_unMaxTrackedDeviceCount; i++)
+            {
+                var deviceClass = OpenVR.System.GetTrackedDeviceClass(i);
+                switch (deviceClass)
+                {
+                    case ETrackedDeviceClass.HMD:
+                        HMDIndex = (int)i;
+                        break;
+                    case ETrackedDeviceClass.Controller:
+                        if (LeftHandIndex == -1)
+                            LeftHandIndex = (int)i;
+                        else
+                            RightHandIndex = (int)i;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (HMDIndex != -1)
+                HeadPose = poses[HMDIndex].mDeviceToAbsoluteTracking;
+            if (LeftHandIndex != -1)
+                LeftHand = poses[LeftHandIndex].mDeviceToAbsoluteTracking;
+            if (RightHandIndex != -1)
+                RightHand = poses[RightHandIndex].mDeviceToAbsoluteTracking;
         }
     }
 }

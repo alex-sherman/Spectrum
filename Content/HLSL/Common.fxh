@@ -186,8 +186,8 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 			color.rgb *= color.a;
 		}
 		else
-			color = textureColor;
-	}
+            color = textureColor * materialDiffuse;
+    }
 	else
 	{
 		color = diffuseColor * materialDiffuse;
