@@ -87,9 +87,9 @@ namespace Spectrum.Framework.Input
         public bool IsKeyDown(string bindingName, PlayerInformation playerInfo)
         {
             InputLayout layout = playerInfo.Layout;
-            List<BindingOption> binding;
+            KeyBinding binding;
             if (!layout.KeyBindings.TryGetValue(bindingName, out binding)) throw new KeyNotFoundException("Binding not found");
-            foreach (var bindingInfo in binding)
+            foreach (var bindingInfo in binding.Options)
             {
                 if (playerInfo.UsesKeyboard)
                 {

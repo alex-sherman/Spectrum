@@ -11,7 +11,7 @@ namespace Spectrum.Framework.Input
         public static Dictionary<string, InputLayout> Profiles = new Dictionary<string, InputLayout>();
         public static InputLayout Default;
 
-        public DefaultDict<string, List<BindingOption>> KeyBindings = new DefaultDict<string, List<BindingOption>>(() => new List<BindingOption>(), true);
+        public DefaultDict<string, KeyBinding> KeyBindings = new DefaultDict<string, KeyBinding>(() => new KeyBinding(), true);
         public Dictionary<string, Axis1> Axes1 = new Dictionary<string, Axis1>();
 
         public static void Init()
@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Input
 
         public void Add(string binding, BindingOption option)
         {
-            KeyBindings[binding].Add(option);
+            KeyBindings[binding].Options.Add(option);
         }
     }
 }

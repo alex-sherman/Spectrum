@@ -437,7 +437,7 @@ namespace Spectrum.Framework.Graphics
             vrPhase.View = Camera.View * Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(eye));
             vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 1000);
             RenderQueue(vrPhase, renderTasks);
-            OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);
+            var output = OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);
         }
 
         public static void Render(List<Entity> drawables, GameTime gameTime)

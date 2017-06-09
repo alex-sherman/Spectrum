@@ -27,4 +27,15 @@ namespace Spectrum.Framework.Input
             this.vrButton = vrButton;
         }
     }
+    public class KeyBinding
+    {
+        public List<BindingOption> Options;
+        public KeyBinding(Keys? key = null, Keys? keyModifier = null, int? mouseButton = null, GamepadButton? button = null, GamepadButton? buttonModifier = null)
+            : this(new BindingOption(key, keyModifier, mouseButton, button, buttonModifier)) { }
+
+        public KeyBinding(params BindingOption[] options)
+        {
+            Options = options.ToList();
+        }
+    }
 }
