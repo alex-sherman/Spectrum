@@ -65,7 +65,7 @@ namespace Spectrum.Framework.Graphics
         }
         public DrawablePart CreateReference()
         {
-            return new DrawablePart(VBuffer, IBuffer, Bounds) { ReferenceID = ReferenceID, effect = effect, material = material };
+            return new DrawablePart(VBuffer, IBuffer, Bounds) { ReferenceID = ReferenceID, effect = effect, material = material, permanentTransform = permanentTransform };
         }
         public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer, JBBox bounds = default(JBBox))
             : this()

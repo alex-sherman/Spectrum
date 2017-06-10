@@ -37,5 +37,9 @@ namespace Spectrum.Framework.Input
         {
             Options = options.ToList();
         }
+        public void Add(BindingOption option)
+        {
+            Options.Add(option);
+        }
     }
 }

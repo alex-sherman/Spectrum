@@ -189,6 +189,8 @@
     <Compile Include="Framework\Content\HeightmapParser.cs" />
     <Compile Include="Framework\Content\ImageAsset.cs" />
     <Compile Include="Framework\Content\ImageAssetParser.cs" />
+    <Compile Include="Framework\Content\ModelParsing\G3DJReader.cs" />
+    <Compile Include="Framework\Content\ModelParsing\OBJReader.cs" />
     <Compile Include="Framework\Content\ScriptAsset.cs" />
     <Compile Include="Framework\Content\ScriptParser.cs" />
     <Compile Include="Framework\Content\SoundParser.cs" />

@@ -72,7 +72,7 @@ sampler shadowMapSampler = sampler_state
 
 struct CommonVSInput
 {
-	float4 Position  : SV_Position;
+    float4 Position : POSITION0;
 	float2 TextureCoordinate : TEXCOORD0;
 	float3 normal : NORMAL;
 	float3 tangent : TANGENT;
