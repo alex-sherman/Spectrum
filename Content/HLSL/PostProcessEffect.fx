@@ -49,7 +49,7 @@ float4 CalcAA(float2 texCoord)
 {
 	float total = 1;
 	float3 value = tex2D(AASampler,texCoord).rgb;
-	float weight = .3;
+	float weight = 0.2;
 	total+=4*weight;
 
 	texCoord.x-=1/viewPort.x;

@@ -292,9 +292,9 @@ namespace Spectrum.Framework.Entities
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
         }
-        public virtual List<RenderTaskArgs> GetRenderTasks(RenderPhaseInfo phase)
+        public virtual List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
         {
-            return Parts?.Select((part) => new RenderTaskArgs(part, TypeName) { world = World }).ToList();
+            return Parts?.Select((part) => new RenderTask(part, TypeName) { world = World }).ToList();
         }
         public override void Dispose()
         {

@@ -15,6 +15,13 @@ namespace Spectrum.Framework.Graphics
         private string[] BoneNames;
         public Matrix[] BoneTransforms { get; protected set; }
         public SpectrumSkinnedEffect() : base(ContentHelper.Load<Effect>("SkinnedEffect")) { }
+        public override bool CanInstance
+        {
+            get
+            {
+                return false;
+            }
+        }
         protected override bool OnApply()
         {
             if (BoneTransforms != null)

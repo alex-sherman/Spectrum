@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Graphics;
+using Spectrum.Framework.Graphics.Animation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -59,6 +60,8 @@ namespace Spectrum.Framework.Content.ModelParsing
             {
                 parseNode(node, modelData, modelData.parts);
             }
+
+            modelData.skinningData = GetSkinningData(jobj);
 
             return modelData;
         }
@@ -194,6 +197,53 @@ namespace Spectrum.Framework.Content.ModelParsing
             {
                 material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
             }
+        }
+
+        public SkinningData GetSkinningData(JObject jobj)
+        {
+            JToken armature = ((JArray)jobj["nodes"]).FirstOrDefault(node => (string)node["id"] == "Armature");
+            if (armature == null) return null;
+            Dictionary<string, Bone> bones = new Dictionary<string, Bone>();
+            Bone rootBone = JObjToBone(armature, bones);
+
+            SkinningData output = new SkinningData(rootBone, bones);
+
+            foreach (Bone bone in output.Bones.Values)
+            {
+                bone.inverseBindPose = Matrix.Invert(bone.withParentTransform);
+            }
+            return output;
+        }
+
+        private Bone JObjToBone(JToken rootNode, Dictionary<string, Bone> bones, Bone parent = null)
+        {
+            Bone rootBone = new Bone((string)rootNode["id"], parent);
+            bones[rootBone.id] = rootBone;
+
+            JArray rotation = (JArray)rootNode["rotation"];
+            if (rotation != null)
+            {
+                rootBone.defaultRotation = MatrixHelper.CreateRotation(rotation);
+            }
+
+            JArray translation = (JArray)rootNode["translation"];
+            if (translation != null)
+            {
+                rootBone.defaultTranslation *= MatrixHelper.CreateTranslation(translation);
+            }
+
+            rootBone.transform = rootBone.defaultRotation * rootBone.defaultTranslation;
+
+            JToken children = rootNode["children"];
+            if (children != null)
+            {
+                foreach (JToken child in children)
+                {
+                    rootBone.children.Add(JObjToBone(child, bones, rootBone));
+                }
+            }
+
+            return rootBone;
         }
     }
 }

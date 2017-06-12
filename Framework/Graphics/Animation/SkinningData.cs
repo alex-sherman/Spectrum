@@ -42,5 +42,11 @@ namespace Spectrum.Framework.Graphics.Animation
         public Bone Root { get; private set; }
 
         public Dictionary<string, Bone> Bones { get; private set; }
+
+        public SkinningData Clone()
+        {
+            Dictionary<string, Bone> outBones = new Dictionary<string, Bone>();
+            return new SkinningData(Root.Clone(outBones), outBones);
+        }
     }
 }

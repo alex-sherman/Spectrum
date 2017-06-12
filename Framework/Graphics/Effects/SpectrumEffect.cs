@@ -85,6 +85,7 @@ namespace Spectrum.Framework.Graphics
                 Parameters["TextureMagFilter"].SetValue(value);
             }
         }
+        public static float ShadowThreshold = 2.7e-5f;
         public Texture2D ShadowMap
         {
             get { return Parameters["ShadowMapTexture"].GetValueTexture2D(); }
@@ -96,6 +97,7 @@ namespace Spectrum.Framework.Graphics
         }
         public Texture2D NormalMap { set { Parameters["NormalMap"].SetValue(value); Parameters["UseNormalMap"].SetValue(value != null); } }
         public bool HasTransparency { get; set; } = false;
+        public virtual bool CanInstance { get { return true; } }
         public Texture2D Transparency
         {
             set
@@ -109,6 +111,7 @@ namespace Spectrum.Framework.Graphics
         //TODO: Set values only when necessary
         protected override bool OnApply()
         {
+            Parameters["ShadowThreshold"].SetValue(ShadowThreshold);
             Parameters["Clip"].SetValue(Clip);
             Parameters["cameraPosition"].SetValue(CameraPos);
             Parameters["ClipPlane"].SetValue(ClipPlane);

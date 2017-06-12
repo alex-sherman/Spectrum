@@ -54,5 +54,19 @@ namespace Spectrum.Framework.Graphics.Animation
             transform = Matrix.Identity;
             this.id = id;
         }
+
+        public Bone Clone(Dictionary<string, Bone> bones, Bone parent = null)
+        {
+            Bone output = new Bone(id, parent);
+            output.defaultRotation = defaultRotation;
+            output.defaultTranslation = defaultTranslation;
+            output.inverseBindPose = inverseBindPose;
+            bones[id] = output;
+            foreach (var child in children)
+            {
+                output.children.Add(child.Clone(bones, output));
+            }
+            return output;
+        }
     }
 }

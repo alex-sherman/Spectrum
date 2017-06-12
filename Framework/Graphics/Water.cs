@@ -51,8 +51,10 @@ namespace Spectrum.Framework.Graphics
         }
         public static void ResetRenderTargets()
         {
+            refractionRenderTarget?.Dispose();
             refractionRenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, (int)(2048.0 / Math.Pow(2, Settings.waterQuality)),
                 (int)(2048.0 / Math.Pow(2, Settings.waterQuality)), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+            reflectionRenderTarget?.Dispose();
             reflectionRenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, (int)(2048.0 / Math.Pow(2, Settings.waterQuality)),
                 (int)(2048.0 / Math.Pow(2, Settings.waterQuality)), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
         }

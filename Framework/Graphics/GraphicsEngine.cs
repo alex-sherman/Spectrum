@@ -18,15 +18,25 @@ using Spectrum.Framework.VR;
 
 namespace Spectrum.Framework.Graphics
 {
-    public struct RenderTaskArgs
+    public struct RenderTask
     {
-        public RenderTaskArgs(DrawablePart part, string tag = "Misc") : this() { this.part = part; this.tag = tag; }
+        public RenderTask(DrawablePart part, string tag = "Misc") : this() { this.part = part; this.tag = tag; }
         public DrawablePart part;
         public string tag;
         public float? z;
+        public float ZValue { get { return z ?? 0; } }
         public SpectrumEffect effect;
+        public SpectrumEffect EffectValue { get { return effect ?? part.effect; } }
         public DynamicVertexBuffer instanceBuffer;
         public Matrix? world;
+        private Matrix? _world;
+        public Matrix WorldValue
+        {
+            get { return _world ?? (_world = part.permanentTransform * part.transform * (world ?? Matrix.Identity)).Value; }
+            set { _world = value; }
+        }
+        public bool merged;
+        public string technique;
     }
     public class RenderPhaseInfo
     {
@@ -38,26 +48,6 @@ namespace Spectrum.Framework.Graphics
     }
     public class GraphicsEngine
     {
-        private class RenderTask
-        {
-            public RenderTask(RenderTaskArgs args)
-            {
-                part = args.part;
-                world = part.permanentTransform * part.transform * (args.world ?? Matrix.Identity);
-                z = args.z ?? FullScreenPos(Vector4.Transform(Vector4.UnitW, world).Homogeneous()).Z;
-                tag = args.tag ?? "Misc";
-                effect = args.effect ?? part.effect;
-                instanceBuffer = args.instanceBuffer;
-            }
-            public string tag;
-            public float z;
-            public DrawablePart part;
-            public SpectrumEffect effect;
-            public string technique = null;
-            public bool merged = false;
-            public DynamicVertexBuffer instanceBuffer;
-            public Matrix world;
-        }
         private static GraphicsDevice device;
         public static float darkness = 1f;
         public static bool wireFrame = false;
@@ -77,7 +67,7 @@ namespace Spectrum.Framework.Graphics
         static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
-        //TODO: Add a settings thing for multisample count
+        public static float MultisampleFactor = 1;
         public static void Initialize(Camera camera)
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -103,8 +93,10 @@ namespace Spectrum.Framework.Graphics
             if (device != null)
             {
                 spriteBatch = new SpriteBatch(device);
-                AATarget = new RenderTarget2D(GraphicsEngine.device, device.Viewport.Width, device.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-                DepthTarget = new RenderTarget2D(GraphicsEngine.device, device.Viewport.Width, device.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                AATarget?.Dispose();
+                AATarget = new RenderTarget2D(device, (int)(device.Viewport.Width * MultisampleFactor), (int)(device.Viewport.Height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                DepthTarget?.Dispose();
+                DepthTarget = new RenderTarget2D(device, (int)(device.Viewport.Width * MultisampleFactor), (int)(device.Viewport.Height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 PostProcessEffect.DepthTarget = DepthTarget;
                 Water.ResetRenderTargets();
                 PostProcessEffect.ResetViewPort();
@@ -155,29 +147,27 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        private static SpectrumEffect shadowEffect = new SpectrumEffect();
+        //private static SpectrumEffect shadowEffect = new SpectrumEffect();
         public static void UpdateShadowMap(List<GameObject> scene)
         {
             device.SetRenderTarget(shadowMap);
             GraphicsEngine.device.Clear(Color.Black);
-            shadowEffect.CurrentTechnique = shadowEffect.Techniques["ShadowMap"];
-            IEnumerable<RenderTask> renderTasks = scene.Select(drawable => drawable.GetRenderTasks(null))
+            //shadowEffect.CurrentTechnique = shadowEffect.Techniques["ShadowMap"];
+            renderTasks = scene.Select(drawable => drawable.GetRenderTasks(shadowRenderPhase))
                 .Where(tasks => tasks != null)
                 .SelectMany(t => t)
                 .Where(task => task.part.ShadowEnabled)
                 .Select(args =>
                 {
-                    args.effect = shadowEffect;
-                    return new RenderTask(args);
+                    args.technique = args.technique == "Instance" ? "ShadowMapInstance" : "ShadowMap";
+                    return args;
                 }
-            );
-            var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
-            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.effect == group.First().effect) ? MergeGroup(group, "ShadowMapInstance") : group);
-            renderTasks = grouped.SelectMany(group => group);
+            ).ToList();
+            renderTasks = GroupTasks(renderTasks, "ShadowMapInstance");
             shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
             phaseShadowMap = null;
             RenderQueue(shadowRenderPhase, renderTasks);
-            device.SetRenderTarget(null);
+            ClearRenderQueue();
         }
         public static void UpdateWater(List<GameObject> scene)
         {
@@ -187,7 +177,7 @@ namespace Spectrum.Framework.Graphics
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs());
+                    GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
                 }
             }
             RenderQueue(sceneRenderPhase, renderTasks);
@@ -200,7 +190,7 @@ namespace Spectrum.Framework.Graphics
             {
                 if (drawable.GetType() != typeof(Water))
                 {
-                    GraphicsEngine.PushDrawable(drawable, new RenderTaskArgs());
+                    GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
                 }
             }
             reflectionRenderPhase.View = Camera.ReflectionView;
@@ -234,7 +224,7 @@ namespace Spectrum.Framework.Graphics
         private static void Render(RenderTask task, RenderPhaseInfo phase)
         {
             DrawablePart part = task.part;
-            SpectrumEffect effect = task.effect;
+            SpectrumEffect effect = task.EffectValue;
             if (effect != null)
             {
                 var lastTechnique = effect.CurrentTechnique;
@@ -246,7 +236,7 @@ namespace Spectrum.Framework.Graphics
                     effect.Texture = material.diffuseTexture;
                 effect.View = phase.View;
                 effect.Projection = phase.Projection;
-                effect.World = task.world;
+                effect.World = task.WorldValue;
                 effect.ShadowMap = phaseShadowMap;
                 //Draw vertex component
                 if (effect.CurrentTechnique != null && part.VBuffer != null)
@@ -302,23 +292,22 @@ namespace Spectrum.Framework.Graphics
                 effect.CurrentTechnique = lastTechnique;
             }
         }
-        public static void QueuePart(DrawablePart part, RenderTaskArgs args)
+        public static void QueuePart(DrawablePart part, RenderTask task)
         {
-            args.part = part;
-            RenderTask task = new RenderTask(args);
-            if (task.effect != null)
+            task.part = part;
+            if (task.EffectValue != null)
             {
                 renderTasks.Add(task);
             }
         }
-        public static void QueueParts(IEnumerable<DrawablePart> parts, RenderTaskArgs args)
+        public static void QueueParts(IEnumerable<DrawablePart> parts, RenderTask args)
         {
             foreach (DrawablePart part in parts)
             {
                 QueuePart(part, args);
             }
         }
-        public static void PushDrawable(GameObject drawable, RenderTaskArgs args = default(RenderTaskArgs))
+        public static void PushDrawable(GameObject drawable, RenderTask args = default(RenderTask))
         {
             args.tag = drawable.GetType().Name;
             args.world = drawable.World;
@@ -416,13 +405,21 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
+        private static List<RenderTask> GroupTasks(List<RenderTask> renderTasks, string technique = "Instance")
+        {
+            var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
+            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.EffectValue == group.First().EffectValue) ? MergeGroup(group, technique) : group);
+            return grouped.SelectMany(group => group).ToList();
+        }
         private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group, string technique = "Instance")
         {
             DynamicVertexBuffer buffer = new DynamicVertexBuffer(device, CommonTex.instanceVertexDeclaration, group.Count(), BufferUsage.WriteOnly);
-            Matrix[] worlds = group.Select(task => task.world).ToArray();
+            Matrix[] worlds = group.Select(task => task.WorldValue).ToArray();
             buffer.SetData(worlds);
-            RenderTask newTask = new RenderTask(new RenderTaskArgs(group.First().part) { instanceBuffer = buffer }) {
-                world = Matrix.Identity,
+            RenderTask newTask = new RenderTask(group.First().part)
+            {
+                instanceBuffer = buffer,
+                WorldValue = Matrix.Identity,
                 technique = technique,
                 merged = true
             };
@@ -470,18 +467,15 @@ namespace Spectrum.Framework.Graphics
                 {
                     var tasks = (drawable as GameObject).GetRenderTasks(sceneRenderPhase);
                     if (tasks != null)
-                        renderTasks.AddRange(tasks.Select((args) => new RenderTask(args)));
+                        renderTasks.AddRange(tasks);
                 }
                 timer.Stop();
             }
             timer = DebugTiming.Render.Time("Main Render");
             renderTasks.Sort((a, b) =>
-                a.effect.HasTransparency && b.effect.HasTransparency ? Math.Sign(b.z - a.z) : (a.effect.HasTransparency ? 1 : -1) - (b.effect.HasTransparency ? 1 : -1));
+                a.EffectValue.HasTransparency && b.EffectValue.HasTransparency ? Math.Sign(b.ZValue - a.ZValue) : (a.EffectValue.HasTransparency ? 1 : -1) - (b.EffectValue.HasTransparency ? 1 : -1));
 
-            // TODO: Group tasks that can be instanced
-            var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
-            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.effect == group.First().effect) ? MergeGroup(group) : group);
-            renderTasks = grouped.SelectMany(group => group).ToList();
+            renderTasks = GroupTasks(renderTasks);
             sceneRenderPhase.View = Camera.View;
             sceneRenderPhase.Projection = Camera.Projection;
             phaseShadowMap = shadowMap;
@@ -493,7 +487,7 @@ namespace Spectrum.Framework.Graphics
                 timer = DebugTiming.Render.Time("Post Process");
                 GraphicsEngine.device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
                 spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
                 spriteBatch.End();
                 timer.Stop();
@@ -504,7 +498,7 @@ namespace Spectrum.Framework.Graphics
                 VRRender(renderTasks, EVREye.Eye_Right);
                 device.SetRenderTarget(null);
                 device.Clear(clearColor);
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
                 spriteBatch.Draw(VRTarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
                 spriteBatch.End();
             }

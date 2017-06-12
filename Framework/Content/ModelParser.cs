@@ -69,53 +69,6 @@ namespace Spectrum.Framework.Content
             throw new FileNotFoundException("The file could not be loaded: ", path);
         }
 
-        public SkinningData GetSkinningData(JObject jobj)
-        {
-            JToken armature = ((JArray)jobj["nodes"]).FirstOrDefault(node => (string)node["id"] == "Armature");
-            if (armature == null) return null;
-            Dictionary<string, Bone> bones = new Dictionary<string, Bone>();
-            Bone rootBone = JObjToBone(armature, bones);
-
-            SkinningData output = new SkinningData(rootBone, bones);
-
-            foreach (Bone bone in output.Bones.Values)
-            {
-                bone.inverseBindPose = Matrix.Invert(bone.withParentTransform);
-            }
-            return output;
-        }
-
-        private Bone JObjToBone(JToken rootNode, Dictionary<string, Bone> bones, Bone parent = null)
-        {
-            Bone rootBone = new Bone((string)rootNode["id"], parent);
-            bones[rootBone.id] = rootBone;
-
-            JArray rotation = (JArray)rootNode["rotation"];
-            if (rotation != null)
-            {
-                rootBone.defaultRotation = MatrixHelper.CreateRotation(rotation);
-            }
-
-            JArray translation = (JArray)rootNode["translation"];
-            if (translation != null)
-            {
-                rootBone.defaultTranslation *= MatrixHelper.CreateTranslation(translation);
-            }
-
-            rootBone.transform = rootBone.defaultRotation * rootBone.defaultTranslation;
-
-            JToken children = rootNode["children"];
-            if (children != null)
-            {
-                foreach (JToken child in children)
-                {
-                    rootBone.children.Add(JObjToBone(child, bones, rootBone));
-                }
-            }
-
-            return rootBone;
-        }
-
         protected override SpecModel SafeCopy(ModelParserCache data)
         {
             Dictionary<string, DrawablePart> parts = new Dictionary<string, DrawablePart>();
@@ -123,7 +76,7 @@ namespace Spectrum.Framework.Content
             {
                 parts[part.Key] = part.Value.CreateReference();
             }
-            SpecModel model = new SpecModel(data.FileName, parts, data.materials, data.skinningData);
+            SpecModel model = new SpecModel(data.FileName, parts, data.materials, data.skinningData?.Clone());
             model.Animations = data.animations;
             return model;
         }

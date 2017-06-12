@@ -9,6 +9,7 @@ float fogWidth = 100;
 bool Clip = false;
 float4x4 ShadowViewProjection;
 uniform extern bool UseShadowMap;
+uniform extern float ShadowThreshold = 0.0001;
 uniform extern texture Texture;
 uniform bool TextureMagFilter = true;
 uniform bool UseTexture = false;
@@ -120,7 +121,7 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
             {
                 float shadowDepth = 1 - ShadowMapTexture.Sample(shadowMapSampler, shadowCoord);
                 float depth = vsout.Pos2DAsSeenByLight.z;
-                if (shadowDepth - depth < -0.0001)
+                if (shadowDepth - depth < -ShadowThreshold)
                 {
                     diffuseMagnitude *= 0.5f;
                 }
