@@ -55,6 +55,14 @@ namespace Spectrum.Framework.Graphics
             part.Bounds = GetBounds(vertices);
             return part;
         }
+        public static DrawablePart From<T>(List<T> vertices, List<uint> indices) where T : struct, ICommonTex
+        {
+            DrawablePart part = new DrawablePart();
+            part.VBuffer = VertexHelper.MakeVertexBuffer(vertices);
+            part.IBuffer = VertexHelper.MakeIndexBuffer(indices);
+            part.Bounds = GetBounds(vertices);
+            return part;
+        }
         public static DrawablePart From<T>(List<T> vertices, List<ushort> indices) where T : struct, ICommonTex
         {
             DrawablePart part = new DrawablePart();
