@@ -11,6 +11,7 @@ float4x4 ShadowViewProjection;
 uniform extern bool UseShadowMap;
 uniform extern float ShadowThreshold = 0.0001;
 uniform extern texture Texture;
+uniform extern float2 DiffuseTextureOffset = 0;
 uniform bool TextureMagFilter = true;
 uniform bool UseTexture = false;
 uniform extern texture NormalMap;
@@ -157,7 +158,7 @@ float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
 	vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
 	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
 	vsout.Pos2DAsSeenByLight = mul(HworldPosition, ShadowViewProjection);
-	vsout.textureCoordinate = vin.TextureCoordinate;
+	vsout.textureCoordinate = vin.TextureCoordinate + DiffuseTextureOffset;
 	vsout.normal = normalize(mul(vin.normal, world));
 	vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));
 	vsout.binormal = cross(vsout.tangent, vsout.normal);

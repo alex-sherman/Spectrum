@@ -68,6 +68,10 @@ namespace Spectrum.Framework.Graphics
                 Parameters["materialDiffuse"].SetValue(color);
             }
         }
+        public Vector2 DiffuseTextureOffset
+        {
+            set { Parameters["DiffuseTextureOffset"].SetValue(value); }
+        }
         public Texture2D Texture
         {
             set

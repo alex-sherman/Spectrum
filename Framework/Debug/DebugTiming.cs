@@ -84,13 +84,22 @@ namespace Spectrum.Framework
               .OrderByDescending(t => t.Item2);
             }
         }
+        public List<TimingResult> pool = new List<TimingResult>();
         public TimingResult Time(string name)
         {
+            if (pool.Count > 0)
+            {
+                var timer = pool.Pop();
+                timer.name = name;
+                timer.group = this;
+                return timer.Start();
+            }
             return new TimingResult(this, name);
         }
         public void LogTime(TimingResult result)
         {
             frames.Last().LogTime(result);
+            pool.Add(result);
         }
     }
 
@@ -98,7 +107,7 @@ namespace Spectrum.Framework
     {
         private static Dictionary<string, DebugTiming> timings = new Dictionary<string, DebugTiming>();
         Stopwatch timer = new Stopwatch();
-        DebugTiming group;
+        public DebugTiming group;
         public string name;
         public double StartTime { get; private set; }
         public double ElapsedTime { get; private set; }
@@ -108,17 +117,19 @@ namespace Spectrum.Framework
             this.group = group;
             this.name = name;
             StartTime = DebugTiming.Now();
-            timer.Start();
+            timer.Restart();
+        }
+        public TimingResult Start()
+        {
+            StartTime = DebugTiming.Now();
+            timer.Restart();
+            return this;
         }
         public void Stop()
         {
-            if (timer != null)
-            {
-                timer.Stop();
-                ElapsedTime = timer.Elapsed.TotalMilliseconds;
-                timer = null;
-                group.LogTime(this);
-            }
+            timer.Stop();
+            ElapsedTime = timer.Elapsed.TotalMilliseconds;
+            group.LogTime(this);
         }
     }
 }

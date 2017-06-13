@@ -167,7 +167,7 @@ namespace Spectrum.Framework.Entities
         {
             get
             {
-                JBBox output = new JBBox();
+                JBBox output = JBBox.SmallBox;
                 if (Parts == null) return output;
                 foreach (var part in Parts)
                 {

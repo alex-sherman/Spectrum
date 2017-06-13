@@ -72,5 +72,12 @@ namespace Spectrum.Framework
         {
             spritebatch.Draw(tex, rect, null, c, 0, Vector2.Zero, SpriteEffects.None, layer);
         }
+
+        public static T Pop<T>(this List<T> list)
+        {
+            var ele = list[0];
+            list.RemoveAt(0);
+            return ele;
+        }
     }
 }

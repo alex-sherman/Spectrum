@@ -41,7 +41,7 @@ namespace Spectrum.Framework.Graphics
         public JBBox Bounds { get; private set; }
         public static JBBox GetBounds<T>(List<T> vertices) where T : struct, ICommonTex
         {
-            JBBox output = new JBBox();
+            JBBox output = JBBox.SmallBox;
             foreach (var vert in vertices)
                 output.AddPoint(vert.Position);
 
