@@ -33,6 +33,10 @@ namespace Spectrum.Framework.Graphics
             Materials = materials;
             SkinningData = skinningData;
         }
+        /// <summary>
+        /// Be careful using this because the GameObject's RenderTasks will not get updated
+        /// </summary>
+        /// <param name="part"></param>
         public void Add(DrawablePart part)
         {
             MeshParts["part_" + _partIndex] = part;

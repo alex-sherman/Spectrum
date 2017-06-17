@@ -104,7 +104,7 @@ CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 	toReturn = PSLighting(toReturn, (CommonVSOut)vsout);
 	return PSReturn(toReturn, (CommonVSOut)vsout);
 }
-technique MultiTexture
+technique Standard
 {
 	pass P0
 	{

@@ -29,18 +29,13 @@ namespace Spectrum.Framework.Graphics
         public SpectrumEffect effect;
         public SpectrumEffect EffectValue { get { return effect ?? part.effect; } }
         public DynamicVertexBuffer instanceBuffer;
-        public Matrix? world
-        {
-            set { _world = part.permanentTransform * part.transform * (value ?? Matrix.Identity); }
-        }
-        private Matrix? _world;
+        public Matrix InstanceWorld = Matrix.Identity;
+        public Matrix? world;
         public Matrix WorldValue
         {
-            get { return _world ?? Matrix.Identity; }
-            set { _world = value; }
+            get { return instanceBuffer != null ? InstanceWorld : (part.permanentTransform * part.transform * (world ?? Matrix.Identity)); }
         }
         public bool merged;
-        public string technique;
     }
     public class RenderPhaseInfo
     {
@@ -71,7 +66,7 @@ namespace Spectrum.Framework.Graphics
         static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
-        public static float MultisampleFactor = 1;
+        public static float MultisampleFactor = 2;
         public static void Initialize(Camera camera)
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -161,13 +156,8 @@ namespace Spectrum.Framework.Graphics
                 .Where(tasks => tasks != null)
                 .SelectMany(t => t)
                 .Where(task => task.part.ShadowEnabled)
-                .Select(args =>
-                {
-                    args.technique = args.technique == "Instance" ? "ShadowMapInstance" : "ShadowMap";
-                    return args;
-                }
-            ).ToList();
-            renderTasks = GroupTasks(renderTasks, "ShadowMapInstance");
+            .ToList();
+            renderTasks = GroupTasks(renderTasks);
             shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
             phaseShadowMap = null;
             RenderQueue(shadowRenderPhase, renderTasks);
@@ -231,9 +221,8 @@ namespace Spectrum.Framework.Graphics
             SpectrumEffect effect = task.EffectValue;
             if (effect != null)
             {
-                var lastTechnique = effect.CurrentTechnique;
-                if (task.technique != null)
-                    effect.CurrentTechnique = effect.Techniques[task.technique];
+                var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (task.instanceBuffer == null ? "" : "Instance");
+                effect.CurrentTechnique = effect.Techniques[technique];
                 MaterialData material = part.material ?? MaterialData.Missing;
                 effect.MaterialDiffuse = material.diffuseColor;
                 if (material.diffuseTexture != null)
@@ -293,7 +282,6 @@ namespace Spectrum.Framework.Graphics
                         }
                     }
                 }
-                effect.CurrentTechnique = lastTechnique;
             }
         }
         public static void QueuePart(DrawablePart part, RenderTask task)
@@ -409,16 +397,16 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
-        private static List<RenderTask> GroupTasks(List<RenderTask> renderTasks, string technique = "Instance")
+        private static List<RenderTask> GroupTasks(List<RenderTask> renderTasks)
         {
             var time = DebugTiming.Render.Time("Grouping");
             var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
-            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.EffectValue == group.First().EffectValue) ? MergeGroup(group, technique) : group);
+            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.EffectValue == group.First().EffectValue) ? MergeGroup(group) : group);
             var output = grouped.SelectMany(group => group).ToList();
             time.Stop();
             return output;
         }
-        private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group, string technique = "Instance")
+        private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group)
         {
             DynamicVertexBuffer buffer = new DynamicVertexBuffer(device, CommonTex.instanceVertexDeclaration, group.Count(), BufferUsage.WriteOnly);
             Matrix[] worlds = group.Select(task => task.WorldValue).ToArray();
@@ -426,8 +414,6 @@ namespace Spectrum.Framework.Graphics
             RenderTask newTask = new RenderTask(group.First().part)
             {
                 instanceBuffer = buffer,
-                WorldValue = Matrix.Identity,
-                technique = technique,
                 merged = true
             };
             return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();

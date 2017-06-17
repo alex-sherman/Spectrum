@@ -17,7 +17,7 @@ technique Standard
 		pixelShader = compile ps_4_0 ApplyTexture();
 	}
 }
-technique Instance
+technique StandardInstance
 {
 	pass P0
 	{
