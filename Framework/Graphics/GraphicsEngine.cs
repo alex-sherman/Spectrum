@@ -18,9 +18,10 @@ using Spectrum.Framework.VR;
 
 namespace Spectrum.Framework.Graphics
 {
-    public struct RenderTask
+    public class RenderTask
     {
-        public RenderTask(DrawablePart part, string tag = "Misc") : this() { this.part = part; this.tag = tag; }
+        public RenderTask() { }
+        public RenderTask(DrawablePart part, string tag = "Misc") { this.part = part; this.tag = tag; }
         public DrawablePart part;
         public string tag;
         public float? z;
@@ -28,11 +29,14 @@ namespace Spectrum.Framework.Graphics
         public SpectrumEffect effect;
         public SpectrumEffect EffectValue { get { return effect ?? part.effect; } }
         public DynamicVertexBuffer instanceBuffer;
-        public Matrix? world;
+        public Matrix? world
+        {
+            set { _world = part.permanentTransform * part.transform * (value ?? Matrix.Identity); }
+        }
         private Matrix? _world;
         public Matrix WorldValue
         {
-            get { return _world ?? (_world = part.permanentTransform * part.transform * (world ?? Matrix.Identity)).Value; }
+            get { return _world ?? Matrix.Identity; }
             set { _world = value; }
         }
         public bool merged;
@@ -407,9 +411,12 @@ namespace Spectrum.Framework.Graphics
         }
         private static List<RenderTask> GroupTasks(List<RenderTask> renderTasks, string technique = "Instance")
         {
+            var time = DebugTiming.Render.Time("Grouping");
             var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
             grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.EffectValue == group.First().EffectValue) ? MergeGroup(group, technique) : group);
-            return grouped.SelectMany(group => group).ToList();
+            var output = grouped.SelectMany(group => group).ToList();
+            time.Stop();
+            return output;
         }
         private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group, string technique = "Instance")
         {
@@ -447,7 +454,9 @@ namespace Spectrum.Framework.Graphics
             drawables = drawables.Where(e => e.DrawEnabled).ToList();
             List<GameObject> drawable3D = drawables.Where(e => e is GameObject).Cast<GameObject>().ToList();
 
+            var preRenderTime = DebugTiming.Render.Time("Update Shadow");
             UpdateShadowMap(drawable3D);
+            preRenderTime.Stop();
 
             PostProcessEffect.Technique = "PassThrough";
             //TODO: Draw spritebatch stuff to separate target, and superimpose over game
@@ -465,13 +474,15 @@ namespace Spectrum.Framework.Graphics
                 drawable.Draw(gameTime, null);
                 if (drawable is GameObject)
                 {
+                    var getRenderTasksTimer = DebugTiming.Render.Time("Get Tasks");
                     var tasks = (drawable as GameObject).GetRenderTasks(sceneRenderPhase);
+                    getRenderTasksTimer.Stop();
                     if (tasks != null)
                         renderTasks.AddRange(tasks);
                 }
                 timer.Stop();
             }
-            timer = DebugTiming.Render.Time("Main Render");
+            var mainRenderTimer = DebugTiming.Render.Time("Main Render");
             renderTasks.Sort((a, b) =>
                 a.EffectValue.HasTransparency && b.EffectValue.HasTransparency ? Math.Sign(b.ZValue - a.ZValue) : (a.EffectValue.HasTransparency ? 1 : -1) - (b.EffectValue.HasTransparency ? 1 : -1));
 
@@ -503,7 +514,7 @@ namespace Spectrum.Framework.Graphics
                 spriteBatch.End();
             }
             ClearRenderQueue();
-            timer.Stop();
+            mainRenderTimer.Stop();
         }
     }
 }

@@ -161,7 +161,17 @@ namespace Spectrum.Framework.Entities
 
         #endregion
 
-        public SpecModel Parts;
+        private List<RenderTask> _tasks = null;
+        private SpecModel _parts = null;
+        public SpecModel Parts
+        {
+            get { return _parts; }
+            set
+            {
+                _parts = value;
+                _tasks = Parts?.Select((part) => new RenderTask(part, TypeName) { world = World }).ToList();
+            }
+        }
         public SpecModel Model { get { return Parts as SpecModel; } set { Parts = value; } }
         public JBBox ModelBounds
         {
@@ -251,7 +261,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual void PostStep(float step) { }
         #endregion
-        
+
         protected Emitter Emitter = new Emitter();
         public void PlaySound(SoundEffect sound)
         {
@@ -292,9 +302,18 @@ namespace Spectrum.Framework.Entities
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
         }
+        private Matrix _lastWorld = Matrix.Identity;
         public virtual List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
         {
-            return Parts?.Select((part) => new RenderTask(part, TypeName) { world = World }).ToList();
+            if (_tasks != null && _lastWorld != World)
+            {
+                _lastWorld = World;
+                for (int i = 0; i < _tasks.Count; i++)
+                {
+                    _tasks[i].world = World;
+                }
+            }
+            return _tasks;
         }
         public override void Dispose()
         {
