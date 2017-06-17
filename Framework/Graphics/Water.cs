@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Graphics
             IndexBuffer iBuffer = VertexHelper.MakeIndexBuffer(VertexHelper.getIndexList(numVertices, numVertices).ToList());
             DrawablePart p = new DrawablePart(waterV, iBuffer);
             p.effect = new WaterEffect(waterBump1, waterBump2);
-            Parts.Add(p);
+            Model.Add(p);
         }
         public static void ResetRenderTargets()
         {

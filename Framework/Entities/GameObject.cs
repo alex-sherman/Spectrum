@@ -163,35 +163,28 @@ namespace Spectrum.Framework.Entities
 
         private List<RenderTask> _tasks = null;
         private SpecModel _parts = null;
-        public SpecModel Parts
+        public SpecModel Model
         {
             get { return _parts; }
             set
             {
                 _parts = value;
-                _tasks = Parts?.Select((part) => new RenderTask(part, TypeName) { world = World }).ToList();
+                _tasks = Model?.Select((part) => new RenderTask(part, TypeName) { world = World }).ToList();
             }
         }
-        public SpecModel Model { get { return Parts as SpecModel; } set { Parts = value; } }
         public JBBox ModelBounds
         {
             get
             {
                 JBBox output = JBBox.SmallBox;
-                if (Parts == null) return output;
-                foreach (var part in Parts)
+                if (Model == null) return output;
+                foreach (var part in Model)
                 {
                     output.AddPoint(part.Bounds.Min);
                     output.AddPoint(part.Bounds.Max);
                 }
                 return output;
             }
-        }
-        public void SetPartTransform(Matrix matrix)
-        {
-            if (Parts != null)
-                foreach (var part in Parts)
-                    part.transform = matrix;
         }
 
         [Replicate]
@@ -210,7 +203,7 @@ namespace Spectrum.Framework.Entities
         public GameObject()
             : base()
         {
-            this.Parts = null;
+            this.Model = null;
             IsActive = true;
             AnimationPlayer = new AnimationPlayer(this);
             orientation = Matrix.Identity;

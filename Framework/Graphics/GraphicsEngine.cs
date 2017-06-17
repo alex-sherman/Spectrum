@@ -146,12 +146,10 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        //private static SpectrumEffect shadowEffect = new SpectrumEffect();
         public static void UpdateShadowMap(List<GameObject> scene)
         {
             device.SetRenderTarget(shadowMap);
             GraphicsEngine.device.Clear(Color.Black);
-            //shadowEffect.CurrentTechnique = shadowEffect.Techniques["ShadowMap"];
             renderTasks = scene.Select(drawable => drawable.GetRenderTasks(shadowRenderPhase))
                 .Where(tasks => tasks != null)
                 .SelectMany(t => t)
@@ -167,26 +165,26 @@ namespace Spectrum.Framework.Graphics
         {
             device.SetRenderTarget(Water.refractionRenderTarget);
             GraphicsEngine.device.Clear(clearColor);
-            foreach (GameObject drawable in scene)
-            {
-                if (drawable.GetType() != typeof(Water))
-                {
-                    GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
-                }
-            }
+            //foreach (GameObject drawable in scene)
+            //{
+            //    if (drawable.GetType() != typeof(Water))
+            //    {
+            //        GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
+            //    }
+            //}
             RenderQueue(sceneRenderPhase, renderTasks);
             ClearRenderQueue();
             device.SetRenderTarget(Water.reflectionRenderTarget);
             GraphicsEngine.device.Clear(clearColor);
             SpectrumEffect.Clip = true;
             SpectrumEffect.ClipPlane = new Vector4(0, 1, 0, -Water.waterHeight);
-            foreach (GameObject drawable in scene)
-            {
-                if (drawable.GetType() != typeof(Water))
-                {
-                    GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
-                }
-            }
+            //foreach (GameObject drawable in scene)
+            //{
+            //    if (drawable.GetType() != typeof(Water))
+            //    {
+            //        GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
+            //    }
+            //}
             reflectionRenderPhase.View = Camera.ReflectionView;
             reflectionRenderPhase.Projection = Camera.ReflectionProjection;
             RenderQueue(reflectionRenderPhase, renderTasks);
@@ -215,8 +213,9 @@ namespace Spectrum.Framework.Graphics
             device.RasterizerState = foo;
             device.BlendState = BlendState.AlphaBlend;
         }
-        private static void Render(RenderTask task, RenderPhaseInfo phase)
+        public static void Render(RenderTask task, RenderPhaseInfo phase = null)
         {
+            phase = phase ?? sceneRenderPhase;
             DrawablePart part = task.part;
             SpectrumEffect effect = task.EffectValue;
             if (effect != null)
@@ -282,30 +281,6 @@ namespace Spectrum.Framework.Graphics
                         }
                     }
                 }
-            }
-        }
-        public static void QueuePart(DrawablePart part, RenderTask task)
-        {
-            task.part = part;
-            if (task.EffectValue != null)
-            {
-                renderTasks.Add(task);
-            }
-        }
-        public static void QueueParts(IEnumerable<DrawablePart> parts, RenderTask args)
-        {
-            foreach (DrawablePart part in parts)
-            {
-                QueuePart(part, args);
-            }
-        }
-        public static void PushDrawable(GameObject drawable, RenderTask args = default(RenderTask))
-        {
-            args.tag = drawable.GetType().Name;
-            args.world = drawable.World;
-            if (drawable != null && drawable.Parts != null)
-            {
-                QueueParts(drawable.Parts, args);
             }
         }
         private static void RenderQueue(RenderPhaseInfo phase, IEnumerable<RenderTask> renderTasks)
