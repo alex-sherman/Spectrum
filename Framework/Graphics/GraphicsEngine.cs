@@ -376,7 +376,7 @@ namespace Spectrum.Framework.Graphics
         {
             var time = DebugTiming.Render.Time("Grouping");
             var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
-            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.EffectValue == group.First().EffectValue) ? MergeGroup(group) : group);
+            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.instanceBuffer == null && task.EffectValue == group.First().EffectValue) ? MergeGroup(group) : group);
             var output = grouped.SelectMany(group => group).ToList();
             time.Stop();
             return output;
@@ -394,13 +394,13 @@ namespace Spectrum.Framework.Graphics
             return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();
         }
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
-        private static void VRRender(List<RenderTask> tasks, EVREye eye)
+        private static void VRRender(List<RenderTask> tasks, EVREye eye, Matrix eye_offset)
         {
             device.SetRenderTarget(VRTarget);
             GraphicsEngine.device.Clear(clearColor);
             RenderPhaseInfo vrPhase = new RenderPhaseInfo();
-            vrPhase.View = Camera.View * Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(eye));
-            vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 1000);
+            vrPhase.View = Camera.View * eye_offset;
+            vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 10000);
             RenderQueue(vrPhase, renderTasks);
             var output = OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);
         }
@@ -466,8 +466,10 @@ namespace Spectrum.Framework.Graphics
             }
             else
             {
-                VRRender(renderTasks, EVREye.Eye_Left);
-                VRRender(renderTasks, EVREye.Eye_Right);
+                Matrix left_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
+                Matrix right_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
+                VRRender(renderTasks, EVREye.Eye_Left, left_offset);
+                VRRender(renderTasks, EVREye.Eye_Right, right_offset);
                 device.SetRenderTarget(null);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);

@@ -22,26 +22,14 @@ namespace Spectrum.Framework
             foreach (Type type in plugin.GetLoadableTypes())
             {
                 Serialization.RegisterType(type);
-                TypeHelper.RegisterType(type, plugin);
+                var typeData = TypeHelper.RegisterType(type, plugin);
 
-                foreach (object attribute in type.GetCustomAttributes(true).ToList())
+                foreach (var member in typeData.members.Values.Where(mem => mem.PreloadedContent != null))
                 {
-                    PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
-                    if (preload != null)
-                    {
-                        ContentHelper.LoadType(preload.Type, preload.Path);
-                    }
-                }
-                foreach (FieldInfo field in type.GetFields())
-                {
-                    foreach (object attribute in field.GetCustomAttributes(true).ToList())
-                    {
-                        PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
-                        if (preload != null)
-                        {
-                            ContentHelper.LoadType(field.FieldType, preload.Path);
-                        }
-                    }
+                    var preload = member.PreloadedContent;
+                    object content = ContentHelper.LoadType(preload.Type ?? member.MemberType, preload.Path);
+                    if (member.IsStatic)
+                        member.SetValue(null, content);
                 }
             }
         }

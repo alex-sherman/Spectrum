@@ -80,13 +80,13 @@ namespace Spectrum.Framework
             foreach (var timeGroup in DebugTiming.Groups)
             {
                 string toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
-                spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
+                spritebatch.DrawString(Font, toPrint, new Vector2(Manager.Width - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                 curPos += Font.MeasureString(toPrint).Y;
                 var times = timeGroup.ShowCumulative ? timeGroup.CumulativeTimes : timeGroup.FrameAverages().Take(10);
                 foreach (var time in times)
                 {
                     toPrint = time.Item1 + ": " + String.Format("{0:0.00}", time.Item2);
-                    spritebatch.DrawString(Font, toPrint, new Vector2(ScreenManager.CurrentManager.Viewport.Width - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(Manager.Width - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                     curPos += Font.LineSpacing;
                 }
             }

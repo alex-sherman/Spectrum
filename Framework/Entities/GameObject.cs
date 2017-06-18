@@ -140,6 +140,12 @@ namespace Spectrum.Framework.Entities
 
         public int marker = 0;
         public Shape Shape { get; set; }
+        public void ShapeFromModelBounds()
+        {
+            JBBox box = ModelBounds;
+            box.Transform(ref ModelTransform);
+            Shape = new BoxShape((box.Max - box.Min), box.Center);
+        }
         public virtual void OnCollide(GameObject other, Vector3 point, Vector3 normal, float penetration) { }
         public virtual void OnEndCollide(GameObject other) { }
 

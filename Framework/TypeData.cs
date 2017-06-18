@@ -10,26 +10,31 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework
 {
-    class MemberInfo
+    public class MemberInfo
     {
+
         private FieldInfo field;
         private PropertyInfo property;
         public MemberInfo(FieldInfo field)
         {
             this.field = field;
+            PreloadedContent = field.GetCustomAttributes().FirstOrDefault(attr => attr is PreloadedContentAttribute) as PreloadedContentAttribute;
         }
         public MemberInfo(PropertyInfo property)
         {
             this.property = property;
+            PreloadedContent = property.GetCustomAttributes().FirstOrDefault(attr => attr is PreloadedContentAttribute) as PreloadedContentAttribute;
         }
         public Type MemberType { get { return property?.PropertyType ?? field?.FieldType; } }
         public void SetValue(object obj, object value) { property?.SetValue(obj, value); field?.SetValue(obj, value); }
         public object GetValue(object obj) { return property?.GetValue(obj) ?? field?.GetValue(obj); }
+        public PreloadedContentAttribute PreloadedContent = null;
+        public bool IsStatic = false;
     }
     public class TypeData
     {
-        private Dictionary<string, MemberInfo> members = new Dictionary<string, MemberInfo>();
-        private Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
+        public Dictionary<string, MemberInfo> members = new Dictionary<string, MemberInfo>();
+        public Dictionary<string, MethodInfo> methods = new Dictionary<string, MethodInfo>();
         public List<string> ReplicatedMemebers = new List<string>();
         public List<string> ReplicatedMethods = new List<string>();
         public Type Type { get; private set; }
@@ -61,16 +66,9 @@ namespace Spectrum.Framework
 #endif
                 object output = cinfo.Invoke(args);
 
-                foreach (FieldInfo field in output.GetType().GetFields())
+                foreach (MemberInfo member in members.Values.Where(member => !member.IsStatic && member.PreloadedContent != null))
                 {
-                    foreach (object attribute in field.GetCustomAttributes(true).ToList())
-                    {
-                        PreloadedContentAttribute preload = attribute as PreloadedContentAttribute;
-                        if (preload != null)
-                        {
-                            field.SetValue(output, ContentHelper.LoadType(field.FieldType, preload.Path));
-                        }
-                    }
+                    member.SetValue(output, ContentHelper.LoadType(member.MemberType, member.PreloadedContent.Path));
                 }
                 return output;
 #if !DEBUG
@@ -84,18 +82,22 @@ namespace Spectrum.Framework
         public TypeData(Type type)
         {
             Type = type;
-            foreach (var field in type.GetFields())
+            foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
-                members[field.Name] = new MemberInfo(field);
+                var info = members[field.Name] = new MemberInfo(field);
                 if (field.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
                     ReplicatedMemebers.Add(field.Name);
             }
-            foreach (var property in type.GetProperties())
+            foreach (var field in type.GetFields(BindingFlags.Static | BindingFlags.Public))
+                members[field.Name] = new MemberInfo(field) { IsStatic = true };
+            foreach (var property in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
             {
-                members[property.Name] = new MemberInfo(property);
+                var info = members[property.Name] = new MemberInfo(property);
                 if (property.GetCustomAttributes().Where(attr => attr is ReplicateAttribute).Any())
                     ReplicatedMemebers.Add(property.Name);
             }
+            foreach (var property in type.GetProperties(BindingFlags.Static | BindingFlags.Public))
+                members[property.Name] = new MemberInfo(property) { IsStatic = true };
             //TODO: Check for overloaded methods
             foreach (var method in type.GetMethods())
             {

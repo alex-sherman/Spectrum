@@ -193,7 +193,7 @@ namespace Spectrum
             else { SaveSettings(File.Create(path)); }
             this.IsMouseVisible = true;
             Content.RootDirectory = "Content";
-            ScreenManager = new ScreenManager(this, ContentHelper.Single);
+            ScreenManager = new ScreenManager(this);
             Components.Add(ScreenManager);
             ScreenManager.Initialize();
             Serialization.InitSurrogates();

@@ -42,6 +42,12 @@ namespace Spectrum.Framework.Graphics
                 vertices[(int)indices[i + 2]] = v2;
             }
         }
+        public static DynamicVertexBuffer MakeInstanceBuffer(Matrix[] worlds)
+        {
+            DynamicVertexBuffer buffer = new DynamicVertexBuffer(SpectrumGame.Game.GraphicsDevice, CommonTex.instanceVertexDeclaration, worlds.Count(), BufferUsage.WriteOnly);
+            buffer.SetData(worlds);
+            return buffer;
+        }
         public static VertexBuffer MakeVertexBuffer(VertexDeclaration decleration, int count)
         {
             if (SpectrumGame.Game.GraphicsDevice == null) { throw new NullReferenceException("Graphics device must have been initialized before this operation can be performed"); }

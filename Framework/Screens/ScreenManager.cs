@@ -34,9 +34,9 @@ namespace Spectrum.Framework.Screens
         InputState input = new InputState();
 
         public SpriteBatch SpriteBatch;
-        public static ScreenManager CurrentManager;
-        public Viewport Viewport;
-        public ContentHelper TextureLoader { get; private set; }
+        public RenderTarget2D Target;
+        public int Width { get { return Target?.Width ?? GraphicsDevice.Viewport.Width; } }
+        public int Height { get { return Target?.Height ?? GraphicsDevice.Viewport.Height; } }
 
         #endregion
 
@@ -52,21 +52,11 @@ namespace Spectrum.Framework.Screens
         #region Initialization
 
 
-        public ScreenManager(SpectrumGame game, ContentHelper textureLoader)
+        public ScreenManager(SpectrumGame game)
             : base(game)
         {
             Root = new RootElement(this);
             Root.Initialize();
-            TextureLoader = textureLoader;
-            CurrentManager = this;
-            Game.Services.AddService(typeof(ScreenManager), this);
-            Viewport = game.GraphicsDevice.Viewport;
-            game.OnScreenResize += OnScreenResize;
-        }
-
-        public void OnScreenResize(object sender, EventArgs args)
-        {
-            Viewport = (sender as SpectrumGame).GraphicsDevice.Viewport;
         }
 
 
@@ -112,12 +102,14 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.White);
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
-            Root.Measure((int)Viewport.Width, (int)Viewport.Height);
-            Root.Layout(new Rectangle(0, 0, Viewport.Width, Viewport.Height));
+            Root.Measure(Width, Height);
+            Root.Layout(new Rectangle(0, 0, Width, Height));
             Root.DrawWithChildren(gameTime, SpriteBatch, 1.0f);
+            GraphicsDevice.SetRenderTarget(Target);
+            if (Target != null)
+                GraphicsDevice.Clear(Color.Transparent);
             SpriteBatch.End();
         }
 

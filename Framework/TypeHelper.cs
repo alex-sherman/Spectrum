@@ -18,15 +18,17 @@ namespace Spectrum.Framework
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
         public List<String> GetTypes() { return types.Keys.ToList(); }
 
-        public static void RegisterType(string name, IronPythonTypeWrapper type, Plugin plugin)
+        public static TypeData RegisterType(string name, IronPythonTypeWrapper type, Plugin plugin)
         {
-            types[name] = new TypeData(type);
+            var typeData = types[name] = new TypeData(type);
             plugins[type.Type] = plugin;
+            return typeData;
         }
-        public static void RegisterType(Type type, Plugin plugin)
+        public static TypeData RegisterType(Type type, Plugin plugin)
         {
-            types[type.Name] = new TypeData(type);
+            var typeData = types[type.Name] = new TypeData(type);
             plugins[type] = plugin;
+            return typeData;
         }
         public static T Instantiate<T>(string type, params object[] args) where T : class
         {

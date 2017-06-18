@@ -28,8 +28,8 @@ namespace Spectrum.Framework.Screens
         public RootElement(ScreenManager manager) : base(manager) { }
         public override void OnMeasure(int width, int height)
         {
-            MeasuredHeight = Manager.Viewport.Height;
-            MeasuredWidth = Manager.Viewport.Width;
+            MeasuredHeight = Manager.Height;
+            MeasuredWidth = Manager.Width;
         }
     }
     #endregion
