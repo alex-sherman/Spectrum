@@ -16,18 +16,20 @@ using Valve.VR;
 using System.Reflection;
 using Spectrum.Framework.VR;
 
+
 namespace Spectrum.Framework.Graphics
 {
+    using RenderGroup = KeyValuePair<SpectrumEffect, List<RenderTask>>;
+    using RenderGroups = IEnumerable<KeyValuePair<SpectrumEffect, List<RenderTask>>>;
     public class RenderTask
     {
         public RenderTask() { }
         public RenderTask(DrawablePart part, string tag = "Misc") { this.part = part; this.tag = tag; }
         public DrawablePart part;
         public string tag;
-        public float? z;
-        public float ZValue { get { return z ?? 0; } }
         public SpectrumEffect effect;
         public SpectrumEffect EffectValue { get { return effect ?? part.effect; } }
+        internal List<Matrix> instances = null;
         public DynamicVertexBuffer instanceBuffer;
         public Matrix InstanceWorld = Matrix.Identity;
         public Matrix? world;
@@ -155,16 +157,16 @@ namespace Spectrum.Framework.Graphics
                 .SelectMany(t => t)
                 .Where(task => task.part.ShadowEnabled)
             .ToList();
-            renderTasks = GroupTasks(renderTasks);
-            shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
-            phaseShadowMap = null;
-            RenderQueue(shadowRenderPhase, renderTasks);
+            //renderTasks = GroupTasks(renderTasks);
+            //shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
+            //phaseShadowMap = null;
+            //RenderQueue(shadowRenderPhase, renderTasks);
             ClearRenderQueue();
         }
         public static void UpdateWater(List<GameObject> scene)
         {
-            device.SetRenderTarget(Water.refractionRenderTarget);
-            GraphicsEngine.device.Clear(clearColor);
+            //device.SetRenderTarget(Water.refractionRenderTarget);
+            //GraphicsEngine.device.Clear(clearColor);
             //foreach (GameObject drawable in scene)
             //{
             //    if (drawable.GetType() != typeof(Water))
@@ -172,12 +174,12 @@ namespace Spectrum.Framework.Graphics
             //        GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
             //    }
             //}
-            RenderQueue(sceneRenderPhase, renderTasks);
-            ClearRenderQueue();
-            device.SetRenderTarget(Water.reflectionRenderTarget);
-            GraphicsEngine.device.Clear(clearColor);
-            SpectrumEffect.Clip = true;
-            SpectrumEffect.ClipPlane = new Vector4(0, 1, 0, -Water.waterHeight);
+            //RenderQueue(sceneRenderPhase, renderTasks);
+            //ClearRenderQueue();
+            //device.SetRenderTarget(Water.reflectionRenderTarget);
+            //GraphicsEngine.device.Clear(clearColor);
+            //SpectrumEffect.Clip = true;
+            //SpectrumEffect.ClipPlane = new Vector4(0, 1, 0, -Water.waterHeight);
             //foreach (GameObject drawable in scene)
             //{
             //    if (drawable.GetType() != typeof(Water))
@@ -185,12 +187,12 @@ namespace Spectrum.Framework.Graphics
             //        GraphicsEngine.PushDrawable(drawable, new Graphics.RenderTask());
             //    }
             //}
-            reflectionRenderPhase.View = Camera.ReflectionView;
-            reflectionRenderPhase.Projection = Camera.ReflectionProjection;
-            RenderQueue(reflectionRenderPhase, renderTasks);
-            ClearRenderQueue();
-            SpectrumEffect.Clip = false;
-            device.SetRenderTarget(null);
+            //reflectionRenderPhase.View = Camera.ReflectionView;
+            //reflectionRenderPhase.Projection = Camera.ReflectionProjection;
+            //RenderQueue(reflectionRenderPhase, renderTasks);
+            //ClearRenderQueue();
+            //SpectrumEffect.Clip = false;
+            //device.SetRenderTarget(null);
         }
         public static void ToggleWireFrame()
         {
@@ -213,83 +215,83 @@ namespace Spectrum.Framework.Graphics
             device.RasterizerState = foo;
             device.BlendState = BlendState.AlphaBlend;
         }
-        public static void Render(RenderTask task, RenderPhaseInfo phase = null)
+        public static void Render(PrimitiveType primType, VertexBuffer VBuffer, IndexBuffer IBuffer, DynamicVertexBuffer instanceBuffer)
         {
-            phase = phase ?? sceneRenderPhase;
-            DrawablePart part = task.part;
-            SpectrumEffect effect = task.EffectValue;
-            if (effect != null)
+            //Draw vertex component
+            if (VBuffer != null)
             {
-                var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (task.instanceBuffer == null ? "" : "Instance");
-                effect.CurrentTechnique = effect.Techniques[technique];
-                MaterialData material = part.material ?? MaterialData.Missing;
-                effect.MaterialDiffuse = material.diffuseColor;
-                if (material.diffuseTexture != null)
-                    effect.Texture = material.diffuseTexture;
-                effect.View = phase.View;
-                effect.Projection = phase.Projection;
-                effect.World = task.WorldValue;
-                effect.ShadowMap = phaseShadowMap;
-                //Draw vertex component
-                if (effect.CurrentTechnique != null && part.VBuffer != null)
+                if (IBuffer != null)
                 {
-                    if (part.IBuffer != null)
+                    if (instanceBuffer != null)
                     {
-                        if (task.instanceBuffer != null)
+                        setBuffers(VBuffer, IBuffer, instanceBuffer);
+                        if (primType == PrimitiveType.TriangleStrip)
                         {
-                            setBuffers(part.VBuffer, part.IBuffer, task.instanceBuffer);
-                            foreach (var pass in effect.CurrentTechnique.Passes)
-                            {
-                                pass.Apply();
-                                if (part.primType == PrimitiveType.TriangleStrip)
-                                {
-                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount - 2, task.instanceBuffer.VertexCount);
-                                }
-                                if (part.primType == PrimitiveType.TriangleList)
-                                {
-                                    device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, part.VBuffer.VertexCount, 0, part.IBuffer.IndexCount / 3, task.instanceBuffer.VertexCount);
-                                }
-                            }
+                            device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, VBuffer.VertexCount, 0, IBuffer.IndexCount - 2, instanceBuffer.VertexCount);
                         }
-                        else
+                        if (primType == PrimitiveType.TriangleList)
                         {
-                            setBuffers(part.VBuffer, part.IBuffer);
-                            foreach (var pass in effect.CurrentTechnique.Passes)
-                            {
-                                pass.Apply();
-                                if (part.primType == PrimitiveType.TriangleStrip)
-                                {
-                                    device.DrawIndexedPrimitives(part.primType, 0, 0, part.IBuffer.IndexCount - 2);
-                                }
-                                if (part.primType == PrimitiveType.TriangleList)
-                                {
-                                    device.DrawIndexedPrimitives(part.primType, 0, 0, part.IBuffer.IndexCount / 3);
-                                }
-                            }
+                            device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, VBuffer.VertexCount, 0, IBuffer.IndexCount / 3, instanceBuffer.VertexCount);
                         }
                     }
                     else
                     {
-                        setBuffers(part.VBuffer, part.IBuffer);
-                        foreach (var pass in effect.CurrentTechnique.Passes)
+                        setBuffers(VBuffer, IBuffer);
+                        if (primType == PrimitiveType.TriangleStrip)
                         {
-                            pass.Apply();
-                            if (part.primType == PrimitiveType.TriangleStrip)
-                            {
-                                device.DrawPrimitives(part.primType, 0, part.VBuffer.VertexCount - 2);
-                            }
+                            device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount - 2);
+                        }
+                        if (primType == PrimitiveType.TriangleList)
+                        {
+                            device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount / 3);
+                        }
+                    }
+                }
+                else
+                {
+                    setBuffers(VBuffer, IBuffer);
+                    if (primType == PrimitiveType.TriangleStrip)
+                    {
+                        device.DrawPrimitives(primType, 0, VBuffer.VertexCount - 2);
+                    }
+                }
+            }
+        }
+        private static void Render(RenderGroup group, RenderPhaseInfo phase)
+        {
+            phase = phase ?? sceneRenderPhase;
+            SpectrumEffect effect = group.Key;
+            if (effect != null)
+            {
+                var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (group.Value.First().instanceBuffer == null ? "" : "Instance");
+                effect.CurrentTechnique = effect.Techniques[technique];
+                if (effect.CurrentTechnique != null)
+                {
+                    effect.View = phase.View;
+                    effect.Projection = phase.Projection;
+                    effect.ShadowMap = phaseShadowMap;
+                    foreach (var pass in effect.CurrentTechnique.Passes)
+                    {
+                        pass.Apply();
+                        foreach (var task in group.Value)
+                        {
+                            effect.World = task.WorldValue;
+                            DrawablePart part = task.part;
+                            MaterialData material = part.material ?? MaterialData.Missing;
+                            effect.MaterialDiffuse = material.diffuseColor;
+                            if (material.diffuseTexture != null)
+                                effect.Texture = material.diffuseTexture;
+                            Render(part.primType, part.VBuffer, part.IBuffer, task.instanceBuffer);
                         }
                     }
                 }
             }
         }
-        private static void RenderQueue(RenderPhaseInfo phase, IEnumerable<RenderTask> renderTasks)
+        private static void RenderQueue(RenderPhaseInfo phase, RenderGroups renderTasks)
         {
-            foreach (var task in renderTasks)
+            foreach (var group in renderTasks)
             {
-                var timer = DebugTiming.Render.Time("Render " + task.tag);
-                Render(task, phase);
-                timer.Stop();
+                Render(group, phase);
             }
         }
         private static void ClearRenderQueue()
@@ -298,7 +300,11 @@ namespace Spectrum.Framework.Graphics
             {
                 // TODO: Maybe don't create a new instance buffer every frame when merging tasks
                 if (task.merged)
+                {
                     task.instanceBuffer.Dispose();
+                    task.instanceBuffer = null;
+                    task.merged = false;
+                }
             }
             renderTasks.Clear();
         }
@@ -372,14 +378,45 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
-        private static List<RenderTask> GroupTasks(List<RenderTask> renderTasks)
+        private static DefaultDict<SpectrumEffect, List<RenderTask>> groups = new DefaultDict<SpectrumEffect, List<RenderTask>>(() => new List<RenderTask>(), true);
+        private static RenderGroups GroupTasks(List<RenderTask> renderTasks)
         {
-            var time = DebugTiming.Render.Time("Grouping");
-            var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
-            grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.instanceBuffer == null && task.EffectValue == group.First().EffectValue) ? MergeGroup(group) : group);
-            var output = grouped.SelectMany(group => group).ToList();
-            time.Stop();
-            return output;
+            var time1 = DebugTiming.Render.Time("Grouping1");
+            groups.Clear();
+            foreach (var task in renderTasks)
+            {
+                task.instances = null;
+                task.merged = false;
+                var group = groups[task.EffectValue];
+                RenderTask mergeable = null;
+                if (task.instanceBuffer == null && (mergeable = group.FirstOrDefault(mergeTask => mergeTask.part.ReferenceID == task.part.ReferenceID)) != null)
+                {
+                    if (mergeable.instances == null)
+                    {
+                        mergeable.instances = new List<Matrix>() { mergeable.WorldValue };
+                    }
+                    mergeable.instances.Add(task.WorldValue);
+                }
+                else
+                    group.Add(task);
+            }
+            foreach (var task in groups.SelectMany(group => group.Value))
+            {
+                if (task.instances != null)
+                {
+                    task.instanceBuffer = VertexHelper.MakeInstanceBuffer(task.instances.ToArray());
+                    task.merged = true;
+                }
+            }
+            time1.Stop();
+            return groups;
+            //time1.Stop();
+            //var time = DebugTiming.Render.Time("Grouping");
+            //var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
+            //grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.instanceBuffer == null && task.EffectValue == group.First().EffectValue) ? MergeGroup(group) : group);
+            //var output = grouped.SelectMany(group => group).ToList();
+            //time.Stop();
+            //return output;
         }
         private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group)
         {
@@ -394,14 +431,14 @@ namespace Spectrum.Framework.Graphics
             return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();
         }
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
-        private static void VRRender(List<RenderTask> tasks, EVREye eye, Matrix eye_offset)
+        private static void VRRender(RenderGroups groups, EVREye eye, Matrix eye_offset)
         {
             device.SetRenderTarget(VRTarget);
             GraphicsEngine.device.Clear(clearColor);
             RenderPhaseInfo vrPhase = new RenderPhaseInfo();
             vrPhase.View = Camera.View * eye_offset;
             vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 10000);
-            RenderQueue(vrPhase, renderTasks);
+            RenderQueue(vrPhase, groups);
             var output = OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);
         }
 
@@ -444,16 +481,14 @@ namespace Spectrum.Framework.Graphics
                 timer.Stop();
             }
             var mainRenderTimer = DebugTiming.Render.Time("Main Render");
-            renderTasks.Sort((a, b) =>
-                a.EffectValue.HasTransparency && b.EffectValue.HasTransparency ? Math.Sign(b.ZValue - a.ZValue) : (a.EffectValue.HasTransparency ? 1 : -1) - (b.EffectValue.HasTransparency ? 1 : -1));
 
-            renderTasks = GroupTasks(renderTasks);
+            var renderGroups = GroupTasks(renderTasks);
             sceneRenderPhase.View = Camera.View;
             sceneRenderPhase.Projection = Camera.Projection;
             phaseShadowMap = shadowMap;
             if (!SpecVR.Running)
             {
-                RenderQueue(sceneRenderPhase, renderTasks);
+                RenderQueue(sceneRenderPhase, renderGroups);
                 //Clear the screen and perform anti aliasing
                 device.SetRenderTarget(null);
                 timer = DebugTiming.Render.Time("Post Process");
@@ -468,8 +503,8 @@ namespace Spectrum.Framework.Graphics
             {
                 Matrix left_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
                 Matrix right_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
-                VRRender(renderTasks, EVREye.Eye_Left, left_offset);
-                VRRender(renderTasks, EVREye.Eye_Right, right_offset);
+                VRRender(renderGroups, EVREye.Eye_Left, left_offset);
+                VRRender(renderGroups, EVREye.Eye_Right, right_offset);
                 device.SetRenderTarget(null);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
