@@ -157,10 +157,10 @@ namespace Spectrum.Framework.Graphics
                 .SelectMany(t => t)
                 .Where(task => task.part.ShadowEnabled)
             .ToList();
-            //renderTasks = GroupTasks(renderTasks);
-            //shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
-            //phaseShadowMap = null;
-            //RenderQueue(shadowRenderPhase, renderTasks);
+            var renderGroups = GroupTasks(renderTasks);
+            shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
+            phaseShadowMap = null;
+            RenderQueue(shadowRenderPhase, renderGroups);
             ClearRenderQueue();
         }
         public static void UpdateWater(List<GameObject> scene)
@@ -256,6 +256,15 @@ namespace Spectrum.Framework.Graphics
                     }
                 }
             }
+        }
+        /// <summary>
+        /// Render a single task, this call does not perform any batching and should be avoided if possible
+        /// </summary>
+        /// <param name="task"></param>
+        /// <param name="phase"></param>
+        public static void Render(RenderTask task, RenderPhaseInfo phase = null)
+        {
+            Render(new RenderGroup(task.effect, new List<RenderTask>() { task }), phase);
         }
         private static void Render(RenderGroup group, RenderPhaseInfo phase)
         {
