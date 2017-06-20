@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework
 {
-    class TimingInfo
+    public class TimingInfo
     {
-        public int Count;
+        public double Count;
         public double TotalTime;
         public double AvgerageTime { get { return Count == 0 ? 0 : TotalTime / Count; } }
     }
@@ -23,6 +23,19 @@ namespace Spectrum.Framework
                 times[name] = new TimingInfo();
             times[name].Count += 1;
             times[name].TotalTime += result.ElapsedTime;
+        }
+    }
+    static class TimingExtension
+    {
+        public static TimingInfo Average(this IEnumerable<TimingInfo> times, int frameCount)
+        {
+            var output = new TimingInfo();
+            foreach (var time in times)
+            {
+                output.Count += time.Count / frameCount;
+                output.TotalTime += time.TotalTime / frameCount;
+            }
+            return output;
         }
     }
     public class DebugTiming
@@ -60,6 +73,13 @@ namespace Spectrum.Framework
             ShowCumulative = showCumulative;
             frames.Add(new FrameTiming());
         }
+        public IEnumerable<Tuple<string, TimingInfo>> FrameInfo()
+        {
+            return frames.SelectMany(f => f.times).GroupBy(r => r.Key)
+                .Select(g => new Tuple<string, TimingInfo>(g.Key,
+                    g.Select(kvp => kvp.Value).DefaultIfEmpty().Average(frames.Count)))
+                .OrderByDescending(t => t.Item2.TotalTime);
+        }
         public IEnumerable<Tuple<string, double>> FrameAverages()
         {
             return frames.SelectMany(f => f.times).GroupBy(r => r.Key)
@@ -87,19 +107,25 @@ namespace Spectrum.Framework
         public List<TimingResult> pool = new List<TimingResult>();
         public TimingResult Time(string name)
         {
-            if (pool.Count > 0)
+            lock (pool)
             {
-                var timer = pool.Pop();
-                timer.name = name;
-                timer.group = this;
-                return timer.Start();
+                if (pool.Count > 0)
+                {
+                    var timer = pool.Pop();
+                    timer.name = name;
+                    timer.group = this;
+                    return timer.Start();
+                }
             }
             return new TimingResult(this, name);
         }
         public void LogTime(TimingResult result)
         {
             frames.Last().LogTime(result);
-            pool.Add(result);
+            lock (pool)
+            {
+                pool.Add(result);
+            }
         }
     }
 

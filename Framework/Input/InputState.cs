@@ -104,9 +104,7 @@ namespace Spectrum.Framework.Input
                 }
                 if(SpecVR.Running && bindingInfo.vrButton != null)
                 {
-                    var button = bindingInfo.vrButton.Value;
-                    if (button.Hand.HasFlag(VRHand.Left) && IsButtonDown(button)) { return true; }
-                    if (button.Hand.HasFlag(VRHand.Right) && IsButtonDown(button)) { return true; }
+                    if (IsButtonDown(bindingInfo.vrButton.Value)) { return true; }
                 }
             }
             return false;

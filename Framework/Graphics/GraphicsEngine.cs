@@ -19,18 +19,54 @@ using Spectrum.Framework.VR;
 
 namespace Spectrum.Framework.Graphics
 {
-    using RenderGroup = KeyValuePair<SpectrumEffect, List<RenderTask>>;
-    using RenderGroups = IEnumerable<KeyValuePair<SpectrumEffect, List<RenderTask>>>;
+    using System.Threading.Tasks;
+    using RenderGroup = KeyValuePair<RenderGroupKey, List<RenderTask>>;
+    using RenderGroups = IEnumerable<KeyValuePair<RenderGroupKey, List<RenderTask>>>;
+    public struct RenderGroupKey
+    {
+        public RenderGroupKey(RenderTask task)
+        {
+            effect = task.EffectValue;
+            partID = task.part.ReferenceID;
+            material = task.MaterialValue;
+        }
+        public SpectrumEffect effect;
+        public int partID;
+        public MaterialData material;
+
+        public override bool Equals(object obj)
+        {
+            if (obj is RenderGroupKey)
+            {
+                var other = (RenderGroupKey)obj;
+                return other.effect == effect && other.partID == partID && other.material == material;
+            }
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return effect.GetHashCode() + material?.GetHashCode() ?? 0 + partID.GetHashCode();
+        }
+    }
     public class RenderTask
     {
         public RenderTask() { }
         public RenderTask(DrawablePart part, string tag = "Misc") { this.part = part; this.tag = tag; }
+        public bool AllowInstance = true;
         public DrawablePart part;
         public string tag;
+        public MaterialData material;
+        public MaterialData MaterialValue { get { return material ?? part.material; } }
         public SpectrumEffect effect;
         public SpectrumEffect EffectValue { get { return effect ?? part.effect; } }
-        internal List<Matrix> instances = null;
+        public List<Matrix> instances = null;
         public DynamicVertexBuffer instanceBuffer;
+        public void Merge()
+        {
+            instanceBuffer = VertexHelper.MakeInstanceBuffer(instances.ToArray());
+            merged = true;
+        }
         public Matrix InstanceWorld = Matrix.Identity;
         public Matrix? world;
         public Matrix WorldValue
@@ -264,12 +300,13 @@ namespace Spectrum.Framework.Graphics
         /// <param name="phase"></param>
         public static void Render(RenderTask task, RenderPhaseInfo phase = null)
         {
-            Render(new RenderGroup(task.effect, new List<RenderTask>() { task }), phase);
+            Render(new RenderGroup(new RenderGroupKey(task), new List<RenderTask>() { task }), phase);
         }
         private static void Render(RenderGroup group, RenderPhaseInfo phase)
         {
             phase = phase ?? sceneRenderPhase;
-            SpectrumEffect effect = group.Key;
+            RenderGroupKey key = group.Key;
+            SpectrumEffect effect = key.effect;
             if (effect != null)
             {
                 var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (group.Value.First().instanceBuffer == null ? "" : "Instance");
@@ -279,6 +316,10 @@ namespace Spectrum.Framework.Graphics
                     effect.View = phase.View;
                     effect.Projection = phase.Projection;
                     effect.ShadowMap = phaseShadowMap;
+                    MaterialData material = key.material ?? MaterialData.Missing;
+                    effect.MaterialDiffuse = material.diffuseColor;
+                    if (material.diffuseTexture != null)
+                        effect.Texture = material.diffuseTexture;
                     foreach (var pass in effect.CurrentTechnique.Passes)
                     {
                         pass.Apply();
@@ -286,11 +327,9 @@ namespace Spectrum.Framework.Graphics
                         {
                             effect.World = task.WorldValue;
                             DrawablePart part = task.part;
-                            MaterialData material = part.material ?? MaterialData.Missing;
-                            effect.MaterialDiffuse = material.diffuseColor;
-                            if (material.diffuseTexture != null)
-                                effect.Texture = material.diffuseTexture;
+                            var timer = DebugTiming.Render.Time("Draw Call Time");
                             Render(part.primType, part.VBuffer, part.IBuffer, task.instanceBuffer);
+                            timer.Stop();
                         }
                     }
                 }
@@ -387,7 +426,7 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
-        private static DefaultDict<SpectrumEffect, List<RenderTask>> groups = new DefaultDict<SpectrumEffect, List<RenderTask>>(() => new List<RenderTask>(), true);
+        private static DefaultDict<RenderGroupKey, List<RenderTask>> groups = new DefaultDict<RenderGroupKey, List<RenderTask>>(() => new List<RenderTask>(), true);
         private static RenderGroups GroupTasks(List<RenderTask> renderTasks)
         {
             var time1 = DebugTiming.Render.Time("Grouping1");
@@ -396,7 +435,7 @@ namespace Spectrum.Framework.Graphics
             {
                 task.instances = null;
                 task.merged = false;
-                var group = groups[task.EffectValue];
+                var group = groups[new RenderGroupKey(task)];
                 RenderTask mergeable = null;
                 if (task.instanceBuffer == null && (mergeable = group.FirstOrDefault(mergeTask => mergeTask.part.ReferenceID == task.part.ReferenceID)) != null)
                 {
@@ -413,8 +452,7 @@ namespace Spectrum.Framework.Graphics
             {
                 if (task.instances != null)
                 {
-                    task.instanceBuffer = VertexHelper.MakeInstanceBuffer(task.instances.ToArray());
-                    task.merged = true;
+                    task.Merge();
                 }
             }
             time1.Stop();

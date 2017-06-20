@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Xna.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -69,12 +70,20 @@ namespace Spectrum.Framework.VR
         public ulong pressedButtons;
         public ulong touchedButtons;
         public VRControllerState_t state;
+        public Vector2 touchpad;
+        public Vector2 touchpadDirection;
+        public Vector3 direction;
+        public Vector3 position;
         public VRController(VRHand hand)
         {
             Hand = hand;
             pressedButtons = 0;
             touchedButtons = 0;
             state = new VRControllerState_t();
+            touchpad = Vector2.Zero;
+            touchpadDirection = Vector2.Zero;
+            direction = Vector3.Forward;
+            position = Vector3.Zero;
         }
         public void Update()
         {
@@ -83,21 +92,38 @@ namespace Spectrum.Framework.VR
                 OpenVR.System.GetControllerState((uint)index, ref state, 64);
             pressedButtons = state.ulButtonPressed;
             touchedButtons = state.ulButtonTouched;
+            touchpad.X = state.rAxis0.x;
+            touchpad.Y = state.rAxis0.y;
+            touchpadDirection = touchpad;
+            touchpadDirection.Normalize();
+            direction = Vector3.Transform(Vector3.Forward, (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Rotation);
+            position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;
         }
         private bool CheckFlag(bool touched, VRButton check)
         {
             var flags = touched ? touchedButtons : pressedButtons;
-            if(check > VRButton.Max)
+            switch (check)
             {
-                switch (check)
-                {
-                    case VRButton.BetterTrigger:
-                        return touched ? state.rAxis1.x > 0.1 : state.rAxis1.x > 0.95;
-                    default:
-                        return false;
-                }
+                case VRButton.BetterTrigger:
+                    return touched ? state.rAxis1.x > 0.1 : state.rAxis1.x > 0.95;
+                case VRButton.DPad_Up:
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, Vector2.UnitY) > Math.Cos(Math.PI / 4);
+                case VRButton.DPad_Down:
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, -Vector2.UnitY) > Math.Cos(Math.PI / 4);
+                case VRButton.DPad_Left:
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                case VRButton.DPad_Right:
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, -Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                case VRButton.Axis0:
+                case VRButton.Axis1:
+                case VRButton.Axis2:
+                case VRButton.Axis3:
+                case VRButton.Grip:
+                case VRButton.System:
+                    return (flags & ((1ul) << (int)check)) != 0;
+                default:
+                    return false;
             }
-            return (flags & ((1ul) << (int)check)) != 0;
         }
         public bool IsButtonPressed(VRButtonBinding binding)
         {

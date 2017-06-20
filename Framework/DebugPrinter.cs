@@ -74,6 +74,10 @@ namespace Spectrum.Framework
                 }
             }
         }
+        string fform(double d)
+        {
+            return String.Format("{0:0.00}", d);
+        }
         private void DrawTimes(int startLine, SpriteBatch spritebatch)
         {
             float curPos = (startLine) * Font.LineSpacing;
@@ -82,10 +86,10 @@ namespace Spectrum.Framework
                 string toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
                 spritebatch.DrawString(Font, toPrint, new Vector2(Manager.Width - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                 curPos += Font.MeasureString(toPrint).Y;
-                var times = timeGroup.ShowCumulative ? timeGroup.CumulativeTimes : timeGroup.FrameAverages().Take(10);
+                var times = timeGroup.FrameInfo().Take(10);
                 foreach (var time in times)
                 {
-                    toPrint = time.Item1 + ": " + String.Format("{0:0.00}", time.Item2);
+                    toPrint = time.Item1 + ": " + fform(time.Item2.TotalTime) + " ("+fform(time.Item2.AvgerageTime) + "x" + time.Item2.Count + ")";
                     spritebatch.DrawString(Font, toPrint, new Vector2(Manager.Width - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                     curPos += Font.LineSpacing;
                 }
