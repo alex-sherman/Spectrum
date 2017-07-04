@@ -186,6 +186,7 @@
     <Compile Include="Framework\Audio\SoundEffect.cs" />
     <Compile Include="Framework\Content\AnimationParser.cs" />
     <Compile Include="Framework\Content\ContentParser.cs" />
+    <Compile Include="Framework\Content\EffectParser.cs" />
     <Compile Include="Framework\Content\HeightmapParser.cs" />
     <Compile Include="Framework\Content\ImageAsset.cs" />
     <Compile Include="Framework\Content\ImageAssetParser.cs" />
@@ -209,6 +210,7 @@
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
     <Compile Include="Framework\Graphics\Animation\Keyframe.cs" />
     <Compile Include="Framework\Graphics\Animation\SkinningData.cs" />
+    <Compile Include="Framework\Graphics\Draw3D.cs" />
     <Compile Include="Framework\Graphics\Effects\SkinnedEffect.cs" />
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\IDebug.cs" />
@@ -318,6 +320,7 @@
     <Compile Include="Framework\Entities\GameObject.cs" />
     <Compile Include="Framework\Entities\EntityManager.cs" />
     <Compile Include="Framework\VR\SpecVR.cs" />
+    <Compile Include="Framework\VR\VRMenu.cs" />
     <Compile Include="openvr_api.cs" />
     <Compile Include="SpectrumGame.cs" />
     <Compile Include="Framework\Entities\Entity.cs" />

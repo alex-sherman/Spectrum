@@ -113,7 +113,7 @@ namespace Spectrum.Framework.Graphics
         }
 
         //TODO: Set values only when necessary
-        protected override bool OnApply()
+        protected override void OnApply()
         {
             Parameters["ShadowThreshold"].SetValue(ShadowThreshold);
             Parameters["Clip"].SetValue(Clip);
@@ -124,7 +124,7 @@ namespace Spectrum.Framework.Graphics
             Parameters["diffuseLightColor"].SetValue(DiffuseLightColor);
             Parameters["lightPosition"].SetValue(LightPos);
             Parameters["ShadowViewProjection"].SetValue(LightView * Settings.lightProjection);
-            return base.OnApply();
+            base.OnApply();
         }
         public SpectrumEffect() : this(ContentHelper.Load<Effect>("SpectrumEffect")) { }
         public SpectrumEffect(Effect effect) : base(effect) { }

@@ -25,11 +25,6 @@ namespace Spectrum.Framework.Screens.InputElements
             AddElement(new TextElement(text));
         }
 
-        public override void Initialize()
-        {
-            base.Initialize();
-        }
-
         public override void Draw(GameTime time, SpriteBatch spritebatch)
         {
             base.Draw(time, spritebatch);

@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Storage;
 using System.IO;
 using Spectrum.Framework.Graphics;
 using System.Windows.Forms;
@@ -185,6 +184,7 @@ namespace Spectrum
         protected override void LoadContent()
         {
             base.LoadContent();
+            GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
             string path = "save.dat";
             if (File.Exists(path))
             {
@@ -194,8 +194,6 @@ namespace Spectrum
             this.IsMouseVisible = true;
             Content.RootDirectory = "Content";
             ScreenManager = new ScreenManager(this);
-            Components.Add(ScreenManager);
-            ScreenManager.Initialize();
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
             Serialization.Model.CompileInPlace();
@@ -242,7 +240,13 @@ namespace Spectrum
             {
                 SpecVR.Update(gameTime);
             }
+            ScreenManager.Update(gameTime);
             base.Update(gameTime);
+        }
+        protected override void Draw(GameTime gameTime)
+        {
+            base.Draw(gameTime);
+            ScreenManager.Draw(gameTime);
         }
         public GraphicsDeviceManager GraphicsDeviceManager
         {

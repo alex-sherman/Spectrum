@@ -21,64 +21,33 @@ using Spectrum.Framework.Content;
 
 namespace Spectrum.Framework.Screens
 {
-    /// <summary>
-    /// The screen manager is a component which manages one or more GameScreen
-    /// instances. It maintains a stack of screens, calls their Update and Draw
-    /// methods at the appropriate times, and automatically routes input to the
-    /// topmost active screen.
-    /// </summary>
-    public class ScreenManager : DrawableGameComponent
+    public class ScreenManager
     {
-        #region Fields
 
         InputState input = new InputState();
-
+        private Game Game;
         public SpriteBatch SpriteBatch;
         public RenderTarget2D Target;
-        public int Width { get { return Target?.Width ?? GraphicsDevice.Viewport.Width; } }
-        public int Height { get { return Target?.Height ?? GraphicsDevice.Viewport.Height; } }
-
-        #endregion
-
-        #region Properties
+        public int Width { get { return Target?.Width ?? Game.GraphicsDevice.Viewport.Width; } }
+        public int Height { get { return Target?.Height ?? Game.GraphicsDevice.Viewport.Height; } }
+        
         public RootElement Root { get; private set; }
         public bool IsActive
         {
             get { return Game.IsActive; }
         }
 
-        #endregion
 
-        #region Initialization
-
-
-        public ScreenManager(SpectrumGame game)
-            : base(game)
+        public ScreenManager(SpectrumGame game, RenderTarget2D target = null)
         {
-            Root = new RootElement(this);
+            Target = null;
+            Game = game;
+            SpriteBatch = new SpriteBatch(Game.GraphicsDevice);
+            Root = new RootElement();
             Root.Initialize();
         }
 
-
-        /// <summary>
-        /// Initializes the screen manager component.
-        /// </summary>
-        public override void Initialize()
-        {
-            base.Initialize();
-            SpriteBatch = new SpriteBatch(GraphicsDevice);
-        }
-
-
-        #endregion
-
-        #region Update and Draw
-
-
-        /// <summary>
-        /// Allows each screen to run logic.
-        /// </summary>
-        public override void Update(GameTime gameTime)
+        public void Update(GameTime gameTime)
         {
             foreach (var addScreen in addScreens)
                 Root.AddElement(addScreen, 0);
@@ -96,25 +65,18 @@ namespace Spectrum.Framework.Screens
             Root.Update(gameTime);
         }
 
-
-        /// <summary>
-        /// Tells each screen to draw itself.
-        /// </summary>
-        public override void Draw(GameTime gameTime)
+        public void Draw(GameTime gameTime)
         {
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             Root.Measure(Width, Height);
             Root.Layout(new Rectangle(0, 0, Width, Height));
             Root.DrawWithChildren(gameTime, SpriteBatch, 1.0f);
-            GraphicsDevice.SetRenderTarget(Target);
+            Game.GraphicsDevice.SetRenderTarget(Target);
             if (Target != null)
-                GraphicsDevice.Clear(Color.Transparent);
+                Game.GraphicsDevice.Clear(Color.Transparent);
             SpriteBatch.End();
         }
-
-
-        #endregion
 
         #region Public Methods
         private List<GameScreen> addScreens = new List<GameScreen>();
@@ -144,7 +106,7 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public void FadeBackBufferToBlack(float alpha)
         {
-            Viewport viewport = GraphicsDevice.Viewport;
+            Viewport viewport = Game.GraphicsDevice.Viewport;
 
 
             SpriteBatch.Draw(ContentHelper.Blank,

@@ -96,7 +96,7 @@ namespace Spectrum.Framework.VR
             touchpad.Y = state.rAxis0.y;
             touchpadDirection = touchpad;
             touchpadDirection.Normalize();
-            direction = Vector3.Transform(Vector3.Forward, (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Rotation);
+            direction = Vector3.Transform(Vector3.Forward, (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Rotation());
             position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;
         }
         private bool CheckFlag(bool touched, VRButton check)

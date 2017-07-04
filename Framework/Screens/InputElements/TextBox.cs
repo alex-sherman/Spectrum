@@ -37,7 +37,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            if (input.IsNewMousePress(0) && !Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
+            if (input.IsNewMousePress(0) && !MouseInside())
             {
                 Selected = false;
             }

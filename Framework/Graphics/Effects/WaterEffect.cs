@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Graphics
         public static Matrix ReflectionView;
         public static Matrix ReflectionProj;
         public static float WaterTime;
-        protected override bool OnApply()
+        protected override void OnApply()
         {
             base.OnApply();
             Parameters["waterPerturbCoef"].SetValue(WaterPerturbation);
@@ -25,7 +25,6 @@ namespace Spectrum.Framework.Graphics
             Texture2D test = Parameters["Refraction"].GetValueTexture2D();
             Parameters["Reflection"].SetValue(Water.reflectionRenderTarget);
             Parameters["Refraction"].SetValue(Water.refractionRenderTarget);
-            return false;
         }
         public WaterEffect(string waterBumpMap1, string waterBumpMap2)
             : base(ContentHelper.Load<Effect>("WaterEffect"))

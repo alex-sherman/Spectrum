@@ -22,11 +22,11 @@ namespace Spectrum.Framework.Graphics
                 return false;
             }
         }
-        protected override bool OnApply()
+        protected override void OnApply()
         {
             if (BoneTransforms != null)
                 Parameters["Bones"].SetValue(BoneTransforms);
-            return base.OnApply();
+            base.OnApply();
         }
         public void SetBoneNames(params string[] boneNames)
         {

@@ -79,5 +79,9 @@ namespace Spectrum.Framework
             list.RemoveAt(0);
             return ele;
         }
+        public static Quaternion Rotation(this Matrix matrix)
+        {
+            return Quaternion.CreateFromRotationMatrix(matrix);
+        }
     }
 }

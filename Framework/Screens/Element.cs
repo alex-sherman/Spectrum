@@ -25,11 +25,10 @@ namespace Spectrum.Framework.Screens
     }
     public class RootElement : Element
     {
-        public RootElement(ScreenManager manager) : base(manager) { }
-        public override void OnMeasure(int width, int height)
+        public RootElement()
         {
-            MeasuredHeight = Manager.Height;
-            MeasuredWidth = Manager.Width;
+            Width.Type = SizeType.MatchParent;
+            Height.Type = SizeType.MatchParent;
         }
     }
     #endregion
@@ -37,7 +36,6 @@ namespace Spectrum.Framework.Screens
     public class Element
     {
         public static SpriteFont DefaultFont;
-        public ScreenManager Manager { get; private set; }
         public LayoutManager LayoutManager { get; protected set; }
         public Element Parent { get; private set; }
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
@@ -58,8 +56,6 @@ namespace Spectrum.Framework.Screens
         public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
         public ImageAsset Background { get { return Fields["background"].ObjValue as ImageAsset; } }
         public Color BackgroundColor { get { return (Color)(Fields["background-color"].ObjValue ?? Color.White); } }
-
-        protected Element(ScreenManager manager) : this() { Manager = manager; }
 
         public Element()
         {
@@ -181,7 +177,6 @@ namespace Spectrum.Framework.Screens
             foreach (Element child in Children)
             {
                 child.Parent = this;
-                child.Manager = Manager;
                 if (child.Display == ElementDisplay.Visible)
                     child.Update(gameTime);
             }
@@ -328,7 +323,6 @@ namespace Spectrum.Framework.Screens
             if (element.Initialized)
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
-            element.Manager = Manager;
             _children.Insert(index ?? _children.Count, element);
             element.Initialize();
         }

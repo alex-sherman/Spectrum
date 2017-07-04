@@ -28,6 +28,7 @@ namespace Spectrum.Framework.Content
         public static Texture2D Missing { get { return ContentHelper.Load<Texture2D>("missing"); } }
         public static Dictionary<Type, ICachedContentParser> ContentParsers = new Dictionary<Type, ICachedContentParser>()
             {
+                {typeof(Effect), new EffectParser()},
                 {typeof(SpecModel), new ModelParser()},
                 {typeof(AnimationData), new AnimationParser()},
                 {typeof(ImageAsset), new ImageAssetParser()},
@@ -70,12 +71,13 @@ namespace Spectrum.Framework.Content
 
         private T _load<T>(string path, bool usePrefix, string name) where T : class
         {
-            if (ContentParsers.ContainsKey(typeof(T)))
+            Type t = typeof(T);
+            if (ContentParsers.ContainsKey(t))
             {
-                ICachedContentParser parser = ContentParsers[typeof(T)];
+                ICachedContentParser parser = ContentParsers[t];
                 if (usePrefix)
                     path = Content.RootDirectory + "\\" + parser.Prefix + path;
-                return (T)ContentParsers[typeof(T)].Load(path, name);
+                return (T)parser.Load(path, name);
             }
             if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
             if (typeof(T) == typeof(Effect))
