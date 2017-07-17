@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Entities
         public event Action<Entity> OnEntityRemoved;
         private float tickTenthTimer = 100;
         private float tickOneTimer = 1000;
-        private EntityCollection Entities;
+        public EntityCollection Entities;
         private MultiplayerService mpService;
         public bool Paused = false;
         private static Stopwatch timer = new Stopwatch();
@@ -236,11 +236,6 @@ namespace Spectrum.Framework.Entities
             if (Entities.Map.ContainsKey(id))
                 return Entities.Map[id];
             return null;
-        }
-
-        public void Draw(GameTime gameTime)
-        {
-            GraphicsEngine.Render(Entities.DrawSorted, gameTime);
         }
 
         public IEnumerator<Entity> GetEnumerator()

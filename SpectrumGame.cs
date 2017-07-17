@@ -76,7 +76,7 @@ namespace Spectrum
         GraphicsDeviceManager graphics;
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }
-        public ScreenManager ScreenManager { get; private set; }
+        public RootElement Root { get; private set; }
         bool newResize = false;
         private Point mousePosition;
         public bool UsingSteam { get; private set; }
@@ -103,7 +103,6 @@ namespace Spectrum
             graphics = new GraphicsDeviceManager(this);
             AudioManager.Init();
             this.Window.AllowUserResizing = true;
-            this.Window.ClientSizeChanged += WindowSizeChange;
             WindowForm = (Form)Form.FromHandle(Window.Handle);
             IsFixedTimeStep = false;
         }
@@ -174,12 +173,6 @@ namespace Spectrum
                 newResize = true;
             }
         }
-        private void WindowSizeChange(object sender, EventArgs e)
-        {
-            newResize = true;
-            graphics.PreferredBackBufferHeight = WindowForm.ClientRectangle.Height;
-            graphics.PreferredBackBufferWidth = WindowForm.ClientRectangle.Width;
-        }
 
         protected override void LoadContent()
         {
@@ -193,7 +186,7 @@ namespace Spectrum
             else { SaveSettings(File.Create(path)); }
             this.IsMouseVisible = true;
             Content.RootDirectory = "Content";
-            ScreenManager = new ScreenManager(this);
+            Root = new RootElement();
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
             Serialization.Model.CompileInPlace();
@@ -213,7 +206,7 @@ namespace Spectrum
                 Steamworks.SteamAPI.Shutdown();
             }
         }
-
+        InputState input = new InputState();
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -227,9 +220,12 @@ namespace Spectrum
                 Steamworks.SteamAPI.RunCallbacks();
                 Steamworks.SteamUtils.RunFrame();
             }
-            if (newResize)
+            if (graphics.PreferredBackBufferHeight != WindowForm.ClientRectangle.Height || graphics.PreferredBackBufferWidth != WindowForm.ClientRectangle.Width)
             {
+                graphics.PreferredBackBufferHeight = WindowForm.ClientRectangle.Height;
+                graphics.PreferredBackBufferWidth = WindowForm.ClientRectangle.Width;
                 graphics.ApplyChanges();
+                Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
                 if (OnScreenResize != null && graphics.GraphicsDevice.Viewport.Height > 0 && graphics.GraphicsDevice.Viewport.Width > 0)
                 {
                     OnScreenResize(this, EventArgs.Empty);
@@ -240,13 +236,14 @@ namespace Spectrum
             {
                 SpecVR.Update(gameTime);
             }
-            ScreenManager.Update(gameTime);
+            input.Update();
+            Root.Update(gameTime, input, IsActive);
             base.Update(gameTime);
         }
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-            ScreenManager.Draw(gameTime);
+            Root.Draw(gameTime);
         }
         public GraphicsDeviceManager GraphicsDeviceManager
         {

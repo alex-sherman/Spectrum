@@ -11,7 +11,6 @@ namespace Spectrum.Framework.Graphics
 {
     public class Settings
     {
-        public static Matrix projection;
         public static Matrix reflectionProjection;
         public static Matrix lightProjection;
         public static bool enableWater = false;
@@ -19,20 +18,30 @@ namespace Spectrum.Framework.Graphics
         public const String WaterBumpMapBase = "waterbump";
         public const String WaterBumpMap = "waterbump1";
         public static Vector2 ScreenSize;
+        public Settings()
+        {
+            lightProjection = Matrix.CreatePerspectiveFieldOfView(
+                (float)Math.PI / 20f,
+                1,
+                100, 1100f);
+        }
 
         public static void Init(GraphicsDevice device)
         {
             ResetProjection(SpectrumGame.Game, EventArgs.Empty);
             SpectrumGame.Game.OnScreenResize += ResetProjection;
         }
+        public static Matrix GetProjection(int width, int height)
+        {
+            return Matrix.CreatePerspectiveFieldOfView(
+                (float)Math.PI / 4.0f,
+                (float)width /
+                (float)height,
+                1f, 10000);
+        }
         public static void ResetProjection(object sender, EventArgs args)
         {
             GraphicsDevice device = (sender as SpectrumGame).GraphicsDevice;
-            projection = Matrix.CreatePerspectiveFieldOfView(
-                (float)Math.PI / 4.0f,
-                (float)device.Viewport.Width /
-                (float)device.Viewport.Height,
-                1f, 10000);
             //The reflection view has a slightly larger field of view
             //so that water doesn't get messed up at the edges when
             //waves cause the texture coordinates to go off the edge
@@ -41,19 +50,6 @@ namespace Spectrum.Framework.Graphics
                 (float)device.Viewport.Width /
                 (float)device.Viewport.Height,
                 1f, 10000);
-            lightProjection = Matrix.CreatePerspectiveFieldOfView(
-                (float)Math.PI / 20f,
-                1,
-                100, 1100f);
-            //lightProjection = new Matrix();
-            //float e = (float)(1 / Math.Tan((float)Math.PI / 4.0f));
-            //lightProjection.M11 = e;
-            //lightProjection.M22 = e;
-            //lightProjection.M33 = 0.001f - 1;
-            //lightProjection.M34 = 0.001f - 2;
-            //lightProjection.M43 = -1;
-            //ScreenSize.X = device.Viewport.Width;
-            //ScreenSize.Y = device.Viewport.Height;
         }
         public static float WaterPerturbation
         {

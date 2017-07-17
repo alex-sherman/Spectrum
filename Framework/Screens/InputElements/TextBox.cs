@@ -71,7 +71,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 {
                     OnContinue(this);
                 }
-                ScreenManager.TakeKeyboardInput(ref textPosition, ref Text, input);
+                input.TakeKeyboardInput(ref textPosition, ref Text);
             }
             return base.HandleInput(otherTookInput, input) || Selected;
         }

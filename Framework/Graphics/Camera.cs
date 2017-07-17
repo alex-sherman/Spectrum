@@ -55,14 +55,6 @@ namespace Spectrum.Framework.Graphics
             set { aspectRatio = value; }
         }
 
-        public virtual Matrix Projection
-        {
-            get
-            {
-                return Settings.projection;
-            }
-        }
-
         public virtual Matrix ReflectionProjection
         {
             get

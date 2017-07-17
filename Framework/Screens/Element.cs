@@ -23,14 +23,6 @@ namespace Spectrum.Framework.Screens
         Relative,
         Absolute
     }
-    public class RootElement : Element
-    {
-        public RootElement()
-        {
-            Width.Type = SizeType.MatchParent;
-            Height.Type = SizeType.MatchParent;
-        }
-    }
     #endregion
 
     public class Element
@@ -169,7 +161,13 @@ namespace Spectrum.Framework.Screens
         {
             return Z - ZDiff * layer / ZLayers;
         }
+        /// <summary>
+        /// A bounding rectangle with a relative offset that accounts for padding from the parent but is not necessarily relative to the parent
+        /// </summary>
         public Rectangle Bounds { get; private set; }
+        /// <summary>
+        /// The absolute rectangle in terms of screen coordinates for the element
+        /// </summary>
         public Rectangle Rect { get; private set; }
 
         public virtual void Update(GameTime gameTime)

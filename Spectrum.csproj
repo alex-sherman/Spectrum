@@ -221,6 +221,8 @@
     <Compile Include="Framework\Input\InputLayout.cs" />
     <Compile Include="Framework\Input\PlayerInformation.cs" />
     <Compile Include="Framework\Input\SpectrumMouse.cs" />
+    <Compile Include="Framework\Screens\RootElement.cs" />
+    <Compile Include="Framework\Screens\SceneScreen.cs" />
     <Compile Include="Framework\VR\VRInput.cs" />
     <Compile Include="Framework\LSystem\LNode.cs" />
     <Compile Include="Framework\LSystem\LTree.cs" />
@@ -290,7 +292,6 @@
     <Compile Include="Framework\Screens\MenuScreen.cs" />
     <Compile Include="Framework\Screens\MessageBoxScreen.cs" />
     <Compile Include="Framework\Screens\RectOffset.cs" />
-    <Compile Include="Framework\Screens\ScreenManager.cs" />
     <Compile Include="Framework\Content\ContentHelper.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationPlayer.cs" />
     <Compile Include="Framework\Graphics\SpecModel.cs" />

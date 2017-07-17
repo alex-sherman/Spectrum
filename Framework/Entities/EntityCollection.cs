@@ -8,8 +8,7 @@ using System.Collections;
 
 namespace Spectrum.Framework.Entities
 {
-
-    class EntityCollection
+    public class EntityCollection
     {
         public Dictionary<Guid, Entity> Map = new Dictionary<Guid, Entity>();
         private List<Entity> updatedSorted = new List<Entity>();

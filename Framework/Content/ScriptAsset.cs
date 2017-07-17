@@ -47,8 +47,6 @@ namespace Spectrum.Framework.Content
     {
         private readonly ScriptEngine _engine;
         private readonly ObjectHandle _classHandle;
-        private ObjectHandle _instanceHandle;
-        private object _instance;
         public PythonFunction Function { get; private set; }
         public string Name { get; private set; }
         public FunctionWrapper(ScriptEngine engine, string name, PythonFunction function, ObjectHandle classHandle)

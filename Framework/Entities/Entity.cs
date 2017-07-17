@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Reflection;
 using Spectrum.Framework.Network.Surrogates;
 using ProtoBuf;
+using Spectrum.Framework.Graphics;
 
 namespace Spectrum.Framework.Entities
 {
@@ -97,6 +98,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual void DisabledUpdate(GameTime time) { }
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
+        public virtual List<RenderTask> GetRenderTasks(RenderPhaseInfo phase) { return null; }
         public virtual void TickTenth() { }
         public virtual void TickOne() { }
     }

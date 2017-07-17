@@ -195,5 +195,71 @@ namespace Spectrum.Framework.Input
 
 
         #endregion
+
+        /// <summary>
+        /// Helps take keyboard input for a text box or something.
+        /// Should be called in HandleInput
+        /// </summary>
+        /// <param name="currentString">The string being modified</param>
+        /// <param name="input">Input from the HandleInput call</param>
+        /// <returns>Modified string</returns>
+        public void TakeKeyboardInput(ref int position, ref string currentString)
+        {
+            Keys[] pressedKeys = KeyboardState.GetPressedKeys();
+            foreach (Keys key in pressedKeys)
+            {
+
+                if (IsNewKeyPress(key))
+                {
+
+                    if (key == Keys.Back && position > 0)
+                    {
+                        position--;
+                        currentString = currentString = currentString.Remove(position, 1);
+                    }
+                    char typedChar = GetChar(key, IsKeyDown(Keys.LeftShift) || IsKeyDown(Keys.RightShift));
+                    if (typedChar != (char)0)
+                    {
+                        currentString = currentString.Insert(position, "" + typedChar);
+                        position++;
+                    }
+                }
+            }
+        }
+        private static char GetChar(Keys key, bool shiftHeld)
+        {
+            if (key == Keys.Space) return ' ';
+            if (key >= Keys.A && key <= Keys.Z)
+            {
+                if (shiftHeld)
+                {
+                    return key.ToString()[0];
+                }
+                else
+                {
+                    return key.ToString().ToLower()[0];
+                }
+            }
+            if (key >= Keys.D0 && key <= Keys.D9)
+            {
+                if (shiftHeld)
+                {
+                    if (key == Keys.D2) return '@';
+                    else if (key == Keys.D0) return ')';
+                    else if (key == Keys.D6) return '^';
+                    else if (key == Keys.D8) return '*';
+                    else
+                    {
+                        if (key > Keys.D5) { return (char)(key - Keys.D0 + 31); }
+                        else return (char)(key - Keys.D0 + 32);
+                    }
+                }
+                else return (key - Keys.D0).ToString()[0];
+            }
+            if (key >= Keys.NumPad0 && key <= Keys.NumPad9) return (key - Keys.NumPad0).ToString()[0];
+            if (key == Keys.OemPeriod || key == Keys.Decimal) return '.';
+            if (key == Keys.OemQuestion) return '/';
+            return (char)0;
+        }
     }
 }

@@ -15,9 +15,8 @@ namespace Spectrum.Framework.Graphics
         {
             effect = ContentHelper.Load<Effect>(@"PostProcessEffect");
             effect.Parameters["darkness"].SetValue(0.0f);
-            ResetViewPort();
         }
-        public static void ResetViewPort()
+        public static void ResetViewPort(int width, int height)
         {
             effect.Parameters["viewPort"].SetValue(new Vector2(SpectrumGame.Game.GraphicsDevice.Viewport.Width, SpectrumGame.Game.GraphicsDevice.Viewport.Height));
         }

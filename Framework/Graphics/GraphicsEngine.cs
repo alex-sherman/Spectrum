@@ -19,6 +19,7 @@ using Spectrum.Framework.VR;
 
 namespace Spectrum.Framework.Graphics
 {
+    using Screens;
     using System.Threading.Tasks;
     using RenderGroup = KeyValuePair<RenderGroupKey, List<RenderTask>>;
     using RenderGroups = IEnumerable<KeyValuePair<RenderGroupKey, List<RenderTask>>>;
@@ -109,34 +110,32 @@ namespace Spectrum.Framework.Graphics
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             Camera = camera;
-            GraphicsEngine.device = SpectrumGame.Game.GraphicsDevice;
+            device = SpectrumGame.Game.GraphicsDevice;
             Settings.Init(device);
             PostProcessEffect.Initialize();
             PostProcessEffect.AAEnabled = true;
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
-            ResetOnResize(SpectrumGame.Game, EventArgs.Empty);
-            SpectrumGame.Game.OnScreenResize += ResetOnResize;
             if (SpecVR.Running)
             {
                 uint width = 0, height = 0;
                 OpenVR.System.GetRecommendedRenderTargetSize(ref width, ref height);
-                VRTarget = new RenderTarget2D(GraphicsEngine.device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                VRTarget = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 SharpDX.Direct3D11.Texture2D nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTarget);
                 texture = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
             }
         }
-        public static void ResetOnResize(object sender, EventArgs args)
+        public static void ResetOnResize(int width, int height)
         {
             if (device != null)
             {
                 spriteBatch = new SpriteBatch(device);
                 AATarget?.Dispose();
-                AATarget = new RenderTarget2D(device, (int)(device.Viewport.Width * MultisampleFactor), (int)(device.Viewport.Height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                AATarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 DepthTarget?.Dispose();
-                DepthTarget = new RenderTarget2D(device, (int)(device.Viewport.Width * MultisampleFactor), (int)(device.Viewport.Height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                DepthTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 PostProcessEffect.DepthTarget = DepthTarget;
                 Water.ResetRenderTargets();
-                PostProcessEffect.ResetViewPort();
+                PostProcessEffect.ResetViewPort(width, height);
             }
         }
         public static Vector3 ViewPosition(Vector3 WorldPosition)
@@ -145,18 +144,18 @@ namespace Spectrum.Framework.Graphics
         }
         public static Vector3 ViewToScreenPosition(Vector3 ViewPosition)
         {
-            return device.Viewport.Project(ViewPosition, Settings.projection, Matrix.Identity, Matrix.Identity);
+            return device.Viewport.Project(ViewPosition, SceneScreen.Projection, Matrix.Identity, Matrix.Identity);
         }
         public static Vector3 FullScreenPos(Vector3 WorldPos)
         {
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = GraphicsEngine.device.Viewport.Project(WorldPos, Settings.projection, Camera.View, world);
+            Vector3 screenPos = device.Viewport.Project(WorldPos, SceneScreen.Projection, Camera.View, world);
             return screenPos;
         }
         public static Vector2 ScreenPos(Vector3 WorldPos)
         {
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = GraphicsEngine.device.Viewport.Project(WorldPos, Settings.projection, Camera.View, world);
+            Vector3 screenPos = device.Viewport.Project(WorldPos, SceneScreen.Projection, Camera.View, world);
             return new Vector2(screenPos.X, screenPos.Y);
         }
         public static Ray GetCameraRay(Vector2 screenCoords)
@@ -165,9 +164,9 @@ namespace Spectrum.Framework.Graphics
             Vector3 farsource = new Vector3((float)screenCoords.X, (float)screenCoords.Y, 1f);
 
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 nearPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(nearsource, Settings.projection, Camera.View, world);
+            Vector3 nearPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(nearsource, SceneScreen.Projection, Camera.View, world);
 
-            Vector3 farPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(farsource, Settings.projection, Camera.View, world);
+            Vector3 farPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(farsource, SceneScreen.Projection, Camera.View, world);
 
             Vector3 direction = farPoint - nearPoint;
             direction.Normalize();
@@ -184,10 +183,10 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        public static void UpdateShadowMap(List<GameObject> scene)
+        public static void UpdateShadowMap(List<Entity> scene)
         {
             device.SetRenderTarget(shadowMap);
-            GraphicsEngine.device.Clear(Color.Black);
+            device.Clear(Color.Black);
             renderTasks = scene.Select(drawable => drawable.GetRenderTasks(shadowRenderPhase))
                 .Where(tasks => tasks != null)
                 .SelectMany(t => t)
@@ -199,7 +198,7 @@ namespace Spectrum.Framework.Graphics
             RenderQueue(shadowRenderPhase, renderGroups);
             ClearRenderQueue();
         }
-        public static void UpdateWater(List<GameObject> scene)
+        public static void UpdateWater(List<Entity> scene)
         {
             //device.SetRenderTarget(Water.refractionRenderTarget);
             //GraphicsEngine.device.Clear(clearColor);
@@ -489,7 +488,7 @@ namespace Spectrum.Framework.Graphics
             var output = OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);
         }
 
-        public static void Render(List<Entity> drawables, GameTime gameTime)
+        public static void Render(List<Entity> drawables, GameTime gameTime, RenderTarget2D target)
         {
             BeginRender(gameTime);
             WaterEffect.ReflectionView = Camera.ReflectionView;
@@ -497,16 +496,15 @@ namespace Spectrum.Framework.Graphics
             SpectrumEffect.CameraPos = Camera.Position;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
             drawables = drawables.Where(e => e.DrawEnabled).ToList();
-            List<GameObject> drawable3D = drawables.Where(e => e is GameObject).Cast<GameObject>().ToList();
 
             var preRenderTime = DebugTiming.Render.Time("Update Shadow");
-            UpdateShadowMap(drawable3D);
+            UpdateShadowMap(drawables);
             preRenderTime.Stop();
 
             PostProcessEffect.Technique = "PassThrough";
             //TODO: Draw spritebatch stuff to separate target, and superimpose over game
             //spriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.LinearClamp, null, null, effect: PostProcessEffect.effect);
-            if (Settings.enableWater) { UpdateWater(drawable3D); }
+            if (Settings.enableWater) { UpdateWater(drawables); }
 
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTargets(AATarget, DepthTarget);
@@ -517,29 +515,26 @@ namespace Spectrum.Framework.Graphics
             {
                 timer = DebugTiming.Render.Time(drawable.GetType().Name);
                 drawable.Draw(gameTime, null);
-                if (drawable is GameObject)
-                {
-                    var getRenderTasksTimer = DebugTiming.Render.Time("Get Tasks");
-                    var tasks = (drawable as GameObject).GetRenderTasks(sceneRenderPhase);
-                    getRenderTasksTimer.Stop();
-                    if (tasks != null)
-                        renderTasks.AddRange(tasks);
-                }
+                var getRenderTasksTimer = DebugTiming.Render.Time("Get Tasks");
+                var tasks = drawable.GetRenderTasks(sceneRenderPhase);
+                getRenderTasksTimer.Stop();
+                if (tasks != null)
+                    renderTasks.AddRange(tasks);
                 timer.Stop();
             }
             var mainRenderTimer = DebugTiming.Render.Time("Main Render");
 
             var renderGroups = GroupTasks(renderTasks);
             sceneRenderPhase.View = Camera.View;
-            sceneRenderPhase.Projection = Camera.Projection;
+            sceneRenderPhase.Projection = SceneScreen.Projection;
             phaseShadowMap = shadowMap;
             if (!SpecVR.Running)
             {
                 RenderQueue(sceneRenderPhase, renderGroups);
                 //Clear the screen and perform anti aliasing
-                device.SetRenderTarget(null);
+                device.SetRenderTarget(target);
                 timer = DebugTiming.Render.Time("Post Process");
-                GraphicsEngine.device.Clear(clearColor);
+                device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
                 spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
@@ -552,7 +547,7 @@ namespace Spectrum.Framework.Graphics
                 Matrix right_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
                 VRRender(renderGroups, EVREye.Eye_Left, left_offset);
                 VRRender(renderGroups, EVREye.Eye_Right, right_offset);
-                device.SetRenderTarget(null);
+                device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
                 spriteBatch.Draw(VRTarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);

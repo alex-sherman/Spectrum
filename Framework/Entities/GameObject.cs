@@ -302,7 +302,7 @@ namespace Spectrum.Framework.Entities
             Emitter.Update();
         }
         private Matrix _lastWorld = Matrix.Identity;
-        public virtual List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
+        public override List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
         {
             if (_tasks != null && _lastWorld != World)
             {
