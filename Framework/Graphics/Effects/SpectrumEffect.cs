@@ -77,7 +77,7 @@ namespace Spectrum.Framework.Graphics
             set
             {
                 Parameters["UseTexture"].SetValue(value != null);
-                if (value != null && (value.Tag as Texture2DData).HasAlpha)
+                if ((value?.Tag as Texture2DData)?.HasAlpha ?? false)
                     HasTransparency = true;
                 Parameters["Texture"].SetValue(value);
             }

@@ -61,5 +61,10 @@ namespace Spectrum.Framework.VR
             if (RightHandIndex != -1)
                 RightHand = poses[RightHandIndex].mDeviceToAbsoluteTracking;
         }
+        public static Vector3 HeadPosition(Vector3? basis = null, Vector3? orientedOffset = null)
+        {
+            var derp = Vector3.Transform((orientedOffset ?? Vector3.Zero), HeadPose.Rotation());
+            return (basis ?? Vector3.Zero) + HeadPose.Translation + derp;
+        }
     }
 }

@@ -57,7 +57,6 @@ namespace Spectrum.Framework.Entities
             {
                 var rep = (output as IReplicatable);
                 rep.ReplicationData = new ReplicationData(this.Clone(), rep);
-                rep.Initialize();
             }
             return output;
         }

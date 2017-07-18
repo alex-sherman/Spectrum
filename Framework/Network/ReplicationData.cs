@@ -12,7 +12,6 @@ namespace Spectrum.Framework.Network
     public interface IReplicatable
     {
         ReplicationData ReplicationData { get; set; }
-        void Initialize();
     }
     public class ReplicationData
     {

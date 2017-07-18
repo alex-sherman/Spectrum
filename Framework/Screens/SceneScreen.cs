@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Content;
+using Spectrum.Framework.Physics;
 
 namespace Spectrum.Framework.Screens
 {
@@ -40,6 +41,16 @@ namespace Spectrum.Framework.Screens
             var timer = DebugTiming.Main.Time("Draw");
             GraphicsEngine.Render(SpectrumGame.Game.EntityManager.Entities.DrawSorted, gameTime, RenderTarget);
             spriteBatch.Draw(RenderTarget, Rect, Color.White);
+            timer.Stop();
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            var timer = DebugTiming.Main.Time("Update");
+            SpectrumGame.Game.MP.MakeCallbacks(gameTime);
+            PhysicsEngine.Single.Update(gameTime);
+            SpectrumGame.Game.EntityManager.Update(gameTime);
+            base.Update(gameTime);
             timer.Stop();
         }
     }

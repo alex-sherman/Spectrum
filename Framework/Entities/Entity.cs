@@ -28,7 +28,6 @@ namespace Spectrum.Framework.Entities
         #endregion
 
         public Guid ID;
-        public TypeData TypeData { get; private set; }
         /// <summary>
         /// Gets automatically set when constructing with InitData
         /// </summary>
@@ -54,7 +53,6 @@ namespace Spectrum.Framework.Entities
             Enabled = true;
             DrawEnabled = true;
             AllowReplicate = true;
-            TypeData = TypeHelper.Types.GetData(this.GetType().Name);
         }
 
         public virtual void Initialize() { }

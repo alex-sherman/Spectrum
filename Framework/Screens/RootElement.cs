@@ -38,7 +38,7 @@ namespace Spectrum.Framework.Screens
         {
             SpriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.LinearClamp);
             DrawWithChildren(gameTime, SpriteBatch, 1.0f);
-            SpectrumGame.Game.GraphicsDevice.SetRenderTarget(null);
+            SpectrumGame.Game.GraphicsDevice.SetRenderTarget(Target);
             if (Target != null)
                 SpectrumGame.Game.GraphicsDevice.Clear(Color.Transparent);
             SpriteBatch.End();

@@ -96,8 +96,10 @@ namespace Spectrum.Framework.Graphics
         public static RenderTarget2D shadowMap;
 
         static RenderTarget2D AATarget;
-        static RenderTarget2D VRTarget;
-        static Texture_t texture;
+        static RenderTarget2D VRTargetL;
+        static Texture_t textureL;
+        static RenderTarget2D VRTargetR;
+        static Texture_t textureR;
         static RenderTarget2D DepthTarget;
         static List<RenderTask> renderTasks = new List<RenderTask>();
         static RenderPhaseInfo sceneRenderPhase = new RenderPhaseInfo();
@@ -119,9 +121,12 @@ namespace Spectrum.Framework.Graphics
             {
                 uint width = 0, height = 0;
                 OpenVR.System.GetRecommendedRenderTargetSize(ref width, ref height);
-                VRTarget = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-                SharpDX.Direct3D11.Texture2D nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTarget);
-                texture = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
+                VRTargetL = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                SharpDX.Direct3D11.Texture2D nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTargetL);
+                textureL = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
+                VRTargetR = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTargetR);
+                textureR = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
             }
         }
         public static void ResetOnResize(int width, int height)
@@ -477,15 +482,13 @@ namespace Spectrum.Framework.Graphics
             return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();
         }
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
-        private static void VRRender(RenderGroups groups, EVREye eye, Matrix eye_offset)
+        private static void VRRender(Matrix camera, RenderGroups groups, EVREye eye, Matrix eye_offset)
         {
-            device.SetRenderTarget(VRTarget);
             GraphicsEngine.device.Clear(clearColor);
             RenderPhaseInfo vrPhase = new RenderPhaseInfo();
-            vrPhase.View = Camera.View * eye_offset;
+            vrPhase.View = camera * eye_offset;
             vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 10000);
             RenderQueue(vrPhase, groups);
-            var output = OpenVR.Compositor.Submit(eye, ref texture, ref bounds, EVRSubmitFlags.Submit_Default);
         }
 
         public static void Render(List<Entity> drawables, GameTime gameTime, RenderTarget2D target)
@@ -545,12 +548,17 @@ namespace Spectrum.Framework.Graphics
             {
                 Matrix left_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
                 Matrix right_offset = Matrix.Invert(SpecVR.HeadPose) * Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
-                VRRender(renderGroups, EVREye.Eye_Left, left_offset);
-                VRRender(renderGroups, EVREye.Eye_Right, right_offset);
+                var view = Camera.View;
+                device.SetRenderTarget(VRTargetR);
+                VRRender(view, renderGroups, EVREye.Eye_Right, right_offset);
+                device.SetRenderTarget(VRTargetL);
+                VRRender(view, renderGroups, EVREye.Eye_Left, left_offset);
+                OpenVR.Compositor.Submit(EVREye.Eye_Left, ref textureL, ref bounds, EVRSubmitFlags.Submit_Default);
+                OpenVR.Compositor.Submit(EVREye.Eye_Right, ref textureR, ref bounds, EVRSubmitFlags.Submit_Default);
                 device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
-                spriteBatch.Draw(VRTarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
+                spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
                 spriteBatch.End();
             }
             ClearRenderQueue();

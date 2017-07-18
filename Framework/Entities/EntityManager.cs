@@ -210,6 +210,7 @@ namespace Spectrum.Framework.Entities
         {
             entity.Manager = this;
             Entities.Add(entity);
+            entity.Initialize();
             if (mpService.ID == entity.OwnerGuid)
                 SendEntityCreation(entity);
             if (OnEntityAdded != null) { OnEntityAdded(entity); }
