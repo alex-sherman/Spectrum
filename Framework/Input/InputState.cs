@@ -93,9 +93,9 @@ namespace Spectrum.Framework.Input
             {
                 if (playerInfo.UsesKeyboard)
                 {
-                    if (bindingInfo.keyModifier != null && !IsKeyDown((Keys)bindingInfo.keyModifier)) { continue; }
-                    if (bindingInfo.key != null) { if (IsKeyDown((Keys)bindingInfo.key)) return true; }
-                    if (bindingInfo.mouseButton != null) { if (IsMouseDown((int)bindingInfo.mouseButton)) return true; }
+                    if (bindingInfo.keyModifier != null && !IsKeyDown(bindingInfo.keyModifier.Value)) { continue; }
+                    if (bindingInfo.key != null) { if (IsKeyDown(bindingInfo.key.Value)) return true; }
+                    if (bindingInfo.mouseButton != null) { if (IsMouseDown(bindingInfo.mouseButton.Value)) return true; }
                 }
                 foreach (int gamepadIndex in playerInfo.UsedGamepads)
                 {

@@ -52,7 +52,6 @@ namespace Spectrum.Framework.Graphics
     }
     public class RenderTask
     {
-        public RenderTask() { }
         public RenderTask(DrawablePart part, string tag = "Misc") { this.part = part; this.tag = tag; }
         public bool AllowInstance = true;
         public DrawablePart part;
@@ -461,25 +460,6 @@ namespace Spectrum.Framework.Graphics
             }
             time1.Stop();
             return groups;
-            //time1.Stop();
-            //var time = DebugTiming.Render.Time("Grouping");
-            //var grouped = renderTasks.GroupBy(task => task.part.ReferenceID);
-            //grouped = grouped.Select(group => group.Count() > 1 && group.All(task => task.instanceBuffer == null && task.EffectValue == group.First().EffectValue) ? MergeGroup(group) : group);
-            //var output = grouped.SelectMany(group => group).ToList();
-            //time.Stop();
-            //return output;
-        }
-        private static IGrouping<int, RenderTask> MergeGroup(IGrouping<int, RenderTask> group)
-        {
-            DynamicVertexBuffer buffer = new DynamicVertexBuffer(device, CommonTex.instanceVertexDeclaration, group.Count(), BufferUsage.WriteOnly);
-            Matrix[] worlds = group.Select(task => task.WorldValue).ToArray();
-            buffer.SetData(worlds);
-            RenderTask newTask = new RenderTask(group.First().part)
-            {
-                instanceBuffer = buffer,
-                merged = true
-            };
-            return new RenderTask[] { newTask }.GroupBy(task => task.part.ReferenceID).First();
         }
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
         private static void VRRender(Matrix camera, RenderGroups groups, EVREye eye, Matrix eye_offset)

@@ -14,10 +14,6 @@ using Spectrum.Framework.Graphics;
 
 namespace Spectrum.Framework.Entities
 {
-    /// <summary>
-    /// Entities are just collections of components.
-    /// They have more specific definitions as game objects which are specific sets of components.
-    /// </summary>
     public class Entity : IDisposable, IReplicatable
     {
         #region Replication
