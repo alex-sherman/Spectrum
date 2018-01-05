@@ -24,17 +24,14 @@ namespace Spectrum.Framework.Input
         public static float MouseSensitivity = 0.003f;
         private static DirectInput di = new DirectInput();
         private static SpectrumMouse SpecMouse = new SpectrumMouse(di);
+        public static InputState Current { get; private set; } = new InputState();
 
         #region Fields
-
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
         public SpectrumMouseState MouseState;
         public Gamepad[] Gamepads = new Gamepad[4];
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
-
         private InputState LastInputState;
-
-
         #endregion
 
         #region Initialization

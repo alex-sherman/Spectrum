@@ -206,7 +206,6 @@ namespace Spectrum
                 Steamworks.SteamAPI.Shutdown();
             }
         }
-        InputState input = new InputState();
         /// <summary>
         /// Allows the game to run logic such as updating the world,
         /// checking for collisions, gathering input, and playing audio.
@@ -236,8 +235,8 @@ namespace Spectrum
             {
                 SpecVR.Update(gameTime);
             }
-            input.Update();
-            Root.Update(gameTime, input, IsActive);
+            InputState.Current.Update();
+            Root.Update(gameTime, InputState.Current, IsActive);
             base.Update(gameTime);
         }
         protected override void Draw(GameTime gameTime)

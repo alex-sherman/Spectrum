@@ -40,14 +40,12 @@ namespace Spectrum.Framework.Entities
 
         public int UpdateOrder { get; protected set; }
         public int DrawOrder { get; protected set; }
-        public bool Enabled { get; protected set; }
-        public bool DrawEnabled { get; protected set; }
+        public bool Enabled { get; set; }
         public bool Disposing { get; private set; }
 
         public Entity()
         {
             Enabled = true;
-            DrawEnabled = true;
             AllowReplicate = true;
         }
 
@@ -76,7 +74,7 @@ namespace Spectrum.Framework.Entities
 
         public virtual void Update(GameTime gameTime)
         {
-            ReplicationData.Interpolate(gameTime.DT());
+            ReplicationData?.Interpolate(gameTime.DT());
             if (CanReplicate)
             {
                 if (replicateCounter > 0)
