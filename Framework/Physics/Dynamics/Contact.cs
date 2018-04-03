@@ -28,6 +28,7 @@ using Spectrum.Framework.Physics.Dynamics.Constraints;
 using Microsoft.Xna.Framework;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Entities;
+using System.Diagnostics;
 #endregion
 
 namespace Spectrum.Framework.Physics.Dynamics
@@ -214,6 +215,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void ApplyImpulse(Vector3 impulse)
         {
+            Debug.Assert(!(float.IsNaN(impulse.X) || float.IsNaN(impulse.Y) || float.IsNaN(impulse.Z)));
             Vector3 rotationImpulse = impulse;
             if (!treatBody1AsStatic && !treatBody2AsStatic)
             {
@@ -287,6 +289,8 @@ namespace Spectrum.Framework.Physics.Dynamics
                     body2.angularVelocity.Z += num5;
                 }
             }
+            Debug.Assert(!(float.IsNaN(body1.linearVelocity.X) || float.IsNaN(body1.linearVelocity.Y) || float.IsNaN(body1.linearVelocity.Z)));
+            Debug.Assert(!(float.IsNaN(body2.linearVelocity.X) || float.IsNaN(body2.linearVelocity.Y) || float.IsNaN(body2.linearVelocity.Z)));
         }
 
         public void ApplyPush(Vector3 push)

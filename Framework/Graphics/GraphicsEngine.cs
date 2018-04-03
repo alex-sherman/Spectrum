@@ -323,18 +323,18 @@ namespace Spectrum.Framework.Graphics
                     effect.MaterialDiffuse = material.diffuseColor;
                     if (material.diffuseTexture != null)
                         effect.Texture = material.diffuseTexture;
+                    var timer = DebugTiming.Render.Time("Draw Call Time");
                     foreach (var pass in effect.CurrentTechnique.Passes)
                     {
-                        pass.Apply();
                         foreach (var task in group.Value)
                         {
                             effect.World = task.WorldValue;
+                            pass.Apply();
                             DrawablePart part = task.part;
-                            var timer = DebugTiming.Render.Time("Draw Call Time");
                             Render(part.primType, part.VBuffer, part.IBuffer, task.instanceBuffer);
-                            timer.Stop();
                         }
                     }
+                    timer.Stop();
                 }
             }
         }

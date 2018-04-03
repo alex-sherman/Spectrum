@@ -18,6 +18,7 @@ namespace Spectrum.Framework.Screens
         public RenderTarget2D RenderTarget;
         [ThreadStatic]
         public static Matrix Projection;
+        public static bool Dirty { get; set; }
         public SceneScreen()
         {
             Width.Type = SizeType.MatchParent;
@@ -26,12 +27,14 @@ namespace Spectrum.Framework.Screens
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
-            if((RenderTarget == null || bounds.Width != RenderTarget.Width || bounds.Height != RenderTarget.Height)
+            if((Dirty || RenderTarget == null || bounds.Width != RenderTarget.Width || bounds.Height != RenderTarget.Height)
                 && (bounds.Width > 0 && bounds.Height > 0))
             {
+                Dirty = false;
                 Projection = Settings.GetProjection(bounds.Width, bounds.Height);
                 RenderTarget?.Dispose();
-                RenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, (int)(bounds.Width), (int)(bounds.Height), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                RenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, (int)(bounds.Width), (int)(bounds.Height),
+                    false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 GraphicsEngine.ResetOnResize(bounds.Width, bounds.Height);
             }
         }
@@ -40,7 +43,7 @@ namespace Spectrum.Framework.Screens
             base.Draw(gameTime, spriteBatch);
             var timer = DebugTiming.Main.Time("Draw");
             GraphicsEngine.Render(SpectrumGame.Game.EntityManager.Entities.DrawSorted, gameTime, RenderTarget);
-            spriteBatch.Draw(RenderTarget, Rect, Color.White);
+            spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
             timer.Stop();
         }
 

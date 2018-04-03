@@ -36,7 +36,8 @@ namespace Spectrum.Framework.Screens
         
         public void Draw(GameTime gameTime)
         {
-            SpriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.LinearClamp);
+            SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
+                SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             DrawWithChildren(gameTime, SpriteBatch, 1.0f);
             SpectrumGame.Game.GraphicsDevice.SetRenderTarget(Target);
             if (Target != null)
