@@ -478,7 +478,7 @@ namespace Spectrum.Framework.Graphics
             WaterEffect.ReflectionProj = Camera.ReflectionProjection;
             SpectrumEffect.CameraPos = Camera.Position;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
-            drawables = drawables.Where(e => e.Enabled).ToList();
+            drawables = drawables.Where(e => e.DrawEnabled).ToList();
 
             var preRenderTime = DebugTiming.Render.Time("Update Shadow");
             UpdateShadowMap(drawables);

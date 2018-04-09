@@ -41,11 +41,13 @@ namespace Spectrum.Framework.Entities
         public int UpdateOrder { get; protected set; }
         public int DrawOrder { get; protected set; }
         public bool Enabled { get; set; }
+        public bool DrawEnabled { get; set; }
         public bool Disposing { get; private set; }
 
         public Entity()
         {
             Enabled = true;
+            DrawEnabled = true;
             AllowReplicate = true;
         }
 

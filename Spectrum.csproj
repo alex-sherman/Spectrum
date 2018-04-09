@@ -220,6 +220,7 @@
     <Compile Include="Framework\Input\BindingOption.cs" />
     <Compile Include="Framework\Input\InputLayout.cs" />
     <Compile Include="Framework\Input\PlayerInformation.cs" />
+    <Compile Include="Framework\Input\RawMouse.cs" />
     <Compile Include="Framework\Input\SpectrumMouse.cs" />
     <Compile Include="Framework\Screens\RootElement.cs" />
     <Compile Include="Framework\Screens\SceneScreen.cs" />
