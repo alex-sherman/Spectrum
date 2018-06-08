@@ -62,7 +62,7 @@ namespace Spectrum.Framework
             float size = scale * (screenPos - GraphicsEngine.ViewToScreenPosition(cameraPosition + Vector3.Up)).Length() / font.LineSpacing / font.LineSpacing;
             if (screenPos.Z < 1 && screenPos.Z > 0)
             {
-                
+
                 spritebatch.DrawString(font, text, new Vector2(screenPos.X, screenPos.Y) - font.MeasureString(text) * size / 2,
                     textColor, 0, Vector2.Zero, size, SpriteEffects.None, layer);
             }
@@ -79,9 +79,13 @@ namespace Spectrum.Framework
             list.RemoveAt(0);
             return ele;
         }
-        public static Quaternion Rotation(this Matrix matrix)
+        public static Quaternion ToQuaternion(this Matrix matrix)
         {
             return Quaternion.CreateFromRotationMatrix(matrix);
+        }
+        public static Matrix Rotation(this Matrix matrix)
+        {
+            return Matrix.CreateFromQuaternion(matrix.ToQuaternion());
         }
     }
 }

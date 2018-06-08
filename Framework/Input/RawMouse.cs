@@ -13,7 +13,6 @@ namespace Spectrum.Framework.Input
     class RawMouse
     {
         #region API structs
-
         public enum RawInputDeviceType : uint
         {
             RIM_TYPEMOUSE = 0,
@@ -117,7 +116,6 @@ namespace Spectrum.Framework.Input
         {
             public bool PreFilterMessage(ref Message m)
             {
-                // Blocks all the messages relating to the left mouse button. 
                 if (m.Msg == 0xff)
                 {
                     uint dwSize = 40;

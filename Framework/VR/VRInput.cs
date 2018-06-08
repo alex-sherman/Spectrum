@@ -74,6 +74,7 @@ namespace Spectrum.Framework.VR
         public Vector2 touchpadDirection;
         public Vector3 direction;
         public Vector3 position;
+        public Quaternion rotation;
         public VRController(VRHand hand)
         {
             Hand = hand;
@@ -84,6 +85,7 @@ namespace Spectrum.Framework.VR
             touchpadDirection = Vector2.Zero;
             direction = Vector3.Forward;
             position = Vector3.Zero;
+            rotation = Quaternion.Identity;
         }
         public void Update()
         {
@@ -96,7 +98,8 @@ namespace Spectrum.Framework.VR
             touchpad.Y = state.rAxis0.y;
             touchpadDirection = touchpad;
             touchpadDirection.Normalize();
-            direction = Vector3.Transform(Vector3.Forward, (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Rotation());
+            rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
+            direction = Vector3.Transform(Vector3.Forward, rotation);
             position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;
         }
         private bool CheckFlag(bool touched, VRButton check)

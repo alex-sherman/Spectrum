@@ -57,7 +57,7 @@ namespace Spectrum.Framework.Input
     {
         public bool horizontal;
         public float scalar;
-        public MouseAxis(bool horizontal, float scalar = 0.002f)
+        public MouseAxis(bool horizontal, float scalar = 0.001f)
         {
             this.horizontal = horizontal;
             this.scalar = scalar;

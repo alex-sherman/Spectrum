@@ -18,12 +18,12 @@ namespace Spectrum.Framework.Graphics
         float farPlane = 10000;
         float aspectRatio;
         private Vector3 _position;
-        protected Quaternion _rotation;
-        public Quaternion Rotation { get { return _rotation; } }
+        public Quaternion Rotation { get; set; }
         private float _yaw, _pitch, _roll;
-        public float Yaw { get { return _yaw; } set { _yaw = value; _rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
-        public float Pitch { get { return _pitch; } set { _pitch = value; _rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
-        public float Roll { get { return _roll; } set { _roll = value; _rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
+        /// TODO: Retrieve these values from rotation?
+        public float Yaw { get { return _yaw; } set { _yaw = value; Rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
+        public float Pitch { get { return _pitch; } set { _pitch = value; Rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
+        public float Roll { get { return _roll; } set { _roll = value; Rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
 
         public Color ClearColor
         {
@@ -69,8 +69,8 @@ namespace Spectrum.Framework.Graphics
             {
                 return Matrix.CreateLookAt(
                     Position,
-                    Vector3.Transform(Vector3.Forward, _rotation) + Position,
-                    Vector3.Transform(Vector3.Up, _rotation));
+                    Vector3.Transform(Vector3.Forward, Rotation) + Position,
+                    Vector3.Transform(Vector3.Up, Rotation));
             }
         }
         public virtual Vector3 Position
@@ -92,10 +92,10 @@ namespace Spectrum.Framework.Graphics
                 Vector3 refCP = Position;
                 refCP.Y = -refCP.Y + 2 * Water.waterHeight;
 
-                Vector3 refTP = Vector3.Transform(Vector3.Forward, _rotation) + Position;
+                Vector3 refTP = Vector3.Transform(Vector3.Forward, Rotation) + Position;
                 refTP.Y = -refTP.Y + 2 * Water.waterHeight;
 
-                Vector3 cameraRight = Vector3.Transform(new Vector3(1, 0, 0), _rotation);
+                Vector3 cameraRight = Vector3.Transform(new Vector3(1, 0, 0), Rotation);
                 Vector3 invUpVector = Vector3.Cross(cameraRight, refTP - refCP);
 
                 return Matrix.CreateLookAt(refCP, refTP, invUpVector);
