@@ -72,6 +72,7 @@ namespace Spectrum.Framework.VR
         public VRControllerState_t state;
         public Vector2 touchpad;
         public Vector2 touchpadDirection;
+        public double touchpadAngle;
         public Vector3 direction;
         public Vector3 position;
         public Quaternion rotation;
@@ -83,6 +84,7 @@ namespace Spectrum.Framework.VR
             state = new VRControllerState_t();
             touchpad = Vector2.Zero;
             touchpadDirection = Vector2.Zero;
+            touchpadAngle = 0;
             direction = Vector3.Forward;
             position = Vector3.Zero;
             rotation = Quaternion.Identity;
@@ -98,6 +100,7 @@ namespace Spectrum.Framework.VR
             touchpad.Y = state.rAxis0.y;
             touchpadDirection = touchpad;
             touchpadDirection.Normalize();
+            touchpadAngle = Math.Atan2(touchpadDirection.Y, touchpadDirection.X);
             rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
             direction = Vector3.Transform(Vector3.Forward, rotation);
             position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;

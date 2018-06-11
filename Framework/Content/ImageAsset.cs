@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Content
         private SvgDocument svg = null;
         private Texture2D texture = null;
         private Texture2D rasterized = null;
-        internal ImageAsset(SvgDocument svg) { this.svg = svg; }
+        public ImageAsset(SvgDocument svg) { this.svg = svg; }
         public ImageAsset(Texture2D texture) { this.texture = texture; }
         private ImageAsset() { }
         public void Rasterize(int width, int height)

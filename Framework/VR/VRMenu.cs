@@ -20,6 +20,7 @@ namespace Spectrum.Framework.VR
         public Point RenderTargetSize;
         public VRMenu()
         {
+            AllowReplicate = false;
             NoCollide = true;
             DrawOrder = 10;
         }
