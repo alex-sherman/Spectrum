@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Spectrum.Framework.Graphics;
 using System.Diagnostics;
 using Spectrum.Framework.Screens;
 using Spectrum.Framework.Entities;
@@ -15,9 +13,9 @@ namespace Spectrum.Framework
     {
         private class DebugHolder : IDebug
         {
-            Func<string> text;
-            Action<GameTime, SpriteBatch> draw;
-            public DebugHolder(Func<string> text, Action<GameTime,SpriteBatch> draw)
+            readonly Func<string> text;
+            readonly Action<GameTime, SpriteBatch> draw;
+            public DebugHolder(Func<string> text, Action<GameTime, SpriteBatch> draw)
             {
                 this.text = text;
                 this.draw = draw;
@@ -32,6 +30,7 @@ namespace Spectrum.Framework
                 draw?.Invoke(gameTime, spriteBatch);
             }
         }
+        public static HashSet<string> onceMessages = new HashSet<string>();
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
         public static IDebug display(Func<string> text = null, Action<GameTime, SpriteBatch> draw = null)
@@ -56,10 +55,20 @@ namespace Spectrum.Framework
             catch { }
         }
         public static void log(string msg, params object[] args) { print(msg, args); }
+        public static void PrintOnce(string msg, params object[] args)
+        {
+            if (!onceMessages.Contains(msg))
+            {
+                print(msg, args);
+                onceMessages.Add(msg);
+            }
+        }
         public static void print(string msg, params object[] args)
         {
             msg = String.Format(msg, args);
-            StackFrame sf = new StackFrame(1, true);
+            StackFrame sf; int sfi = 1;
+            while ((sf = new StackFrame(sfi, true)).GetMethod().DeclaringType == typeof(DebugPrinter))
+                sfi++;
             lock (strings)
             {
                 if (strings.Count > 20)
@@ -89,7 +98,7 @@ namespace Spectrum.Framework
                 var times = timeGroup.FrameInfo().Take(10);
                 foreach (var time in times)
                 {
-                    toPrint = time.Item1 + ": " + fform(time.Item2.TotalTime) + " ("+fform(time.Item2.AvgerageTime) + "x" + time.Item2.Count + ")";
+                    toPrint = time.Item1 + ": " + fform(time.Item2.TotalTime) + " (" + fform(time.Item2.AvgerageTime) + "x" + time.Item2.Count + ")";
                     spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                     curPos += Font.LineSpacing;
                 }
@@ -123,7 +132,7 @@ namespace Spectrum.Framework
                 DrawTimes(2, spritebatch);
 
             }
-            if(SpectrumGame.Game.DebugDrawAll)
+            if (SpectrumGame.Game.DebugDrawAll)
             {
                 foreach (var entity in SpectrumGame.Game.EntityManager)
                 {
@@ -138,7 +147,6 @@ namespace Spectrum.Framework
                     objects[i].DebugDraw(gameTime, spritebatch);
                 }
             }
-            //timings = new Dictionary<string, Dictionary<string, double>>();
         }
     }
 }

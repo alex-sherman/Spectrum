@@ -156,7 +156,8 @@ namespace Spectrum.Framework
                 object coercedValue;
                 if (Coerce(info.MemberType, value, out coercedValue))
                     members[name].SetValue(obj, coercedValue);
-
+                else
+                    DebugPrinter.PrintOnce("Failed to coerce {0}.{1}", Type.Name, name);
             }
         }
         public object Get(object obj, string name)

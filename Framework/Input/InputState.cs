@@ -86,7 +86,11 @@ namespace Spectrum.Framework.Input
         {
             InputLayout layout = playerInfo.Layout;
             KeyBinding binding;
-            if (!layout.KeyBindings.TryGetValue(bindingName, out binding)) throw new KeyNotFoundException("Binding not found");
+            if (!layout.KeyBindings.TryGetValue(bindingName, out binding))
+            {
+                DebugPrinter.PrintOnce("Binding not found " + bindingName);
+                return false;
+            }
             foreach (var bindingInfo in binding.Options)
             {
                 if (playerInfo.UsesKeyboard)
