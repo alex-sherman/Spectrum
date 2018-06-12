@@ -159,6 +159,10 @@ namespace Spectrum.Framework
                 else
                     DebugPrinter.PrintOnce("Failed to coerce {0}.{1}", Type.Name, name);
             }
+            else
+            {
+                DebugPrinter.PrintOnce("Failed to find field {0}.{1}", Type.Name, name);
+            }
         }
         public object Get(object obj, string name)
         {

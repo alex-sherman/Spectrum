@@ -98,6 +98,15 @@ namespace Spectrum.Framework.Entities
             return output;
         }
     }
+    public class InitData<T> : InitData
+    {
+        public InitData(params object[] args) : base(typeof(T).Name, args) { }
+        new public virtual InitData<T> Set(string name, object value)
+        {
+            base.Set(name, value);
+            return this;
+        }
+    }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [LoadableType]
     public class ImmultableInitData : InitData

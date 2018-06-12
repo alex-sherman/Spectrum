@@ -6,6 +6,7 @@ using Spectrum.Framework.Screens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Spectrum.Framework
@@ -86,6 +87,20 @@ namespace Spectrum.Framework
         public static Matrix Rotation(this Matrix matrix)
         {
             return Matrix.CreateFromQuaternion(matrix.ToQuaternion());
+        }
+        /// <summary>
+        /// Solution from: https://stackoverflow.com/questions/2869801/is-there-a-fast-alternative-to-creating-a-texture2d-from-a-bitmap-object-in-xna
+        /// </summary>
+        public static Texture2D GetTexture2DFromBitmap(this System.Drawing.Bitmap bitmap, GraphicsDevice device)
+        {
+            Texture2D tex = new Texture2D(device, bitmap.Width, bitmap.Height, false, SurfaceFormat.Bgra32);
+            System.Drawing.Imaging.BitmapData data = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height), System.Drawing.Imaging.ImageLockMode.ReadOnly, bitmap.PixelFormat);
+            int bufferSize = data.Height * data.Stride;
+            byte[] bytes = new byte[bufferSize];
+            Marshal.Copy(data.Scan0, bytes, 0, bytes.Length);
+            tex.SetData(bytes);
+            bitmap.UnlockBits(data);
+            return tex;
         }
     }
 }

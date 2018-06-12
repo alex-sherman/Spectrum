@@ -15,7 +15,7 @@ namespace Spectrum.Framework.Graphics
         {
             quad = DrawablePart.From(new List<CommonTex>()
             {
-                new CommonTex(new Vector3(-1,0,-1), Vector3.UnitY, new Vector2(0,0)),
+                new CommonTex(new Vector3(-1, 0, -1), Vector3.UnitY, new Vector2(0,0)),
                 new CommonTex(new Vector3(1, 0, -1), Vector3.UnitY, new Vector2(1, 0)),
                 new CommonTex(new Vector3(-1, 0, 1), Vector3.UnitY, new Vector2(0, 1)),
                 new CommonTex(new Vector3(1, 0, 1), Vector3.UnitY, new Vector2(1, 1))

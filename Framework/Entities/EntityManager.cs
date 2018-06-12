@@ -178,6 +178,10 @@ namespace Spectrum.Framework.Entities
             T output = CreateEntity(new InitData(typeof(T).Name, args)) as T;
             return output;
         }
+        public T CreateEntity<T>(InitData<T> data) where T : Entity
+        {
+            return CreateEntity((InitData)data) as T;
+        }
         public Entity CreateEntity(InitData data)
         {
             Entity e = Construct(data);

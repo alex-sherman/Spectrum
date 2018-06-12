@@ -20,17 +20,7 @@ namespace Spectrum.Framework.Content
         public void Rasterize(int width, int height)
         {
             System.Drawing.Bitmap bitmap = svg.Draw(width, height);
-            rasterized = new Texture2D(SpectrumGame.Game.GraphicsDevice, bitmap.Width, bitmap.Height);
-            Color[] data = new Color[bitmap.Width * bitmap.Height];
-            for (int i = 0; i < bitmap.Width; i++)
-            {
-                for (int j = 0; j < bitmap.Height; j++)
-                {
-                    System.Drawing.Color color = bitmap.GetPixel(i, j);
-                    data[i + j * bitmap.Width] = new Color(color.R, color.G, color.B, color.A);
-                }
-            }
-            rasterized.SetData(data);
+            rasterized = bitmap.GetTexture2DFromBitmap(SpectrumGame.Game.GraphicsDevice);
         }
         public void Draw(SpriteBatch spriteBatch, Rectangle rect, Color color, float layer)
         {
