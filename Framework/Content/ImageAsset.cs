@@ -11,12 +11,13 @@ namespace Spectrum.Framework.Content
 {
     public class ImageAsset
     {
-        private SvgDocument svg = null;
+        public SvgDocument svg = null;
         private Texture2D texture = null;
         private Texture2D rasterized = null;
-        public ImageAsset(SvgDocument svg) { this.svg = svg; }
+        // Marking as public requires a reference to SVG to resolve method
+        internal ImageAsset(SvgDocument svg) { this.svg = svg; }
         public ImageAsset(Texture2D texture) { this.texture = texture; }
-        private ImageAsset() { }
+        public ImageAsset() { }
         public void Rasterize(int width, int height)
         {
             System.Drawing.Bitmap bitmap = svg.Draw(width, height);
