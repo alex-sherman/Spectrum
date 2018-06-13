@@ -188,7 +188,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 ms1 = ms1.RequestWorkingClone();
                 JBBox transformedBoundingBox = body2.BoundingBox;
-                transformedBoundingBox.InverseTransform(body1.Position, body1.Orientation);
+                transformedBoundingBox.InverseTransform(body1.Position, Matrix.CreateFromQuaternion(body1.Orientation));
 
                 shape1count = ms1.Prepare(ref transformedBoundingBox);
             }
@@ -197,7 +197,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 ms2 = ms2.RequestWorkingClone();
                 JBBox transformedBoundingBox = body1.BoundingBox;
-                transformedBoundingBox.InverseTransform(body2.Position, body2.Orientation);
+                transformedBoundingBox.InverseTransform(body2.Position, Matrix.CreateFromQuaternion(body2.Orientation));
 
                 shape2count = ms2.Prepare(ref transformedBoundingBox);
             }

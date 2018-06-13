@@ -228,7 +228,7 @@
     <Compile Include="Framework\LSystem\LNode.cs" />
     <Compile Include="Framework\LSystem\LTree.cs" />
     <Compile Include="Framework\ExtensionMethods.cs" />
-    <Compile Include="Framework\MatrixHelper.cs" />
+    <Compile Include="Framework\Helpers\MatrixHelper.cs" />
     <Compile Include="Framework\Network\Handshake.cs" />
     <Compile Include="Framework\Network\NetID.cs" />
     <Compile Include="Framework\Network\NetMessage.cs" />

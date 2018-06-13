@@ -34,7 +34,7 @@ namespace Spectrum.Framework
                         (float)jobj[2],
                         (float)jobj[3]));
         }
-        static public Matrix CreateRotationFromDirection(Vector3 vDirection)
+        public static Matrix RotationFromDirection(Vector3 vDirection)
         {
             vDirection.Normalize();
             vDirection *= -1;
@@ -51,6 +51,22 @@ namespace Spectrum.Framework
                                         vDirection.X, vDirection.Y, vDirection.Z, 0.0f,
                                         0.0f, 0.0f, 0.0f, 1.0f);
             return mBasis;
+        }
+        public static Quaternion QuaternionFromDirection(Vector3 vDirection)
+        {
+            return RotationFromDirection(vDirection).ToQuaternion();
+        }
+        public static Quaternion ToQuaternion(this Matrix matrix)
+        {
+            return Quaternion.CreateFromRotationMatrix(matrix);
+        }
+        public static Matrix ToMatrix(this Quaternion quaternion)
+        {
+            return Matrix.CreateFromQuaternion(quaternion);
+        }
+        public static Quaternion Concat(this Quaternion quata, Quaternion quatb)
+        {
+            return Quaternion.Concatenate(quata, quatb);
         }
     }
 }

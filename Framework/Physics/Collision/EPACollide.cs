@@ -126,8 +126,8 @@ namespace Spectrum.Framework.Physics.Collision
             faces.Add(new EPAFace(simplex[1], simplex[2], simplex[3]));
             return faces;
         }
-        public static bool Detect(ISupportMappable support1, ISupportMappable support2, List<EPAVertex> simplex, Matrix orientation1,
-             Matrix orientation2, Vector3 position1, Vector3 position2, Vector3 velocity1, Vector3 velocity2,
+        public static bool Detect(ISupportMappable support1, ISupportMappable support2, List<EPAVertex> simplex, Quaternion orientation1,
+             Quaternion orientation2, Vector3 position1, Vector3 position2, Vector3 velocity1, Vector3 velocity2,
              out Vector3 point, out Vector3 normal, out float penetration)
         {
             point = Vector3.Zero;

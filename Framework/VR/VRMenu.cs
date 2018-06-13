@@ -38,7 +38,7 @@ namespace Spectrum.Framework.VR
         public override List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
         {
             return new List<RenderTask>() { Draw3D.Draw3DRectangle(Target,
-                Quaternion.Concatenate(Quaternion.CreateFromAxisAngle(Vector3.Right, (float)Math.PI / 2), Quaternion.CreateFromRotationMatrix(orientation)),
+                Quaternion.Concatenate(Quaternion.CreateFromAxisAngle(Vector3.Right, (float)Math.PI / 2), orientation),
                 position, Size) };
         }
     }

@@ -309,7 +309,7 @@ namespace Spectrum.Framework.Physics.Dynamics
                     if (angle != 0)
                     {
                         axis.Normalize();
-                        body1.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
+                        body1.orientation = Quaternion.Concatenate(body1.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle/2));
                     }
                 }
             }
@@ -323,7 +323,7 @@ namespace Spectrum.Framework.Physics.Dynamics
                     if (angle != 0)
                     {
                         axis.Normalize();
-                        body2.orientation *= Matrix.CreateFromAxisAngle(axis, -(float)angle/2);
+                        body2.orientation = Quaternion.Concatenate(body2.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle / 2));
                     }
                 }
             }

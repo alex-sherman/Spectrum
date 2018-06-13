@@ -661,11 +661,10 @@ namespace Spectrum.Framework.Physics
             }
 
             Quaternion dorn = new Quaternion(axis.X, axis.Y, axis.Z, (float)Math.Cos(angle * timestep * 0.5f));
-            Quaternion ornA; Quaternion.CreateFromRotationMatrix(ref body.orientation, out ornA);
 
-            Quaternion.Multiply(ref dorn, ref ornA, out dorn);
+            Quaternion.Multiply(ref dorn, ref body.orientation, out body.orientation);
 
-            dorn.Normalize(); Matrix.CreateFromQuaternion(ref dorn, out body.orientation);
+            body.orientation.Normalize();
 
 
             if ((body.Damping & GameObject.DampingType.Linear) != 0)

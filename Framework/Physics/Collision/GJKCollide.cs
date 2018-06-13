@@ -46,16 +46,13 @@ namespace Spectrum.Framework.Physics.Collision
 
         private static ResourcePool<VoronoiSimplexSolver> simplexSolverPool = new ResourcePool<VoronoiSimplexSolver>();
 
-        public static void SupportMapTransformed(ISupportMappable support, ref Matrix orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out GJKResult result)
+        public static void SupportMapTransformed(ISupportMappable support, ref Quaternion orientation, ref Vector3 position, ref Vector3 velocity, ref Vector3 direction, out GJKResult result)
         {
             //Vector3.Transform(ref direction, ref invOrientation, out result);
             //support.SupportMapping(ref result, out result);
             //Vector3.Transform(ref result, ref orientation, out result);
             //Vector3.Add(ref result, ref position, out result);
-            Vector3 newDirection = direction;
-            newDirection.X = ((direction.X * orientation.M11) + (direction.Y * orientation.M12)) + (direction.Z * orientation.M13);
-            newDirection.Y = ((direction.X * orientation.M21) + (direction.Y * orientation.M22)) + (direction.Z * orientation.M23);
-            newDirection.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
+            Vector3 newDirection = Vector3.Transform(direction, Quaternion.Inverse(orientation));
 
             support.SupportMapping(ref newDirection, out result.Position, false);
             result.Position = Vector3.Transform(result.Position, orientation);
@@ -158,7 +155,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="penetration">Estimated penetration depth of the collision.</param>
         /// <returns>Returns true if there is a collision, false otherwise.</returns>
         public static bool Detect(ISupportMappable support1, ISupportMappable support2,
-            Matrix orientation1, Matrix orientation2,
+            Quaternion orientation1, Quaternion orientation2,
             Vector3 position1, Vector3 position2,
             Vector3 velocity1, Vector3 velocity2,
             out List<EPAVertex> simplex, bool speculative = false)
@@ -335,7 +332,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// ray the collision occured. The hitPoint is calculated by: origin+friction*direction.</param>
         /// <param name="normal">The normal from the ray collision.</param>
         /// <returns>Returns true if the ray hit the shape, false otherwise.</returns>
-        public static bool Raycast(ISupportMappable support, Matrix orientation, Matrix invOrientation,
+        public static bool Raycast(ISupportMappable support, Quaternion orientation, Quaternion invOrientation,
             Vector3 position, Vector3 velocity, Vector3 origin, Vector3 direction, out float fraction, out Vector3 normal)
         {
             VoronoiSimplexSolver simplexSolver = simplexSolverPool.GetNew();

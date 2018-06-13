@@ -37,15 +37,15 @@ namespace Spectrum.Framework.Entities
         public Matrix invInertia;
 
         public Matrix invInertiaWorld;
-        public Matrix orientation;
+        public Quaternion orientation;
         [Replicate]
-        public Matrix Orientation
+        public Quaternion Orientation
         {
             get { return orientation; }
             set { orientation = value; }
         }
-        public Matrix invOrientation;
-        public Matrix InvOrientation { get { return invOrientation; } }
+        public Quaternion invOrientation;
+        public Quaternion InvOrientation { get { return invOrientation; } }
         public Vector3 position;
         [Replicate]
         public Vector3 Position
@@ -155,7 +155,7 @@ namespace Spectrum.Framework.Entities
         /// </summary>
         public Matrix World
         {
-            get { return ModelTransform * orientation * Matrix.CreateTranslation(position); }
+            get { return ModelTransform * Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position); }
         }
 
 
@@ -212,10 +212,9 @@ namespace Spectrum.Framework.Entities
             this.Model = null;
             IsActive = true;
             AnimationPlayer = new AnimationPlayer(this);
-            orientation = Matrix.Identity;
             inertia = new Matrix();
-            invInertia = this.invInertiaWorld = new Matrix();
-            invOrientation = this.orientation = Matrix.Identity;
+            invInertia = invInertiaWorld = new Matrix();
+            invOrientation = orientation = Quaternion.Identity;
             inverseMass = 1.0f;
             material = new Material();
         }
@@ -231,6 +230,12 @@ namespace Spectrum.Framework.Entities
         #region Physics Functions
         public void PhysicsUpdate(float timestep)
         {
+            //TODO: This might be useful to cache on the object if its needed elsewhere
+            // or it should just get removed and figure out how to do everything with quaternions
+            Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
+            Quaternion.Inverse(ref orientation, out invOrientation);
+            Matrix invOrientationMat = Matrix.CreateFromQuaternion(invOrientation);
+
             if (Shape != null)
             {
                 //Set mass properties
@@ -239,8 +244,7 @@ namespace Spectrum.Framework.Entities
                 this.inverseMass = 1.0f / Shape.mass;
 
                 // Given: Orientation, Inertia
-                Matrix.Transpose(ref orientation, out invOrientation);
-                Shape.GetBoundingBox(ref orientation, out boundingBox);
+                Shape.GetBoundingBox(ref orientationMat, out boundingBox);
                 Vector3.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
                 boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
                 Vector3.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
@@ -250,8 +254,8 @@ namespace Spectrum.Framework.Entities
 
             if (!IsStatic)
             {
-                Matrix.Multiply(ref invOrientation, ref invInertia, out invInertiaWorld);
-                Matrix.Multiply(ref invInertiaWorld, ref orientation, out invInertiaWorld);
+                Matrix.Multiply(ref invOrientationMat, ref invInertia, out invInertiaWorld);
+                Matrix.Multiply(ref invInertiaWorld, ref orientationMat, out invInertiaWorld);
             }
         }
         public virtual void PreStep(float step)
@@ -325,7 +329,8 @@ namespace Spectrum.Framework.Entities
             if (Shape != null)
             {
                 JBBox boundingBox;
-                Shape.GetBoundingBox(ref orientation, out boundingBox);
+                Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
+                Shape.GetBoundingBox(ref orientationMat, out boundingBox);
                 Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
                 Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
                 GraphicsEngine.DrawJBBox(boundingBox, Color.Black, spriteBatch);

@@ -80,14 +80,6 @@ namespace Spectrum.Framework
             list.RemoveAt(0);
             return ele;
         }
-        public static Quaternion ToQuaternion(this Matrix matrix)
-        {
-            return Quaternion.CreateFromRotationMatrix(matrix);
-        }
-        public static Matrix Rotation(this Matrix matrix)
-        {
-            return Matrix.CreateFromQuaternion(matrix.ToQuaternion());
-        }
         /// <summary>
         /// Solution from: https://stackoverflow.com/questions/2869801/is-there-a-fast-alternative-to-creating-a-texture2d-from-a-bitmap-object-in-xna
         /// </summary>

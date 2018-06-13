@@ -13,8 +13,8 @@ namespace Spectrum.Framework.Physics.Collision
         Shape Shape { get; }
         Vector3 Position { get; }
         Vector3 Velocity { get; }
-        Matrix Orientation { get; }
-        Matrix InvOrientation { get; }
+        Quaternion Orientation { get; }
+        Quaternion InvOrientation { get; }
         JBBox BoundingBox { get;  }
     }
     public static class ICollidableExtension
