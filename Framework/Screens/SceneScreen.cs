@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Screens
 {
     public class SceneScreen : GameScreen
     {
-        public EntityManager Manager;
+        public EntityManager Manager = SpectrumGame.Game.EntityManager;
         public RenderTarget2D RenderTarget;
         [ThreadStatic]
         public static Matrix Projection;
@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Screens
         {
             base.Draw(gameTime, spriteBatch);
             var timer = DebugTiming.Main.Time("Draw");
-            GraphicsEngine.Render(SpectrumGame.Game.EntityManager.Entities.DrawSorted, gameTime, RenderTarget);
+            GraphicsEngine.Render(Manager.Entities.DrawSorted, gameTime, RenderTarget);
             spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
             timer.Stop();
         }
@@ -52,7 +52,7 @@ namespace Spectrum.Framework.Screens
             var timer = DebugTiming.Main.Time("Update");
             SpectrumGame.Game.MP.MakeCallbacks(gameTime);
             PhysicsEngine.Single.Update(gameTime);
-            SpectrumGame.Game.EntityManager.Update(gameTime);
+            Manager.Update(gameTime);
             base.Update(gameTime);
             timer.Stop();
         }

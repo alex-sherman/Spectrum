@@ -214,6 +214,7 @@ namespace Spectrum.Framework.Physics.Collision
             }
             if(!body1.IsStatic && !body2.IsStatic) // <- both are !static
             {
+                // TODO: This got hit once
                 System.Diagnostics.Debug.Assert(body1.island == body2.island,
                     "IslandManager Inconsistency.",
                     "Removing arbiter with different islands.");
