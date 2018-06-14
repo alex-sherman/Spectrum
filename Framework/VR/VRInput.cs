@@ -126,6 +126,7 @@ namespace Spectrum.Framework.VR
                 case VRButton.Axis3:
                 case VRButton.Grip:
                 case VRButton.System:
+                case VRButton.ApplicationMenu:
                     return (flags & ((1ul) << (int)check)) != 0;
                 default:
                     return false;

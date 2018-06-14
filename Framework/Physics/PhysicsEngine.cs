@@ -30,6 +30,7 @@ using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Physics.Dynamics.Constraints;
 using Microsoft.Xna.Framework;
 using Spectrum.Framework.Entities;
+using System.Linq;
 #endregion
 
 namespace Spectrum.Framework.Physics
@@ -140,9 +141,6 @@ namespace Spectrum.Framework.Physics
         public ArbiterMap ArbiterMap { get { return arbiterMap; } }
         private ArbiterMap arbiterMap;
 
-        private Queue<Arbiter> removedArbiterQueue = new Queue<Arbiter>();
-        private Queue<Arbiter> addedArbiterQueue = new Queue<Arbiter>();
-
         private Vector3 gravity = new Vector3(0, -9.81f, 0);
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
@@ -179,15 +177,15 @@ namespace Spectrum.Framework.Physics
                 throw new ArgumentNullException("The CollisionSystem can't be null.", "collision");
 
             // Create the readonly wrappers
-            this.Collidables = new HashSet<GameObject>();
-            this.Constraints = new HashSet<Constraint>();
+            Collidables = new HashSet<GameObject>();
+            Constraints = new HashSet<Constraint>();
             //this.SoftBodies = new ReadOnlyHashset<SoftBody>(softbodies);
 
-            this.CollisionSystem = collision;
+            CollisionSystem = collision;
 
-            this.CollisionSystem.CollisionDetected += CollisionDetected;
+            CollisionSystem.CollisionDetected += CollisionDetected;
 
-            this.arbiterMap = new ArbiterMap();
+            arbiterMap = new ArbiterMap(collision, islands);
 
             AllowDeactivation = true;
         }
@@ -196,7 +194,7 @@ namespace Spectrum.Framework.Physics
         /// Gets the <see cref="CollisionSystem"/> used
         /// to detect collisions.
         /// </summary>
-        public CollisionSystem CollisionSystem { set; get; }
+        public CollisionSystem CollisionSystem { get; private set; }
 
         /// <summary>
         /// In Jitter many objects get added to stacks after they were used.
@@ -342,7 +340,7 @@ namespace Spectrum.Framework.Physics
             if (!Collidables.Remove(body)) return false;
 
             // Remove all connected constraints and arbiters
-            foreach (Arbiter arbiter in body.arbiters)
+            foreach (Arbiter arbiter in body.arbiters.ToList())
             {
                 arbiterMap.Remove(arbiter);
                 events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
@@ -477,16 +475,6 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); debugTimes[(int)DebugType.UpdateContacts] = sw.Elapsed.TotalMilliseconds;
 
             sw.Reset(); sw.Start();
-            double ms = 0;
-            while (removedArbiterQueue.Count > 0)
-                islands.ArbiterRemoved(removedArbiterQueue.Dequeue());
-            sw.Stop(); ms = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            while (addedArbiterQueue.Count > 0) islands.ArbiterCreated(addedArbiterQueue.Dequeue());
-            sw.Stop(); debugTimes[(int)DebugType.BuildIslands] = sw.Elapsed.TotalMilliseconds + ms;
-
-            sw.Reset(); sw.Start();
             HandleArbiter(contactIterations, multithread);
             sw.Stop(); debugTimes[(int)DebugType.HandleArbiter] = sw.Elapsed.TotalMilliseconds;
 
@@ -541,10 +529,8 @@ namespace Spectrum.Framework.Physics
             while (removedArbiterStack.Count > 0)
             {
                 Arbiter arbiter = removedArbiterStack.Pop();
-                Arbiter.Pool.GiveBack(arbiter);
                 arbiterMap.Remove(arbiter);
 
-                removedArbiterQueue.Enqueue(arbiter);
                 events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
             }
 
@@ -714,12 +700,7 @@ namespace Spectrum.Framework.Physics
                 arbiterMap.LookUpArbiter(body1, body2, out arbiter);
                 if (arbiter == null)
                 {
-                    arbiter = Arbiter.Pool.GetNew();
-                    arbiter.body1 = body1; arbiter.body2 = body2;
-                    arbiter.system = CollisionSystem;
-                    arbiterMap.Add(new ArbiterKey(body1, body2), arbiter);
-
-                    addedArbiterQueue.Enqueue(arbiter);
+                    arbiter = arbiterMap.Add(body1, body2);
 
                     events.RaiseBodiesBeginCollide(body1, body2, point, normal, penetration);
                 }

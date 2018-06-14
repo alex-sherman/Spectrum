@@ -19,7 +19,7 @@ namespace Spectrum.Framework.Physics.Collision
     /// static bodies dont have any connections. Think of the islands as a graph:
     /// nodes are the bodies, and edges are the connections
     /// </summary>
-    class IslandManager : ReadOnlyCollection<CollisionIsland>
+    public class IslandManager : ReadOnlyCollection<CollisionIsland>
     {
 
         public static ResourcePool<CollisionIsland> Pool = new ResourcePool<CollisionIsland>();

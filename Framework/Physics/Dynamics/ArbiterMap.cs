@@ -112,6 +112,8 @@ namespace Spectrum.Framework.Physics.Dynamics
     /// </summary>
     public class ArbiterMap : IEnumerable
     {
+        private IslandManager islands;
+        private CollisionSystem collision;
         private Dictionary<ArbiterKey, Arbiter> dictionary =
             new Dictionary<ArbiterKey, Arbiter>(2048, arbiterKeyComparer);
 
@@ -121,9 +123,11 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <summary>
         /// Initializes a new instance of the ArbiterMap class.
         /// </summary>
-        public ArbiterMap()
+        public ArbiterMap(CollisionSystem collision, IslandManager islands)
         {
-            lookUpKey = new ArbiterKey(null,null);
+            this.islands = islands;
+            this.collision = collision;
+            lookUpKey = new ArbiterKey(null, null);
         }
 
         /// <summary>
@@ -144,9 +148,14 @@ namespace Spectrum.Framework.Physics.Dynamics
             get { return dictionary.Values; }
         }
 
-        internal void Add(ArbiterKey key, Arbiter arbiter)
+        internal Arbiter Add(GameObject body1, GameObject body2)
         {
-            dictionary.Add(key, arbiter);
+            var arbiter = Arbiter.Pool.GetNew();
+            arbiter.body1 = body1; arbiter.body2 = body2;
+            arbiter.system = collision;
+            dictionary.Add(new ArbiterKey(body1, body2), arbiter);
+            islands.ArbiterCreated(arbiter);
+            return arbiter;
         }
 
         internal void Clear()
@@ -158,6 +167,8 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             lookUpKey.SetBodies(arbiter.body1, arbiter.body2);
             dictionary.Remove(lookUpKey);
+            islands.ArbiterRemoved(arbiter);
+            Arbiter.Pool.GiveBack(arbiter);
         }
 
         /// <summary>

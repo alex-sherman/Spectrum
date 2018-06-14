@@ -37,5 +37,9 @@ namespace Spectrum.Framework.Input
         {
             KeyBindings[binding].Options.Add(option);
         }
+        public static void AddBind(string binding, BindingOption option, string profile = "Default")
+        {
+            Profiles[profile].Add(binding, option);
+        }
     }
 }
