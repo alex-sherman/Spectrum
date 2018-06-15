@@ -35,8 +35,10 @@ namespace Spectrum.Framework.Input
         {
             Options = options.ToList();
         }
-        public KeyBinding(Keys? key = null, Keys? keyModifier = null, int? mouseButton = null, GamepadButton? button = null, GamepadButton? buttonModifier = null)
-            : this(new BindingOption(key, keyModifier, mouseButton, button, buttonModifier)) { }
+        public KeyBinding(Keys key, Keys? keyModifier = null, int? mouseButton = null)
+            : this(new BindingOption(key, keyModifier, mouseButton)) { }
+        public KeyBinding(GamepadButton button, GamepadButton? buttonModifier = null)
+            : this(new BindingOption(button: button, buttonModifier: buttonModifier)) { }
         public void Add(BindingOption option)
         {
             Options.Add(option);

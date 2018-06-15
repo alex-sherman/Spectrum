@@ -26,17 +26,11 @@ namespace Spectrum.Framework.Input
         private static SpectrumMouse SpecMouse = new SpectrumMouse(di);
         public static InputState Current { get; private set; } = new InputState();
 
-        #region Fields
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
         public SpectrumMouseState MouseState;
         public Gamepad[] Gamepads = new Gamepad[4];
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
         private InputState LastInputState;
-        #endregion
-
-        #region Initialization
-
-
 
         public InputState()
         {
@@ -49,9 +43,6 @@ namespace Spectrum.Framework.Input
             }
 
         }
-
-
-        #endregion
 
         #region Public Methods
 
@@ -138,7 +129,6 @@ namespace Spectrum.Framework.Input
             return (IsKeyDown(key) &&
                     !LastInputState.IsKeyDown(key));
         }
-
         public bool IsNewKeyRelease(string bindingName)
         {
             return IsNewKeyRelease(bindingName, PlayerInformation.Default);
