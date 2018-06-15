@@ -7,39 +7,38 @@ using System.Text;
 
 namespace Spectrum.Framework.Input
 {
-    public class BindingOption
+    public struct Button
     {
         public Keys? key;
-        public Keys? keyModifier;
         public int? mouseButton;
         public GamepadButton? button;
-        public GamepadButton? buttonModifier;
         public VRButtonBinding? vrButton;
-        public BindingOption(Keys? key = null, Keys? keyModifier = null, int? mouseButton = null,
-            GamepadButton? button = null, GamepadButton? buttonModifier = null,
-            VRButtonBinding? vrButton = null)
+        public Button[] modifiers;
+        public Button(Keys key, params Button[] modifiers) : this(modifiers) { this.key = key; }
+        public Button(int mouseButton, params Button[] modifiers) : this(modifiers) { this.mouseButton = mouseButton; }
+        public Button(GamepadButton button, params Button[] modifiers) : this(modifiers) { this.button = button; }
+        public Button(VRButtonBinding vrButton, params Button[] modifiers) : this(modifiers) { this.vrButton = vrButton; }
+        private Button(params Button[] modifiers)
         {
-            this.key = key;
-            this.keyModifier = keyModifier;
-            this.mouseButton = mouseButton;
-            this.button = button;
-            this.buttonModifier = buttonModifier;
-            this.vrButton = vrButton;
+            key = null; mouseButton = null; button = null;  vrButton = null;
+            this.modifiers = modifiers;
         }
     }
     public class KeyBinding
     {
-        public List<BindingOption> Options;
+        public List<Button> Options;
 
-        public KeyBinding(params BindingOption[] options)
+        public KeyBinding(params Button[] options)
         {
             Options = options.ToList();
         }
-        public KeyBinding(Keys key, Keys? keyModifier = null, int? mouseButton = null)
-            : this(new BindingOption(key, keyModifier, mouseButton)) { }
+        public KeyBinding(Keys key, Keys? keyModifier = null)
+            : this(new Button(key, modifiers: keyModifier.HasValue ? new Button[] { new Button(keyModifier.Value) } : new Button[0])) { }
+        public KeyBinding(int mouseButton)
+            : this(new Button(mouseButton)) { }
         public KeyBinding(GamepadButton button, GamepadButton? buttonModifier = null)
-            : this(new BindingOption(button: button, buttonModifier: buttonModifier)) { }
-        public void Add(BindingOption option)
+            : this(new Button(button: button, modifiers: buttonModifier.HasValue ? new Button[] { new Button(buttonModifier.Value) } : new Button[0])) { }
+        public void Add(Button option)
         {
             Options.Add(option);
         }

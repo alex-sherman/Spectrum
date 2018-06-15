@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Input
         Joystick3 = 128,
         Joystick4 = 256,
     }
-    public struct PlayerInformation
+    public class PlayerInformation
     {
         public static PlayerInformation Default = new PlayerInformation(PlayerInputs.Keyboard | PlayerInputs.Gamepad1, "Default");
 

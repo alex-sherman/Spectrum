@@ -8,15 +8,6 @@ using Valve.VR;
 
 namespace Spectrum.Framework.VR
 {
-    public enum VRAxisType
-    {
-        LeftStickVertical,
-        LeftStickHorizontal,
-        RightStickVertical,
-        RightStickHorizontal,
-        LeftTrigger,
-        RightTrigger
-    }
     public struct VRButtonBinding
     {
         public VRHand Hand;
