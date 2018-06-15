@@ -67,6 +67,7 @@ namespace Spectrum.Framework.VR
         public Vector3 direction;
         public Vector3 position;
         public Quaternion rotation;
+        public Quaternion pointing;
         public VRController(VRHand hand)
         {
             Hand = hand;
@@ -79,6 +80,7 @@ namespace Spectrum.Framework.VR
             direction = Vector3.Forward;
             position = Vector3.Zero;
             rotation = Quaternion.Identity;
+            pointing = Quaternion.Identity;
         }
         public void Update()
         {
@@ -93,6 +95,7 @@ namespace Spectrum.Framework.VR
             touchpadDirection.Normalize();
             touchpadAngle = Math.Atan2(touchpadDirection.Y, touchpadDirection.X);
             rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
+            pointing = Quaternion.CreateFromAxisAngle(Vector3.Right, -(float)Math.PI / 4).Concat(rotation);
             direction = Vector3.Transform(Vector3.Forward, rotation);
             position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;
         }
