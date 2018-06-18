@@ -12,7 +12,7 @@ namespace Spectrum.Framework.Content
     {
         protected override float[,] LoadData(string path, string name)
         {
-            Texture2D image = ContentHelper.ContentParsers[typeof(Texture2D)].Load(path, name) as Texture2D;
+            Texture2D image = ContentHelper.ContentParsers[typeof(Texture2D)].Load(path) as Texture2D;
             Color[] colors = new Color[image.Width * image.Height];
             image.GetData(colors);
             float[,] output = new float[image.Width, image.Height];

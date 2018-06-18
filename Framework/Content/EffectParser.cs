@@ -12,7 +12,7 @@ namespace Spectrum.Framework.Content
     {
         public EffectParser()
         {
-            Prefix = @"HLSL\";
+            Prefix = "HLSL";
         }
         protected override byte[] LoadData(string path, string name)
         {

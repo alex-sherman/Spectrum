@@ -53,7 +53,7 @@ namespace Spectrum.Framework.Content
         };
         public ModelParser()
         {
-            Prefix = @"Models\";
+            Prefix = "Models";
         }
 
         protected override ModelParserCache LoadData(string path, string name)

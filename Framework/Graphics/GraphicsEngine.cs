@@ -64,7 +64,8 @@ namespace Spectrum.Framework.Graphics
         public DynamicVertexBuffer instanceBuffer;
         public void Merge()
         {
-            instanceBuffer = VertexHelper.MakeInstanceBuffer(instances.ToArray());
+            if(instances.Any())
+                instanceBuffer = VertexHelper.MakeInstanceBuffer(instances.ToArray());
             merged = true;
         }
         public Matrix InstanceWorld = Matrix.Identity;

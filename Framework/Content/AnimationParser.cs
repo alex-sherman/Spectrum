@@ -15,7 +15,7 @@ namespace Spectrum.Framework.Content
     {
         public AnimationParser()
         {
-            Prefix = @"Models\";
+            Prefix = "Models";
         }
 
         public static AnimationData GetAnimations(JObject jobj)

@@ -11,7 +11,7 @@ namespace Spectrum.Framework.Content
     {
         public ImageAssetParser()
         {
-            Prefix = @"Textures\";
+            Prefix = "Textures";
         }
         protected override ImageAsset LoadData(string path, string name)
         {

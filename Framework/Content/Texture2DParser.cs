@@ -16,7 +16,7 @@ namespace Spectrum.Framework.Content
     {
         public Texture2DParser()
         {
-            Prefix = @"Textures\";
+            Prefix = "Textures";
         }
         static bool IsPowerOfTwo(int x)
         {

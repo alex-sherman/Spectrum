@@ -182,7 +182,7 @@ namespace Spectrum.Framework.Entities
         {
             get
             {
-                JBBox output = JBBox.SmallBox;
+                JBBox output = new JBBox(Vector3.Zero, Vector3.Zero);
                 if (Model == null) return output;
                 foreach (var part in Model)
                 {

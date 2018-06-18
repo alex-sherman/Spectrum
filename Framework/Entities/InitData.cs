@@ -23,7 +23,24 @@ namespace Spectrum.Framework.Entities
     [LoadableType]
     public class InitData
     {
-        public string type;
+        #region Prefabs
+        private static Dictionary<string, InitData> prefabs = new Dictionary<string, InitData>();
+        public static IReadOnlyDictionary<string, InitData> Prefabs
+        {
+            get { return prefabs; }
+        }
+        public static void Register(string name, InitData data)
+        {
+            prefabs[name] = data.ToImmutable();
+            prefabs[name].Name = name;
+        }
+        public static object Construct(string name)
+        {
+            if (!prefabs.ContainsKey(name)) return null;
+            return prefabs[name].Construct();
+        }
+        #endregion
+        public string Name;
         public string TypeName;
         public Primitive[] args = new Primitive[0];
         public Dictionary<string, Primitive> fields = new Dictionary<string, Primitive>();
@@ -31,17 +48,16 @@ namespace Spectrum.Framework.Entities
         internal InitData() { }
         public InitData(string type, params object[] args)
         {
-            this.type = type;
-            this.TypeName = type;
+            TypeName = type;
             this.args = args.Select(obj => new Primitive(obj)).ToArray();
         }
         [ProtoIgnore]
-        public TypeData TypeData { get { return TypeHelper.Types.GetData(type); } }
+        public TypeData TypeData { get { return TypeHelper.Types.GetData(TypeName); } }
         public object Construct()
         {
             if (TypeData == null)
             {
-                DebugPrinter.print(string.Format("Failed to construct {0} for {1}", type, TypeName));
+                DebugPrinter.print(string.Format("Failed to construct {0}", TypeName));
                 return null;
             }
             object output = TypeData.Instantiate(args.Select(prim => prim.Object).ToArray());
@@ -80,7 +96,6 @@ namespace Spectrum.Framework.Entities
         public InitData Clone()
         {
             InitData output = new InitData();
-            output.type = type.ToString();
             output.TypeName = TypeName;
             output.args = args.Select(prim => new Primitive(prim.Object)).ToArray();
             output.fields = fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
@@ -90,7 +105,6 @@ namespace Spectrum.Framework.Entities
         public ImmultableInitData ToImmutable()
         {
             ImmultableInitData output = new ImmultableInitData();
-            output.type = type;
             output.TypeName = TypeName;
             output.args = args;
             output.fields = new Dictionary<string, Primitive>(fields);

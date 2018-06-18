@@ -79,7 +79,9 @@ namespace Spectrum.Framework
                 for (int i = 0; i < msgStrings.Length; i++)
                 {
                     string filename = sf.GetFileName();
-                    strings.Add(string.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last()));
+                    var line = string.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last());
+                    strings.Add(line);
+                    Console.WriteLine(line);
                 }
             }
         }

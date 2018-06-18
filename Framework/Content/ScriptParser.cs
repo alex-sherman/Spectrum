@@ -11,7 +11,7 @@ namespace Spectrum.Framework.Content
     {
         public ScriptParser()
         {
-            Prefix = @"Scripts\\";
+            Prefix = "Scripts";
         }
         protected override ScriptAsset LoadData(string path, string name)
         {

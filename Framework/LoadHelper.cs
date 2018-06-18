@@ -9,6 +9,9 @@ using System.Xml.Serialization;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Network;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework
 {
@@ -17,7 +20,7 @@ namespace Spectrum.Framework
 
     public class LoadHelper
     {
-        public static void LoadPlugin(Plugin plugin)
+        public static void RegisterTypes(Plugin plugin)
         {
             foreach (Type type in plugin.GetLoadableTypes())
             {
@@ -33,26 +36,39 @@ namespace Spectrum.Framework
                 }
             }
         }
+        public static void LoadPrefabs(Plugin plugin)
+        {
+            try
+            {
+                var path = Path.Combine(plugin.Content.Content.RootDirectory, "InitData");
+                var files = Directory.GetFiles(path, "*.json", SearchOption.AllDirectories);
+                foreach (String filename in files)
+                {
+                    InitData prefab = plugin.Content.LoadRelative<InitData>(filename.Substring(path.Length + 1), true);
+                    if (prefab?.Name != null)
+                        InitData.Register(prefab.Name, prefab);
+                }
+            }
+            catch (DirectoryNotFoundException) { }
+            catch (FileNotFoundException) { }
+        }
         public static void LoadTypes(string LocalDir = null)
         {
             SpectrumGame.Game.Plugins["Main"] = Plugin.CreatePlugin("Main", ContentHelper.Single, Assembly.GetEntryAssembly());
             SpectrumGame.Game.Plugins["Spectrum"] = Plugin.CreatePlugin("Spectrum", ContentHelper.Single, Assembly.GetExecutingAssembly());
 
             foreach (var pluginName in Plugin.GetPluginNames())
-            {
                 SpectrumGame.Game.Plugins[pluginName] = Plugin.CreatePlugin(pluginName);
-            }
 
             //Load all types before calling OnLoad
             foreach (var plugin in SpectrumGame.Game.Plugins.Values)
-            {
-                LoadPlugin(plugin);
-            }
+                RegisterTypes(plugin);
 
             foreach (var plugin in SpectrumGame.Game.Plugins.Values)
-            {
+                LoadPrefabs(plugin);
+
+            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
                 plugin.OnLoad();
-            }
         }
     }
 

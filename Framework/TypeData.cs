@@ -127,8 +127,8 @@ namespace Spectrum.Framework
             else
             {
                 // Try assigning a prefab or InitData
-                if (value is string && Prefab.Prefabs.ContainsKey(value as string))
-                    output = Prefab.Prefabs[value as string];
+                if (value is string && InitData.Prefabs.ContainsKey(value as string))
+                    output = InitData.Prefabs[value as string];
                 if (value is string && TypeHelper.Types[value as string] != null)
                     output = new InitData(value as string);
                 // Maybe the target field is type InitData

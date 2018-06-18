@@ -20,8 +20,9 @@ namespace Spectrum.Framework.Content.ModelParsing
         {
             ModelParserCache modelData = new ModelParserCache(name);
             modelData.Directory = Path.GetDirectoryName(path);
-            JsonTextReader reader = new JsonTextReader(new StreamReader(path));
-            var jobj = JObject.Load(reader);
+            JObject jobj;
+            using (JsonTextReader reader = new JsonTextReader(new StreamReader(path)))
+                jobj = JObject.Load(reader);
             if (jobj["meshes"] == null) { throw new InvalidOperationException("Provided model has no mesh data"); }
 
             foreach (JObject mesh in jobj["meshes"])
@@ -129,7 +130,9 @@ namespace Spectrum.Framework.Content.ModelParsing
                         break;
                 }
             }
+            // TODO: Does this need to be sorted?
             weights.Sort((a, b) => b.Weight.CompareTo(a.Weight));
+            // TODO: Could be refactored out of a for loop
             for (int j = 0; j < 4 && j < weights.Count; j++)
             {
                 switch (j)

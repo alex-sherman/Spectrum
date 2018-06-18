@@ -41,10 +41,7 @@ namespace Spectrum.Framework.Content
             //catch (FileNotFoundException) { }
         }
 
-        public virtual void OnLoad()
-        {
-
-        }
+        public virtual void OnLoad() { }
 
         public static List<string> GetPluginNames()
         {

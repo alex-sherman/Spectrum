@@ -199,7 +199,7 @@ namespace Spectrum.Framework.Entities
         /// <returns>An initialized</returns>
         public Entity Construct(InitData entityData)
         {
-            if (entityData.TypeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.type)); }
+            if (entityData.TypeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.TypeName)); }
 
             entityData = entityData.Clone();
             if (!entityData.fields.ContainsKey("OwnerGuid"))

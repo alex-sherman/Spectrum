@@ -192,6 +192,7 @@
     <Compile Include="Framework\Content\ImageAssetParser.cs" />
     <Compile Include="Framework\Content\ModelParsing\G3DJReader.cs" />
     <Compile Include="Framework\Content\ModelParsing\OBJReader.cs" />
+    <Compile Include="Framework\Content\InitDataParser.cs" />
     <Compile Include="Framework\Content\ScriptAsset.cs" />
     <Compile Include="Framework\Content\ScriptParser.cs" />
     <Compile Include="Framework\Content\SoundParser.cs" />
@@ -204,7 +205,6 @@
     <Compile Include="Framework\Debug\DebugTiming.cs" />
     <Compile Include="Framework\Entities\InitData.cs" />
     <Compile Include="Framework\Entities\Interpolator.cs" />
-    <Compile Include="Framework\Entities\Prefab.cs" />
     <Compile Include="Framework\Entities\ReplicateAttribute.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationClip.cs" />
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
@@ -218,7 +218,7 @@
     <Compile Include="Framework\Graphics\Camera.cs" />
     <Compile Include="Framework\Input\Axis.cs" />
     <Compile Include="Framework\Input\Gamepad.cs" />
-    <Compile Include="Framework\Input\BindingOption.cs" />
+    <Compile Include="Framework\Input\Button.cs" />
     <Compile Include="Framework\Input\InputLayout.cs" />
     <Compile Include="Framework\Input\PlayerInformation.cs" />
     <Compile Include="Framework\Input\RawMouse.cs" />

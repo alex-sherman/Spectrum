@@ -344,7 +344,7 @@ namespace Spectrum.Framework.Physics.Collision
             foreach (GameObject e in bodyList)
             {
                 if (e.Ignore) continue;
-                if (this.Raycast(e, rayOrigin, rayDirection, out tempNormal, out tempFraction))
+                if (Raycast(e, rayOrigin, rayDirection, out tempNormal, out tempFraction))
                 {
                     if (tempFraction < fraction && (raycast == null || raycast(e, tempNormal, tempFraction)))
                     {

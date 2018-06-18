@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Content
     {
         public SoundParser()
         {
-            Prefix = "Sounds\\";
+            Prefix = "Sounds";
         }
 
         protected override SoundStream LoadData(string path, string name)

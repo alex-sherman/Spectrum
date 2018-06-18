@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Audio;
+using Spectrum.Framework.Entities;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Graphics.Animation;
 using Spectrum.Framework.Screens;
@@ -35,7 +36,8 @@ namespace Spectrum.Framework.Content
                 {typeof(Texture2D), new Texture2DParser()},
                 {typeof(ScriptAsset), new ScriptParser()},
                 {typeof(float[,]), new HeightmapParser()},
-                {typeof(SoundEffect), new SoundParser()}
+                {typeof(SoundEffect), new SoundParser()},
+                {typeof(InitData), new InitDataParser()},
             };
         public ContentManager Content { get; private set; }
         public ContentHelper(ContentManager content)
@@ -52,9 +54,9 @@ namespace Spectrum.Framework.Content
                 string[] split = name.Split('@');
                 Plugin plugin;
                 if (SpectrumGame.Game.Plugins.TryGetValue(split[0], out plugin))
-                    return plugin.Content._load<T>(split[1], true, name);
+                    return plugin.Content.LoadRelative<T>(split[1], true);
             }
-            return (T)Single._load<T>(name, usePrefix, name);
+            return (T)Single.LoadRelative<T>(name, usePrefix);
         }
 
         public static T Load<T>(string path) where T : class
@@ -69,21 +71,22 @@ namespace Spectrum.Framework.Content
             return load.Invoke(null, new object[] { path });
         }
 
-        private T _load<T>(string path, bool usePrefix, string name) where T : class
+        public T LoadRelative<T>(string path, bool usePrefix) where T : class
         {
             Type t = typeof(T);
             if (ContentParsers.ContainsKey(t))
             {
                 ICachedContentParser parser = ContentParsers[t];
                 if (usePrefix)
-                    path = Content.RootDirectory + "\\" + parser.Prefix + path;
-                return (T)parser.Load(path, name);
+                    path = Path.Combine(Content.RootDirectory, parser.Prefix, path);
+                return (T)parser.Load(path);
             }
             if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
             if (typeof(T) == typeof(Effect))
             {
                 path = @"HLSL\" + path + ".mgfx";
             }
+            // TODO: Could be totally removed if fonts can be imported some other way...
             return Content.Load<T>(path);
         }
     }
