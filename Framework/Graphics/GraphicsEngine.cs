@@ -283,9 +283,9 @@ namespace Spectrum.Framework.Graphics
                     effect.Projection = phase.Projection;
                     effect.ShadowMap = phaseShadowMap;
                     MaterialData material = key.Material ?? MaterialData.Missing;
-                    effect.MaterialDiffuse = material.diffuseColor;
-                    if (material.diffuseTexture != null)
-                        effect.Texture = material.diffuseTexture;
+                    effect.MaterialDiffuse = material.DiffuseColor;
+                    if (material.DiffuseTexture != null)
+                        effect.Texture = material.DiffuseTexture;
                     var timer = DebugTiming.Render.Time("Draw Call Time");
                     foreach (var pass in effect.CurrentTechnique.Passes)
                     {

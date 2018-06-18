@@ -11,20 +11,13 @@ namespace Spectrum.Framework.Graphics
 {
     public class MaterialData
     {
-        public static MaterialData Missing { get; } = new MaterialData() { diffuseColor = Color.HotPink };
+        public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = Color.HotPink };
         public string Id;
-        public List<MaterialTexture> textures = new List<MaterialTexture>();
-        public Color diffuseColor = Color.White;
-        public Texture2D diffuseTexture;
-        public Color specularColor = Color.Black;
-        public Texture2D normalMap;
-        public Texture2D transparencyMap;
-    }
-    public struct MaterialTexture
-    {
-        public string Id;
-        public string Filename;
-        public string Type;
+        public Color DiffuseColor = Color.White;
+        public Texture2D DiffuseTexture;
+        public Color SpecularColor = Color.Black;
+        public Texture2D NormalMap;
+        public Texture2D TransparencyMap;
     }
     public class DrawablePart
     {

@@ -50,13 +50,13 @@ namespace Spectrum.Framework.Content.ModelParsing
                     case "Ka":
                         break;
                     case "Kd":
-                        data.diffuseColor = new Color(v3(splitted));
+                        data.DiffuseColor = new Color(v3(splitted));
                         break;
                     case "map_Kd":
-                        data.diffuseTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);
+                        data.DiffuseTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);
                         break;
                     case "Ks":
-                        data.specularColor = new Color(v3(splitted));
+                        data.SpecularColor = new Color(v3(splitted));
                         break;
                     case "map_Ks":
                         //data.specularTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);

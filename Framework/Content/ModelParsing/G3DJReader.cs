@@ -172,7 +172,7 @@ namespace Spectrum.Framework.Content.ModelParsing
                     if (material["diffuse"] != null)
                     {
                         JArray diffuseColor = (JArray)material["diffuse"];
-                        materialData.diffuseColor = new Color((float)Math.Pow((float)diffuseColor[0], .45), (float)Math.Pow((float)diffuseColor[1], .45), (float)Math.Pow((float)diffuseColor[2], .45));
+                        materialData.DiffuseColor = new Color((float)Math.Pow((float)diffuseColor[0], .45), (float)Math.Pow((float)diffuseColor[1], .45), (float)Math.Pow((float)diffuseColor[2], .45));
                     }
                     if (material["textures"] != null)
                     {
@@ -190,15 +190,15 @@ namespace Spectrum.Framework.Content.ModelParsing
         {
             if (type == "NONE" || type == "DIFFUSE")
             {
-                material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
+                material.DiffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
             }
             if (type == "NORMAL")
             {
-                material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
+                material.DiffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
             }
             if (type == "TRANSPARENCY")
             {
-                material.diffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
+                material.DiffuseTexture = ContentHelper.Load<Texture2D>(path, false) ?? ContentHelper.Blank;
             }
         }
 

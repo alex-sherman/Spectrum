@@ -166,7 +166,16 @@ namespace Spectrum.Framework.Entities
         public HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         #endregion
+        #region RenderProperties
+        private MaterialData getCreateMaterial() {
+            if (RenderProperties.Material == null)
+                RenderProperties.Material = new MaterialData();
+            return RenderProperties.Material;
+        }
+        public Texture2D Texture { get => RenderProperties.Material?.DiffuseTexture; set => getCreateMaterial().DiffuseTexture = value; }
+        public bool DisableDepthBuffer { get => RenderProperties.DisableDepthBuffer; set => RenderProperties.DisableDepthBuffer = value; }
         public RenderProperties RenderProperties;
+        #endregion
         private List<RenderTask> _tasks = null;
         private SpecModel _parts = null;
         public SpecModel Model
