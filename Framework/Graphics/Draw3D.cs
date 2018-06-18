@@ -22,13 +22,12 @@ namespace Spectrum.Framework.Graphics
             });
             quad.effect = new SpectrumEffect();
         }
-        public static RenderTask Draw3DRectangle(Texture2D texture, Quaternion rotation, Vector3 position, Vector2 size)
+        public static RenderTask Draw3DRectangle(Quaternion rotation, Vector3 position, Vector2 size, RenderProperties? renderProperties = null)
         {
             RenderTask output = new RenderTask(quad);
             output.world = Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
-
-            output.material = new MaterialData() { diffuseTexture = texture };
-            output.AllowInstance = false;
+            if (renderProperties.HasValue)
+                output.Properties = renderProperties.Value;
             return output;
         }
     }

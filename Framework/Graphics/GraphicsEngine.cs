@@ -1,80 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Spectrum.Framework;
-using Spectrum.Framework.Physics;
-using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Content;
-using System.Diagnostics;
 using Valve.VR;
 using System.Reflection;
 using Spectrum.Framework.VR;
-
+using Spectrum.Framework.Screens;
 
 namespace Spectrum.Framework.Graphics
 {
-    using Screens;
-    using System.Threading.Tasks;
     using RenderGroup = KeyValuePair<RenderGroupKey, List<RenderTask>>;
     using RenderGroups = IEnumerable<KeyValuePair<RenderGroupKey, List<RenderTask>>>;
-    public struct RenderGroupKey
+    struct RenderGroupKey
     {
         public RenderGroupKey(RenderTask task)
         {
-            effect = task.EffectValue;
-            partID = task.part.ReferenceID;
-            material = task.MaterialValue;
+            Effect = task.Effect;
+            PartID = task.part.ReferenceID;
+            Material = task.Material;
+            DisableDepthBuffer = task.DisableDepthBuffer;
         }
-        public SpectrumEffect effect;
-        public int partID;
-        public MaterialData material;
+        public int PartID;
+        public MaterialData Material;
+        public SpectrumEffect Effect;
+        public bool DisableDepthBuffer;
 
         public override bool Equals(object obj)
         {
-            if (obj is RenderGroupKey)
+            if (obj is RenderGroupKey other)
             {
-                var other = (RenderGroupKey)obj;
-                return other.effect == effect && other.partID == partID && other.material == material;
+                return other.Effect == Effect && other.PartID == PartID && other.Material == Material && other.DisableDepthBuffer == DisableDepthBuffer;
             }
             return base.Equals(obj);
         }
 
         public override int GetHashCode()
         {
-            return effect.GetHashCode() + material?.GetHashCode() ?? 0 + partID.GetHashCode();
+            var hashCode = 1810531499;
+            hashCode = hashCode * -1521134295 + PartID.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<MaterialData>.Default.GetHashCode(Material);
+            hashCode = hashCode * -1521134295 + EqualityComparer<SpectrumEffect>.Default.GetHashCode(Effect);
+            hashCode = hashCode * -1521134295 + DisableDepthBuffer.GetHashCode();
+            return hashCode;
         }
-    }
-    public class RenderTask
-    {
-        public RenderTask(DrawablePart part, string tag = "Misc") { this.part = part; this.tag = tag; }
-        public bool AllowInstance = true;
-        public DrawablePart part;
-        public string tag;
-        public MaterialData material;
-        public MaterialData MaterialValue { get { return material ?? part.material; } }
-        public SpectrumEffect effect;
-        public SpectrumEffect EffectValue { get { return effect ?? part.effect; } }
-        public List<Matrix> instances = null;
-        public DynamicVertexBuffer instanceBuffer;
-        public void Merge()
-        {
-            if(instances.Any())
-                instanceBuffer = VertexHelper.MakeInstanceBuffer(instances.ToArray());
-            merged = true;
-        }
-        public Matrix InstanceWorld = Matrix.Identity;
-        public Matrix? world;
-        public Matrix WorldValue
-        {
-            get { return instanceBuffer != null ? InstanceWorld : (part.permanentTransform * part.transform * (world ?? Matrix.Identity)); }
-        }
-        public bool merged;
     }
     public class RenderPhaseInfo
     {
@@ -104,7 +76,7 @@ namespace Spectrum.Framework.Graphics
         static List<RenderTask> renderTasks = new List<RenderTask>();
         static RenderPhaseInfo sceneRenderPhase = new RenderPhaseInfo();
         static RenderPhaseInfo shadowRenderPhase = new RenderPhaseInfo() { GenerateShadowMap = true };
-        static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
+        //static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
         public static float MultisampleFactor = 2;
@@ -178,12 +150,12 @@ namespace Spectrum.Framework.Graphics
             return new Ray(nearPoint, direction);
         }
 
-        private static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
+        private static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
         {
             device.SetVertexBuffers(new VertexBufferBinding(vertexBuffer, 0, 0), new VertexBufferBinding(instanceBuffer, 0, 1));
             device.Indices = indexBuffer;
         }
-        public static void setBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer)
+        public static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer)
         {
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
@@ -197,7 +169,7 @@ namespace Spectrum.Framework.Graphics
                 .SelectMany(t => t)
                 .Where(task => task.part.ShadowEnabled)
             .ToList();
-            var renderGroups = GroupTasks(renderTasks);
+            var renderGroups = GroupTasks(renderTasks).Where(group => !group.Value.First().DisableDepthBuffer);
             shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
             phaseShadowMap = null;
             RenderQueue(shadowRenderPhase, renderGroups);
@@ -264,36 +236,26 @@ namespace Spectrum.Framework.Graphics
                 {
                     if (instanceBuffer != null)
                     {
-                        setBuffers(VBuffer, IBuffer, instanceBuffer);
+                        SetBuffers(VBuffer, IBuffer, instanceBuffer);
                         if (primType == PrimitiveType.TriangleStrip)
-                        {
-                            device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, VBuffer.VertexCount, 0, IBuffer.IndexCount - 2, instanceBuffer.VertexCount);
-                        }
+                            device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, IBuffer.IndexCount - 2, instanceBuffer.VertexCount);
                         if (primType == PrimitiveType.TriangleList)
-                        {
-                            device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, VBuffer.VertexCount, 0, IBuffer.IndexCount / 3, instanceBuffer.VertexCount);
-                        }
+                            device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IBuffer.IndexCount / 3, instanceBuffer.VertexCount);
                     }
                     else
                     {
-                        setBuffers(VBuffer, IBuffer);
+                        SetBuffers(VBuffer, IBuffer);
                         if (primType == PrimitiveType.TriangleStrip)
-                        {
                             device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount - 2);
-                        }
                         if (primType == PrimitiveType.TriangleList)
-                        {
                             device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount / 3);
-                        }
                     }
                 }
                 else
                 {
-                    setBuffers(VBuffer, IBuffer);
+                    SetBuffers(VBuffer, IBuffer);
                     if (primType == PrimitiveType.TriangleStrip)
-                    {
                         device.DrawPrimitives(primType, 0, VBuffer.VertexCount - 2);
-                    }
                 }
             }
         }
@@ -310,7 +272,7 @@ namespace Spectrum.Framework.Graphics
         {
             phase = phase ?? sceneRenderPhase;
             RenderGroupKey key = group.Key;
-            SpectrumEffect effect = key.effect;
+            SpectrumEffect effect = key.Effect;
             if (effect != null)
             {
                 var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (group.Value.First().instanceBuffer == null ? "" : "Instance");
@@ -320,7 +282,7 @@ namespace Spectrum.Framework.Graphics
                     effect.View = phase.View;
                     effect.Projection = phase.Projection;
                     effect.ShadowMap = phaseShadowMap;
-                    MaterialData material = key.material ?? MaterialData.Missing;
+                    MaterialData material = key.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.diffuseColor;
                     if (material.diffuseTexture != null)
                         effect.Texture = material.diffuseTexture;
@@ -343,6 +305,9 @@ namespace Spectrum.Framework.Graphics
         {
             foreach (var group in renderTasks)
             {
+                var depthStencil = group.Key.DisableDepthBuffer ? DepthStencilState.None : DepthStencilState.Default;
+                if(device.DepthStencilState != depthStencil)
+                    device.DepthStencilState = depthStencil;
                 Render(group, phase);
             }
         }
@@ -363,8 +328,7 @@ namespace Spectrum.Framework.Graphics
 
         public static void BeginRender(GameTime gameTime)
         {
-            device.DepthStencilState = new DepthStencilState();
-
+            device.DepthStencilState = DepthStencilState.Default;
             device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
             UpdateRasterizer();
         }
@@ -459,16 +423,20 @@ namespace Spectrum.Framework.Graphics
                     task.Merge();
                 }
             }
+            //TODO: This might be an improvement to avoid setting DepthStencilState in RenderQueue
+            //groups.OrderBy(group => group.Key.DisableDepthBuffer);
             time1.Stop();
             return groups;
         }
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
         private static void VRRender(Matrix camera, RenderGroups groups, EVREye eye, Matrix eye_offset)
         {
-            GraphicsEngine.device.Clear(clearColor);
-            RenderPhaseInfo vrPhase = new RenderPhaseInfo();
-            vrPhase.View = camera * eye_offset;
-            vrPhase.Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 10000);
+            device.Clear(clearColor);
+            RenderPhaseInfo vrPhase = new RenderPhaseInfo
+            {
+                View = camera * eye_offset,
+                Projection = OpenVR.System.GetProjectionMatrix(eye, 0.1f, 10000)
+            };
             RenderQueue(vrPhase, groups);
         }
 
@@ -492,7 +460,7 @@ namespace Spectrum.Framework.Graphics
 
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTargets(AATarget, DepthTarget);
-            GraphicsEngine.device.Clear(clearColor);
+            device.Clear(clearColor);
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
             TimingResult timer;
             foreach (Entity drawable in drawables)

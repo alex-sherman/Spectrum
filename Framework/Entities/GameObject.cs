@@ -166,7 +166,7 @@ namespace Spectrum.Framework.Entities
         public HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         #endregion
-
+        public RenderProperties RenderProperties;
         private List<RenderTask> _tasks = null;
         private SpecModel _parts = null;
         public SpecModel Model
@@ -305,15 +305,17 @@ namespace Spectrum.Framework.Entities
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
         }
-        private Matrix _lastWorld = Matrix.Identity;
         public override List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
         {
-            if (_tasks != null && _lastWorld != World)
+            if (_tasks != null)
             {
-                _lastWorld = World;
-                for (int i = 0; i < _tasks.Count; i++)
+                foreach (var task in _tasks)
                 {
-                    _tasks[i].world = World;
+                    task.world = World;
+                    if (task.Properties != RenderProperties)
+                    {
+                        task.Properties = RenderProperties;
+                    }
                 }
             }
             return _tasks;

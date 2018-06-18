@@ -213,6 +213,7 @@
     <Compile Include="Framework\Graphics\Billboard.cs" />
     <Compile Include="Framework\Graphics\Draw3D.cs" />
     <Compile Include="Framework\Graphics\Effects\SkinnedEffect.cs" />
+    <Compile Include="Framework\Graphics\RenderTask.cs" />
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\IDebug.cs" />
     <Compile Include="Framework\Graphics\Camera.cs" />
