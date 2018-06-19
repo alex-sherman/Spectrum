@@ -19,32 +19,28 @@ namespace Spectrum.Framework.Graphics
     {
         public RenderGroupKey(RenderTask task)
         {
-            Effect = task.Effect;
             PartID = task.part.ReferenceID;
-            Material = task.Material;
-            DisableDepthBuffer = task.DisableDepthBuffer;
+            Properties = task.Properties;
+            Properties.Effect = task.Effect;
+            Properties.Material = task.Material;
         }
         public int PartID;
-        public MaterialData Material;
-        public SpectrumEffect Effect;
-        public bool DisableDepthBuffer;
+        public RenderProperties Properties;
 
         public override bool Equals(object obj)
         {
-            if (obj is RenderGroupKey other)
+            if (obj is RenderGroupKey key)
             {
-                return other.Effect == Effect && other.PartID == PartID && other.Material == Material && other.DisableDepthBuffer == DisableDepthBuffer;
+                return PartID == key.PartID && Properties == key.Properties;
             }
-            return base.Equals(obj);
+            return false;
         }
 
         public override int GetHashCode()
         {
-            var hashCode = 1810531499;
+            var hashCode = -1110652387;
             hashCode = hashCode * -1521134295 + PartID.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<MaterialData>.Default.GetHashCode(Material);
-            hashCode = hashCode * -1521134295 + EqualityComparer<SpectrumEffect>.Default.GetHashCode(Effect);
-            hashCode = hashCode * -1521134295 + DisableDepthBuffer.GetHashCode();
+            hashCode = hashCode * -1521134295 + Properties.GetHashCode();
             return hashCode;
         }
     }
@@ -160,20 +156,14 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        public static void UpdateShadowMap(List<Entity> scene)
+        private static void UpdateShadowMap(RenderGroups renderGroups)
         {
             device.SetRenderTarget(shadowMap);
             device.Clear(Color.Black);
-            renderTasks = scene.Select(drawable => drawable.GetRenderTasks(shadowRenderPhase))
-                .Where(tasks => tasks != null)
-                .SelectMany(t => t)
-                .Where(task => task.part.ShadowEnabled)
-            .ToList();
-            var renderGroups = GroupTasks(renderTasks).Where(group => !group.Value.First().DisableDepthBuffer);
+            renderGroups = renderGroups.Where(group => !group.Value.First().DisableDepthBuffer);
             shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
             phaseShadowMap = null;
             RenderQueue(shadowRenderPhase, renderGroups);
-            ClearRenderQueue();
         }
         public static void UpdateWater(List<Entity> scene)
         {
@@ -272,7 +262,7 @@ namespace Spectrum.Framework.Graphics
         {
             phase = phase ?? sceneRenderPhase;
             RenderGroupKey key = group.Key;
-            SpectrumEffect effect = key.Effect;
+            SpectrumEffect effect = key.Properties.Effect;
             if (effect != null)
             {
                 var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (group.Value.First().instanceBuffer == null ? "" : "Instance");
@@ -282,7 +272,7 @@ namespace Spectrum.Framework.Graphics
                     effect.View = phase.View;
                     effect.Projection = phase.Projection;
                     effect.ShadowMap = phaseShadowMap;
-                    MaterialData material = key.Material ?? MaterialData.Missing;
+                    MaterialData material = key.Properties.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
                     if (material.DiffuseTexture != null)
                         effect.Texture = material.DiffuseTexture;
@@ -305,7 +295,7 @@ namespace Spectrum.Framework.Graphics
         {
             foreach (var group in renderTasks)
             {
-                var depthStencil = group.Key.DisableDepthBuffer ? DepthStencilState.None : DepthStencilState.Default;
+                var depthStencil = group.Key.Properties.DisableDepthBuffer ? DepthStencilState.None : DepthStencilState.Default;
                 if(device.DepthStencilState != depthStencil)
                     device.DepthStencilState = depthStencil;
                 Render(group, phase);
@@ -397,7 +387,7 @@ namespace Spectrum.Framework.Graphics
         private static DefaultDict<RenderGroupKey, List<RenderTask>> groups = new DefaultDict<RenderGroupKey, List<RenderTask>>(() => new List<RenderTask>(), true);
         private static RenderGroups GroupTasks(List<RenderTask> renderTasks)
         {
-            var time1 = DebugTiming.Render.Time("Grouping1");
+            var time1 = DebugTiming.Render.Time("Grouping");
             groups.Clear();
             foreach (var task in renderTasks)
             {
@@ -448,9 +438,22 @@ namespace Spectrum.Framework.Graphics
             SpectrumEffect.CameraPos = Camera.Position;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
             drawables = drawables.Where(e => e.DrawEnabled).ToList();
+            TimingResult timer;
+            foreach (Entity drawable in drawables)
+            {
+                timer = DebugTiming.Render.Time(drawable.GetType().Name);
+                drawable.Draw(gameTime, null);
+                var getRenderTasksTimer = DebugTiming.Render.Time("Get Tasks");
+                var tasks = drawable.GetRenderTasks();
+                getRenderTasksTimer.Stop();
+                if (tasks != null)
+                    renderTasks.AddRange(tasks);
+                timer.Stop();
+            }
+            var renderGroups = GroupTasks(renderTasks);
 
             var preRenderTime = DebugTiming.Render.Time("Update Shadow");
-            UpdateShadowMap(drawables);
+            UpdateShadowMap(renderGroups);
             preRenderTime.Stop();
 
             PostProcessEffect.Technique = "PassThrough";
@@ -462,21 +465,7 @@ namespace Spectrum.Framework.Graphics
             device.SetRenderTargets(AATarget, DepthTarget);
             device.Clear(clearColor);
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
-            TimingResult timer;
-            foreach (Entity drawable in drawables)
-            {
-                timer = DebugTiming.Render.Time(drawable.GetType().Name);
-                drawable.Draw(gameTime, null);
-                var getRenderTasksTimer = DebugTiming.Render.Time("Get Tasks");
-                var tasks = drawable.GetRenderTasks(sceneRenderPhase);
-                getRenderTasksTimer.Stop();
-                if (tasks != null)
-                    renderTasks.AddRange(tasks);
-                timer.Stop();
-            }
             var mainRenderTimer = DebugTiming.Render.Time("Main Render");
-
-            var renderGroups = GroupTasks(renderTasks);
             sceneRenderPhase.View = Camera.View;
             sceneRenderPhase.Projection = SceneScreen.Projection;
             phaseShadowMap = shadowMap;
@@ -488,7 +477,7 @@ namespace Spectrum.Framework.Graphics
                 timer = DebugTiming.Render.Time("Post Process");
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
                 spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
                 spriteBatch.End();
                 timer.Stop();

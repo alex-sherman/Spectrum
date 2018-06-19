@@ -12,7 +12,7 @@ namespace Spectrum.Framework.Graphics
     public class Billboard : GameObject
     {
         public Vector2 Size;
-        public override List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
+        public override List<RenderTask> GetRenderTasks()
         {
             if (RenderProperties.Material != null)
                 return new List<RenderTask>() { Draw3D.Draw3DRectangle(

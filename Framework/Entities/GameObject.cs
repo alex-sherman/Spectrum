@@ -314,7 +314,7 @@ namespace Spectrum.Framework.Entities
             if (Model != null) { Model.Update(gameTime); }
             Emitter.Update();
         }
-        public override List<RenderTask> GetRenderTasks(RenderPhaseInfo phase)
+        public override List<RenderTask> GetRenderTasks()
         {
             if (_tasks != null)
             {

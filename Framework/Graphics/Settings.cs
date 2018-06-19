@@ -34,10 +34,9 @@ namespace Spectrum.Framework.Graphics
         public static Matrix GetProjection(int width, int height)
         {
             return Matrix.CreatePerspectiveFieldOfView(
-                (float)Math.PI / 4.0f,
-                (float)width /
-                (float)height,
-                1f, 10000);
+                (float)Math.PI / 3.0f,
+                (float)width / height,
+                0.1f, 10000);
         }
         public static void ResetProjection(object sender, EventArgs args)
         {

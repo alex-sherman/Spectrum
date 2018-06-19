@@ -14,8 +14,6 @@ namespace Spectrum.Framework.Graphics
     {
         CullMode culling = CullMode.None;
         Color clearColor = Color.CornflowerBlue;
-        float nearPlane = 1f;
-        float farPlane = 10000;
         float aspectRatio;
         private Vector3 _position;
         public Quaternion Rotation { get; set; }
@@ -35,18 +33,6 @@ namespace Spectrum.Framework.Graphics
         {
             get { return culling; }
             set { culling = value; }
-        }
-
-        public float NearPlane
-        {
-            get { return nearPlane; }
-            set { nearPlane = value; }
-        }
-
-        public float FarPlane
-        {
-            get { return farPlane; }
-            set { farPlane = value; }
         }
 
         public float AspectRatio

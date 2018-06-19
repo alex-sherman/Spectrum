@@ -92,7 +92,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual void DisabledUpdate(GameTime time) { }
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
-        public virtual List<RenderTask> GetRenderTasks(RenderPhaseInfo phase) { return null; }
+        public virtual List<RenderTask> GetRenderTasks() { return null; }
         public virtual void TickTenth() { }
         public virtual void TickOne() { }
     }
