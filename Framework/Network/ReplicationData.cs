@@ -11,18 +11,17 @@ namespace Spectrum.Framework.Network
 {
     public interface IReplicatable
     {
+        InitData InitData { get; set; }
         ReplicationData ReplicationData { get; set; }
     }
     public class ReplicationData
     {
         public const float DefaultReplicationPeriod = .2f;
-        public InitData InitData { get; private set; }
         public TypeData TypeData { get; private set; }
         public IReplicatable Replicated { get; private set; }
-        public ReplicationData(InitData initData, IReplicatable replicated)
+        public ReplicationData(TypeData typeData, IReplicatable replicated)
         {
-            InitData = initData;
-            TypeData = InitData.TypeData;
+            TypeData = typeData;
             Replicated = replicated;
         }
         private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
@@ -40,30 +39,30 @@ namespace Spectrum.Framework.Network
 
         public virtual NetMessage WriteReplicationData(NetMessage output)
         {
-            Primitive[] fields = InitData.TypeData.ReplicatedMemebers.ToList().ConvertAll(x => new Primitive(InitData.TypeData.Get(Replicated, x))).ToArray();
+            Primitive[] fields = TypeData.ReplicatedMemebers.ToList().ConvertAll(x => new Primitive(TypeData.Get(Replicated, x))).ToArray();
             output.Write(fields);
             return output;
         }
         public virtual void ReadReplicationData(NetMessage input)
         {
             Primitive[] fields = input.Read<Primitive[]>();
-            var properties = InitData.TypeData.ReplicatedMemebers.ToList();
+            var properties = TypeData.ReplicatedMemebers.ToList();
             for (int i = 0; i < fields.Count(); i++)
             {
                 var replicate = properties[i];
                 if (interpolators.ContainsKey(replicate))
                     interpolators[replicate].BeginInterpolate(DefaultReplicationPeriod * 2, fields[i].Object);
                 else
-                    InitData.TypeData.Set(Replicated, replicate, fields[i].Object);
+                    TypeData.Set(Replicated, replicate, fields[i].Object);
             }
         }
         public void Interpolate(float dt)
         {
             foreach (var interpolator in interpolators)
             {
-                object value = interpolator.Value.Update(dt, InitData.TypeData.Get(Replicated, interpolator.Key));
+                object value = interpolator.Value.Update(dt, TypeData.Get(Replicated, interpolator.Key));
                 if (value != null)
-                    InitData.TypeData.Set(Replicated, interpolator.Key, value);
+                    TypeData.Set(Replicated, interpolator.Key, value);
             }
         }
     }

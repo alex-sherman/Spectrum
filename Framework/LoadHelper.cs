@@ -40,7 +40,7 @@ namespace Spectrum.Framework
         {
             try
             {
-                var path = Path.Combine(plugin.Content.Content.RootDirectory, "InitData");
+                var path = Path.Combine(plugin.Content.Directories[0], "InitData");
                 var files = Directory.GetFiles(path, "*.json", SearchOption.AllDirectories);
                 foreach (String filename in files)
                 {

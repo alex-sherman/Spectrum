@@ -16,18 +16,16 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    public class ContentLoadException : Exception
-    {
-
-    }
-
     public class ContentHelper
     {
         private static ContentHelper single;
+        public List<string> Directories = new List<string>() { "Content" };
         public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game.Content); } return single; } }
-        public static Texture2D Blank { get { return ContentHelper.Load<Texture2D>("blank"); } }
-        public static Texture2D Missing { get { return ContentHelper.Load<Texture2D>("missing"); } }
-        public static Dictionary<Type, ICachedContentParser> ContentParsers = new Dictionary<Type, ICachedContentParser>()
+        static Texture2D blank;
+        public static Texture2D Blank { get { if(blank == null) blank = Load<Texture2D>("blank"); return blank; } }
+        static Texture2D missing;
+        public static Texture2D Missing { get { if(missing == null) missing = Load<Texture2D>("missing"); return missing; } }
+        public static Dictionary<Type, IContentParser> ContentParsers = new Dictionary<Type, IContentParser>()
             {
                 {typeof(Effect), new EffectParser()},
                 {typeof(SpecModel), new ModelParser()},
@@ -38,6 +36,9 @@ namespace Spectrum.Framework.Content
                 {typeof(float[,]), new HeightmapParser()},
                 {typeof(SoundEffect), new SoundParser()},
                 {typeof(InitData), new InitDataParser()},
+                // TODO: Could be totally removed if fonts can be imported some other way...
+                {typeof(SpriteFont), new MGCParser<SpriteFont>("Fonts", "")},
+
             };
         public ContentManager Content { get; private set; }
         public ContentHelper(ContentManager content)
@@ -45,7 +46,7 @@ namespace Spectrum.Framework.Content
             Content = content;
         }
 
-        public static T Load<T>(string name, bool usePrefix) where T : class
+        public static T Load<T>(string name, bool usePrefix = true) where T : class
         {
             if (name == null) return null;
             name = name.Replace('/', '\\');
@@ -59,16 +60,11 @@ namespace Spectrum.Framework.Content
             return (T)Single.LoadRelative<T>(name, usePrefix);
         }
 
-        public static T Load<T>(string path) where T : class
-        {
-            return Load<T>(path, true);
-        }
-
         public static object LoadType(Type type, string path)
         {
-            MethodInfo load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string) });
+            MethodInfo load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string), typeof(bool) });
             load = load.MakeGenericMethod(type);
-            return load.Invoke(null, new object[] { path });
+            return load.Invoke(null, new object[] { path, true });
         }
 
         public T LoadRelative<T>(string path, bool usePrefix) where T : class
@@ -76,18 +72,18 @@ namespace Spectrum.Framework.Content
             Type t = typeof(T);
             if (ContentParsers.ContainsKey(t))
             {
-                ICachedContentParser parser = ContentParsers[t];
-                if (usePrefix)
-                    path = Path.Combine(Content.RootDirectory, parser.Prefix, path);
-                return (T)parser.Load(path);
+                IContentParser parser = ContentParsers[t];
+                if (!usePrefix)
+                    return (T)parser.Load(path);
+                foreach (var directory in Directories)
+                {
+                    T output = (T)parser.Load(Path.Combine(directory, parser.Prefix, path));
+                    if (output != null)
+                        return output;
+                }
             }
-            if (typeof(T) == typeof(SpriteFont)) { path = @"Fonts\" + path; }
-            if (typeof(T) == typeof(Effect))
-            {
-                path = @"HLSL\" + path + ".mgfx";
-            }
-            // TODO: Could be totally removed if fonts can be imported some other way...
-            return Content.Load<T>(path);
+            DebugPrinter.print(string.Format("File not found {0}", path));
+            return null;
         }
     }
 }

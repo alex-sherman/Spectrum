@@ -17,7 +17,15 @@ namespace Spectrum.Framework.Entities
     public struct FunctionCall
     {
         public string Name;
+        public bool CallOnce;
         public Primitive[] Args;
+
+        public FunctionCall(string name, bool callOnce, object[] args)
+        {
+            Name = name;
+            CallOnce = callOnce;
+            Args = args.Select((arg) => new Primitive(arg)).ToArray();
+        }
     }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [LoadableType]
@@ -61,21 +69,28 @@ namespace Spectrum.Framework.Entities
                 return null;
             }
             object output = TypeData.Instantiate(args.Select(prim => prim.Object).ToArray());
+            Apply(output, true);
+            return output;
+        }
+        public void Apply(object target, bool firstCall = false)
+        {
             foreach (var field in fields)
             {
-                TypeData.Set(output, field.Key, field.Value.Object);
+                TypeData.Set(target, field.Key, field.Value.Object);
             }
-            TypeData.Set(output, "TypeName", TypeName);
+            TypeData.Set(target, "TypeName", TypeName);
             foreach (var call in FunctionCalls)
             {
-                TypeData.Call(output, call.Name, call.Args.Select((prim) => prim.Object).ToArray());
+                if (!call.CallOnce || firstCall)
+                    TypeData.Call(target, call.Name, call.Args.Select((prim) => prim.Object).ToArray());
             }
-            if (output is IReplicatable)
+            if (target is IReplicatable)
             {
-                var rep = (output as IReplicatable);
-                rep.ReplicationData = new ReplicationData(this.Clone(), rep);
+                var rep = (target as IReplicatable);
+                rep.ReplicationData = new ReplicationData(TypeData, rep);
+                if (firstCall)
+                    rep.InitData = Clone();
             }
-            return output;
         }
         public T Construct<T>() where T : class
         {
@@ -90,12 +105,18 @@ namespace Spectrum.Framework.Entities
         }
         public virtual InitData Call(string name, params object[] args)
         {
-            FunctionCalls.Add(new FunctionCall() { Name = name, Args = args.Select((arg) => new Primitive(arg)).ToArray() });
+            FunctionCalls.Add(new FunctionCall(name, false, args));
+            return this;
+        }
+        public virtual InitData CallOnce(string name, params object[] args)
+        {
+            FunctionCalls.Add(new FunctionCall(name, true, args));
             return this;
         }
         public InitData Clone()
         {
             InitData output = new InitData();
+            output.Name = Name;
             output.TypeName = TypeName;
             output.args = args.Select(prim => new Primitive(prim.Object)).ToArray();
             output.fields = fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
@@ -105,6 +126,7 @@ namespace Spectrum.Framework.Entities
         public ImmultableInitData ToImmutable()
         {
             ImmultableInitData output = new ImmultableInitData();
+            output.Name = Name;
             output.TypeName = TypeName;
             output.args = args;
             output.fields = new Dictionary<string, Primitive>(fields);

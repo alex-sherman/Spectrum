@@ -166,6 +166,7 @@ namespace Spectrum.Framework.Entities
         public HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         #endregion
+ 
         #region RenderProperties
         private MaterialData getCreateMaterial() {
             if (RenderProperties.Material == null)
@@ -232,8 +233,7 @@ namespace Spectrum.Framework.Entities
         {
             base.Initialize();
             ReplicationData.SetInterpolator("Position", (w, current, target) => Vector3.Lerp((Vector3)current, (Vector3)target, w));
-            ReplicationData.SetInterpolator("Orientation", (w, current, target) => Matrix.CreateFromQuaternion(Quaternion.Slerp(Quaternion.CreateFromRotationMatrix((Matrix)current),
-                Quaternion.CreateFromRotationMatrix((Matrix)target), w)));
+            ReplicationData.SetInterpolator("Orientation", (w, current, target) => Quaternion.Slerp((Quaternion)current, (Quaternion)target, w));
         }
 
         #region Physics Functions

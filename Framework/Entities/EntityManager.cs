@@ -20,12 +20,13 @@ namespace Spectrum.Framework.Entities
     {
         public event Action<Entity> OnEntityAdded;
         public event Action<Entity> OnEntityRemoved;
+        private DefaultDict<string, HashSet<Entity>> initDataLookup = new DefaultDict<string, HashSet<Entity>>(() => new HashSet<Entity>(), true);
         private float tickTenthTimer = 100;
         private float tickOneTimer = 1000;
         public EntityCollection Entities;
         private MultiplayerService mpService;
         public bool Paused = false;
-        private static Stopwatch timer = new Stopwatch();
+        private static readonly Stopwatch timer = new Stopwatch();
         public EntityManager(MultiplayerService mpService)
         {
             Entities = new EntityCollection();
@@ -41,7 +42,7 @@ namespace Spectrum.Framework.Entities
                         message.Write(replicateable.Count());
                         foreach (Entity entity in replicateable)
                         {
-                            message.Write(entity.ReplicationData.InitData);
+                            message.Write(entity.InitData);
                         }
                         foreach (Entity entity in replicateable)
                         {
@@ -76,7 +77,7 @@ namespace Spectrum.Framework.Entities
             if (!entity.AllowReplicate) { return; }
 
             NetMessage eData = new NetMessage();
-            eData.Write(entity.ReplicationData.InitData);
+            eData.Write(entity.InitData);
             mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
 
             SendEntityReplication(entity, peerDestination);
@@ -217,14 +218,18 @@ namespace Spectrum.Framework.Entities
             entity.Initialize();
             if (mpService.ID == entity.OwnerGuid)
                 SendEntityCreation(entity);
-            if (OnEntityAdded != null) { OnEntityAdded(entity); }
+            OnEntityAdded?.Invoke(entity);
+            if (entity.InitData.Name != null)
+                initDataLookup[entity.InitData.Name].Add(entity);
             return entity;
         }
         public Entity Remove(Guid ID)
         {
             Entity removed = Entities.Remove(ID);
             if (removed == null) return null;
-            if (OnEntityRemoved != null) { OnEntityRemoved(removed); }
+            OnEntityRemoved?.Invoke(removed);
+            if (removed.InitData.Name != null)
+            initDataLookup[removed.InitData.Name].Remove(removed);
             return removed;
         }
         public void ClearEntities(Func<Entity, bool> predicate = null)
@@ -232,7 +237,7 @@ namespace Spectrum.Framework.Entities
             foreach (Entity entity in Entities.UpdateSorted)
             {
                 if (predicate == null || predicate(entity))
-                    Entities.Remove(entity.ID);
+                    Remove(entity.ID);
             }
         }
 
@@ -241,6 +246,11 @@ namespace Spectrum.Framework.Entities
             if (Entities.Map.ContainsKey(id))
                 return Entities.Map[id];
             return null;
+        }
+
+        public IEnumerable<Entity> FindByPrefab(string prefab)
+        {
+            return initDataLookup[prefab];
         }
 
         public IEnumerator<Entity> GetEnumerator()

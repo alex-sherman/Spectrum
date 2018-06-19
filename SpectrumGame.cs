@@ -184,8 +184,7 @@ namespace Spectrum
                 LoadSettings(File.OpenRead(path));
             }
             else { SaveSettings(File.Create(path)); }
-            this.IsMouseVisible = true;
-            Content.RootDirectory = "Content";
+            IsMouseVisible = true;
             Root = new RootElement();
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();

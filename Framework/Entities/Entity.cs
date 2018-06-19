@@ -19,8 +19,13 @@ namespace Spectrum.Framework.Entities
         #region Replication
         const int StateReplicationMessage = 0;
         const int FunctionReplicationMessage = 1;
-        
         private float replicateCounter = 0;
+        public InitData InitData { get; set; }
+        public ReplicationData ReplicationData { get; set; }
+        public bool AllowReplicate { get; set; }
+        public bool AutoReplicate { get; set; }
+        public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }
+        public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         #endregion
 
         public Guid ID;
@@ -28,13 +33,8 @@ namespace Spectrum.Framework.Entities
         /// Gets automatically set when constructing with InitData
         /// </summary>
         public string TypeName { get; set; }
-        public bool AllowReplicate { get; set; }
-        public bool AutoReplicate { get; set; }
-        public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }
-        public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         public EntityMessageHandler SendMessageCallback;
         public NetID OwnerGuid;
-        public ReplicationData ReplicationData { get; set; }
         public EntityManager Manager;
         private bool replicateNextUpdate = false;
 

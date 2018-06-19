@@ -6,12 +6,12 @@ using System.Text;
 
 namespace Spectrum.Framework.Content
 {
-    public interface ICachedContentParser
+    public interface IContentParser
     {
         string Prefix { get; set; }
         object Load(string path);
     }
-    public abstract class CachedContentParser<T, U> : ICachedContentParser where T : class
+    public abstract class CachedContentParser<T, U> : IContentParser where T : class
     {
         protected Dictionary<string, T> cachedData = new Dictionary<string, T>();
         protected abstract T LoadData(string path, string name);
@@ -49,14 +49,17 @@ namespace Spectrum.Framework.Content
             }
             catch (FileNotFoundException)
             {
-                DebugPrinter.print(string.Format("File not found {0}", path));
                 cachedData[path] = null;
             }
         }
 
-        object ICachedContentParser.Load(string path)
+        object IContentParser.Load(string path)
         {
             return Load(path);
+        }
+        public void Clear()
+        {
+            cachedData = new Dictionary<string, T>();
         }
     }
 }

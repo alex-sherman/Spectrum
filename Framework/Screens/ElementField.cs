@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Screens
                 System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(value);
                 return Color.FromNonPremultiplied(color.R, color.G, color.B, color.A);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return Color.Black;
             }
@@ -26,14 +26,7 @@ namespace Spectrum.Framework.Screens
 
         public static object ContentSetter<T>(string value) where T : class
         {
-            try
-            {
-                return value == null ? null : ContentHelper.Load<T>(value);
-            }
-            catch (ContentLoadException)
-            {
-                return null;
-            }
+            return value == null ? null : ContentHelper.Load<T>(value);
         }
 
         public static object JSONSetter<T>(string value)

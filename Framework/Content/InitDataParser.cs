@@ -27,12 +27,15 @@ namespace Spectrum.Framework.Content
 
                 InitData output = new InitData((string)jobj["@TypeName"]);
                 output.Name = (string)jobj["@Name"];
+                ParseCalls(jobj, true, output);
+                ParseCalls(jobj, false, output);
                 jobj.Remove("@Name"); jobj.Remove("@TypeName");
+                jobj.Remove("@Call"); jobj.Remove("@CallOnce");
 
                 foreach (var kvp in jobj)
                 {
                     if (output.TypeData.members.TryGetValue(kvp.Key, out MemberInfo memberInfo))
-                        output.Set(kvp.Key, ParseValue(kvp.Value, memberInfo));
+                        output.Set(kvp.Key, ParseValue(kvp.Value, memberInfo.MemberType));
                     else
                         DebugPrinter.PrintOnce("Skipping field {0} in {1}", kvp.Key, name);
                 }
@@ -45,7 +48,28 @@ namespace Spectrum.Framework.Content
             return null;
         }
 
-        public static object ParseValue(JToken token, MemberInfo memberInfo)
+        static void ParseCalls(Dictionary<string, JToken> jobj, bool callOnce, InitData output)
+        {
+            string key = callOnce ? "@CallOnce" : "@Call";
+            if (jobj.TryGetValue(key, out JToken calls))
+            {
+                if (calls.Type != JTokenType.Object)
+                    throw new InvalidDataException(string.Format("Expected field {0} to be an object", key));
+                JObject callsObj = (JObject)calls;
+                foreach (var call in callsObj)
+                {
+                    if (call.Value.Type != JTokenType.Array)
+                       throw new InvalidDataException(string.Format("Expected field {0}.{1} to be an array", key, call.Key));
+                    var callArgs = ((JArray)call.Value).Select(callArg => ParseValue(callArg, null)).ToArray();
+                    if (callOnce)
+                        output.CallOnce(call.Key, args: callArgs);
+                    else
+                        output.Call(call.Key, args: callArgs);
+                }
+            }
+        }
+
+        public static object ParseValue(JToken token, Type targetType)
         {
             if (token.Type == JTokenType.String)
                 return (string)token;
@@ -56,7 +80,7 @@ namespace Spectrum.Framework.Content
                 case JTokenType.None:
                     return null;
                 case JTokenType.Object:
-                    return ParseObject((JObject)token, memberInfo);
+                    return ParseObject((JObject)token, targetType);
                 case JTokenType.Array:
                     break;
                 case JTokenType.Integer:
@@ -93,16 +117,16 @@ namespace Spectrum.Framework.Content
             { "vector4", typeof(Vector4) },
         };
         private static HashSet<Type> validTypes = new HashSet<Type>(typeLookup.Values);
-        public static object ParseObject(JObject obj, MemberInfo memberInfo)
+        public static object ParseObject(JObject obj, Type targetType)
         {
             string typeName = (string)obj["type"];
             Type type = null;
             if (typeName != null && typeLookup.ContainsKey(typeName))
                 type = typeLookup[typeName];
-            else if (validTypes.Contains(memberInfo.MemberType))
-                type = memberInfo.MemberType;
+            else if (targetType != null && validTypes.Contains(targetType))
+                type = targetType;
             else
-                throw new InvalidDataException(string.Format("Unable to load field {0}", memberInfo));
+                throw new InvalidDataException(string.Format("Unable to parse an object field"));
 
             if (type == typeof(Matrix))
             {
