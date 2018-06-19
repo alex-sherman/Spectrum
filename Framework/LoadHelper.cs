@@ -52,6 +52,24 @@ namespace Spectrum.Framework
             catch (DirectoryNotFoundException) { }
             catch (FileNotFoundException) { }
         }
+        public static void ReloadPrefabs(EntityManager manager)
+        {
+            ((InitDataParser)ContentHelper.ContentParsers[typeof(InitData)]).Clear();
+            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
+                LoadHelper.LoadPrefabs(plugin);
+            foreach (var prefab in InitData.Prefabs)
+            {
+                foreach (var entity in manager.FindByPrefab(prefab.Key))
+                {
+                    // Clear render properties so removing fields like Texture will work
+                    if (entity is GameObject gameObject)
+                    {
+                        gameObject.RenderProperties = new RenderProperties();
+                    }
+                    prefab.Value.Apply(entity);
+                }
+            }
+        }
         public static void LoadTypes(string LocalDir = null)
         {
             SpectrumGame.Game.Plugins["Main"] = Plugin.CreatePlugin("Main", ContentHelper.Single, Assembly.GetEntryAssembly());
