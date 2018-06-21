@@ -24,11 +24,11 @@ namespace Spectrum.Framework.VR
         }
         public static bool Running { get; private set; }
         public static int HMDIndex { get; private set; } = -1;
-        public static Matrix HeadPose { get; private set; }
+        public static Matrix HeadPose { get; private set; } = Matrix.Identity;
         public static int LeftHandIndex { get; private set; } = -1;
-        public static Matrix LeftHand { get; private set; }
+        public static Matrix LeftHand { get; private set; } = Matrix.Identity;
         public static int RightHandIndex { get; private set; } = -1;
-        public static Matrix RightHand { get; private set; }
+        public static Matrix RightHand { get; private set; } = Matrix.Identity;
         public static void Update(GameTime time)
         {
             TrackedDevicePose_t[] poses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];

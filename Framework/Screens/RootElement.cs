@@ -28,10 +28,10 @@ namespace Spectrum.Framework.Screens
         {
             Measure(PixelWidth, PixelHeight);
             Layout(new Rectangle(0, 0, PixelWidth, PixelHeight));
-            base.Update(gameTime);
             UpdateFocus(hasFocus);
             if (hasFocus)
                 HandleInput(false, input);
+            base.Update(gameTime);
         }
         
         public void Draw(GameTime gameTime)

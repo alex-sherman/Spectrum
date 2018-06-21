@@ -55,65 +55,86 @@ namespace Spectrum.Framework.VR
         Pressed = 1,
         Touched = 2
     }
+    public struct VRHMD
+    {
+        public Vector3 Position;
+        public Vector3 PositionDelta;
+        public Vector3 Direction;
+        public Quaternion Rotation;
+        public Quaternion RotationDelta;
+        public void Update()
+        {
+            var position = SpecVR.HeadPose.Translation;
+            PositionDelta = position - Position;
+            Position = position;
+            var rotation = SpecVR.HeadPose.ToQuaternion();
+            RotationDelta = rotation * Quaternion.Inverse(Rotation);
+            Rotation = rotation;
+        }
+    }
     public struct VRController
     {
         public VRHand Hand { get; private set; }
-        public ulong pressedButtons;
-        public ulong touchedButtons;
-        public VRControllerState_t state;
-        public Vector2 touchpad;
-        public Vector2 touchpadDirection;
-        public double touchpadAngle;
-        public Vector3 direction;
-        public Vector3 position;
-        public Quaternion rotation;
-        public Quaternion pointing;
+        public ulong PressedButtons;
+        public ulong TouchedButtons;
+        public VRControllerState_t State;
+        public Vector2[] Axis;
+        public Vector2 Axis0Direction;
+        public double AxisAngle(int axis) { return Math.Atan2(Axis[axis].Y, Axis[axis].X); }
+        public Vector3 Direction { get => Vector3.Transform(Vector3.Forward, Rotation); }
+        public Vector3 Position;
+        public Vector3 PositionDelta;
+        public Quaternion Rotation;
+        public Quaternion RotationDelta;
+        public Quaternion Pointing;
         public VRController(VRHand hand)
         {
             Hand = hand;
-            pressedButtons = 0;
-            touchedButtons = 0;
-            state = new VRControllerState_t();
-            touchpad = Vector2.Zero;
-            touchpadDirection = Vector2.Zero;
-            touchpadAngle = 0;
-            direction = Vector3.Forward;
-            position = Vector3.Zero;
-            rotation = Quaternion.Identity;
-            pointing = Quaternion.Identity;
+            PressedButtons = 0;
+            TouchedButtons = 0;
+            State = new VRControllerState_t();
+            Axis = new Vector2[5];
+            Axis0Direction = Vector2.Zero;
+            Position = PositionDelta = Vector3.Zero;
+            Rotation = RotationDelta = Quaternion.Identity;
+            Pointing = Quaternion.Identity;
         }
         public void Update()
         {
             int index = Hand == VRHand.Left ? SpecVR.LeftHandIndex : SpecVR.RightHandIndex;
             if(index != -1)
-                OpenVR.System.GetControllerState((uint)index, ref state, 64);
-            pressedButtons = state.ulButtonPressed;
-            touchedButtons = state.ulButtonTouched;
-            touchpad.X = state.rAxis0.x;
-            touchpad.Y = state.rAxis0.y;
-            touchpadDirection = touchpad;
-            touchpadDirection.Normalize();
-            touchpadAngle = Math.Atan2(touchpadDirection.Y, touchpadDirection.X);
-            rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
-            pointing = Quaternion.CreateFromAxisAngle(Vector3.Right, -(float)Math.PI / 4).Concat(rotation);
-            direction = Vector3.Transform(Vector3.Forward, rotation);
-            position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;
+                OpenVR.System.GetControllerState((uint)index, ref State, 64);
+            PressedButtons = State.ulButtonPressed;
+            TouchedButtons = State.ulButtonTouched;
+            Axis[0].X = State.rAxis0.x;
+            Axis[0].Y = State.rAxis0.y;
+            Axis[1].X = State.rAxis1.x;
+            Axis[1].Y = State.rAxis1.y;
+            Axis0Direction = Axis[0];
+            Axis0Direction.Normalize();
+            var rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
+            RotationDelta = rotation * Quaternion.Inverse(Rotation);
+            Rotation = rotation;
+            Pointing = Quaternion.CreateFromAxisAngle(Vector3.Right, -(float)Math.PI / 3f).Concat(Rotation);
+            var position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;
+            PositionDelta = position - Position;
+            Position = position;
         }
         private bool CheckFlag(bool touched, VRButton check)
         {
-            var flags = touched ? touchedButtons : pressedButtons;
+            var flags = touched ? TouchedButtons : PressedButtons;
             switch (check)
             {
                 case VRButton.BetterTrigger:
-                    return touched ? state.rAxis1.x > 0.1 : state.rAxis1.x > 0.95;
+                    return touched ? State.rAxis1.x > 0.1 : State.rAxis1.x > 0.95;
                 case VRButton.DPad_Up:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, Vector2.UnitY) > Math.Cos(Math.PI / 4);
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitY) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Down:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, -Vector2.UnitY) > Math.Cos(Math.PI / 4);
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitY) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Left:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitX) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Right:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(touchpadDirection, -Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitX) > Math.Cos(Math.PI / 4);
                 case VRButton.Axis0:
                 case VRButton.Axis1:
                 case VRButton.Axis2:

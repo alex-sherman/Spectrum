@@ -29,6 +29,7 @@ namespace Spectrum.Framework.Input
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
         public SpectrumMouseState MouseState;
         public Gamepad[] Gamepads = new Gamepad[4];
+        public VRHMD VRHMD = new VRHMD();
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
         private InputState LastInputState;
 
@@ -61,6 +62,8 @@ namespace Spectrum.Framework.Input
             }
             if (SpecVR.Running)
             {
+                LastInputState.VRHMD = VRHMD;
+                VRHMD.Update();
                 for (int i = 0; i < 2; i++)
                 {
                     LastInputState.VRControllers[i] = VRControllers[i];
