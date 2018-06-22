@@ -109,12 +109,41 @@ namespace Spectrum.Framework
                 }
             }
         }
+        // This should probably be cached if it is hit often
+        private bool TryCast(Type to, object value, out object output)
+        {
+            output = value;
+            var method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Union(to.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == to).FirstOrDefault();
+            if (method != null)
+            {
+                output = method.Invoke(null, new object[] { value });
+                return true;
+            }
+            return false;
+        }
+        private static HashSet<Type> numericTypes = new HashSet<Type>() {
+            typeof(int), typeof(uint), typeof(long), typeof(ulong), typeof(short), typeof(ushort), typeof(float), typeof(double)
+        };
         private bool Coerce(Type type, object value, out object output)
         {
             output = value;
+            if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                type = type.GetGenericArguments()[0];
             if (value == null || type.IsAssignableFrom(value.GetType()))
                 return true;
-            else if (type.IsSubclassOf(typeof(Enum)) && value is int)
+
+            // The next to checks might be super slow, consider caching or removing them
+            // if it becomes a problem
+            if (numericTypes.Contains(type) && numericTypes.Contains(value.GetType())) {
+                output = Convert.ChangeType(value, type);
+                return true;
+            }
+            if (TryCast(type, value, out output))
+                return true;
+
+            if (type.IsSubclassOf(typeof(Enum)) && value is int)
             {
                 output = Enum.ToObject(type, (int)value);
                 return true;

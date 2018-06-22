@@ -193,6 +193,10 @@ namespace Spectrum.Framework.Entities
         {
             return CreateEntity(new InitData(typeName));
         }
+        public Entity CreatePrefab(string prefab)
+        {
+            return CreateEntity(InitData.Prefabs[prefab]);
+        }
         /// <summary>
         /// Calls the constructor for the Entity, but does not initialize it or add it to the EntityManager
         /// </summary>
