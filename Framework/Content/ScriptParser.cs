@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Content
 {
-    public class ScriptParser : CachedContentParser<ScriptAsset, ScriptAsset>
+    public class ScriptParser : CachedContentParser<ScriptAsset>
     {
         public ScriptParser()
         {
@@ -18,11 +18,6 @@ namespace Spectrum.Framework.Content
             path = TryThrowExtensions(path, ".py");
             StreamReader reader = new StreamReader(path);
             return new ScriptAsset(path, reader.ReadToEnd());
-        }
-
-        protected override ScriptAsset SafeCopy(ScriptAsset data)
-        {
-            return data;
         }
     }
 }

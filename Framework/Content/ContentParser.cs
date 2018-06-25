@@ -62,4 +62,8 @@ namespace Spectrum.Framework.Content
             cachedData = new Dictionary<string, T>();
         }
     }
+    public abstract class CachedContentParser<T> : CachedContentParser<T, T> where T : class
+    {
+        protected override T SafeCopy(T data) => data;
+    }
 }

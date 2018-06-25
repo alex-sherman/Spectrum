@@ -62,7 +62,7 @@ namespace Spectrum.Framework.Screens
             this.Fields["font-color"] = new ElementField(
                 this,
                 "font-color",
-                ElementField.ColorSetter
+                (value) => ElementField.ColorSetter(value)
                 );
             this.Fields["background"] = new ElementField(
                 this,
@@ -73,7 +73,7 @@ namespace Spectrum.Framework.Screens
             this.Fields["background-color"] = new ElementField(
                 this,
                 "background-color",
-                ElementField.ColorSetter,
+                (value) => ElementField.ColorSetter(value),
                 false
                 );
             this.Fields["image"] = new ElementField(
@@ -85,7 +85,7 @@ namespace Spectrum.Framework.Screens
             this.Fields["image-color"] = new ElementField(
                 this,
                 "image-color",
-                ElementField.ColorSetter,
+                (value) => ElementField.ColorSetter(value),
                 false
                 );
         }

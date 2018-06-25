@@ -45,12 +45,16 @@ namespace Spectrum.Framework.VR
                         HMDIndex = (int)i;
                         break;
                     case ETrackedDeviceClass.Controller:
-                        if (LeftHandIndex == -1)
-                            LeftHandIndex = (int)i;
-                        else
-                            RightHandIndex = (int)i;
-                        break;
-                    default:
+                        var hand = OpenVR.System.GetControllerRoleForTrackedDeviceIndex(i);
+                        switch (hand)
+                        {
+                            case ETrackedControllerRole.LeftHand:
+                                LeftHandIndex = (int)i;
+                                break;
+                            case ETrackedControllerRole.RightHand:
+                                RightHandIndex = (int)i;
+                                break;
+                        }
                         break;
                 }
             }

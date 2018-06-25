@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Content
                 return new ImageAsset(SvgDocument.Open(full_path));
             }
             full_path = TryThrowExtensions(path, ".png", ".jpg");
-            return new ImageAsset(Texture2DParser.Load(full_path));
+            return new ImageAsset(Texture2DParser.LoadFromPath(full_path));
         }
 
         protected override ImageAsset SafeCopy(ImageAsset data)

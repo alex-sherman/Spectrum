@@ -77,7 +77,6 @@ namespace Spectrum
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }
         public RootElement Root { get; private set; }
-        bool newResize = false;
         private Point mousePosition;
         public bool UsingSteam { get; private set; }
 
@@ -170,7 +169,6 @@ namespace Spectrum
                     if (lastBorderless)
                         WindowForm.WindowState = FormWindowState.Maximized;
                 }
-                newResize = true;
             }
         }
 
@@ -228,7 +226,6 @@ namespace Spectrum
                 {
                     OnScreenResize(this, EventArgs.Empty);
                 }
-                newResize = false;
             }
             if(SpecVR.Running)
             {

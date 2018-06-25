@@ -12,7 +12,7 @@ namespace Spectrum.Framework.Content
     {
         public bool HasAlpha = false;
     }
-    public class Texture2DParser : CachedContentParser<Texture2D, Texture2D>
+    public class Texture2DParser : CachedContentParser<Texture2D>
     {
         public Texture2DParser()
         {
@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Content
         {
             return (x & (x - 1)) == 0;
         }
-        public static Texture2D Load(string full_path)
+        public static Texture2D LoadFromPath(string full_path)
         {
             Texture2D loaded = Texture2D.FromStream(SpectrumGame.Game.GraphicsDevice, new FileStream(full_path, FileMode.Open, FileAccess.Read));
             //Of course you have to generate your own mip maps when you import from a file
@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Content
             output.Tag = outputTag;
             Color[] data = new Color[loaded.Height * loaded.Width];
             Color[] lastLevelData = data;
-            loaded.GetData<Color>(data);
+            loaded.GetData(data);
             for (int level = 0; level < output.LevelCount; level++)
             {
                 int stride = 1 << level;
@@ -63,7 +63,7 @@ namespace Spectrum.Framework.Content
                         }
                     }
                 }
-                output.SetData<Color>(level, null, levelData, 0, levelHeight * levelWidth);
+                output.SetData(level, null, levelData, 0, levelHeight * levelWidth);
                 lastLevelData = levelData;
             }
             return output;
@@ -71,12 +71,7 @@ namespace Spectrum.Framework.Content
         protected override Texture2D LoadData(string path, string name)
         {
             string full_path = TryThrowExtensions(path, ".jpg", ".png");
-            return Load(full_path);
-        }
-
-        protected override Texture2D SafeCopy(Texture2D cache)
-        {
-            return cache;
+            return LoadFromPath(full_path);
         }
     }
 }

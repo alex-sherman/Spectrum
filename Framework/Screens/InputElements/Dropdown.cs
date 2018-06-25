@@ -73,7 +73,7 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             if (Children.Count == 0)
                 option.Margin.TopRelative = 1;
-            option.OnClick += option_OnClick;
+            option.OnClick += Option_OnClick;
             option.Display = Expanded ? ElementDisplay.Visible : ElementDisplay.Hidden;
             options.Add(option);
             AddElement(option);
@@ -89,18 +89,23 @@ namespace Spectrum.Framework.Screens.InputElements
             }
         }
 
-        void option_OnClick(InputElement clicked)
+        void Option_OnClick(InputElement clicked)
         {
             if (!Expanded && clicked == childOption)
                 Expanded = true;
             else
             {
-                selected = clicked as ListOption<T>;
-                childOption.Option = selected.Option;
-                childOption.Text = selected.Text;
-                childOption.Id = selected.Id;
+                Select(clicked as ListOption<T>);
                 Expanded = false;
             }
+        }
+        public void Select(ListOption<T> option)
+        {
+            selected = option;
+            childOption.Option = selected.Option;
+            childOption.Text = selected.Text;
+            childOption.Id = selected.Id;
+            OnSelectedChanged?.Invoke(selected);
         }
         public override void OnMeasure(int width, int height)
         {

@@ -11,7 +11,7 @@ namespace Spectrum.Framework.Screens
 {
     public class ElementField
     {
-        public static object ColorSetter(string value)
+        public static Color ColorSetter(string value)
         {
             try
             {
