@@ -39,7 +39,7 @@ namespace Spectrum.Framework.Entities
                     Map.Remove(entityID);
                     updatedSorted.Remove(entity);
                     drawSorted.Remove(entity);
-                    entity.Dispose();
+                    entity.Destroy();
                     return entity;
                 }
                 return null;

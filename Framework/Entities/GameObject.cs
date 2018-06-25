@@ -329,10 +329,10 @@ namespace Spectrum.Framework.Entities
             }
             return _tasks;
         }
-        public override void Dispose()
+        public override void Destroy()
         {
             DebugPrinter.undisplay(this);
-            base.Dispose();
+            base.Destroy();
         }
 
         public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)

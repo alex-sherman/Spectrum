@@ -14,7 +14,7 @@ using Spectrum.Framework.Graphics;
 
 namespace Spectrum.Framework.Entities
 {
-    public class Entity : IDisposable, IReplicatable
+    public class Entity : IReplicatable
     {
         #region Replication
         const int StateReplicationMessage = 0;
@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Entities
         public int DrawOrder { get; protected set; }
         public bool Enabled { get; set; }
         public bool DrawEnabled { get; set; }
-        public bool Disposing { get; private set; }
+        public bool Destroying { get; private set; }
 
         public Entity()
         {
@@ -54,11 +54,11 @@ namespace Spectrum.Framework.Entities
         public virtual void Initialize() { }
 
         [Replicate]
-        public virtual void Dispose()
+        public virtual void Destroy()
         {
-            RPC("Dispose");
+            RPC("Destroy");
             Enabled = false;
-            Disposing = true;
+            Destroying = true;
         }
 
         public void RPC(string method, params object[] args)

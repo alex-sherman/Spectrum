@@ -38,14 +38,11 @@ namespace Spectrum.Framework
         {
             vDirection.Normalize();
             vDirection *= -1;
-            // Step 1. Setup basis vectors describing the rotation given the input vector and assuming an initial up direction of (0, 1, 0)
-            Vector3 vUp = new Vector3(0, 1.0f, 0.0f);           // Y Up vector
-            Vector3 vRight = Vector3.Cross(vUp, vDirection);    // The perpendicular vector to Up and Direction
-            vUp = Vector3.Cross(vDirection, vRight);            // The actual up vector given the direction and the right vector
-
-            // Step 2. Put the three vectors into the matrix to bulid a basis rotation matrix
-            // This step isnt necessary, but im adding it because often you would want to convert from matricies to quaternions instead of vectors to quaternions
-            // If you want to skip this step, you can use the vector values directly in the quaternion setup below
+            Vector3 vUp = new Vector3(0, 1.0f, 0.0f);
+            Vector3 vRight = Vector3.Cross(vUp, vDirection);
+            vRight.Normalize();
+            vUp = Vector3.Cross(vDirection, vRight);
+            vUp.Normalize();
             Matrix mBasis = new Matrix(vRight.X, vRight.Y, vRight.Z, 0.0f,
                                         vUp.X, vUp.Y, vUp.Z, 0.0f,
                                         vDirection.X, vDirection.Y, vDirection.Z, 0.0f,

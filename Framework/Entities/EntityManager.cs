@@ -167,7 +167,7 @@ namespace Spectrum.Framework.Entities
                 }
                 else
                     updateables[i].DisabledUpdate(gameTime);
-                if (updateables[i].Disposing)
+                if (updateables[i].Destroying)
                     Remove(updateables[i].ID);
                 timer.Stop();
             }
