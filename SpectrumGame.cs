@@ -101,7 +101,7 @@ namespace Spectrum
             PhysicsEngine.Init(EntityManager);
             graphics = new GraphicsDeviceManager(this);
             AudioManager.Init();
-            this.Window.AllowUserResizing = true;
+            Window.AllowUserResizing = true;
             WindowForm = (Form)Form.FromHandle(Window.Handle);
             IsFixedTimeStep = false;
         }
@@ -187,6 +187,7 @@ namespace Spectrum
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
             Serialization.Model.CompileInPlace();
+            GraphicsEngine.Initialize();
         }
 
         /// <summary>
@@ -232,7 +233,7 @@ namespace Spectrum
                 SpecVR.Update(gameTime);
             }
             InputState.Current.Update();
-            Root.Update(gameTime, InputState.Current, IsActive);
+            Root.Update(gameTime, InputState.Current);
             base.Update(gameTime);
         }
         protected override void Draw(GameTime gameTime)

@@ -16,6 +16,7 @@ namespace Spectrum.Framework.Screens
         public int PixelWidth { get { return Target?.Width ?? SpectrumGame.Game.GraphicsDevice.Viewport.Width; } }
         public int PixelHeight { get { return Target?.Height ?? SpectrumGame.Game.GraphicsDevice.Viewport.Height; } }
         public SpriteBatch SpriteBatch;
+        public override bool HasFocus => SpectrumGame.Game.IsActive;
         public RootElement()
         {
             Width.Type = SizeType.MatchParent;
@@ -24,12 +25,11 @@ namespace Spectrum.Framework.Screens
             Initialize();
         }
     
-        public void Update(GameTime gameTime, InputState input, bool hasFocus)
+        public void Update(GameTime gameTime, InputState input)
         {
             Measure(PixelWidth, PixelHeight);
             Layout(new Rectangle(0, 0, PixelWidth, PixelHeight));
-            UpdateFocus(hasFocus);
-            if (hasFocus)
+            if (HasFocus)
                 HandleInput(false, input);
             base.Update(gameTime);
         }

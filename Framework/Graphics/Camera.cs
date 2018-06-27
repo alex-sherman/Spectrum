@@ -87,5 +87,29 @@ namespace Spectrum.Framework.Graphics
                 return Matrix.CreateLookAt(refCP, refTP, invUpVector);
             }
         }
+
+        public virtual void UpdateFromVector2(Vector2 desiredRotation)
+        {
+            Yaw -= desiredRotation.X;
+            //Make sure the magnitude of the yaw never exceeds 2*PI
+            if (Yaw > 2 * Math.PI)
+            {
+                Yaw -= 2 * (float)Math.PI;
+            }
+            if (Yaw < -2 * Math.PI)
+            {
+                Yaw += 2 * (float)Math.PI;
+            }
+            Pitch -= desiredRotation.Y;
+            //Constrain pitch so you can't do camera flips
+            if (Pitch > MathHelper.PiOver2)
+            {
+                Pitch = MathHelper.PiOver2;
+            }
+            if (Pitch < -MathHelper.PiOver2)
+            {
+                Pitch = -MathHelper.PiOver2;
+            }
+        }
     }
 }

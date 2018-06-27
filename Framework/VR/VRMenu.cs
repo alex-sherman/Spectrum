@@ -31,7 +31,7 @@ namespace Spectrum.Framework.VR
         }
         public override void Update(GameTime gameTime)
         {
-            Root.Update(gameTime, new Input.InputState(), false);
+            Root.Update(gameTime, new Input.InputState());
             Root.Draw(gameTime);
         }
     }

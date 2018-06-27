@@ -76,10 +76,9 @@ namespace Spectrum.Framework.Graphics
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
         public static float MultisampleFactor = 2;
-        public static void Initialize(Camera camera)
+        public static void Initialize()
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-            Camera = camera;
             device = SpectrumGame.Game.GraphicsDevice;
             Settings.Init(device);
             PostProcessEffect.Initialize();

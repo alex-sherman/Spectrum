@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Screens
         public List<Element> Children { get { return _children.ToList(); } }
         public ElementDisplay Display { get; set; }
         public PositionType Positioning { get; set; }
-        public bool HasFocus { get; protected set; }
+        public virtual bool HasFocus { get { return Parent?.HasFocus ?? true;  } }
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
@@ -273,15 +273,6 @@ namespace Spectrum.Framework.Screens
                 }
             }
 
-        }
-        public virtual bool UpdateFocus(bool parentHasFocus)
-        {
-            foreach (var child in Children)
-            {
-                child.UpdateFocus(parentHasFocus);
-            }
-            HasFocus = parentHasFocus;
-            return parentHasFocus;
         }
 
         public virtual void Draw(GameTime gameTime, SpriteBatch spritebatch)
