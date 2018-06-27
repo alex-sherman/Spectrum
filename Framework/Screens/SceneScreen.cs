@@ -95,8 +95,6 @@ namespace Spectrum.Framework.Screens
                     Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
                                   SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
             }
-            if (HasFocus)
-                input.Update();
             return output;
         }
     }
