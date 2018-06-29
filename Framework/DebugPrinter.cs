@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using System.Diagnostics;
 using Spectrum.Framework.Screens;
 using Spectrum.Framework.Entities;
+using System.IO;
 
 namespace Spectrum.Framework
 {
@@ -80,6 +81,11 @@ namespace Spectrum.Framework
                 {
                     string filename = sf.GetFileName();
                     var line = string.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last());
+                    try
+                    {
+                        File.AppendAllText("output.log", line + "\n");
+                    }
+                    catch { }
                     strings.Add(line);
                     Console.WriteLine(line);
                 }
