@@ -112,6 +112,8 @@ namespace Spectrum.Framework.Input
             => IsKeyDown(bindingName, playerInfo) && !LastInputState.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyPress(Keys key)
             => IsKeyDown(key) && !LastInputState.IsKeyDown(key);
+        public bool IsNewKeyPress(Button button)
+            => IsKeyDown(button) && !LastInputState.IsKeyDown(button);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
             => !IsKeyDown(bindingName, playerInfo) && LastInputState.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyRelease(Keys key)
