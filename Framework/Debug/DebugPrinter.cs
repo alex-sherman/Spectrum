@@ -95,10 +95,12 @@ namespace Spectrum.Framework
         {
             return String.Format("{0:0.00}", d);
         }
+        private float averageFPS = 0;
         private void DrawTimes(int startLine, SpriteBatch spritebatch, float dt)
         {
             float curPos = (startLine) * Font.LineSpacing;
-            string toPrint = (1.0 / dt).ToString("0.00");
+            averageFPS = (float)(averageFPS * 0.95 + (1.0 / dt) * 0.05);
+            string toPrint = averageFPS.ToString("0.00");
             spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
             curPos += Font.MeasureString(toPrint).Y;
             foreach (var timeGroup in DebugTiming.Groups)
