@@ -22,9 +22,9 @@ namespace Spectrum.Framework.Entities
         private float replicateCounter = 0;
         public InitData InitData { get; set; }
         public ReplicationData ReplicationData { get; set; }
-        public bool AllowReplicate { get; set; }
-        public bool AutoReplicate { get; set; }
-        public bool IsLocal { get { return OwnerGuid == SpectrumGame.Game.MP.ID; } }
+        public bool AllowReplicate;
+        public bool AutoReplicate;
+        public bool IsLocal;
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         #endregion
 
@@ -51,7 +51,10 @@ namespace Spectrum.Framework.Entities
             AllowReplicate = true;
         }
 
-        public virtual void Initialize() { }
+        public virtual void Initialize()
+        {
+            IsLocal = OwnerGuid == SpectrumGame.Game.MP.ID;
+        }
 
         [Replicate]
         public virtual void Destroy()
@@ -76,7 +79,8 @@ namespace Spectrum.Framework.Entities
 
         public virtual void Update(GameTime gameTime)
         {
-            ReplicationData?.Interpolate(gameTime.DT());
+            if (AllowReplicate)
+                ReplicationData?.Interpolate(gameTime.DT());
             if (CanReplicate)
             {
                 if (replicateCounter > 0)

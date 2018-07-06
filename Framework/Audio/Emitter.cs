@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using SharpDX.X3DAudio;
+using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +8,9 @@ using System.Text;
 
 namespace Spectrum.Framework.Audio
 {
-    public class Emitter
+    public class SoundEmitter
     {
-        private SharpDX.X3DAudio.Emitter _emitter;
+        private Emitter _emitter;
         private List<SoundEffect> _sounds = new List<SoundEffect>();
 
         public Vector3 Position
@@ -30,7 +31,7 @@ namespace Spectrum.Framework.Audio
             set { _emitter.OrientTop = AudioManager.V3ToV3(value); }
         }
 
-        public Emitter()
+        public SoundEmitter()
         {
             _emitter = new SharpDX.X3DAudio.Emitter()
             {
@@ -58,8 +59,11 @@ namespace Spectrum.Framework.Audio
             _sounds.Remove(sound);
         }
 
-        public void Update()
+        public void Update(GameObject emitted)
         {
+            Position = emitted.position;
+            Up = Vector3.Up;
+            Forward = Vector3.Forward;
             foreach (var sound in _sounds)
             {
                 DspSettings dspSettings = new DspSettings(1, AudioManager.DestinationChannels);

@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Entities
         public Quaternion Orientation
         {
             get { return orientation; }
-            set { orientation = value; }
+            set { _dirtyPhysics = true; orientation = value; }
         }
         public Quaternion invOrientation;
         public Quaternion InvOrientation { get { return invOrientation; } }
@@ -51,7 +51,7 @@ namespace Spectrum.Framework.Entities
         public Vector3 Position
         {
             get { return position; }
-            set { position = value; }
+            set { _dirtyPhysics = true;  position = value; }
         }
         public object PositionInterpolator(float w, object value)
         {
@@ -69,7 +69,7 @@ namespace Spectrum.Framework.Entities
 
         public Material material;
 
-        private JBBox boundingBox;
+        public JBBox boundingBox;
         public JBBox BoundingBox { get { return boundingBox; } }
 
         public float inactiveTime = 0.0f;
@@ -139,7 +139,8 @@ namespace Spectrum.Framework.Entities
         public int internalIndex = 0;
 
         public int marker = 0;
-        public Shape Shape { get; set; }
+        private Shape shape;
+        public Shape Shape { get => shape; set { _dirtyPhysics = true; shape = value; } }
         public void ShapeFromModelBounds()
         {
             JBBox box = ModelBounds;
@@ -205,6 +206,7 @@ namespace Spectrum.Framework.Entities
 
         [Replicate]
         public Matrix ModelTransform = Matrix.Identity;
+        // TODO: Should be a component
         public AnimationPlayer AnimationPlayer;
         public AnimationClip GetAnimation(string name)
         {
@@ -219,9 +221,8 @@ namespace Spectrum.Framework.Entities
         public GameObject()
             : base()
         {
-            this.Model = null;
+            Model = null;
             IsActive = true;
-            AnimationPlayer = new AnimationPlayer(this);
             inertia = new Matrix();
             invInertia = invInertiaWorld = new Matrix();
             invOrientation = orientation = Quaternion.Identity;
@@ -232,16 +233,21 @@ namespace Spectrum.Framework.Entities
         public override void Initialize()
         {
             base.Initialize();
-            ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
-            ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
-            PhysicsUpdate(0, true);
+            if (!IsStatic)
+            {
+                ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
+                ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
+            }
+            PhysicsUpdate(0);
         }
 
         #region Physics Functions
-        public void PhysicsUpdate(float timestep, bool force = false)
+        private bool _dirtyPhysics = true;
+        public void PhysicsUpdate(float timestep)
         {
-            if (!IsStatic || force)
+            if (!IsStatic || _dirtyPhysics)
             {
+                _dirtyPhysics = false;
                 //TODO: This might be useful to cache on the object if its needed elsewhere
                 // or it should just get removed and figure out how to do everything with quaternions
                 Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
@@ -257,29 +263,20 @@ namespace Spectrum.Framework.Entities
 
                     // Given: Orientation, Inertia
                     Shape.GetBoundingBox(ref orientationMat, out boundingBox);
-                    Vector3.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
+                    Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
                     boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
-                    Vector3.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
+                    Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
                     boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
                 }
                 Matrix.Multiply(ref invOrientationMat, ref invInertia, out invInertiaWorld);
                 Matrix.Multiply(ref invInertiaWorld, ref orientationMat, out invInertiaWorld);
             }
         }
-        public virtual void PreStep(float step)
-        {
-            PhysicsUpdate(step, true);
-        }
+        public virtual void PreStep(float step) { }
         public virtual void PostStep(float step) { }
         #endregion
-
-        protected Emitter Emitter = new Emitter();
-        public void PlaySound(SoundEffect sound)
-        {
-            Emitter.RegisterSoundEffect(sound);
-            Emitter.Update();
-            sound.Play();
-        }
+        // TODO: Should be a component
+        protected SoundEmitter SoundEmitter;
 
         public bool Equals(GameObject other)
         {
@@ -306,12 +303,10 @@ namespace Spectrum.Framework.Entities
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-            AnimationPlayer.Update(gameTime.DT());
-            Emitter.Position = position;
-            Emitter.Up = Vector3.Up;
-            Emitter.Forward = Vector3.Forward;
+            AnimationPlayer?.Update(gameTime.DT());
+            if(SoundEmitter != null)
+                SoundEmitter.Update(this);
             if (Model != null) { Model.Update(gameTime); }
-            Emitter.Update();
         }
         public override List<RenderTask> GetRenderTasks()
         {

@@ -79,7 +79,9 @@ namespace Spectrum.Framework.Graphics.Animation
         /// </summary>
         public void Update(float time)
         {
-            SkinningData SkinningData = animationSource?.GetSkinningData();
+            if (animationSource == null)
+                return;
+            SkinningData SkinningData = animationSource.GetSkinningData();
             if (SkinningData != null && currentClipValue != null)
             {
                 UpdateTime(time, SkinningData);

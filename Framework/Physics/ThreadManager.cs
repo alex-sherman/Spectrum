@@ -44,8 +44,7 @@ namespace Spectrum.Framework.Physics
         private ManualResetEvent waitHandleA, waitHandleB;
         private ManualResetEvent currentWaitHandle;
 
-        volatile List<Action<object>> tasks = new List<Action<object>>();
-        volatile List<object> parameters = new List<object>();
+        volatile List<Action> tasks = new List<Action>();
 
         private Thread[] threads;
         private int currentTaskIndex, waitingThreadCount;
@@ -134,7 +133,6 @@ namespace Spectrum.Framework.Physics
             currentWaitHandle = (currentWaitHandle == waitHandleA) ? waitHandleB : waitHandleA;
 
             tasks.Clear();
-            parameters.Clear();
         }
 
         /// <summary>
@@ -144,10 +142,9 @@ namespace Spectrum.Framework.Physics
         /// </summary>
         /// <param name="task"></param>
         /// <param name="param"></param>
-        public void AddTask(Action<object> task, object param)
+        public void AddTask<T>(Action<T> task, T param)
         {
-            tasks.Add(task);
-            parameters.Add(param);
+            tasks.Add(() => task(param));
         }
 
         private void ThreadProc()
@@ -175,7 +172,7 @@ namespace Spectrum.Framework.Physics
                 if (taskIndex == Interlocked.CompareExchange(ref currentTaskIndex, taskIndex + 1, taskIndex)
                     && taskIndex < count)
                 {
-                    tasks[taskIndex](parameters[taskIndex]);
+                    tasks[taskIndex]();
                 }
             }
         }

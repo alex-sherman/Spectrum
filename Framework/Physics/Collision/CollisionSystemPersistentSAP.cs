@@ -39,6 +39,40 @@ namespace Spectrum.Framework.Physics.Collision
         private const int AddedObjectsBruteForceIsUsed = 250;
 
         #region private class SweepPoint
+        //private class SweepPoint
+        //{
+        //    private static float GetXA(GameObject Body) => Body.boundingBox.Min.X;
+        //    private static float GetXB(GameObject Body) => Body.boundingBox.Max.X;
+        //    private static float GetYA(GameObject Body) => Body.boundingBox.Min.Y;
+        //    private static float GetYB(GameObject Body) => Body.boundingBox.Max.Y;
+        //    private static float GetZA(GameObject Body) => Body.boundingBox.Min.Z;
+        //    private static float GetZB(GameObject Body) => Body.boundingBox.Max.Z;
+        //    public GameObject Body;
+        //    public bool Begin;
+        //    public int Axis;
+        //    private Func<GameObject, float> GetFunc;
+
+        //    public SweepPoint(GameObject body, bool begin, int axis)
+        //    {
+        //        Body = body;
+        //        Begin = begin;
+        //        Axis = axis;
+        //        if (Begin)
+        //        {
+        //            if (Axis == 0) GetFunc = GetXA;
+        //            else if (Axis == 1) GetFunc = GetYA;
+        //            else GetFunc = GetZA;
+        //        }
+        //        else
+        //        {
+        //            if (Axis == 0) GetFunc = GetXB;
+        //            else if (Axis == 1) GetFunc = GetYB;
+        //            else GetFunc = GetZB;
+        //        }
+        //    }
+
+        //    public float Value => GetFunc(Body);
+        //}
         private class SweepPoint
         {
             public GameObject Body;
@@ -47,9 +81,9 @@ namespace Spectrum.Framework.Physics.Collision
 
             public SweepPoint(GameObject body, bool begin, int axis)
             {
-                this.Body = body;
-                this.Begin = begin;
-                this.Axis = axis;
+                Body = body;
+                Begin = begin;
+                Axis = axis;
             }
 
             public float Value
@@ -58,20 +92,18 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     if (Begin)
                     {
-                        if (Axis == 0) return Body.BoundingBox.Min.X;
-                        else if (Axis == 1) return Body.BoundingBox.Min.Y;
-                        else return Body.BoundingBox.Min.Z;
+                        if (Axis == 0) return Body.boundingBox.Min.X;
+                        else if (Axis == 1) return Body.boundingBox.Min.Y;
+                        else return Body.boundingBox.Min.Z;
                     }
                     else
                     {
-                        if (Axis == 0) return Body.BoundingBox.Max.X;
-                        else if (Axis == 1) return Body.BoundingBox.Max.Y;
-                        else return Body.BoundingBox.Max.Z;
+                        if (Axis == 0) return Body.boundingBox.Max.X;
+                        else if (Axis == 1) return Body.boundingBox.Max.Y;
+                        else return Body.boundingBox.Max.Z;
                     }
                 }
             }
-
-
         }
         #endregion
 
@@ -273,17 +305,17 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 if (multiThreaded)
                 {
-                    threadManager.AddTask(SortCallback, axis1);
-                    threadManager.AddTask(SortCallback, axis2);
-                    threadManager.AddTask(SortCallback, axis3);
+                    threadManager.AddTask(SortAxis, axis1);
+                    threadManager.AddTask(SortAxis, axis2);
+                    threadManager.AddTask(SortAxis, axis3);
 
                     threadManager.Execute();
                 }
                 else
                 {
-                    SortCallback(axis1);
-                    SortCallback(axis2);
-                    SortCallback(axis3);
+                    SortAxis(axis1);
+                    SortAxis(axis2);
+                    SortAxis(axis3);
                 }
             }
 
@@ -311,11 +343,6 @@ namespace Spectrum.Framework.Physics.Collision
 
             threadManager.Execute();
 
-        }
-
-        private void SortCallback(object obj)
-        {
-            SortAxis(obj as List<SweepPoint>);
         }
 
         private void DetectCallback(object obj)
