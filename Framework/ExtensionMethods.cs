@@ -47,8 +47,7 @@ namespace Spectrum.Framework
 
         public static Vector3 Project(this Vector3 source, Vector3 normal)
         {
-            normal.Normalize();
-            return source - Vector3.Dot(source, normal) * normal;
+            return Vector3.Dot(source, normal) * normal;
         }
 
         public static void DrawString(this SpriteBatch spritebatch, SpriteFont font, string text, Vector2 pos, Color textColor, float layer)

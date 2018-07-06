@@ -215,7 +215,7 @@
     <Compile Include="Framework\Content\ModelParser.cs" />
     <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
     <Compile Include="Framework\Content\ScreenParser.cs" />
-    <Compile Include="Framework\DebugPrinter.cs" />
+    <Compile Include="Framework\Debug\DebugPrinter.cs" />
     <Compile Include="Framework\Debug\DebugTiming.cs" />
     <Compile Include="Framework\Entities\InitData.cs" />
     <Compile Include="Framework\Entities\Interpolator.cs" />

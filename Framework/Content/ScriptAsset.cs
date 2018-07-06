@@ -105,18 +105,19 @@ namespace Spectrum.Framework.Content
         {
             try
             {
-                var timer = DebugTiming.Scripts.Time(Path);
-                Func<object[], object> f = scope.GetVariable<Func<object[], object>>(function);
-                object o = f(args);
-                timer.Stop();
-                return o;
+                using (DebugTiming.Scripts.Time(Path))
+                {
+                    Func<object[], object> f = scope.GetVariable<Func<object[], object>>(function);
+                    object o = f(args);
+                    return o;
+                }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 DebugPrinter.print(e.Message);
                 return null;
             }
-                
+
         }
     }
 }

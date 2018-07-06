@@ -95,12 +95,15 @@ namespace Spectrum.Framework
         {
             return String.Format("{0:0.00}", d);
         }
-        private void DrawTimes(int startLine, SpriteBatch spritebatch)
+        private void DrawTimes(int startLine, SpriteBatch spritebatch, float dt)
         {
             float curPos = (startLine) * Font.LineSpacing;
+            string toPrint = (1.0 / dt).ToString("0.00");
+            spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
+            curPos += Font.MeasureString(toPrint).Y;
             foreach (var timeGroup in DebugTiming.Groups)
             {
-                string toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
+                toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
                 spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                 curPos += Font.MeasureString(toPrint).Y;
                 var times = timeGroup.FrameInfo().Take(10);
@@ -108,7 +111,7 @@ namespace Spectrum.Framework
                 {
                     toPrint = time.Item1 + ": " + fform(time.Item2.TotalTime) + " (" + fform(time.Item2.AvgerageTime) + "x" + time.Item2.Count + ")";
                     spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
-                    curPos += Font.LineSpacing;
+                    curPos += Font.MeasureString(toPrint).Y;
                 }
             }
         }
@@ -137,7 +140,7 @@ namespace Spectrum.Framework
                     spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                DrawTimes(2, spritebatch);
+                DrawTimes(2, spritebatch, gameTime.DT());
 
             }
             if (SpectrumGame.Game.DebugDrawAll)

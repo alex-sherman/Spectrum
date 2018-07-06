@@ -241,6 +241,11 @@ namespace Spectrum
             base.Draw(gameTime);
             Root.Draw(gameTime);
         }
+        protected override void EndDraw()
+        {
+            using (DebugTiming.Main.Time("GPU Draw"))
+                base.EndDraw();
+        }
         public GraphicsDeviceManager GraphicsDeviceManager
         {
             get { return graphics; }

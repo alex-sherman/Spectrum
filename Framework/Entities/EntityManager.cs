@@ -156,20 +156,21 @@ namespace Spectrum.Framework.Entities
             List<Entity> updateables = Entities.UpdateSorted;
             for (int i = 0; i < updateables.Count; i++)
             {
-                var timer = DebugTiming.Update.Time(updateables[i].GetType().Name);
-                if (updateables[i].Enabled)
+                using (DebugTiming.Update.Time(updateables[i].GetType().Name))
                 {
-                    updateables[i].Update(gameTime);
-                    if (tickOneTimer >= 1000)
-                        updateables[i].TickOne();
-                    if (tickTenthTimer >= 100)
-                        updateables[i].TickTenth();
+                    if (updateables[i].Enabled)
+                    {
+                        updateables[i].Update(gameTime);
+                        if (tickOneTimer >= 1000)
+                            updateables[i].TickOne();
+                        if (tickTenthTimer >= 100)
+                            updateables[i].TickTenth();
+                    }
+                    else
+                        updateables[i].DisabledUpdate(gameTime);
+                    if (updateables[i].Destroying)
+                        Remove(updateables[i].ID);
                 }
-                else
-                    updateables[i].DisabledUpdate(gameTime);
-                if (updateables[i].Destroying)
-                    Remove(updateables[i].ID);
-                timer.Stop();
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;

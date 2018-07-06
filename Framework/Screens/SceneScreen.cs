@@ -59,24 +59,29 @@ namespace Spectrum.Framework.Screens
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            var timer = DebugTiming.Main.Time("Draw");
-            if (Camera != null)
+            using (DebugTiming.Main.Time("Draw"))
             {
-                GraphicsEngine.Camera = Camera;
-                GraphicsEngine.Render(Manager.Entities.DrawSorted, gameTime, RenderTarget);
-                spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
+                if (Camera != null)
+                {
+                    GraphicsEngine.Camera = Camera;
+                    GraphicsEngine.Render(Manager.Entities.DrawSorted, gameTime, RenderTarget);
+                    spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
+                }
             }
-            timer.Stop();
         }
 
         public override void Update(GameTime gameTime)
         {
-            var timer = DebugTiming.Main.Time("Update");
-            SpectrumGame.Game.MP.MakeCallbacks(gameTime);
-            PhysicsEngine.Single.Update(gameTime);
-            Manager.Update(gameTime);
-            base.Update(gameTime);
-            timer.Stop();
+            using (DebugTiming.Main.Time("Update"))
+            {
+                using (DebugTiming.Main.Time("MPCallback"))
+                    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
+                using (DebugTiming.Main.Time("Physics"))
+                    PhysicsEngine.Single.Update(gameTime);
+                using (DebugTiming.Main.Time("Entity Update"))
+                    Manager.Update(gameTime);
+                base.Update(gameTime);
+            }
         }
 
         public override bool HandleInput(bool otherTookInput, InputState input)

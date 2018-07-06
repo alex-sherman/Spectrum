@@ -275,18 +275,19 @@ namespace Spectrum.Framework.Graphics
                     effect.MaterialDiffuse = material.DiffuseColor;
                     if (material.DiffuseTexture != null)
                         effect.Texture = material.DiffuseTexture;
-                    var timer = DebugTiming.Render.Time("Draw Call Time");
-                    foreach (var pass in effect.CurrentTechnique.Passes)
+                    using (DebugTiming.Render.Time("Draw Call Time"))
                     {
-                        foreach (var task in group.Value)
+                        foreach (var pass in effect.CurrentTechnique.Passes)
                         {
-                            effect.World = task.WorldValue;
                             pass.Apply();
-                            DrawablePart part = task.part;
-                            Render(part.primType, part.VBuffer, part.IBuffer, task.instanceBuffer);
+                            foreach (var task in group.Value)
+                            {
+                                effect.World = task.WorldValue;
+                                DrawablePart part = task.part;
+                                Render(part.primType, part.VBuffer, part.IBuffer, task.instanceBuffer);
+                            }
                         }
                     }
-                    timer.Stop();
                 }
             }
         }
@@ -295,7 +296,7 @@ namespace Spectrum.Framework.Graphics
             foreach (var group in renderTasks)
             {
                 var depthStencil = group.Key.Properties.DisableDepthBuffer ? DepthStencilState.None : DepthStencilState.Default;
-                if(device.DepthStencilState != depthStencil)
+                if (device.DepthStencilState != depthStencil)
                     device.DepthStencilState = depthStencil;
                 Render(group, phase);
             }
@@ -307,7 +308,7 @@ namespace Spectrum.Framework.Graphics
                 // TODO: Maybe don't create a new instance buffer every frame when merging tasks
                 if (task.merged)
                 {
-                    task.instanceBuffer.Dispose();
+                    task.instanceBuffer?.Dispose();
                     task.instanceBuffer = null;
                     task.merged = false;
                 }
@@ -386,35 +387,36 @@ namespace Spectrum.Framework.Graphics
         private static DefaultDict<RenderGroupKey, List<RenderTask>> groups = new DefaultDict<RenderGroupKey, List<RenderTask>>(() => new List<RenderTask>(), true);
         private static RenderGroups GroupTasks(List<RenderTask> renderTasks)
         {
-            var time1 = DebugTiming.Render.Time("Grouping");
-            groups.Clear();
-            foreach (var task in renderTasks)
+            using (DebugTiming.Render.Time("Grouping"))
             {
-                task.instances = null;
-                task.merged = false;
-                var group = groups[new RenderGroupKey(task)];
-                RenderTask mergeable = null;
-                if (task.instanceBuffer == null && (mergeable = group.FirstOrDefault(mergeTask => mergeTask.part.ReferenceID == task.part.ReferenceID)) != null)
+                groups.Clear();
+                foreach (var task in renderTasks)
                 {
-                    if (mergeable.instances == null)
+                    task.instances = null;
+                    task.merged = false;
+                    var group = groups[new RenderGroupKey(task)];
+                    RenderTask mergeable = null;
+                    if (task.instanceBuffer == null && (mergeable = group.FirstOrDefault(mergeTask => mergeTask.part.ReferenceID == task.part.ReferenceID)) != null)
                     {
-                        mergeable.instances = new List<Matrix>() { mergeable.WorldValue };
+                        if (mergeable.instances == null)
+                        {
+                            mergeable.instances = new List<Matrix>() { mergeable.WorldValue };
+                        }
+                        mergeable.instances.Add(task.WorldValue);
                     }
-                    mergeable.instances.Add(task.WorldValue);
+                    else
+                        group.Add(task);
                 }
-                else
-                    group.Add(task);
-            }
-            foreach (var task in groups.SelectMany(group => group.Value))
-            {
-                if (task.instances != null)
+                foreach (var task in groups.SelectMany(group => group.Value))
                 {
-                    task.Merge();
+                    if (task.instances != null)
+                    {
+                        task.Merge();
+                    }
                 }
+                //TODO: This might be an improvement to avoid setting DepthStencilState in RenderQueue
+                //groups.OrderBy(group => group.Key.DisableDepthBuffer);
             }
-            //TODO: This might be an improvement to avoid setting DepthStencilState in RenderQueue
-            //groups.OrderBy(group => group.Key.DisableDepthBuffer);
-            time1.Stop();
             return groups;
         }
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
@@ -437,23 +439,23 @@ namespace Spectrum.Framework.Graphics
             SpectrumEffect.CameraPos = Camera.Position;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
             drawables = drawables.Where(e => e.DrawEnabled).ToList();
-            TimingResult timer;
             foreach (Entity drawable in drawables)
             {
-                timer = DebugTiming.Render.Time(drawable.GetType().Name);
-                drawable.Draw(gameTime, null);
-                var getRenderTasksTimer = DebugTiming.Render.Time("Get Tasks");
-                var tasks = drawable.GetRenderTasks();
-                getRenderTasksTimer.Stop();
-                if (tasks != null)
-                    renderTasks.AddRange(tasks);
-                timer.Stop();
+                using (DebugTiming.Render.Time(drawable.GetType().Name))
+                {
+                    drawable.Draw(gameTime, null);
+                    using (DebugTiming.Render.Time("Get Tasks"))
+                    {
+                        var tasks = drawable.GetRenderTasks();
+                        if (tasks != null)
+                            renderTasks.AddRange(tasks);
+                    }
+                }
             }
             var renderGroups = GroupTasks(renderTasks);
 
-            var preRenderTime = DebugTiming.Render.Time("Update Shadow");
-            UpdateShadowMap(renderGroups);
-            preRenderTime.Stop();
+            using (DebugTiming.Render.Time("Update Shadow"))
+                UpdateShadowMap(renderGroups);
 
             PostProcessEffect.Technique = "PassThrough";
             //TODO: Draw spritebatch stuff to separate target, and superimpose over game
@@ -473,18 +475,19 @@ namespace Spectrum.Framework.Graphics
                 RenderQueue(sceneRenderPhase, renderGroups);
                 //Clear the screen and perform anti aliasing
                 device.SetRenderTarget(target);
-                timer = DebugTiming.Render.Time("Post Process");
-                device.Clear(clearColor);
-                PostProcessEffect.Technique = "AAPP";
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
-                spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
-                spriteBatch.End();
-                timer.Stop();
+                using (DebugTiming.Render.Time("Post Process"))
+                {
+                    device.Clear(clearColor);
+                    PostProcessEffect.Technique = "AAPP";
+                    spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
+                    spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
+                    spriteBatch.End();
+                }
             }
             else
             {
                 Matrix left_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
-                Matrix right_offset =  Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
+                Matrix right_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
                 var view = Camera.View;
                 device.SetRenderTarget(VRTargetR);
                 VRRender(view, renderGroups, EVREye.Eye_Right, right_offset);
@@ -499,7 +502,7 @@ namespace Spectrum.Framework.Graphics
                 spriteBatch.End();
             }
             ClearRenderQueue();
-            mainRenderTimer.Stop();
+            mainRenderTimer?.Stop();
         }
     }
 }

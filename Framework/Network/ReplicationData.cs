@@ -26,9 +26,9 @@ namespace Spectrum.Framework.Network
         }
         private Dictionary<string, Interpolator> interpolators = new Dictionary<string, Interpolator>();
 
-        public void SetInterpolator(string attributeName, Func<float, object, object, object> interpolator)
+        public void SetInterpolator<T>(string attributeName, Func<float, T, T, T> interpolator)
         {
-            interpolators[attributeName] = new Interpolator(interpolator);
+            interpolators[attributeName] = new Interpolator<T>(interpolator);
         }
 
         public void HandleRPC(string name, object[] args)
@@ -60,6 +60,8 @@ namespace Spectrum.Framework.Network
         {
             foreach (var interpolator in interpolators)
             {
+                if (!interpolator.Value.NeedsUpdate)
+                    continue;
                 object value = interpolator.Value.Update(dt, TypeData.Get(Replicated, interpolator.Key));
                 if (value != null)
                     TypeData.Set(Replicated, interpolator.Key, value);

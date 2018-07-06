@@ -39,18 +39,16 @@ namespace Spectrum.Framework.Graphics
     }
     public class RenderTask
     {
-        public RenderTask(DrawablePart part, string tag = "Misc") { this.part = part; this.tag = tag; }
+        public RenderTask(DrawablePart part) { this.part = part; }
         public DrawablePart part;
         public bool DisableInstance { get => Properties.DisableInstance; set => Properties.DisableInstance = value; }
         public bool DisableDepthBuffer { get => Properties.DisableDepthBuffer; set => Properties.DisableDepthBuffer = value; }
         public bool DisableShadow { get => Properties.DisableDepthBuffer; set => Properties.DisableDepthBuffer = value; }
         public RenderProperties Properties;
-        public string tag;
         public MaterialData Material { get => Properties.Material ?? part.material; set => Properties.Material = value; }
         public SpectrumEffect Effect { get => Properties.Effect ?? part.effect; set => Properties.Effect = value;}
         public List<Matrix> instances = null;
         public DynamicVertexBuffer instanceBuffer;
-        public bool Dirty = true;
         public void Merge()
         {
             if (instances.Any())

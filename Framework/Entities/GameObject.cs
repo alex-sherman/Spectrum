@@ -80,17 +80,17 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// Static objects cannot move, but may still collide
         /// </summary>
-        public bool IsStatic { get; protected set; }
+        public bool IsStatic;
 
         /// <summary>
         /// Ignore objects aren't affected by physics at all
         /// </summary>
-        public bool Ignore { get; protected set; }
+        public bool Ignore;
 
         /// <summary>
         /// Disables collision handling for the object, the OnCollide event is still called
         /// </summary>
-        public bool NoCollide { get; protected set; }
+        public bool NoCollide;
 
         public bool affectedByGravity = true;
 
@@ -185,7 +185,7 @@ namespace Spectrum.Framework.Entities
             set
             {
                 _parts = value;
-                _tasks = Model?.Select((part) => new RenderTask(part, TypeName) { world = World }).ToList();
+                _tasks = Model?.Select((part) => new RenderTask(part) { world = World }).ToList();
             }
         }
         public JBBox ModelBounds
@@ -232,44 +232,43 @@ namespace Spectrum.Framework.Entities
         public override void Initialize()
         {
             base.Initialize();
-            ReplicationData.SetInterpolator("Position", (w, current, target) => Vector3.Lerp((Vector3)current, (Vector3)target, w));
-            ReplicationData.SetInterpolator("Orientation", (w, current, target) => Quaternion.Slerp((Quaternion)current, (Quaternion)target, w));
+            ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
+            ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
+            PhysicsUpdate(0, true);
         }
 
         #region Physics Functions
-        public void PhysicsUpdate(float timestep)
+        public void PhysicsUpdate(float timestep, bool force = false)
         {
-            //TODO: This might be useful to cache on the object if its needed elsewhere
-            // or it should just get removed and figure out how to do everything with quaternions
-            Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
-            Quaternion.Inverse(ref orientation, out invOrientation);
-            Matrix invOrientationMat = Matrix.CreateFromQuaternion(invOrientation);
-
-            if (Shape != null)
+            if (!IsStatic || force)
             {
-                //Set mass properties
-                this.inertia = Shape.inertia;
-                Matrix.Invert(ref inertia, out invInertia);
-                this.inverseMass = 1.0f / Shape.mass;
+                //TODO: This might be useful to cache on the object if its needed elsewhere
+                // or it should just get removed and figure out how to do everything with quaternions
+                Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
+                Quaternion.Inverse(ref orientation, out invOrientation);
+                Matrix invOrientationMat = Matrix.CreateFromQuaternion(invOrientation);
 
-                // Given: Orientation, Inertia
-                Shape.GetBoundingBox(ref orientationMat, out boundingBox);
-                Vector3.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
-                boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
-                Vector3.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
-                boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
-            }
+                if (Shape != null)
+                {
+                    //Set mass properties
+                    inertia = Shape.inertia;
+                    Matrix.Invert(ref inertia, out invInertia);
+                    inverseMass = 1.0f / Shape.mass;
 
-
-            if (!IsStatic)
-            {
+                    // Given: Orientation, Inertia
+                    Shape.GetBoundingBox(ref orientationMat, out boundingBox);
+                    Vector3.Add(ref boundingBox.Min, ref this.position, out boundingBox.Min);
+                    boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
+                    Vector3.Add(ref boundingBox.Max, ref this.position, out boundingBox.Max);
+                    boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
+                }
                 Matrix.Multiply(ref invOrientationMat, ref invInertia, out invInertiaWorld);
                 Matrix.Multiply(ref invInertiaWorld, ref orientationMat, out invInertiaWorld);
             }
         }
         public virtual void PreStep(float step)
         {
-            PhysicsUpdate(step);
+            PhysicsUpdate(step, true);
         }
         public virtual void PostStep(float step) { }
         #endregion

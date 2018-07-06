@@ -40,6 +40,7 @@ namespace Spectrum.Framework
     }
     public class DebugTiming
     {
+        public static bool Enabled = false;
         public static readonly DebugTiming Render = new DebugTiming("Render");
         public static readonly DebugTiming Main = new DebugTiming("Main");
         public static readonly DebugTiming Update = new DebugTiming("Update");
@@ -107,6 +108,8 @@ namespace Spectrum.Framework
         public List<TimingResult> pool = new List<TimingResult>();
         public TimingResult Time(string name)
         {
+            if (!Enabled)
+                return null;
             lock (pool)
             {
                 if (pool.Count > 0)
@@ -129,7 +132,7 @@ namespace Spectrum.Framework
         }
     }
 
-    public class TimingResult
+    public class TimingResult : IDisposable
     {
         private static Dictionary<string, DebugTiming> timings = new Dictionary<string, DebugTiming>();
         Stopwatch timer = new Stopwatch();
@@ -157,5 +160,6 @@ namespace Spectrum.Framework
             ElapsedTime = timer.Elapsed.TotalMilliseconds;
             group.LogTime(this);
         }
+        public void Dispose() => Stop();
     }
 }
