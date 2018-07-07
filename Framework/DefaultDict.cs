@@ -31,14 +31,14 @@ namespace Spectrum.Framework
         {
             get
             {
-                if (!internalDict.ContainsKey(key))
+                if (!internalDict.TryGetValue(key, out TValue output))
                 {
                     if (!_addToDictionary)
                         return Constructor();
                     else
-                        internalDict[key] = Constructor();
+                        return internalDict[key] = Constructor();
                 }
-                return internalDict[key];
+                return output;
             }
             set
             {
