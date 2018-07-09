@@ -59,12 +59,13 @@ namespace Spectrum.Framework.Screens
         public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            using (DebugTiming.Main.Time("Draw"))
+            if (Camera != null)
             {
-                if (Camera != null)
+                GraphicsEngine.Camera = Camera;
+                using (DebugTiming.Main.Time("Draw"))
                 {
-                    GraphicsEngine.Camera = Camera;
-                    GraphicsEngine.Render(Manager.Entities.DrawSorted, gameTime, RenderTarget);
+                    var renderGroups = Manager.GetRenderTasks(gameTime.DT());
+                    GraphicsEngine.Render(renderGroups, gameTime, RenderTarget);
                     spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
                 }
             }

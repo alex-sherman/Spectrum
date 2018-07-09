@@ -12,13 +12,15 @@ namespace Spectrum.Framework.Graphics
     public class Billboard : GameObject
     {
         public Vector2 Size;
-        public override List<RenderTask> GetRenderTasks()
+        public override void Draw(float gameTime)
         {
-            if (RenderProperties.Material != null)
-                return new List<RenderTask>() { Draw3D.Draw3DRectangle(
+            base.Draw(gameTime);
+            if (Material != null)
+                Draw3D.Draw3DRectangle(
+                    Manager,
                     Quaternion.Concatenate(Quaternion.CreateFromAxisAngle(Vector3.Right, (float)Math.PI / 2), orientation),
-                    position, Size, RenderProperties) };
-            return null;
+                    position,
+                    Size);
         }
     }
 }

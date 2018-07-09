@@ -64,7 +64,7 @@ namespace Spectrum.Framework
                     // Clear render properties so removing fields like Texture will work
                     if (entity is GameObject gameObject)
                     {
-                        gameObject.RenderProperties = new RenderProperties();
+                        gameObject.Material = null;
                     }
                     prefab.Value.Apply(entity);
                 }

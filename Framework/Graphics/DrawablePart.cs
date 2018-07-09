@@ -24,7 +24,6 @@ namespace Spectrum.Framework.Graphics
         private static int LastReferenceID = 0;
         public int ReferenceID { get; private set; }
         public MaterialData material = new MaterialData();
-        public bool ShadowEnabled = true;
         public Matrix permanentTransform = Matrix.Identity;
         public Matrix transform = Matrix.Identity;
         public SpectrumEffect effect;

@@ -13,37 +13,6 @@ using Spectrum.Framework.Screens;
 
 namespace Spectrum.Framework.Graphics
 {
-    using RenderGroup = KeyValuePair<RenderGroupKey, List<RenderTask>>;
-    using RenderGroups = IEnumerable<KeyValuePair<RenderGroupKey, List<RenderTask>>>;
-    struct RenderGroupKey
-    {
-        public RenderGroupKey(RenderTask task)
-        {
-            PartID = task.part.ReferenceID;
-            Properties = task.Properties;
-            Properties.Effect = task.Effect;
-            Properties.Material = task.Material;
-        }
-        public int PartID;
-        public RenderProperties Properties;
-
-        public override bool Equals(object obj)
-        {
-            if (obj is RenderGroupKey key)
-            {
-                return PartID == key.PartID && Properties == key.Properties;
-            }
-            return false;
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = -1110652387;
-            hashCode = hashCode * -1521134295 + PartID.GetHashCode();
-            hashCode = hashCode * -1521134295 + Properties.GetHashCode();
-            return hashCode;
-        }
-    }
     public class RenderPhaseInfo
     {
         public Matrix View = Matrix.Identity;
@@ -69,13 +38,12 @@ namespace Spectrum.Framework.Graphics
         static RenderTarget2D VRTargetR;
         static Texture_t textureR;
         static RenderTarget2D DepthTarget;
-        static List<RenderTask> renderTasks = new List<RenderTask>();
         static RenderPhaseInfo sceneRenderPhase = new RenderPhaseInfo();
         static RenderPhaseInfo shadowRenderPhase = new RenderPhaseInfo() { GenerateShadowMap = true };
         //static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
-        public static float MultisampleFactor = 2;
+        public static float MultisampleFactor = 1;
         public static void Initialize()
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
@@ -155,11 +123,11 @@ namespace Spectrum.Framework.Graphics
             device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
-        private static void UpdateShadowMap(RenderGroups renderGroups)
+        private static void UpdateShadowMap(IEnumerable<RenderCall> renderGroups)
         {
             device.SetRenderTarget(shadowMap);
             device.Clear(Color.Black);
-            renderGroups = renderGroups.Where(group => !group.Value.First().DisableDepthBuffer);
+            renderGroups = renderGroups.Where(group => !group.Properties.DisableDepthBuffer);
             shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
             phaseShadowMap = null;
             RenderQueue(shadowRenderPhase, renderGroups);
@@ -248,30 +216,24 @@ namespace Spectrum.Framework.Graphics
                 }
             }
         }
-        /// <summary>
-        /// Render a single task, this call does not perform any batching and should be avoided if possible
-        /// </summary>
-        /// <param name="task"></param>
-        /// <param name="phase"></param>
-        public static void Render(RenderTask task, RenderPhaseInfo phase = null)
+        private static void Render(RenderCall group, RenderPhaseInfo phase)
         {
-            Render(new RenderGroup(new RenderGroupKey(task), new List<RenderTask>() { task }), phase);
-        }
-        private static void Render(RenderGroup group, RenderPhaseInfo phase)
-        {
+            var depthStencil = group.Properties.DisableDepthBuffer ? DepthStencilState.None : DepthStencilState.Default;
+            if (device.DepthStencilState != depthStencil)
+                device.DepthStencilState = depthStencil;
             phase = phase ?? sceneRenderPhase;
-            RenderGroupKey key = group.Key;
-            SpectrumEffect effect = key.Properties.Effect;
+            SpectrumEffect effect = group.Properties.Effect;
+            RenderProperties props = group.Properties;
             if (effect != null)
             {
-                var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (group.Value.First().instanceBuffer == null ? "" : "Instance");
+                var technique = (phase.GenerateShadowMap ? "ShadowMap" : "Standard") + (group.InstanceBuffer == null ? "" : "Instance");
                 effect.CurrentTechnique = effect.Techniques[technique];
                 if (effect.CurrentTechnique != null)
                 {
                     effect.View = phase.View;
                     effect.Projection = phase.Projection;
                     effect.ShadowMap = phaseShadowMap;
-                    MaterialData material = key.Properties.Material ?? MaterialData.Missing;
+                    MaterialData material = group.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
                     if (material.DiffuseTexture != null)
                         effect.Texture = material.DiffuseTexture;
@@ -279,41 +241,35 @@ namespace Spectrum.Framework.Graphics
                     {
                         foreach (var pass in effect.CurrentTechnique.Passes)
                         {
-                            pass.Apply();
-                            foreach (var task in group.Value)
+                            if (group.InstanceBuffer == null)
                             {
-                                effect.World = task.WorldValue;
-                                DrawablePart part = task.part;
-                                Render(part.primType, part.VBuffer, part.IBuffer, task.instanceBuffer);
+                                foreach (var instance in group.InstanceData)
+                                {
+                                    effect.World = instance.World;
+                                    pass.Apply();
+                                    Render(props.PrimitiveType, props.VertexBuffer, props.IndexBuffer, null);
+                                }
+                            }
+                            else
+                            {
+                                effect.World = Matrix.Identity;
+                                // TODO (MAYBE): pass.Apply() is kind of expensive here, before doing fixed render tasks there was some batching over effect
+                                // consider maybe doing that again? Could sort render tasks and only pass.Apply() when changing properties
+                                pass.Apply();
+                                Render(props.PrimitiveType, props.VertexBuffer, props.IndexBuffer, group.InstanceBuffer);
                             }
                         }
                     }
                 }
             }
         }
-        private static void RenderQueue(RenderPhaseInfo phase, RenderGroups renderTasks)
+
+        private static void RenderQueue(RenderPhaseInfo phase, IEnumerable<RenderCall> renderTasks)
         {
             foreach (var group in renderTasks)
             {
-                var depthStencil = group.Key.Properties.DisableDepthBuffer ? DepthStencilState.None : DepthStencilState.Default;
-                if (device.DepthStencilState != depthStencil)
-                    device.DepthStencilState = depthStencil;
                 Render(group, phase);
             }
-        }
-        private static void ClearRenderQueue()
-        {
-            foreach (var task in renderTasks)
-            {
-                // TODO: Maybe don't create a new instance buffer every frame when merging tasks
-                if (task.merged)
-                {
-                    task.instanceBuffer?.Dispose();
-                    task.instanceBuffer = null;
-                    task.merged = false;
-                }
-            }
-            renderTasks.Clear();
         }
 
         public static void BeginRender(GameTime gameTime)
@@ -384,43 +340,9 @@ namespace Spectrum.Framework.Graphics
             batch.Draw(tex, start, null, color, rotate,
                 new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
         }
-        private static DefaultDict<RenderGroupKey, List<RenderTask>> groups = new DefaultDict<RenderGroupKey, List<RenderTask>>(() => new List<RenderTask>(), true);
-        private static RenderGroups GroupTasks(List<RenderTask> renderTasks)
-        {
-            using (DebugTiming.Render.Time("Grouping"))
-            {
-                groups.Clear();
-                foreach (var task in renderTasks)
-                {
-                    task.instances = null;
-                    task.merged = false;
-                    var group = groups[new RenderGroupKey(task)];
-                    RenderTask mergeable = null;
-                    if (task.instanceBuffer == null && (mergeable = group.FirstOrDefault(mergeTask => mergeTask.part.ReferenceID == task.part.ReferenceID)) != null)
-                    {
-                        if (mergeable.instances == null)
-                        {
-                            mergeable.instances = new List<Matrix>() { mergeable.WorldValue };
-                        }
-                        mergeable.instances.Add(task.WorldValue);
-                    }
-                    else
-                        group.Add(task);
-                }
-                foreach (var task in groups.SelectMany(group => group.Value))
-                {
-                    if (task.instances != null)
-                    {
-                        task.Merge();
-                    }
-                }
-                //TODO: This might be an improvement to avoid setting DepthStencilState in RenderQueue
-                //groups.OrderBy(group => group.Key.DisableDepthBuffer);
-            }
-            return groups;
-        }
+
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
-        private static void VRRender(Matrix camera, RenderGroups groups, EVREye eye, Matrix eye_offset)
+        private static void VRRender(Matrix camera, IEnumerable<RenderCall> groups, EVREye eye, Matrix eye_offset)
         {
             device.Clear(clearColor);
             RenderPhaseInfo vrPhase = new RenderPhaseInfo
@@ -431,28 +353,13 @@ namespace Spectrum.Framework.Graphics
             RenderQueue(vrPhase, groups);
         }
 
-        public static void Render(List<Entity> drawables, GameTime gameTime, RenderTarget2D target)
+        public static void Render(IEnumerable<RenderCall> renderGroups, GameTime gameTime, RenderTarget2D target)
         {
             BeginRender(gameTime);
             WaterEffect.ReflectionView = Camera.ReflectionView;
             WaterEffect.ReflectionProj = Camera.ReflectionProjection;
             SpectrumEffect.CameraPos = Camera.Position;
             WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
-            drawables = drawables.Where(e => e.DrawEnabled).ToList();
-            foreach (Entity drawable in drawables)
-            {
-                using (DebugTiming.Render.Time(drawable.GetType().Name))
-                {
-                    drawable.Draw(gameTime, null);
-                    using (DebugTiming.Render.Time("Get Tasks"))
-                    {
-                        var tasks = drawable.GetRenderTasks();
-                        if (tasks != null)
-                            renderTasks.AddRange(tasks);
-                    }
-                }
-            }
-            var renderGroups = GroupTasks(renderTasks);
 
             using (DebugTiming.Render.Time("Update Shadow"))
                 UpdateShadowMap(renderGroups);
@@ -460,7 +367,7 @@ namespace Spectrum.Framework.Graphics
             PostProcessEffect.Technique = "PassThrough";
             //TODO: Draw spritebatch stuff to separate target, and superimpose over game
             //spriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.LinearClamp, null, null, effect: PostProcessEffect.effect);
-            if (Settings.enableWater) { UpdateWater(drawables); }
+            //if (Settings.enableWater) { UpdateWater(drawables); }
 
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTargets(AATarget, DepthTarget);
@@ -501,7 +408,6 @@ namespace Spectrum.Framework.Graphics
                 spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
                 spriteBatch.End();
             }
-            ClearRenderQueue();
             mainRenderTimer?.Stop();
         }
     }

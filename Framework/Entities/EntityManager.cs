@@ -6,15 +6,13 @@ using Spectrum.Framework.Physics;
 using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Graphics;
 using Microsoft.Xna.Framework;
-using System.Reflection;
 using Spectrum.Framework.Network;
-using System.Diagnostics;
-using Spectrum.Framework.Input;
 using System.Collections;
 using Spectrum.Framework.Network.Surrogates;
 
 namespace Spectrum.Framework.Entities
 {
+    using RenderDict = DefaultDict<RenderProperties, RenderCall>;
     public delegate void EntityMessageHandler(NetID peerID, Entity entity, NetMessage message);
     public class EntityManager : IEnumerable<Entity>
     {
@@ -26,7 +24,7 @@ namespace Spectrum.Framework.Entities
         public EntityCollection Entities;
         private MultiplayerService mpService;
         public bool Paused = false;
-        private static readonly Stopwatch timer = new Stopwatch();
+        private static readonly System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
         public EntityManager(MultiplayerService mpService)
         {
             Entities = new EntityCollection();
@@ -175,6 +173,63 @@ namespace Spectrum.Framework.Entities
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;
         }
+        private RenderDict fixedBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new List<InstanceData>() }, true);
+        private RenderDict dynamicBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new List<InstanceData>() }, true);
+        private List<RenderCall> dynamicNonBatched = new List<RenderCall>();
+        // TODO: Return a handle to unregister with
+        public void RegisterDraw(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
+            bool disableDepthBuffer = false, bool disableShadow = false)
+        {
+            RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
+            UpdateRenderDict(properties, world, material ?? part.material, fixedBatched);
+        }
+        public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
+            bool disableDepthBuffer = false, bool disableShadow = false)
+        {
+            RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
+            UpdateRenderDict(properties, world, material ?? part.material, dynamicBatched);
+        }
+        private void UpdateRenderDict(RenderProperties properties, Matrix world, MaterialData material, RenderDict dict)
+        {
+            var call = dict[properties];
+            // TODO: This should get partially instanced?
+            call.Material = material;
+            call.InstanceData.Add(new InstanceData() { World = world });
+            call.InstanceBuffer = null;
+        }
+        public void DrawPart(DrawablePart part, DynamicVertexBuffer instanceBuffer,
+            MaterialData material = null, SpectrumEffect effect = null,
+            bool disableDepthBuffer = false, bool disableShadow = false)
+        {
+            RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
+            dynamicNonBatched.Add(new RenderCall(properties) { InstanceBuffer = instanceBuffer, Material = material ?? part.material });
+        }
+        public IEnumerable<RenderCall> GetRenderTasks(float gameTime)
+        {
+            var drawables = Entities.DrawSorted.Where(e => e.DrawEnabled).ToList();
+            foreach (var batch in dynamicBatched.Values)
+            {
+                if (batch.merged)
+                    batch.InstanceBuffer.Dispose();
+            }
+            dynamicBatched.Clear();
+            dynamicNonBatched.Clear();
+            foreach (Entity drawable in drawables)
+            {
+                using (DebugTiming.Render.Time(drawable.GetType().Name))
+                {
+                    using (DebugTiming.Render.Time("Get Tasks"))
+                    {
+                        drawable.Draw(gameTime);
+                    }
+                }
+            }
+            foreach (var group in dynamicBatched.Values)
+                group.Squash();
+            foreach (var group in fixedBatched.Values.Where(group => group.InstanceBuffer == null))
+                group.Squash();
+            return fixedBatched.Values.Union(dynamicBatched.Values).Union(dynamicNonBatched);
+        }
         public T Create<T>(params object[] args) where T : Entity
         {
             T output = CreateEntity(new InitData(typeof(T).Name, args)) as T;
@@ -234,7 +289,7 @@ namespace Spectrum.Framework.Entities
             if (removed == null) return null;
             OnEntityRemoved?.Invoke(removed);
             if (removed.InitData.Name != null)
-            initDataLookup[removed.InitData.Name].Remove(removed);
+                initDataLookup[removed.InitData.Name].Remove(removed);
             return removed;
         }
         public void ClearEntities(Func<Entity, bool> predicate = null)

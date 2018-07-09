@@ -167,28 +167,13 @@ namespace Spectrum.Framework.Entities
         public HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         #endregion
- 
+
         #region RenderProperties
-        private MaterialData getCreateMaterial() {
-            if (RenderProperties.Material == null)
-                RenderProperties.Material = new MaterialData();
-            return RenderProperties.Material;
-        }
-        public Texture2D Texture { get => RenderProperties.Material?.DiffuseTexture; set => getCreateMaterial().DiffuseTexture = value; }
-        public bool DisableDepthBuffer { get => RenderProperties.DisableDepthBuffer; set => RenderProperties.DisableDepthBuffer = value; }
-        public RenderProperties RenderProperties;
+        public MaterialData Material;
+        public Texture2D Texture { get => Material?.DiffuseTexture; set => (Material ?? (Material = new MaterialData())).DiffuseTexture = value; }
+        public bool DisableDepthBuffer;
         #endregion
-        private List<RenderTask> _tasks = null;
-        private SpecModel _parts = null;
-        public SpecModel Model
-        {
-            get { return _parts; }
-            set
-            {
-                _parts = value;
-                _tasks = Model?.Select((part) => new RenderTask(part) { world = World }).ToList();
-            }
-        }
+        public SpecModel Model;
         public JBBox ModelBounds
         {
             get
@@ -308,20 +293,16 @@ namespace Spectrum.Framework.Entities
                 SoundEmitter.Update(this);
             if (Model != null) { Model.Update(gameTime); }
         }
-        public override List<RenderTask> GetRenderTasks()
+        public override void Draw(float gameTime)
         {
-            if (_tasks != null)
+            base.Draw(gameTime);
+            if (Model != null)
             {
-                foreach (var task in _tasks)
+                foreach (var part in Model)
                 {
-                    task.world = World;
-                    if (task.Properties != RenderProperties)
-                    {
-                        task.Properties = RenderProperties;
-                    }
+                    Manager.DrawPart(part, World, Material, disableDepthBuffer: DisableDepthBuffer);
                 }
             }
-            return _tasks;
         }
         public override void Destroy()
         {

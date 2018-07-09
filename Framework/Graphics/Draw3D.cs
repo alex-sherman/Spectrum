@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,13 +23,11 @@ namespace Spectrum.Framework.Graphics
             });
             quad.effect = new SpectrumEffect();
         }
-        public static RenderTask Draw3DRectangle(Quaternion rotation, Vector3 position, Vector2 size, RenderProperties? renderProperties = null)
+        public static void Draw3DRectangle(EntityManager manager, Quaternion rotation, Vector3 position, Vector2 size, MaterialData material = null)
         {
-            RenderTask output = new RenderTask(quad);
-            output.world = Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
-            if (renderProperties.HasValue)
-                output.Properties = renderProperties.Value;
-            return output;
+            RenderProperties props = new RenderProperties(quad);
+            var world = Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
+            manager.DrawPart(quad, world, material);
         }
     }
 }

@@ -14,9 +14,14 @@ namespace Spectrum.Framework
     public class DefaultDict<TKey, TValue> : IDictionary<TKey, TValue>
     {
         Dictionary<TKey, TValue> internalDict = new Dictionary<TKey, TValue>();
-        Func<TValue> Constructor = () => default(TValue);
+        Func<TKey, TValue> Constructor = (_) => default(TValue);
         bool _addToDictionary;
         public DefaultDict(Func<TValue> constructor, bool addToDictionary = false)
+        {
+            Constructor = (_) => constructor();
+            _addToDictionary = addToDictionary;
+        }
+        public DefaultDict(Func<TKey, TValue> constructor, bool addToDictionary = false)
         {
             Constructor = constructor;
             _addToDictionary = addToDictionary;
@@ -34,9 +39,9 @@ namespace Spectrum.Framework
                 if (!internalDict.TryGetValue(key, out TValue output))
                 {
                     if (!_addToDictionary)
-                        return Constructor();
+                        return Constructor(key);
                     else
-                        return internalDict[key] = Constructor();
+                        return internalDict[key] = Constructor(key);
                 }
                 return output;
             }

@@ -10,57 +10,78 @@ namespace Spectrum.Framework.Graphics
 {
     public struct RenderProperties
     {
-        public MaterialData Material;
+        public RenderProperties(DrawablePart part, SpectrumEffect effect = null, bool disableDepthBuffer = false, bool disableShadow = false)
+        {
+            PartID = part.ReferenceID;
+            PrimitiveType = part.primType;
+            VertexBuffer = part.VBuffer;
+            IndexBuffer = part.IBuffer;
+            Effect = effect ?? part.effect;
+            DisableDepthBuffer = disableDepthBuffer;
+            DisableShadow = disableShadow;
+        }
+        public int PartID;
+        public PrimitiveType PrimitiveType;
+        public VertexBuffer VertexBuffer;
+        public IndexBuffer IndexBuffer;
         public SpectrumEffect Effect;
         public bool DisableDepthBuffer;
-        public bool DisableInstance;
         public bool DisableShadow;
-        public override bool Equals(object obj)
-        {
-            if (obj is RenderProperties other)
-                return Material == other.Material && Effect == other.Effect
-                    && DisableDepthBuffer == other.DisableDepthBuffer
-                    && DisableInstance == other.DisableInstance
-                    && DisableShadow == other.DisableShadow;
-            return false;
-        }
         public static bool operator !=(RenderProperties a, RenderProperties b) => !a.Equals(b);
         public static bool operator ==(RenderProperties a, RenderProperties b) => a.Equals(b);
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is RenderProperties))
+            {
+                return false;
+            }
+
+            var properties = (RenderProperties)obj;
+            return PartID == properties.PartID &&
+                   EqualityComparer<SpectrumEffect>.Default.Equals(Effect, properties.Effect) &&
+                   DisableDepthBuffer == properties.DisableDepthBuffer &&
+                   DisableShadow == properties.DisableShadow;
+        }
+
         public override int GetHashCode()
         {
-            var hashCode = 128918506;
-            hashCode = hashCode * -1521134295 + EqualityComparer<MaterialData>.Default.GetHashCode(Material);
+            var hashCode = 656074006;
+            hashCode = hashCode * -1521134295 + PartID.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<SpectrumEffect>.Default.GetHashCode(Effect);
             hashCode = hashCode * -1521134295 + DisableDepthBuffer.GetHashCode();
-            hashCode = hashCode * -1521134295 + DisableInstance.GetHashCode();
             hashCode = hashCode * -1521134295 + DisableShadow.GetHashCode();
             return hashCode;
         }
     }
-    public class RenderTask
+    public class RenderCall
     {
-        public RenderTask(DrawablePart part) { this.part = part; }
-        public DrawablePart part;
-        public bool DisableInstance { get => Properties.DisableInstance; set => Properties.DisableInstance = value; }
-        public bool DisableDepthBuffer { get => Properties.DisableDepthBuffer; set => Properties.DisableDepthBuffer = value; }
-        public bool DisableShadow { get => Properties.DisableDepthBuffer; set => Properties.DisableDepthBuffer = value; }
-        public RenderProperties Properties;
-        public MaterialData Material { get => Properties.Material ?? part.material; set => Properties.Material = value; }
-        public SpectrumEffect Effect { get => Properties.Effect ?? part.effect; set => Properties.Effect = value;}
-        public List<Matrix> instances = null;
-        public DynamicVertexBuffer instanceBuffer;
-        public void Merge()
+        public readonly RenderProperties Properties;
+        // Two kinds of RenderCalls, either InstanceData is null or not.
+        // If InstanceData is not null means it was auto batched, otherwise it was manually batched.
+        // If InstanceData is null, InstanceBuffer and Material MUST NOT BE NULL.
+        public List<InstanceData> InstanceData;
+
+        public DynamicVertexBuffer InstanceBuffer;
+        public MaterialData Material;
+
+        public RenderCall(RenderProperties key)
         {
-            if (instances.Any())
-                instanceBuffer = VertexHelper.MakeInstanceBuffer(instances.ToArray());
-            merged = true;
-        }
-        public Matrix InstanceWorld = Matrix.Identity;
-        public Matrix? world;
-        public Matrix WorldValue
-        {
-            get { return instanceBuffer != null ? InstanceWorld : (part.permanentTransform * part.transform * (world ?? Matrix.Identity)); }
+            Properties = key;
         }
         public bool merged;
+        public void Squash()
+        {
+            if (InstanceData.Any())
+            {
+                InstanceBuffer = VertexHelper.MakeInstanceBuffer(InstanceData.Select(instance => instance.World).ToArray());
+                merged = true;
+            }
+        }
+    }
+    public struct InstanceData
+    {
+        public MaterialData Material;
+        public Matrix World;
     }
 }
