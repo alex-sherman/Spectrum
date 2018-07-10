@@ -21,7 +21,6 @@ namespace Spectrum.Framework.VR
         {
             AllowReplicate = false;
             NoCollide = true;
-            DrawOrder = 10;
         }
         public override void Initialize()
         {

@@ -24,8 +24,6 @@ namespace Spectrum.Framework.Entities
                 int i;
                 for (i = 0; i < updatedSorted.Count - 1 && updatedSorted[i].UpdateOrder < entity.UpdateOrder; i++) { }
                 updatedSorted.Insert(i, entity);
-
-                
                 drawSorted.Insert(drawSorted.Count(check => check.DrawOrder < entity.DrawOrder), entity);
             }
         }

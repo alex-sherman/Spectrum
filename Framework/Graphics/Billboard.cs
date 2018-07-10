@@ -12,15 +12,25 @@ namespace Spectrum.Framework.Graphics
     public class Billboard : GameObject
     {
         public Vector2 Size;
+        public Billboard()
+        {
+            DisableInstancing = true;
+        }
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);
             if (Material != null)
-                Draw3D.Draw3DRectangle(
-                    Manager,
-                    Quaternion.Concatenate(Quaternion.CreateFromAxisAngle(Vector3.Right, (float)Math.PI / 2), orientation),
-                    position,
-                    Size);
+            {
+                Manager.DrawPart(
+                    Draw3D.BillboardPart,
+                    Draw3D.GetBillboardTransform(
+                        Quaternion.Concatenate(Quaternion.CreateFromAxisAngle(Vector3.Right, (float)Math.PI / 2), orientation),
+                        position, Size),
+                    Material,
+                    disableDepthBuffer: DisableDepthBuffer,
+                    disableInstancing: DisableInstancing
+                );
+            }
         }
     }
 }

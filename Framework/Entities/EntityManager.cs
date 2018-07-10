@@ -173,29 +173,45 @@ namespace Spectrum.Framework.Entities
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;
         }
-        private RenderDict fixedBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new List<InstanceData>() }, true);
-        private RenderDict dynamicBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new List<InstanceData>() }, true);
+        private RenderDict fixedBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
+        private RenderDict dynamicBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private List<RenderCall> dynamicNonBatched = new List<RenderCall>();
         // TODO: Return a handle to unregister with
-        public void RegisterDraw(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
+        public RenderCallKey RegisterDraw(
+            DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
             RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
-            UpdateRenderDict(properties, world, material ?? part.material, fixedBatched);
+            var value = UpdateRenderDict(properties, world, material ?? part.material, fixedBatched);
+            return new RenderCallKey(properties, value);
+        }
+        public bool UnregisterDraw(RenderCallKey key)
+        {
+            var call = fixedBatched[key.Properties];
+            // TODO: Maybe don't dispose?
+            call.InstanceBuffer?.Dispose();
+            call.InstanceBuffer = null;
+            return call.InstanceData?.Remove(key.Instance) ?? false;
         }
         public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
-            bool disableDepthBuffer = false, bool disableShadow = false)
+            bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)
         {
             RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
-            UpdateRenderDict(properties, world, material ?? part.material, dynamicBatched);
+            material = material ?? part.material;
+            if (disableInstancing)
+                dynamicNonBatched.Add(new RenderCall(properties, world, material));
+            else
+                UpdateRenderDict(properties, world, material, dynamicBatched);
         }
-        private void UpdateRenderDict(RenderProperties properties, Matrix world, MaterialData material, RenderDict dict)
+        private InstanceData UpdateRenderDict(RenderProperties properties, Matrix world, MaterialData material, RenderDict dict)
         {
             var call = dict[properties];
             // TODO: This should get partially instanced?
             call.Material = material;
-            call.InstanceData.Add(new InstanceData() { World = world });
+            var output = new InstanceData() { World = world };
+            call.InstanceData.Add(output);
             call.InstanceBuffer = null;
+            return output;
         }
         public void DrawPart(DrawablePart part, DynamicVertexBuffer instanceBuffer,
             MaterialData material = null, SpectrumEffect effect = null,
@@ -208,10 +224,7 @@ namespace Spectrum.Framework.Entities
         {
             var drawables = Entities.DrawSorted.Where(e => e.DrawEnabled).ToList();
             foreach (var batch in dynamicBatched.Values)
-            {
-                if (batch.merged)
-                    batch.InstanceBuffer.Dispose();
-            }
+                batch.InstanceBuffer?.Dispose();
             dynamicBatched.Clear();
             dynamicNonBatched.Clear();
             foreach (Entity drawable in drawables)

@@ -11,23 +11,19 @@ namespace Spectrum.Framework.Graphics
 {
     public static class Draw3D
     {
-        static readonly DrawablePart quad;
+        public static readonly DrawablePart BillboardPart;
         static Draw3D()
         {
-            quad = DrawablePart.From(new List<CommonTex>()
+            BillboardPart = DrawablePart.From(new List<CommonTex>()
             {
                 new CommonTex(new Vector3(-1, 0, -1), Vector3.UnitY, new Vector2(0,0)),
                 new CommonTex(new Vector3(1, 0, -1), Vector3.UnitY, new Vector2(1, 0)),
                 new CommonTex(new Vector3(-1, 0, 1), Vector3.UnitY, new Vector2(0, 1)),
                 new CommonTex(new Vector3(1, 0, 1), Vector3.UnitY, new Vector2(1, 1))
             });
-            quad.effect = new SpectrumEffect();
+            BillboardPart.effect = new SpectrumEffect();
         }
-        public static void Draw3DRectangle(EntityManager manager, Quaternion rotation, Vector3 position, Vector2 size, MaterialData material = null)
-        {
-            RenderProperties props = new RenderProperties(quad);
-            var world = Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
-            manager.DrawPart(quad, world, material);
-        }
+        public static Matrix GetBillboardTransform(Quaternion rotation, Vector3 position, Vector2 size)
+            => Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
     }
 }

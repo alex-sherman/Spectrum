@@ -60,7 +60,7 @@ namespace Spectrum.Framework.Graphics
         // Two kinds of RenderCalls, either InstanceData is null or not.
         // If InstanceData is not null means it was auto batched, otherwise it was manually batched.
         // If InstanceData is null, InstanceBuffer and Material MUST NOT BE NULL.
-        public List<InstanceData> InstanceData;
+        public HashSet<InstanceData> InstanceData = new HashSet<InstanceData>();
 
         public DynamicVertexBuffer InstanceBuffer;
         public MaterialData Material;
@@ -69,17 +69,30 @@ namespace Spectrum.Framework.Graphics
         {
             Properties = key;
         }
-        public bool merged;
+        public RenderCall(RenderProperties key, Matrix world, MaterialData material)
+            : this(key)
+        {
+            Material = material;
+            InstanceData.Add(new InstanceData() { Material = material, World = world });
+        }
         public void Squash()
         {
-            if (InstanceData.Any())
-            {
+            if (InstanceData.Skip(1).Any())
                 InstanceBuffer = VertexHelper.MakeInstanceBuffer(InstanceData.Select(instance => instance.World).ToArray());
-                merged = true;
-            }
         }
     }
-    public struct InstanceData
+    public struct RenderCallKey
+    {
+        public RenderProperties Properties;
+        public InstanceData Instance;
+
+        public RenderCallKey(RenderProperties properties, InstanceData instance)
+        {
+            Properties = properties;
+            Instance = instance;
+        }
+    }
+    public class InstanceData
     {
         public MaterialData Material;
         public Matrix World;

@@ -51,7 +51,7 @@ namespace Spectrum.Framework.Entities
         public Vector3 Position
         {
             get { return position; }
-            set { _dirtyPhysics = true;  position = value; }
+            set { _dirtyPhysics = true; position = value; }
         }
         public object PositionInterpolator(float w, object value)
         {
@@ -151,13 +151,6 @@ namespace Spectrum.Framework.Entities
         public virtual void OnEndCollide(GameObject other) { }
 
 
-        /// <summary>
-        /// The current oriention of the body.
-        /// </summary>
-        public Matrix World
-        {
-            get { return ModelTransform * Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position); }
-        }
 
 
         public bool EnableSpeculativeContacts { get; set; }
@@ -168,11 +161,23 @@ namespace Spectrum.Framework.Entities
 
         #endregion
 
-        #region RenderProperties
+        #region DrawingStuff
+        /// <summary>
+        /// Uses fixed render tasks which are only updated on creation/destruction and DrawEnabled changes.
+        /// Fixed render tasks are much faster during draw calls but cannot have changing shader properties.
+        /// If those updates happen frequently it will degrade performance of other fixed render tasks.
+        /// </summary>
+        public bool UseFixedRender = false;
+        public RenderCallKey FixedRenderKey;
+
+        /// <summary>
+        /// The world matrix for the purposes of drawing the game object
+        /// </summary>
+        public Matrix World => ModelTransform * Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position);
         public MaterialData Material;
         public Texture2D Texture { get => Material?.DiffuseTexture; set => (Material ?? (Material = new MaterialData())).DiffuseTexture = value; }
+        public bool DisableInstancing;
         public bool DisableDepthBuffer;
-        #endregion
         public SpecModel Model;
         public JBBox ModelBounds
         {
@@ -202,6 +207,7 @@ namespace Spectrum.Framework.Entities
             return Model?.SkinningData;
         }
         public AnimationData Animations;
+        #endregion
 
         public GameObject()
             : base()
@@ -224,6 +230,10 @@ namespace Spectrum.Framework.Entities
                 ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
             }
             PhysicsUpdate(0);
+            if (UseFixedRender)
+                foreach (var part in Model)
+                    // TODO: Support disable instance here
+                    Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer);/*, disableInstancing: DisableInstancing);*/
         }
 
         #region Physics Functions
@@ -289,24 +299,26 @@ namespace Spectrum.Framework.Entities
         {
             base.Update(gameTime);
             AnimationPlayer?.Update(gameTime.DT());
-            if(SoundEmitter != null)
+            if (SoundEmitter != null)
                 SoundEmitter.Update(this);
             if (Model != null) { Model.Update(gameTime); }
         }
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);
-            if (Model != null)
+            if (!UseFixedRender && Model != null)
             {
                 foreach (var part in Model)
                 {
-                    Manager.DrawPart(part, World, Material, disableDepthBuffer: DisableDepthBuffer);
+                    Manager.DrawPart(part, World, Material, disableDepthBuffer: DisableDepthBuffer, disableInstancing: DisableInstancing);
                 }
             }
         }
         public override void Destroy()
         {
             DebugPrinter.undisplay(this);
+            if (UseFixedRender)
+                Manager.UnregisterDraw(FixedRenderKey);
             base.Destroy();
         }
 
