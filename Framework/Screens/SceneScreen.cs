@@ -39,8 +39,8 @@ namespace Spectrum.Framework.Screens
         public static bool Dirty { get; set; }
         public SceneScreen()
         {
-            Width.Type = SizeType.MatchParent;
-            Height.Type = SizeType.MatchParent;
+            Width = 1.0;
+            Height = 1.0;
         }
         public override void Layout(Rectangle bounds)
         {

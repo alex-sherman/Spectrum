@@ -19,8 +19,8 @@ namespace Spectrum.Framework.Screens
         public override bool HasFocus => SpectrumGame.Game.IsActive;
         public RootElement()
         {
-            Width.Type = SizeType.MatchParent;
-            Height.Type = SizeType.MatchParent;
+            Width = 1.0;
+            Height = 1.0;
             SpriteBatch = new SpriteBatch(SpectrumGame.Game.GraphicsDevice);
             Initialize();
         }
@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens
                 HandleInput(false, input);
             base.Update(gameTime);
         }
-        
+
         public void Draw(GameTime gameTime)
         {
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,

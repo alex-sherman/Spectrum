@@ -14,35 +14,56 @@ namespace Spectrum.Framework.Screens
     }
     public struct ElementSize
     {
-        public static ElementSize Zero = new ElementSize(0, 0);
-        public SizeType Type;
-        public int Size { get; set; }
-        public ElementSize(SizeType type, int size)
+        public bool WrapContent;
+        public bool ParentRelative;
+        public static ElementSize Zero = new ElementSize(0);
+        private double Size;
+        public ElementSize(double size)
         {
-            Type = type;
             Size = size;
+            WrapContent = false;
+            ParentRelative = false;
+        }
+        public int CropParentSize(int parent)
+        {
+            if (ParentRelative)
+                return parent;
+            else if (WrapContent)
+                return 0;
+            return (int)Size;
         }
         public int Measure(int parent, int content)
         {
-            switch (Type)
+            if(WrapContent)
             {
-                case SizeType.Flat:
-                    return Size;
-                case SizeType.MatchParent:
-                    return parent;
-                case SizeType.WrapContent:
-                    return Math.Max(content, Size);
+                if (ParentRelative)
+                    return Math.Max(content, (int)(parent * Size));
+                else
+                    return Math.Max(content, (int)Size);
             }
-            return 0;
+            else
+            {
+                if (ParentRelative)
+                    return (int)(parent * Size);
+                else
+                    return (int)Size;
+            }
         }
+
         /// <summary>
         /// Sets a flat size for the element
         /// </summary>
-        public int Flat { set { Size = value; Type = SizeType.Flat; } }
-        /// <summary>
-        /// Sets a minimum size for the element and otherwise wraps its contents
-        /// </summary>
-        public int MinWidth { set { Size = value; Type = SizeType.WrapContent; } }
+        [Obsolete("Use integer implicit cast instead")]
+        public int Flat { set { Size = value; ParentRelative = false; } }
+        public static implicit operator ElementSize(int size)
+        {
+            return new ElementSize(size);
+        }
+        public static implicit operator ElementSize(double size)
+        {
+            return new ElementSize(size) { ParentRelative = true };
+        }
+        #region Equality
         public static bool operator ==(ElementSize a, ElementSize b)
         {
             return a.Equals(b);
@@ -51,18 +72,28 @@ namespace Spectrum.Framework.Screens
         {
             return !(a == b);
         }
+
         public override bool Equals(object obj)
         {
-            if(obj is ElementSize)
+            if (!(obj is ElementSize))
             {
-                var size = (ElementSize)obj;
-                return size.Type == Type && size.Size == Size;
+                return false;
             }
-            return false;
+
+            var size = (ElementSize)obj;
+            return WrapContent == size.WrapContent &&
+                   ParentRelative == size.ParentRelative &&
+                   Size == size.Size;
         }
+
         public override int GetHashCode()
         {
-            return Type.GetHashCode() << 5 ^ Size.GetHashCode();
+            var hashCode = 76549531;
+            hashCode = hashCode * -1521134295 + WrapContent.GetHashCode();
+            hashCode = hashCode * -1521134295 + ParentRelative.GetHashCode();
+            hashCode = hashCode * -1521134295 + Size.GetHashCode();
+            return hashCode;
         }
+        #endregion
     }
 }

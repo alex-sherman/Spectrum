@@ -11,13 +11,13 @@ namespace Spectrum.Framework.Screens.InputElements
         public int Id { get; set; }
         public T Option { get; set; }
         public string Text { get { return text?.Text; } set { text.Text = value; } }
-        private TextElement text;
+        private TextElement text = new TextElement("");
 
-        public ListOption() : this(0, null, default(T)) { }
+        public ListOption() : this(null, default(T)) { }
+        public ListOption(string text, T option) : this(0, text, option) { }
         public ListOption(int id, string text, T tag)
-            : base()
         {
-            this.text = new TextElement(text);
+            Text = text;
             Id = id;
             Option = tag;
         }
@@ -26,7 +26,9 @@ namespace Spectrum.Framework.Screens.InputElements
             base.Initialize();
             AddElement(text);
             text.Center();
-            Width.Type = SizeType.MatchParent;
+            Width = 1.0;
+            Width.WrapContent = true;
+            Height.WrapContent = true;
         }
     }
 }

@@ -11,6 +11,8 @@ namespace Spectrum.Framework.Content
 {
     public class ImageAsset
     {
+        public static readonly ImageAsset Blank;
+        static ImageAsset() => Blank = new ImageAsset(ContentHelper.Blank);
         public SvgDocument svg = null;
         private Texture2D texture = null;
         private Texture2D rasterized = null;

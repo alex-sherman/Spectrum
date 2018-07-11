@@ -12,8 +12,8 @@ namespace Spectrum.Framework.Screens.InputElements
     public delegate void InterfaceEventHandler(InputElement clicked);
     public class InputElement : Element
     {
-        public event InterfaceEventHandler OnClick;
-        public event InterfaceEventHandler OnRightClick;
+        public event Action<InputElement> OnClick;
+        public event Action<InputElement> OnRightClick;
         public object Data;
 
         public string TitleText { get { return this["title"]; } }

@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Screens.InputElements
 
     public class Dropdown<T> : InputElement
     {
-        public event InterfaceEventHandler OnSelectedChanged;
+        public event Action<ListOption<T>> OnSelectedChanged;
         public DropdownOptionSource<T> OptionSource = null;
         private List<ListOption<T>> options = new List<ListOption<T>>();
         private ListOption<T> selected = null;
@@ -44,6 +44,8 @@ namespace Spectrum.Framework.Screens.InputElements
             AddElement(childOption);
             SetOptions(options.ToList());
             OnClick += Dropdown_OnClick;
+            Width = 100;
+            Width.WrapContent = true;
         }
 
         void Dropdown_OnClick(InputElement clicked)
@@ -107,14 +109,14 @@ namespace Spectrum.Framework.Screens.InputElements
             childOption.Id = selected.Id;
             OnSelectedChanged?.Invoke(selected);
         }
+        public override void Measure(int width, int height)
+        {
+            base.Measure(width, height);
+        }
         public override void OnMeasure(int width, int height)
         {
             base.OnMeasure(width, height);
-            MeasuredWidth = Math.Max(100, MeasuredWidth);
-        }
-        public override void Layout(Rectangle bounds)
-        {
-            base.Layout(bounds);
+            MeasuredHeight = Font.LineSpacing;
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {

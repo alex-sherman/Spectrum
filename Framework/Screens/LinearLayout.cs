@@ -34,10 +34,11 @@ namespace Spectrum.Framework.Screens
             {
                 if (item.Positioning != PositionType.Relative && item.Positioning != PositionType.Absolute)
                 {
+                    // TODO: Parent relative doesn't account for size
                     int width = LayoutType == LinearLayoutType.Horizontal ? item.MeasuredWidth :
-                        (item.Width.Type == SizeType.MatchParent ? element.MeasuredWidth : item.MeasuredWidth);
+                        (item.Width.ParentRelative ? element.MeasuredWidth : item.MeasuredWidth);
                     int height = LayoutType == LinearLayoutType.Vertical ? item.MeasuredHeight :
-                        (item.Height.Type == SizeType.MatchParent ? element.MeasuredHeight : item.MeasuredHeight);
+                        (item.Height.ParentRelative ? element.MeasuredHeight : item.MeasuredHeight);
                     item.Layout(new Rectangle(currentX, currentY, width, height));
                     if (LayoutType == LinearLayoutType.Vertical)
                         currentY += height;

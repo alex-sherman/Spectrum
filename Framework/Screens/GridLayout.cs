@@ -34,7 +34,7 @@ namespace Spectrum.Framework.Screens
         private List<int> colWidths = new List<int>();
         public void OnMeasure(Element element, int width, int height)
         {
-            if (element.Height.Type == SizeType.WrapContent || element.Width.Type == SizeType.WrapContent)
+            if (element.Height.WrapContent || element.Width.WrapContent)
             {
                 rowHeights.Clear();
                 colWidths.Clear();
@@ -61,14 +61,14 @@ namespace Spectrum.Framework.Screens
                     }
                 }
                 rowHeights.Add(curRowHeight);
-                if (element.Height.Type == SizeType.WrapContent)
+                if (element.Height.WrapContent)
                     element.MeasuredHeight = rowHeights.DefaultIfEmpty(0).Sum();
-                if (element.Width.Type == SizeType.WrapContent)
+                if (element.Width.WrapContent)
                     element.MeasuredWidth = colWidths.DefaultIfEmpty(0).Sum();
             }
-            if (element.Height.Type != SizeType.WrapContent)
+            if (!element.Height.WrapContent)
                 element.MeasuredHeight = height;
-            if (element.Width.Type != SizeType.WrapContent)
+            if (!element.Width.WrapContent)
                 element.MeasuredWidth = width;
         }
     }

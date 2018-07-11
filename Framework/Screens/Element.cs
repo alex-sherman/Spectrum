@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Screens
         public List<Element> Children { get { return _children.ToList(); } }
         public ElementDisplay Display { get; set; }
         public PositionType Positioning { get; set; }
-        public virtual bool HasFocus { get { return Parent?.HasFocus ?? true;  } }
+        public virtual bool HasFocus { get { return Parent?.HasFocus ?? true; } }
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
@@ -43,46 +43,50 @@ namespace Spectrum.Framework.Screens
         public ImageAsset Texture
         {
             get { return Fields["image"].ObjValue as ImageAsset; }
-            set { Fields["image"].SetValue("", value); }
+            set { Fields["image"].SetValue(null, value); }
         }
         public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
         public ImageAsset Background { get { return Fields["background"].ObjValue as ImageAsset; } }
-        public Color BackgroundColor { get { return (Color)(Fields["background-color"].ObjValue ?? Color.White); } }
+        public Color? BackgroundColor
+        {
+            get => Fields["background-color"].ObjValue as Color?;
+            set => Fields["background-color"].SetValue(null, value);
+        }
 
         public Element()
         {
             Display = ElementDisplay.Visible;
             Positioning = PositionType.InlineLeft;
-            this.Fields["font"] = new ElementField(
+            Fields["font"] = new ElementField(
                 this,
                 "font",
                 ElementField.ContentSetter<SpriteFont>,
                 defaultValue: DefaultFont
                 );
-            this.Fields["font-color"] = new ElementField(
+            Fields["font-color"] = new ElementField(
                 this,
                 "font-color",
                 (value) => ElementField.ColorSetter(value)
                 );
-            this.Fields["background"] = new ElementField(
+            Fields["background"] = new ElementField(
                 this,
                 "background",
                 ElementField.ContentSetter<ImageAsset>,
                 false
                 );
-            this.Fields["background-color"] = new ElementField(
+            Fields["background-color"] = new ElementField(
                 this,
                 "background-color",
                 (value) => ElementField.ColorSetter(value),
                 false
                 );
-            this.Fields["image"] = new ElementField(
+            Fields["image"] = new ElementField(
                 this,
                 "image",
                 ElementField.ContentSetter<ImageAsset>,
                 false
                 );
-            this.Fields["image-color"] = new ElementField(
+            Fields["image-color"] = new ElementField(
                 this,
                 "image-color",
                 (value) => ElementField.ColorSetter(value),
@@ -196,30 +200,8 @@ namespace Spectrum.Framework.Screens
                 MeasuredHeight = 0;
                 MeasuredWidth = 0;
             }
-            switch (Width.Type)
-            {
-                case SizeType.WrapContent:
-                    width = 0;
-                    break;
-                case SizeType.Flat:
-                    width = Width.Size;
-                    break;
-                case SizeType.MatchParent:
-                default:
-                    break;
-            }
-            switch (Height.Type)
-            {
-                case SizeType.WrapContent:
-                    height = 0;
-                    break;
-                case SizeType.Flat:
-                    height = Height.Size;
-                    break;
-                case SizeType.MatchParent:
-                default:
-                    break;
-            }
+            width = Width.CropParentSize(width);
+            height = Height.CropParentSize(height);
             foreach (var child in Children)
             {
                 child.Measure(width, height);
@@ -283,8 +265,10 @@ namespace Spectrum.Framework.Screens
             }
             if (Background != null)
             {
-                Background.Draw(spritebatch, Rect, BackgroundColor, Z);
+                Background.Draw(spritebatch, Rect, BackgroundColor ?? Color.White, Z);
             }
+            else if (BackgroundColor != null)
+                ImageAsset.Blank.Draw(spritebatch, Rect, BackgroundColor.Value, Z);
         }
 
         public virtual float DrawWithChildren(GameTime gameTime, SpriteBatch spritebatch, float layer)

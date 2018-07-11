@@ -30,14 +30,14 @@ namespace Spectrum.Framework.Screens
             base.Initialize();
             LayoutManager = new LinearLayoutManager(LinearLayoutType.Vertical);
             TitleContainer = new Element();
-            TitleContainer.Width.Type = SizeType.MatchParent;
+            TitleContainer.Width = 1.0;
             TitleContainer.Tags.Add("ingame-window-title-container");
             AddElement(TitleContainer);
             TextElement TitleElement = new TextElement(Title);
             TitleElement.Tags.Add("ingame-window-title");
             TitleContainer.AddElement(TitleElement);
             TitleElement.Center();
-            TitleContainer.Height.Type = SizeType.WrapContent;
+            TitleContainer.Height.WrapContent = true;
         }
 
         public Rectangle CloseButtonRect
@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Screens
 
         public override ElementDisplay Toggle(bool? show = null)
         {
-            Parent.MoveElement(this, 0);
+            Parent?.MoveElement(this, 0);
             return base.Toggle(show);
         }
 

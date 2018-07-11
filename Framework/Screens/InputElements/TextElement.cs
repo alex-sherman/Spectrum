@@ -15,6 +15,8 @@ namespace Spectrum.Framework.Screens.InputElements
             : base()
         {
             Text = text;
+            Width.WrapContent = true;
+            Height.WrapContent = true;
         }
 
         public override void OnMeasure(int width, int height)

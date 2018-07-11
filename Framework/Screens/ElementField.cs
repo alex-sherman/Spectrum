@@ -107,14 +107,8 @@ namespace Spectrum.Framework.Screens
         }
         public string StrValue
         {
-            get
-            {
-                return _strValue;
-            }
-            set
-            {
-                SetValue(value, setter(value));
-            }
+            get => _strValue;
+            set => SetValue(value, setter(value));
         }
     }
 }

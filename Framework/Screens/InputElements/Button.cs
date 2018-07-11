@@ -14,10 +14,8 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public Button(int width, int height)
         {
-            Width.Type = SizeType.Flat;
-            Width.Size = width;
-            Height.Type = SizeType.Flat;
-            Height.Size = height;
+            Width = width;
+            Height = height;
         }
 
         public Button(string text)
