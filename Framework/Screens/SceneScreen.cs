@@ -34,9 +34,8 @@ namespace Spectrum.Framework.Screens
                 return true;
             }
         }
-        [ThreadStatic]
         public static Matrix Projection;
-        public static bool Dirty { get; set; }
+        public static bool Dirty;
         public SceneScreen()
         {
             Width = 1.0;

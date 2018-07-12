@@ -9,9 +9,10 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class TextElement : Element
     {
-        public string Text { get; set; }
+        public string Text;
+        public Func<string> TextSource;
 
-        public TextElement(string text)
+        public TextElement(string text = null)
             : base()
         {
             Text = text;
@@ -21,6 +22,8 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public override void OnMeasure(int width, int height)
         {
+            if (TextSource != null)
+                Text = TextSource();
             if (Text == null)
             {
                 MeasuredWidth = 0;
