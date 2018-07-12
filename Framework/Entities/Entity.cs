@@ -43,6 +43,7 @@ namespace Spectrum.Framework.Entities
         public bool Enabled { get; set; }
         public bool DrawEnabled { get; set; }
         public bool Destroying { get; private set; }
+        public event Action OnDestroy;
 
         public Entity()
         {
@@ -63,6 +64,8 @@ namespace Spectrum.Framework.Entities
             Enabled = false;
             Destroying = true;
         }
+
+        internal void CallOnDestroy() => OnDestroy?.Invoke();
 
         public void RPC(string method, params object[] args)
         {

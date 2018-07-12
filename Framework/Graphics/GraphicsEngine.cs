@@ -235,8 +235,7 @@ namespace Spectrum.Framework.Graphics
                     effect.ShadowMap = phaseShadowMap;
                     MaterialData material = group.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
-                    if (material.DiffuseTexture != null)
-                        effect.Texture = material.DiffuseTexture;
+                    effect.Texture = material.DiffuseTexture;
                     using (DebugTiming.Render.Time("Draw Call Time"))
                     {
                         foreach (var pass in effect.CurrentTechnique.Passes)

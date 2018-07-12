@@ -29,6 +29,11 @@ namespace Spectrum.Framework.Entities
     }
     public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource
     {
+        #region Events
+        public event Action<GameObject, Vector3, Vector3, float> OnCollide;
+        public event Action<GameObject> OnEndCollide;
+        #endregion
+
         #region Physics Fields/Properties
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
@@ -143,12 +148,15 @@ namespace Spectrum.Framework.Entities
         public Shape Shape { get => shape; set { _dirtyPhysics = true; shape = value; } }
         public void ShapeFromModelBounds()
         {
-            JBBox box = ModelBounds;
-            box.Transform(ref ModelTransform);
-            Shape = new BoxShape((box.Max - box.Min), box.Center);
+            if (Model != null)
+            {
+                JBBox box = ModelBounds;
+                box.Transform(ref ModelTransform);
+                Shape = new BoxShape((box.Max - box.Min), box.Center);
+            }
         }
-        public virtual void OnCollide(GameObject other, Vector3 point, Vector3 normal, float penetration) { }
-        public virtual void OnEndCollide(GameObject other) { }
+        public virtual void Collide(GameObject other, Vector3 point, Vector3 normal, float penetration) => OnCollide?.Invoke(other, point, normal, penetration);
+        public virtual void EndCollide(GameObject other) => OnEndCollide?.Invoke(other);
 
 
 

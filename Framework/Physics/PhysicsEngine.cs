@@ -81,15 +81,15 @@ namespace Spectrum.Framework.Physics
             internal void RaiseBodiesBeginCollide(GameObject body1, GameObject body2, Vector3 point, Vector3 normal, float penetration)
             {
                 if (BodiesBeginCollide != null) BodiesBeginCollide(body1, body2, normal);
-                body1.OnCollide(body2, point, normal, penetration);
-                body2.OnCollide(body1, point, normal, penetration);
+                body1.Collide(body2, point, normal, penetration);
+                body2.Collide(body1, point, normal, penetration);
             }
 
             internal void RaiseBodiesEndCollide(GameObject body1, GameObject body2)
             {
                 if (BodiesEndCollide != null) BodiesEndCollide(body1, body2);
-                body1.OnEndCollide(body2);
-                body2.OnEndCollide(body1);
+                body1.EndCollide(body2);
+                body2.EndCollide(body1);
             }
 
             internal void RaiseActivatedBody(GameObject body)

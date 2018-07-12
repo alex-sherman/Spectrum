@@ -10,12 +10,13 @@ namespace Spectrum.Framework.Graphics
 {
     public struct RenderProperties
     {
-        public RenderProperties(DrawablePart part, SpectrumEffect effect = null, bool disableDepthBuffer = false, bool disableShadow = false)
+        public RenderProperties(DrawablePart part, MaterialData material = null, SpectrumEffect effect = null, bool disableDepthBuffer = false, bool disableShadow = false)
         {
             PartID = part.ReferenceID;
             PrimitiveType = part.primType;
             VertexBuffer = part.VBuffer;
             IndexBuffer = part.IBuffer;
+            Material = material ?? part.material;
             Effect = effect ?? part.effect;
             DisableDepthBuffer = disableDepthBuffer;
             DisableShadow = disableShadow;
@@ -24,6 +25,7 @@ namespace Spectrum.Framework.Graphics
         public PrimitiveType PrimitiveType;
         public VertexBuffer VertexBuffer;
         public IndexBuffer IndexBuffer;
+        public MaterialData Material;
         public SpectrumEffect Effect;
         public bool DisableDepthBuffer;
         public bool DisableShadow;
@@ -39,6 +41,7 @@ namespace Spectrum.Framework.Graphics
 
             var properties = (RenderProperties)obj;
             return PartID == properties.PartID &&
+                   EqualityComparer<MaterialData>.Default.Equals(Material, properties.Material) &&
                    EqualityComparer<SpectrumEffect>.Default.Equals(Effect, properties.Effect) &&
                    DisableDepthBuffer == properties.DisableDepthBuffer &&
                    DisableShadow == properties.DisableShadow;
@@ -49,6 +52,7 @@ namespace Spectrum.Framework.Graphics
             var hashCode = 656074006;
             hashCode = hashCode * -1521134295 + PartID.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<SpectrumEffect>.Default.GetHashCode(Effect);
+            hashCode = hashCode * -1521134295 + EqualityComparer<MaterialData>.Default.GetHashCode(Material);
             hashCode = hashCode * -1521134295 + DisableDepthBuffer.GetHashCode();
             hashCode = hashCode * -1521134295 + DisableShadow.GetHashCode();
             return hashCode;

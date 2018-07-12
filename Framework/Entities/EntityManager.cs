@@ -167,7 +167,10 @@ namespace Spectrum.Framework.Entities
                     else
                         updateables[i].DisabledUpdate(gameTime);
                     if (updateables[i].Destroying)
+                    {
+                        updateables[i].CallOnDestroy();
                         Remove(updateables[i].ID);
+                    }
                 }
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
@@ -181,7 +184,7 @@ namespace Spectrum.Framework.Entities
             DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
-            RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
+            RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
             var value = UpdateRenderDict(properties, world, material ?? part.material, fixedBatched);
             return new RenderCallKey(properties, value);
         }
@@ -196,7 +199,7 @@ namespace Spectrum.Framework.Entities
         public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)
         {
-            RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
+            RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
             material = material ?? part.material;
             if (disableInstancing)
                 dynamicNonBatched.Add(new RenderCall(properties, world, material));
@@ -217,7 +220,7 @@ namespace Spectrum.Framework.Entities
             MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
-            RenderProperties properties = new RenderProperties(part, effect, disableDepthBuffer, disableShadow);
+            RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
             dynamicNonBatched.Add(new RenderCall(properties) { InstanceBuffer = instanceBuffer, Material = material ?? part.material });
         }
         public IEnumerable<RenderCall> GetRenderTasks(float gameTime)
@@ -319,6 +322,11 @@ namespace Spectrum.Framework.Entities
             if (Entities.Map.ContainsKey(id))
                 return Entities.Map[id];
             return null;
+        }
+
+        public IEnumerable<T> FindAll<T>()
+        {
+            return Entities.Map.Values.Where(e => e is T).Cast<T>();
         }
 
         public IEnumerable<Entity> FindByPrefab(string prefab)
