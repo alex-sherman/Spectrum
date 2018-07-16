@@ -177,11 +177,9 @@ namespace Spectrum
             base.LoadContent();
             GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
             string path = "save.dat";
-            if (File.Exists(path))
-            {
-                LoadSettings(File.OpenRead(path));
-            }
-            else { SaveSettings(File.Create(path)); }
+            if (!File.Exists(path))
+                SaveSettings(File.Create(path));
+            LoadSettings(File.OpenRead(path));
             IsMouseVisible = true;
             Root = new RootElement();
             Serialization.InitSurrogates();
@@ -199,7 +197,7 @@ namespace Spectrum
             AudioManager.Shutdown();
             SaveSettings(File.OpenWrite("save.dat"));
             MP.Dispose();
-            if(UsingSteam)
+            if (UsingSteam)
             {
                 Steamworks.SteamAPI.Shutdown();
             }
@@ -228,7 +226,7 @@ namespace Spectrum
                     OnScreenResize(this, EventArgs.Empty);
                 }
             }
-            if(SpecVR.Running)
+            if (SpecVR.Running)
             {
                 SpecVR.Update(gameTime);
             }
