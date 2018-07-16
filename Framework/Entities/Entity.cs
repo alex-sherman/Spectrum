@@ -14,6 +14,7 @@ using Spectrum.Framework.Graphics;
 
 namespace Spectrum.Framework.Entities
 {
+    [LoadableType]
     public class Entity : IReplicatable
     {
         #region Replication
@@ -27,7 +28,13 @@ namespace Spectrum.Framework.Entities
         public bool IsLocal;
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         #endregion
-
+        public DefaultDict<string, object> Data = new DefaultDict<string, object>();
+        public T Get<T>(string key)
+        {
+            if (Data.TryGetValue(key, out object output) && output is T tOutput)
+                return tOutput;
+            return default(T);
+        }
         public Guid ID;
         /// <summary>
         /// Gets automatically set when constructing with InitData

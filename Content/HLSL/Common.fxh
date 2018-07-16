@@ -13,6 +13,7 @@ uniform extern float ShadowThreshold = 0.0001;
 uniform extern texture Texture;
 uniform extern float2 DiffuseTextureOffset = 0;
 uniform bool TextureMagFilter = true;
+uniform bool DiffuseWrap = true;
 uniform bool UseTexture = false;
 uniform extern texture NormalMap;
 uniform bool UseNormalMap = false;
@@ -34,6 +35,15 @@ sampler customTexture = sampler_state
 	mipfilter = LINEAR;
 	AddressU = mirror;
 	AddressV = mirror;
+};
+sampler customTextureWrap = sampler_state
+{
+	Texture = <Texture>;
+	magfilter = LINEAR;
+	minfilter = LINEAR;
+	mipfilter = LINEAR;
+	AddressU = wrap;
+	AddressV = wrap;
 };
 sampler customTextureNoFilter = sampler_state
 {
@@ -180,7 +190,9 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 	float4 color;
 	if (UseTexture)
 	{
-		float4 textureColor = TextureMagFilter ? tex2D(customTexture, vsout.textureCoordinate) : tex2D(customTextureNoFilter, vsout.textureCoordinate);
+		float4 textureColor = TextureMagFilter ?
+			(DiffuseWrap ? tex2D(customTextureWrap, vsout.textureCoordinate) : tex2D(customTexture, vsout.textureCoordinate))
+			: tex2D(customTextureNoFilter, vsout.textureCoordinate);
 		if (UseTransparency)
 		{
 			color.rgb = textureColor.rgb;

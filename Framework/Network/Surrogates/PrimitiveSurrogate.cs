@@ -14,7 +14,12 @@ namespace Spectrum.Framework.Network.Surrogates
     public class Primitive
     {
         public object Object;
-        public Primitive(object obj = null) { Object = obj; }
+        public Primitive(object obj = null)
+        {
+            if (obj is Enum)
+                obj = (int)obj;
+            Object = obj;
+        }
     }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     class PrimitiveSurrogate

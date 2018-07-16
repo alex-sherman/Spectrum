@@ -35,7 +35,16 @@ namespace Spectrum.Framework.Content
                 foreach (var kvp in jobj)
                 {
                     if (output.TypeData.members.TryGetValue(kvp.Key, out MemberInfo memberInfo))
-                        output.Set(kvp.Key, ParseValue(kvp.Value, memberInfo.MemberType));
+                    {
+                        try
+                        {
+                            output.Set(kvp.Key, ParseValue(kvp.Value, memberInfo.MemberType));
+                        }
+                        catch (Exception)
+                        {
+                            DebugPrinter.PrintOnce($"Failed to parse init data value for {name}.{kvp.Key}: {kvp.Value.ToString()} -> {memberInfo.MemberType}".Replace("\n", "").Replace("\r", ""));
+                        }
+                    }
                     else
                         DebugPrinter.PrintOnce("Skipping field {0} in {1}", kvp.Key, name);
                 }
@@ -59,7 +68,7 @@ namespace Spectrum.Framework.Content
                 foreach (var call in callsObj)
                 {
                     if (call.Value.Type != JTokenType.Array)
-                       throw new InvalidDataException(string.Format("Expected field {0}.{1} to be an array", key, call.Key));
+                        throw new InvalidDataException(string.Format("Expected field {0}.{1} to be an array", key, call.Key));
                     var callArgs = ((JArray)call.Value).Select(callArg => ParseValue(callArg, null)).ToArray();
                     if (callOnce)
                         output.CallOnce(call.Key, args: callArgs);
@@ -80,9 +89,8 @@ namespace Spectrum.Framework.Content
                 case JTokenType.None:
                     return null;
                 case JTokenType.Object:
-                    return ParseObject((JObject)token, targetType);
                 case JTokenType.Array:
-                    break;
+                    return JConvert.To(token, targetType);
                 case JTokenType.Integer:
                     return (int)token;
                 case JTokenType.Float:
@@ -104,47 +112,6 @@ namespace Spectrum.Framework.Content
                 case JTokenType.TimeSpan:
                 default:
                     throw new InvalidDataException(string.Format("Unexpected field type in prefab JSON {0}", token.Type.ToString()));
-            }
-            return null;
-        }
-
-        private static Dictionary<string, Type> typeLookup = new Dictionary<string, Type>()
-        {
-            { "matrix", typeof(Matrix) },
-            { "vector", typeof(Vector3) },
-            { "vector2", typeof(Vector2) },
-            { "vector3", typeof(Vector3) },
-            { "vector4", typeof(Vector4) },
-        };
-        private static HashSet<Type> validTypes = new HashSet<Type>(typeLookup.Values);
-        public static object ParseObject(JObject obj, Type targetType)
-        {
-            string typeName = (string)obj["type"];
-            Type type = null;
-            if (typeName != null && typeLookup.ContainsKey(typeName))
-                type = typeLookup[typeName];
-            else if (targetType != null && validTypes.Contains(targetType))
-                type = targetType;
-            else
-                throw new InvalidDataException(string.Format("Unable to parse an object field"));
-
-            if (type == typeof(Matrix))
-            {
-                Vector3 rotation = Vector3.Zero;
-                Vector3 scale = Vector3.One;
-                Vector3 translation = Vector3.Zero;
-                if (obj["rotation"] != null)
-                    rotation = JConvert.To<Vector3>(obj["rotation"]) * (float)(Math.PI / 180);
-                if (obj["scale"] != null)
-                {
-                    if (obj["scale"].Type == JTokenType.Array)
-                        scale = JConvert.To<Vector3>(obj["scale"]);
-                    if (obj["scale"].Type == JTokenType.Float)
-                        scale = new Vector3((float)obj["scale"]);
-                }
-                if (obj["translation"] != null)
-                    translation = JConvert.To<Vector3>(obj["translation"]);
-                return Matrix.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z) * Matrix.CreateScale(scale) * Matrix.CreateTranslation(translation);
             }
             return null;
         }

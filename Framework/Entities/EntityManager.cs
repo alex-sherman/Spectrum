@@ -83,7 +83,7 @@ namespace Spectrum.Framework.Entities
         public Entity HandleEntityCreation(NetID peerGuid, NetMessage message)
         {
             InitData entityData = message.Read<InitData>();
-            Guid id = (Guid)entityData.fields["ID"].Object;
+            Guid id = (Guid)entityData.Fields["ID"].Object;
             if (!Entities.Map.ContainsKey(id))
                 return CreateEntity(entityData);
             else
@@ -279,9 +279,9 @@ namespace Spectrum.Framework.Entities
             if (entityData.TypeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.TypeName)); }
 
             entityData = entityData.Clone();
-            if (!entityData.fields.ContainsKey("OwnerGuid"))
+            if (!entityData.Fields.ContainsKey("OwnerGuid"))
                 entityData.Set("OwnerGuid", mpService.ID);
-            if (!entityData.fields.ContainsKey("ID"))
+            if (!entityData.Fields.ContainsKey("ID"))
                 entityData.Set("ID", Guid.NewGuid());
 
             Entity output = entityData.Construct() as Entity;

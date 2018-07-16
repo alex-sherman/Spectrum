@@ -70,10 +70,13 @@ namespace Spectrum.Framework
                 }
             }
         }
+
+        public static Assembly SpectrumAssembly => Assembly.GetExecutingAssembly();
+
         public static void LoadTypes(string LocalDir = null)
         {
             SpectrumGame.Game.Plugins["Main"] = Plugin.CreatePlugin("Main", ContentHelper.Single, Assembly.GetEntryAssembly());
-            SpectrumGame.Game.Plugins["Spectrum"] = Plugin.CreatePlugin("Spectrum", ContentHelper.Single, Assembly.GetExecutingAssembly());
+            SpectrumGame.Game.Plugins["Spectrum"] = Plugin.CreatePlugin("Spectrum", ContentHelper.Single, SpectrumAssembly);
 
             foreach (var pluginName in Plugin.GetPluginNames())
                 SpectrumGame.Game.Plugins[pluginName] = Plugin.CreatePlugin(pluginName);

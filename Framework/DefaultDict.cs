@@ -97,6 +97,8 @@ namespace Spectrum.Framework
         public DefaultDict<TKey, TValue> Copy()
         {
             DefaultDict<TKey, TValue> output = new DefaultDict<TKey, TValue>();
+            output.Constructor = Constructor;
+            output._addToDictionary = _addToDictionary;
             foreach (TKey key in internalDict.Keys)
             {
                 output.internalDict[key] = internalDict[key];

@@ -50,33 +50,50 @@ namespace Spectrum.Framework.Entities
         #endregion
         public string Name;
         public string TypeName;
-        public Primitive[] args = new Primitive[0];
-        public Dictionary<string, Primitive> fields = new Dictionary<string, Primitive>();
+        public Primitive[] Args = new Primitive[0];
+        public Dictionary<string, Primitive> Fields = new Dictionary<string, Primitive>();
+        public DefaultDict<string, Dictionary<string, Primitive>> Data
+            = new DefaultDict<string, Dictionary<string, Primitive>>(() => new Dictionary<string, Primitive>(), true);
         public List<FunctionCall> FunctionCalls = new List<FunctionCall>();
-        internal InitData() { }
+        internal InitData(TypeData typeData) { TypeData = typeData; }
         public InitData(string type, params object[] args)
         {
+            TypeData = TypeHelper.Types.GetData(type);
+            if (TypeData == null)
+                throw new KeyNotFoundException($"Could not find type {type} in TypeData lookup");
             TypeName = type;
-            this.args = args.Select(obj => new Primitive(obj)).ToArray();
+            Args = args.Select(obj => new Primitive(obj)).ToArray();
         }
         [ProtoIgnore]
-        public TypeData TypeData { get { return TypeHelper.Types.GetData(TypeName); } }
+        public readonly TypeData TypeData;
         public object Construct()
         {
             if (TypeData == null)
             {
-                DebugPrinter.print(string.Format("Failed to construct {0}", TypeName));
+                DebugPrinter.print($"Failed to construct {TypeName}");
                 return null;
             }
-            object output = TypeData.Instantiate(args.Select(prim => prim.Object).ToArray());
+            object output = TypeData.Instantiate(Args.Select(prim => prim.Object).ToArray());
             Apply(output, true);
             return output;
         }
         public void Apply(object target, bool firstCall = false)
         {
-            foreach (var field in fields)
+            foreach (var field in Fields)
             {
                 TypeData.Set(target, field.Key, field.Value.Object);
+            }
+            foreach (var dict in Data)
+            {
+                if (!(TypeData.Get(target, dict.Key) is IDictionary<string, object> targetDict))
+                {
+                    DebugPrinter.PrintOnce($"Failed to find data dictionary {dict.Key} in {TypeName}");
+                    continue;
+                }
+                foreach (var kvp in dict.Value)
+                {
+                    targetDict[kvp.Key] = kvp.Value.Object;
+                }
             }
             TypeData.Set(target, "TypeName", TypeName);
             foreach (var call in FunctionCalls)
@@ -92,15 +109,14 @@ namespace Spectrum.Framework.Entities
                     rep.InitData = Clone();
             }
         }
-        public T Construct<T>() where T : class
+        public virtual InitData SetDict(string key, object value, string dictField = "Data")
         {
-            return Construct() as T;
+            Data[dictField][key] = new Primitive(value);
+            return this;
         }
         public virtual InitData Set(string name, object value)
         {
-            if (value is Enum)
-                value = (int)value;
-            fields[name] = new Primitive(value);
+            Fields[name] = new Primitive(value);
             return this;
         }
         public virtual InitData Call(string name, params object[] args)
@@ -113,46 +129,75 @@ namespace Spectrum.Framework.Entities
             FunctionCalls.Add(new FunctionCall(name, true, args));
             return this;
         }
+        protected void CopyFieldsTo(InitData other)
+        {
+            other.Name = Name;
+            other.TypeName = TypeName;
+            other.Args = Args.Select(prim => new Primitive(prim.Object)).ToArray();
+            other.Fields = Fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
+            other.Data = Data.Copy();
+            other.FunctionCalls = FunctionCalls.ToList();
+        }
         public InitData Clone()
         {
-            InitData output = new InitData();
-            output.Name = Name;
-            output.TypeName = TypeName;
-            output.args = args.Select(prim => new Primitive(prim.Object)).ToArray();
-            output.fields = fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
-            output.FunctionCalls = FunctionCalls.ToList();
+            InitData output = new InitData(TypeData);
+            CopyFieldsTo(output);
             return output;
         }
         public ImmultableInitData ToImmutable()
         {
-            ImmultableInitData output = new ImmultableInitData();
+            ImmultableInitData output = new ImmultableInitData(TypeData);
             output.Name = Name;
             output.TypeName = TypeName;
-            output.args = args;
-            output.fields = new Dictionary<string, Primitive>(fields);
+            output.Args = Args;
+            output.Fields = new Dictionary<string, Primitive>(Fields);
             output.FunctionCalls = FunctionCalls.ToList();
             return output;
         }
     }
-    public class InitData<T> : InitData
+    public class InitData<T> : InitData where T : class
     {
+        internal InitData(TypeData typeData) : base(typeData) { }
         public InitData(params object[] args) : base(typeof(T).Name, args) { }
+        new public InitData<T> Clone()
+        {
+            var output = new InitData<T>(TypeData);
+            CopyFieldsTo(output);
+            return output;
+        }
+        new public InitData<T> SetDict(string key, object value, string dictField = "Data")
+        {
+            base.SetDict(key, value, dictField);
+            return this;
+        }
         new public virtual InitData<T> Set(string name, object value)
         {
             base.Set(name, value);
             return this;
         }
+        new public virtual InitData<T> Call(string name, params object[] args)
+        {
+            base.Call(name, args);
+            return this;
+        }
+        new public virtual InitData<T> CallOnce(string name, params object[] args)
+        {
+            base.CallOnce(name, args);
+            return this;
+        }
+        public new T Construct() => base.Construct() as T;
     }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [LoadableType]
     public class ImmultableInitData : InitData
     {
-        internal ImmultableInitData() { }
+        internal ImmultableInitData(TypeData typeData) : base(typeData) { }
         public ImmultableInitData(string type, params object[] args) : base(type, args) { }
         public override InitData Set(string name, object value)
-        {
-            InitData output = Clone();
-            return output.Set(name, value);
-        }
+            => Clone().Set(name, value);
+        public override InitData Call(string name, params object[] args)
+            => Clone().Call(name, args);
+        public override InitData CallOnce(string name, params object[] args)
+            => Clone().CallOnce(name, args);
     }
 }
