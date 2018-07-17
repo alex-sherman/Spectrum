@@ -46,13 +46,13 @@ namespace Spectrum.Framework.Content
                         }
                     }
                     else
-                        DebugPrinter.PrintOnce("Skipping field {0} in {1}", kvp.Key, name);
+                        DebugPrinter.PrintOnce($"Skipping field {kvp.Key} in {name}");
                 }
                 return output;
             }
             catch (Exception e)
             {
-                DebugPrinter.PrintOnce("Failed to parse init data: {0}\n{1}", path, e);
+                DebugPrinter.PrintOnce($"Failed to parse init data: {path}\n{e}");
             }
             return null;
         }

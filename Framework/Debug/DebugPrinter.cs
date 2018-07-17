@@ -56,11 +56,11 @@ namespace Spectrum.Framework
             catch { }
         }
         public static void log(string msg, params object[] args) { print(msg, args); }
-        public static void PrintOnce(string msg, params object[] args)
+        public static void PrintOnce(string msg)
         {
             if (!onceMessages.Contains(msg))
             {
-                print(msg, args);
+                print(msg);
                 onceMessages.Add(msg);
             }
         }

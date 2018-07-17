@@ -109,13 +109,20 @@ namespace Spectrum.Framework
                 }
             }
         }
-        // This should probably be cached if it is hit often
+
+        Dictionary<Tuple<Type, Type>, MethodInfo> castMethodCache = new Dictionary<Tuple<Type, Type>, MethodInfo>();
         private bool TryCast(Type to, object value, out object output)
         {
             output = value;
-            var method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
-                .Union(to.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == to).FirstOrDefault();
+            Type from = value.GetType();
+            var key = new Tuple<Type, Type>(from, to);
+            if (!castMethodCache.TryGetValue(key, out MethodInfo method))
+            {
+                method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Union(to.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == to).FirstOrDefault();
+                castMethodCache[key] = method;
+            }
             if (method != null)
             {
                 output = method.Invoke(null, new object[] { value });
@@ -136,7 +143,8 @@ namespace Spectrum.Framework
 
             // The next to checks might be super slow, consider caching or removing them
             // if it becomes a problem
-            if (numericTypes.Contains(type) && numericTypes.Contains(value.GetType())) {
+            if (numericTypes.Contains(type) && numericTypes.Contains(value.GetType()))
+            {
                 output = Convert.ChangeType(value, type);
                 return true;
             }
@@ -186,11 +194,11 @@ namespace Spectrum.Framework
                 if (Coerce(info.MemberType, value, out coercedValue))
                     members[name].SetValue(obj, coercedValue);
                 else
-                    DebugPrinter.PrintOnce("Failed to coerce {0}.{1}", Type.Name, name);
+                    DebugPrinter.PrintOnce($"Failed to coerce {Type.Name}.{name}");
             }
             else
             {
-                DebugPrinter.PrintOnce("Failed to find field {0}.{1}", Type.Name, name);
+                DebugPrinter.PrintOnce($"Failed to find field {Type.Name}.{name}");
             }
         }
         public object Get(object obj, string name)

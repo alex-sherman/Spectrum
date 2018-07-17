@@ -162,7 +162,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// </summary>
         public Vector3 Normal { get { return normal; } }
         #endregion
-        
+
         public void NewIterate(float contactCount)
         {
             accumulatedNormalImpulse = 0;
@@ -179,12 +179,14 @@ namespace Spectrum.Framework.Physics.Dynamics
             Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
             tangent = dvTangent;
-            tangent.Normalize();
+            if (tangent.LengthSquared() > 0)
+                tangent.Normalize();
 
             massNormal = InertiaInDirection(normal);
             massTangent = InertiaInDirection(tangent);
             accumulatedNormalImpulse = -(e + 1) * massNormal * dvNormalScalar;
-            Vector3 J = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * dvTangent;
+            // TODO: Tangent force should be a function of the normal force or something and not just fixed
+            Vector3 J = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
             ApplyImpulse(J / contactCount);
             if (Penetration > settings.allowedPenetration)
             {
@@ -295,37 +297,42 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void ApplyPush(Vector3 push)
         {
-            if(!treatBody1AsStatic && !treatBody2AsStatic)
+            if (push.LengthSquared() == 0)
+                return;
+            push /= 2;
+            if (!treatBody1AsStatic && !treatBody2AsStatic)
             {
                 push /= 2;
             }
             if (!treatBody1AsStatic)
             {
                 body1.position -= push;
-                if (!body1.IgnoreRotation)
-                {
-                    Vector3 axis = Vector3.Cross(push, relativePos1);
-                    double angle = Math.Asin(axis.Length());
-                    if (angle != 0)
-                    {
-                        axis.Normalize();
-                        body1.orientation = Quaternion.Concatenate(body1.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle/2));
-                    }
-                }
+                //if (!body1.IgnoreRotation)
+                //{
+                //    Vector3 axis = Vector3.Cross(push, relativePos1);
+                //    double angle = Math.Asin(axis.Length() / push.Length() / relativePos1.Length());
+                //    Debug.Assert(!double.IsNaN(angle));
+                //    if (angle != 0)
+                //    {
+                //        axis.Normalize();
+                //        body1.orientation = Quaternion.Concatenate(body1.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle/2));
+                //    }
+                //}
             }
             if (!treatBody2AsStatic)
             {
                 body2.position += push;
-                if (!body2.IgnoreRotation)
-                {
-                    Vector3 axis = Vector3.Cross(push, relativePos2);
-                    double angle = Math.Asin(axis.Length());
-                    if (angle != 0)
-                    {
-                        axis.Normalize();
-                        body2.orientation = Quaternion.Concatenate(body2.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle / 2));
-                    }
-                }
+                //if (!body2.IgnoreRotation)
+                //{
+                //    Vector3 axis = Vector3.Cross(push, relativePos2);
+                //    double angle = Math.Asin(axis.Length() / push.Length() / relativePos2.Length());
+                //    Debug.Assert(!double.IsNaN(angle));
+                //    if (angle != 0)
+                //    {
+                //        axis.Normalize();
+                //        body2.orientation = Quaternion.Concatenate(body2.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle / 2));
+                //    }
+                //}
             }
         }
 
