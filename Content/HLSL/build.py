@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys, subprocess
 import glob
 for fpath in glob.glob(sys.argv[1] + "\\*.fx"):
@@ -11,7 +12,7 @@ for fpath in glob.glob(sys.argv[1] + "\\*.fx"):
         fpath + " " + \
         output + \
         " /Profile:DirectX_11"
-        print "Updating:", cmd
+        print("Updating:", cmd)
         process = subprocess.Popen(cmd.split(),stderr=subprocess.PIPE)
         err = process.stderr.read().strip()
         process.communicate()

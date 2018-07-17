@@ -1,5 +1,6 @@
 *.cachefile
 *.zip
 *.mgfx
+*.vs
 bin
 obj
