@@ -43,8 +43,8 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
-            Width.Flat = 400;
-            Height.Flat = 100;
+            Width = 400;
+            Height = 100;
             X = Parent.MeasuredWidth / 2 - MeasuredWidth / 2;
             Y = Parent.MeasuredHeight/ 2 - MeasuredHeight / 2;
             Button button = new Button(_option1);
