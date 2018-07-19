@@ -99,7 +99,6 @@ namespace Spectrum
             InputLayout.Init();
             MP = new MultiplayerService(ID, nick);
             EntityManager = new EntityManager(MP);
-            PhysicsEngine.Init(EntityManager);
             graphics = new GraphicsDeviceManager(this);
             AudioManager.Init();
             Window.AllowUserResizing = true;

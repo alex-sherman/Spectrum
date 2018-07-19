@@ -82,7 +82,7 @@ namespace Spectrum.Framework.Input
             }
             return binding.Options.Any(button => IsKeyDown(button, playerInfo, ignoreModifiers));
         }
-        public bool IsKeyDown(Button button, PlayerInformation playerInfo = null, bool ignoreModifiers = false)
+        public bool IsKeyDown(KeyBind button, PlayerInformation playerInfo = null, bool ignoreModifiers = false)
         {
             playerInfo = playerInfo ?? PlayerInformation.Default;
             if (!ignoreModifiers && !button.modifiers.All(modifier => IsKeyDown(modifier, playerInfo)))
@@ -112,7 +112,7 @@ namespace Spectrum.Framework.Input
             => IsKeyDown(bindingName, playerInfo) && !LastInputState.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyPress(Keys key)
             => IsKeyDown(key) && !LastInputState.IsKeyDown(key);
-        public bool IsNewKeyPress(Button button)
+        public bool IsNewKeyPress(KeyBind button)
             => IsKeyDown(button) && !LastInputState.IsKeyDown(button);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
             => !IsKeyDown(bindingName, playerInfo) && LastInputState.IsKeyDown(bindingName, playerInfo);

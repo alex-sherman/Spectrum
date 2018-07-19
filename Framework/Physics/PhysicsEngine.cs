@@ -44,7 +44,6 @@ namespace Spectrum.Framework.Physics
     {
 
         public bool Paused { get; set; }
-        public static PhysicsEngine Single { get; private set; }
         public delegate void WorldStep(float timestep);
 
         public class WorldEvents
@@ -144,25 +143,6 @@ namespace Spectrum.Framework.Physics
         private Vector3 gravity = new Vector3(0, -9.81f, 0);
 
         public ContactSettings ContactSettings { get { return contactSettings; } }
-
-        public static void Init(EntityManager collection)
-        {
-            Single = new PhysicsEngine(new CollisionSystemPersistentSAP());
-            collection.OnEntityAdded += collection_OnEntityAdded;
-            collection.OnEntityRemoved += collection_OnEntityRemoved;
-        }
-
-        static void collection_OnEntityRemoved(Entity updated)
-        {
-            if (updated is GameObject)
-                Single.RemoveBody(updated as GameObject);
-        }
-
-        static void collection_OnEntityAdded(Entity updated)
-        {
-            if (updated is GameObject)
-                Single.AddBody(updated as GameObject);
-        }
 
         /// <summary>
         /// Create a new instance of the <see cref="PhysicsEngine"/> class.

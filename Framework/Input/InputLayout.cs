@@ -17,14 +17,14 @@ namespace Spectrum.Framework.Input
         public static void Init()
         {
             Default = new InputLayout("Default");
-            Default.Add("MenuLeft", new Button(Keys.Left));
-            Default.Add("MenuRight", new Button(Keys.Right));
-            Default.Add("MenuUp", new Button(Keys.Up));
-            Default.Add("MenuDown", new Button(Keys.Down));
-            Default.Add("MenuCycleF", new Button(Keys.Tab));
-            Default.Add("MenuCycleB", new Button(Keys.Tab, modifiers: new Button(Keys.LeftShift)));
-            Default.Add("GoBack", new Button(Keys.Escape));
-            Default.Add("Continue", new Button(Keys.Enter));
+            Default.Add("MenuLeft", new KeyBind(Keys.Left));
+            Default.Add("MenuRight", new KeyBind(Keys.Right));
+            Default.Add("MenuUp", new KeyBind(Keys.Up));
+            Default.Add("MenuDown", new KeyBind(Keys.Down));
+            Default.Add("MenuCycleF", new KeyBind(Keys.Tab));
+            Default.Add("MenuCycleB", new KeyBind(Keys.Tab, modifiers: new KeyBind(Keys.LeftShift)));
+            Default.Add("GoBack", new KeyBind(Keys.Escape));
+            Default.Add("Continue", new KeyBind(Keys.Enter));
         }
 
         public InputLayout(string name)
@@ -33,11 +33,11 @@ namespace Spectrum.Framework.Input
             Profiles[name] = this;
         }
 
-        public void Add(string binding, Button option)
+        public void Add(string binding, KeyBind option)
         {
             KeyBindings[binding].Options.Add(option);
         }
-        public static void AddBind(string binding, Button option, string profile = "Default")
+        public static void AddBind(string binding, KeyBind option, string profile = "Default")
         {
             Profiles[profile].Add(binding, option);
         }

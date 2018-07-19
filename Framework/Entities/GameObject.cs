@@ -88,11 +88,6 @@ namespace Spectrum.Framework.Entities
         public bool IsStatic;
 
         /// <summary>
-        /// Ignore objects aren't affected by physics at all
-        /// </summary>
-        public bool Ignore;
-
-        /// <summary>
         /// Disables collision handling for the object, the OnCollide event is still called
         /// </summary>
         public bool NoCollide;

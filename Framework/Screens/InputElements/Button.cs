@@ -21,6 +21,8 @@ namespace Spectrum.Framework.Screens.InputElements
         public Button(string text)
         {
             AddElement(new TextElement(text));
+            Width.WrapContent = true;
+            Height.WrapContent = true;
         }
 
         public override void Draw(GameTime time, SpriteBatch spritebatch)
@@ -31,6 +33,10 @@ namespace Spectrum.Framework.Screens.InputElements
                 Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;
                 spritebatch.DrawString(Font, Text, pos, FontColor, Layer(2));
             }
+        }
+        public override void Measure(int width, int height)
+        {
+            base.Measure(width, height);
         }
     }
 }

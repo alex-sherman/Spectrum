@@ -12,6 +12,7 @@ namespace Spectrum.Framework.Graphics
 
     public class Camera
     {
+        public Matrix Projection;
         CullMode culling = CullMode.None;
         Color clearColor = Color.CornflowerBlue;
         float aspectRatio;
@@ -110,6 +111,21 @@ namespace Spectrum.Framework.Graphics
             {
                 Pitch = -MathHelper.PiOver2;
             }
+        }
+
+        public Ray GetMouseRay(Point screenCoords)
+        {
+            Vector3 nearsource = new Vector3(screenCoords.X, screenCoords.Y, 0f);
+            Vector3 farsource = new Vector3(screenCoords.X, screenCoords.Y, 1f);
+
+            Matrix world = Matrix.CreateTranslation(0, 0, 0);
+            Vector3 nearPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(nearsource, Projection, View, world);
+
+            Vector3 farPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(farsource, Projection, View, world);
+
+            Vector3 direction = farPoint - nearPoint;
+            direction.Normalize();
+            return new Ray(nearPoint, direction);
         }
     }
 }

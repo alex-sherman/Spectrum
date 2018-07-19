@@ -19,7 +19,20 @@ namespace Spectrum.Framework.Screens
         public EntityManager Manager = SpectrumGame.Game.EntityManager;
         public RenderTarget2D RenderTarget;
         public Camera Camera;
-        public bool CaptureMouse { get; set; } = true;
+        private bool _captureMouse = true;
+        public bool CaptureMouse
+        {
+            get => _captureMouse;
+            set
+            {
+                if (_captureMouse != value)
+                {
+                    _captureMouse = value;
+                    if (!value)
+                        SpectrumGame.Game.ShowMouse();
+                }
+            }
+        }
         public override bool HasFocus
         {
             get
@@ -48,7 +61,7 @@ namespace Spectrum.Framework.Screens
                 && (bounds.Width > 0 && bounds.Height > 0))
             {
                 Dirty = false;
-                Projection = Settings.GetProjection(bounds.Width, bounds.Height);
+                Camera.Projection = Settings.GetProjection(bounds.Width, bounds.Height);
                 RenderTarget?.Dispose();
                 RenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, bounds.Width, bounds.Height,
                     false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
@@ -76,10 +89,7 @@ namespace Spectrum.Framework.Screens
             {
                 using (DebugTiming.Main.Time("MPCallback"))
                     SpectrumGame.Game.MP.MakeCallbacks(gameTime);
-                using (DebugTiming.Main.Time("Physics"))
-                    PhysicsEngine.Single.Update(gameTime);
-                using (DebugTiming.Main.Time("Entity Update"))
-                    Manager.Update(gameTime);
+                Manager.Update(gameTime);
                 base.Update(gameTime);
             }
         }

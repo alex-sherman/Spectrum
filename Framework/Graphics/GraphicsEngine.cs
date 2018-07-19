@@ -84,33 +84,19 @@ namespace Spectrum.Framework.Graphics
         }
         public static Vector3 ViewToScreenPosition(Vector3 ViewPosition)
         {
-            return device.Viewport.Project(ViewPosition, SceneScreen.Projection, Matrix.Identity, Matrix.Identity);
+            return device.Viewport.Project(ViewPosition, Camera.Projection, Matrix.Identity, Matrix.Identity);
         }
         public static Vector3 FullScreenPos(Vector3 WorldPos)
         {
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = device.Viewport.Project(WorldPos, SceneScreen.Projection, Camera.View, world);
+            Vector3 screenPos = device.Viewport.Project(WorldPos, Camera.Projection, Camera.View, world);
             return screenPos;
         }
         public static Vector2 ScreenPos(Vector3 WorldPos)
         {
             Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = device.Viewport.Project(WorldPos, SceneScreen.Projection, Camera.View, world);
+            Vector3 screenPos = device.Viewport.Project(WorldPos, Camera.Projection, Camera.View, world);
             return new Vector2(screenPos.X, screenPos.Y);
-        }
-        public static Ray GetCameraRay(Vector2 screenCoords)
-        {
-            Vector3 nearsource = new Vector3((float)screenCoords.X, (float)screenCoords.Y, 0f);
-            Vector3 farsource = new Vector3((float)screenCoords.X, (float)screenCoords.Y, 1f);
-
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 nearPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(nearsource, SceneScreen.Projection, Camera.View, world);
-
-            Vector3 farPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(farsource, SceneScreen.Projection, Camera.View, world);
-
-            Vector3 direction = farPoint - nearPoint;
-            direction.Normalize();
-            return new Ray(nearPoint, direction);
         }
 
         private static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
@@ -374,7 +360,7 @@ namespace Spectrum.Framework.Graphics
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
             var mainRenderTimer = DebugTiming.Render.Time("Main Render");
             sceneRenderPhase.View = Camera.View;
-            sceneRenderPhase.Projection = SceneScreen.Projection;
+            sceneRenderPhase.Projection = Camera.Projection;
             phaseShadowMap = shadowMap;
             if (!SpecVR.Running)
             {

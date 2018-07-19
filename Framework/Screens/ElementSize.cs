@@ -49,12 +49,6 @@ namespace Spectrum.Framework.Screens
                     return (int)Size;
             }
         }
-
-        /// <summary>
-        /// Sets a flat size for the element
-        /// </summary>
-        [Obsolete("Use integer implicit cast instead")]
-        public int Flat { set { Size = value; ParentRelative = false; } }
         public static implicit operator ElementSize(int size)
         {
             return new ElementSize(size);

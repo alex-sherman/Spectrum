@@ -323,7 +323,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             foreach (OverlapPair key in fullOverlaps)
             {
-                if (this.CheckBothStaticOrInactive(key.Entity1, key.Entity2)) continue;
+                if (CheckBothStaticOrInactive(key.Entity1, key.Entity2)) continue;
 
                 if (multiThreaded)
                 {
@@ -348,8 +348,7 @@ namespace Spectrum.Framework.Physics.Collision
         private void DetectCallback(object obj)
         {
             BroadphasePair pair = obj as BroadphasePair;
-            if (pair.Entity1.Shape != null && pair.Entity2.Shape != null)
-                base.Detect(pair.Entity1, pair.Entity2);
+            base.Detect(pair.Entity1, pair.Entity2);
             BroadphasePair.Pool.GiveBack(pair);
         }
 
@@ -360,7 +359,8 @@ namespace Spectrum.Framework.Physics.Collision
         /// against rays (rays are of infinite length). They are checked against segments
         /// which start at rayOrigin and end in rayOrigin + rayDirection.
         /// </summary>
-        public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, Func<GameObject, Vector3, float, bool> raycast, out GameObject body, out Vector3 normal, out float fraction)
+        public override bool Raycast(Vector3 rayOrigin, Vector3 rayDirection, Func<GameObject, Vector3, float, bool> raycast,
+            out GameObject body, out Vector3 normal, out float fraction)
         {
             body = null; normal = Vector3.Zero; fraction = float.MaxValue;
 
@@ -370,7 +370,6 @@ namespace Spectrum.Framework.Physics.Collision
             // TODO: This can be done better in CollisionSystemPersistenSAP
             foreach (GameObject e in bodyList)
             {
-                if (e.Ignore) continue;
                 if (Raycast(e, rayOrigin, rayDirection, out tempNormal, out tempFraction))
                 {
                     if (tempFraction < fraction && (raycast == null || raycast(e, tempNormal, tempFraction)))

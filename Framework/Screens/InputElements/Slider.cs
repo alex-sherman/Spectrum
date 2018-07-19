@@ -34,26 +34,26 @@ namespace Spectrum.Framework.Screens.InputElements
             base.Initialize();
             sliderPull = new InputElement();
             sliderPull.Tags.Add("slider-pull");
-            sliderPull.Width.Flat = 10;
-            sliderPull.Height.Flat = 10;
+            sliderPull.Width = 10;
+            sliderPull.Height = 10;
             sliderPull.Positioning = PositionType.Relative;
             AddElement(sliderPull);
             sliderPull.OnClick += (_) => dragging = true;
 
             sliderTrack = new Element();
             sliderTrack.Tags.Add("slider-track");
-            sliderTrack.Height.Flat = 2;
+            sliderTrack.Height = 2;
             sliderTrack.Positioning = PositionType.Relative;
             AddElement(sliderTrack);
 
             OnClick += (_) => dragging = true;
-            Width.Flat = 100;
-            Height.Flat = 20;
+            Width = 100;
+            Height = 20;
         }
         public override void OnMeasure(int width, int height)
         {
             base.OnMeasure(width, height);
-            sliderTrack.Width.Flat = MeasuredWidth - 10;
+            sliderTrack.Width = MeasuredWidth - 10;
         }
         public override void Layout(Rectangle bounds)
         {

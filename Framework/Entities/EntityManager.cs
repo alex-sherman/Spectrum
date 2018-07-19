@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Spectrum.Framework.Network;
 using System.Collections;
 using Spectrum.Framework.Network.Surrogates;
+using Spectrum.Framework.Physics.Collision;
 
 namespace Spectrum.Framework.Entities
 {
@@ -23,11 +24,15 @@ namespace Spectrum.Framework.Entities
         private float tickOneTimer = 1000;
         public EntityCollection Entities;
         private MultiplayerService mpService;
+        public readonly PhysicsEngine Physics;
         public bool Paused = false;
         private static readonly System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
         public EntityManager(MultiplayerService mpService)
         {
             Entities = new EntityCollection();
+            Physics = new PhysicsEngine(new CollisionSystemPersistentSAP());
+            OnEntityAdded += (entity) => { if (entity is GameObject go) Physics.AddBody(go); };
+            OnEntityRemoved += (entity) => { if (entity is GameObject go) Physics.RemoveBody(go); };
             this.mpService = mpService;
             RegisterCallbacks();
         }
@@ -148,28 +153,34 @@ namespace Spectrum.Framework.Entities
         public void Update(GameTime gameTime)
         {
             if (Paused) { return; }
+            using (DebugTiming.Main.Time("Physics"))
+                Physics.Update(gameTime);
+
             tickTenthTimer += gameTime.ElapsedGameTime.Milliseconds;
             tickOneTimer += gameTime.ElapsedGameTime.Milliseconds;
 
-            List<Entity> updateables = Entities.UpdateSorted;
-            for (int i = 0; i < updateables.Count; i++)
+            using (DebugTiming.Main.Time("Entity Update"))
             {
-                using (DebugTiming.Update.Time(updateables[i].GetType().Name))
+                List<Entity> updateables = Entities.UpdateSorted;
+                for (int i = 0; i < updateables.Count; i++)
                 {
-                    if (updateables[i].Enabled)
+                    using (DebugTiming.Update.Time(updateables[i].GetType().Name))
                     {
-                        updateables[i].Update(gameTime);
-                        if (tickOneTimer >= 1000)
-                            updateables[i].TickOne();
-                        if (tickTenthTimer >= 100)
-                            updateables[i].TickTenth();
-                    }
-                    else
-                        updateables[i].DisabledUpdate(gameTime);
-                    if (updateables[i].Destroying)
-                    {
-                        updateables[i].CallOnDestroy();
-                        Remove(updateables[i].ID);
+                        if (updateables[i].Enabled)
+                        {
+                            updateables[i].Update(gameTime);
+                            if (tickOneTimer >= 1000)
+                                updateables[i].TickOne();
+                            if (tickTenthTimer >= 100)
+                                updateables[i].TickTenth();
+                        }
+                        else
+                            updateables[i].DisabledUpdate(gameTime);
+                        if (updateables[i].Destroying)
+                        {
+                            updateables[i].CallOnDestroy();
+                            Remove(updateables[i].ID);
+                        }
                     }
                 }
             }

@@ -12,7 +12,6 @@ using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework.Graphics
 {
-    [LoadableType]
     public class Water : GameObject
     {
         public const string waterBump1 = "waterbump";
@@ -24,11 +23,9 @@ namespace Spectrum.Framework.Graphics
         public int size;
         int numVertices = 32;
         public Water()
-            : base()
         {
             IsStatic = true;
-            this.Ignore = true;
-            this.AllowReplicate = false;
+            AllowReplicate = false;
         }
         public override void Initialize()
         {
