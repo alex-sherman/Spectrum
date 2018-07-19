@@ -78,22 +78,23 @@ namespace Spectrum
         public MultiplayerService MP { get; set; }
         public RootElement Root { get; private set; }
         private Point mousePosition;
-        public bool UsingSteam { get; private set; }
+        public static readonly bool UsingSteam =
+#if STEAM
+            true;
+#else
+            false;
+#endif
 
         public SpectrumGame(Guid? guid = null, string nick = "Player")
         {
             NetID ID;
-            UsingSteam = guid == null;
-            if (UsingSteam)
-            {
-                if (!Steamworks.SteamAPI.Init())
-                    throw new Exception("Steam init failed!");
-                ID = new NetID(Steamworks.SteamUser.GetSteamID().m_SteamID);
-            }
-            else
-            {
-                ID = new NetID(guid.Value);
-            }
+#if STEAM
+            if (!Steamworks.SteamAPI.Init())
+                throw new Exception("Steam init failed!");
+            ID = new NetID(Steamworks.SteamUser.GetSteamID().m_SteamID);
+#else
+            ID = new NetID(guid ?? Guid.NewGuid());
+#endif
             Game = this;
             InputLayout.Init();
             MP = new MultiplayerService(ID, nick);

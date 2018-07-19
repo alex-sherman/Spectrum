@@ -141,7 +141,7 @@ namespace Spectrum.Framework.Network
             RegisterMessageCallback(FrameworkMessages.Handshake, HandleHandshake);
             RegisterMessageCallback(FrameworkMessages.Termination, HandleTermination);
             RegisterMessageCallback(FrameworkMessages.KeepAlive, HandleKeepAlive);
-            if (SpectrumGame.Game.UsingSteam)
+            if (SpectrumGame.UsingSteam)
             {
                 Nick = Steamworks.SteamFriends.GetPersonaName();
                 steamReceiver = new SteamP2PReceiver(this);
@@ -160,7 +160,7 @@ namespace Spectrum.Framework.Network
         }
         public void BeginListening(int port = 27007)
         {
-            if (SpectrumGame.Game.UsingSteam)
+            if (SpectrumGame.UsingSteam)
             {
                 var output = Steamworks.SteamMatchmaking.CreateLobby(Steamworks.ELobbyType.k_ELobbyTypeFriendsOnly, 4);
                 lobbyCreated.Set(output, _lobbyCreatedCallback);
