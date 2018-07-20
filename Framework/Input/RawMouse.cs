@@ -91,22 +91,6 @@ namespace Spectrum.Framework.Input
 
         public static bool RegisterRawInputDeviceHandler()
         {
-            RAWINPUTDEVICE[] rawInputDevicesToMonitor = new RAWINPUTDEVICE[1];
-            RAWINPUTDEVICE device = new RAWINPUTDEVICE
-            {
-                dwFlags = RIDEV_INPUTSINK,
-                hwndTarget = SpectrumGame.Game.Window.Handle,
-                usUsage = 0x2,
-                usUsagePage = 0x1
-            };
-            rawInputDevicesToMonitor[0] = device;
-
-            if (!RegisterRawInputDevices(rawInputDevicesToMonitor, (uint)1, (uint)Marshal.SizeOf(device)))
-            {
-                SpectrumMouse.UseRaw = false;
-                var error = Marshal.GetLastWin32Error();
-                return false;
-            }
             Application.AddMessageFilter(new MouseMessageFilter());
             return true;
         }
@@ -147,6 +131,21 @@ namespace Spectrum.Framework.Input
         {
             lastX = 0;
             lastY = 0;
+            RAWINPUTDEVICE[] rawInputDevicesToMonitor = new RAWINPUTDEVICE[1];
+            RAWINPUTDEVICE device = new RAWINPUTDEVICE
+            {
+                dwFlags = RIDEV_INPUTSINK,
+                hwndTarget = SpectrumGame.Game.Window.Handle,
+                usUsage = 0x2,
+                usUsagePage = 0x1
+            };
+            rawInputDevicesToMonitor[0] = device;
+
+            if (!RegisterRawInputDevices(rawInputDevicesToMonitor, (uint)1, (uint)Marshal.SizeOf(device)))
+            {
+                SpectrumMouse.UseRaw = false;
+                var error = Marshal.GetLastWin32Error();
+            }
             if (SpectrumMouse.UseRaw && !inited && Process.GetCurrentProcess().MainWindowHandle.ToInt32() != 0)
             {
                 inited = true;

@@ -18,6 +18,7 @@ using Spectrum.Framework.Audio;
 using Spectrum.Framework.Input;
 using Valve.VR;
 using Spectrum.Framework.VR;
+using Steamworks;
 
 namespace Spectrum
 {
@@ -89,9 +90,9 @@ namespace Spectrum
         {
             NetID ID;
 #if STEAM
-            if (!Steamworks.SteamAPI.Init())
+            if (!SteamAPI.Init())
                 throw new Exception("Steam init failed!");
-            ID = new NetID(Steamworks.SteamUser.GetSteamID().m_SteamID);
+            ID = new NetID(SteamUser.GetSteamID().m_SteamID);
 #else
             ID = new NetID(guid ?? Guid.NewGuid());
 #endif

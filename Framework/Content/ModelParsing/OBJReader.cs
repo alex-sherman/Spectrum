@@ -25,6 +25,14 @@ namespace Spectrum.Framework.Content.ModelParsing
                 }
             }
         }
+        static Vector3 v3pow(Vector3 vector, double pow)
+        {
+            return new Vector3(
+                (float)Math.Pow(vector.X, pow),
+                (float)Math.Pow(vector.Y, pow),
+                (float)Math.Pow(vector.Z, pow)
+            );
+        }
         static Vector3 v3(string[] split, int offset = 1)
         {
             return new Vector3(float.Parse(split[offset]), float.Parse(split[offset + 1]), float.Parse(split[offset + 2]));
@@ -50,13 +58,15 @@ namespace Spectrum.Framework.Content.ModelParsing
                     case "Ka":
                         break;
                     case "Kd":
-                        data.DiffuseColor = new Color(v3(splitted));
+                        // Apply gamme correction here because OBJs?
+                        data.DiffuseColor = new Color(v3pow(v3(splitted), 1 / 2.5));
                         break;
                     case "map_Kd":
                         data.DiffuseTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);
                         break;
                     case "Ks":
-                        data.SpecularColor = new Color(v3(splitted));
+                        // Apply gamme correction here because OBJs?
+                        data.SpecularColor = new Color(v3pow(v3(splitted), 1 / 2.5));
                         break;
                     case "map_Ks":
                         //data.specularTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);

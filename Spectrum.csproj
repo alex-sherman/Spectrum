@@ -74,7 +74,7 @@
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Steam-Debug|x86'">
     <OutputPath>bin\x86\Steam-Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;STEAM</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;STEAM;STEAMWORKS_WIN</DefineConstants>
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
@@ -352,12 +352,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Dependencies\Steamworks\CSteamworks.dll">
+      <Link>CSteamworks.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Dependencies\Steamworks\steam_api.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Dependencies\Steamworks\steam_appid.txt">
+      <Link>steam_api.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\HLSL\build.py" />
