@@ -93,5 +93,36 @@ namespace Spectrum.Framework
             bitmap.UnlockBits(data);
             return tex;
         }
+        public static float Roll(this Quaternion quaternion)
+        {
+            // yaw (z-axis rotation)
+            double siny = +2.0 * (quaternion.W * quaternion.Z + quaternion.X * quaternion.Y);
+            double cosy = +1.0 - 2.0 * (quaternion.X * quaternion.X + quaternion.Z * quaternion.Z);
+            return (float)Math.Atan2(siny, cosy);
+        }
+        public static float Yaw(this Quaternion quaternion)
+        {
+            // roll (x-axis rotation)
+            double sinr = +2.0 * (quaternion.W * quaternion.Y + quaternion.X * quaternion.Z);
+            double cosr = +1.0 - 2.0 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
+            return (float)Math.Atan2(sinr, cosr);
+            //// pitch (y-axis rotation)
+            //double sinp = +2.0 * (quaternion.W * quaternion.Y - quaternion.Z * quaternion.X);
+            //if (Math.Abs(sinp) >= 1)
+            //    return (float)(Math.Sign(sinp) * Math.PI / 2); // use 90 degrees if out of range
+            //return (float)Math.Asin(sinp);
+        }
+        public static float Pitch(this Quaternion quaternion)
+        {
+            // pitch (y-axis rotation)
+            double sinp = +2.0 * (quaternion.W * quaternion.X - quaternion.Z * quaternion.Y);
+            if (Math.Abs(sinp) >= 1)
+                return (float)(Math.Sign(sinp) * Math.PI / 2); // use 90 degrees if out of range
+            return (float)Math.Asin(sinp);
+            //// roll (x-axis rotation)
+            //double sinr = +2.0 * (quaternion.W * quaternion.X + quaternion.Y * quaternion.Z);
+            //double cosr = +1.0 - 2.0 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
+            //return (float)Math.Atan2(sinr, cosr);
+        }
     }
 }

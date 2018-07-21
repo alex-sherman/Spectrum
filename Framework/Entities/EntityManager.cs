@@ -10,6 +10,7 @@ using Spectrum.Framework.Network;
 using System.Collections;
 using Spectrum.Framework.Network.Surrogates;
 using Spectrum.Framework.Physics.Collision;
+using Spectrum.Framework.Physics.LinearMath;
 
 namespace Spectrum.Framework.Entities
 {
@@ -190,7 +191,6 @@ namespace Spectrum.Framework.Entities
         private RenderDict fixedBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private RenderDict dynamicBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private List<RenderCall> dynamicNonBatched = new List<RenderCall>();
-        // TODO: Return a handle to unregister with
         public RenderCallKey RegisterDraw(
             DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
@@ -206,6 +206,50 @@ namespace Spectrum.Framework.Entities
             call.InstanceBuffer?.Dispose();
             call.InstanceBuffer = null;
             return call.InstanceData?.Remove(key.Instance) ?? false;
+        }
+        public void DrawJBBox(JBBox box, Color color, Matrix? world = null)
+        {
+            Vector3 corner1 = new Vector3(box.Min.X, box.Min.Y, box.Min.Z);
+            Vector3 corner2 = new Vector3(box.Min.X, box.Min.Y, box.Max.Z);
+            Vector3 corner3 = new Vector3(box.Max.X, box.Min.Y, box.Min.Z);
+            Vector3 corner4 = new Vector3(box.Max.X, box.Min.Y, box.Max.Z);
+            Vector3 corner5 = new Vector3(box.Min.X, box.Max.Y, box.Min.Z);
+            Vector3 corner6 = new Vector3(box.Min.X, box.Max.Y, box.Max.Z);
+            Vector3 corner7 = new Vector3(box.Max.X, box.Max.Y, box.Min.Z);
+            Vector3 corner8 = new Vector3(box.Max.X, box.Max.Y, box.Max.Z);
+
+            //Bottom
+            DrawLine(corner1, corner2, color);
+            DrawLine(corner1, corner3, color);
+            DrawLine(corner4, corner2, color);
+            DrawLine(corner4, corner3, color);
+
+            //Top
+            DrawLine(corner5, corner6, color);
+            DrawLine(corner5, corner7, color);
+            DrawLine(corner8, corner6, color);
+            DrawLine(corner8, corner7, color);
+
+            //Sides
+            DrawLine(corner1, corner5, color);
+            DrawLine(corner2, corner6, color);
+            DrawLine(corner3, corner7, color);
+            DrawLine(corner4, corner8, color);
+        }
+        public void DrawLine(Vector3 start, Vector3 end, Color color, Matrix? world = null)
+        {
+            var properties = new RenderProperties(PrimitiveType.LineStrip, GraphicsEngine.lineVBuffer, null, GraphicsEngine.lineEffect);
+            var diff = end - start;
+            var World = (world ?? Matrix.Identity) * Matrix.CreateScale(diff.Length()) * MatrixHelper.RotationFromDirection(diff) * Matrix.CreateTranslation(start);
+            dynamicNonBatched.Add(new RenderCall(properties, World, new MaterialData() { DiffuseColor = color }));
+        }
+        public void DrawModel(SpecModel model, Matrix world, MaterialData material = null,
+            bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)
+        {
+            foreach (var part in model)
+            {
+                DrawPart(part, world, material, disableDepthBuffer: disableDepthBuffer, disableShadow: disableShadow, disableInstancing: disableInstancing);
+            }
         }
         public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)

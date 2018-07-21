@@ -49,6 +49,13 @@ namespace Spectrum.Framework.Graphics
             this.normal = normal;
             tangent = Vector3.Zero;
         }
+        public CommonTex(Vector3 pos)
+        {
+            position = pos;
+            textureCoordinate = Vector2.Zero;
+            normal = Vector3.Zero;
+            tangent = Vector3.Zero;
+        }
 
         VertexDeclaration IVertexType.VertexDeclaration { get { return VertexDeclaration; } }
     };

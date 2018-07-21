@@ -61,16 +61,6 @@ namespace Spectrum
             get { return PointToPoint(WindowForm.Location); }
             set { WindowForm.Location = PointToPoint(value); }
         }
-        public int ResolutionWidth
-        {
-            get { return graphics.PreferredBackBufferWidth; }
-            set { graphics.PreferredBackBufferWidth = value; }
-        }
-        public int ResolutionHeight
-        {
-            get { return graphics.PreferredBackBufferHeight; }
-            set { graphics.PreferredBackBufferHeight = value; }
-        }
         #endregion
 
         public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
@@ -104,6 +94,7 @@ namespace Spectrum
             AudioManager.Init();
             Window.AllowUserResizing = true;
             WindowForm = (Form)Form.FromHandle(Window.Handle);
+            //WindowForm.FormBorderStyle = FormBorderStyle.None;
             IsFixedTimeStep = false;
         }
 
@@ -179,7 +170,10 @@ namespace Spectrum
             GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
             string path = "save.dat";
             if (!File.Exists(path))
+            {
+                WindowForm.WindowState = FormWindowState.Maximized;
                 SaveSettings(File.Create(path));
+            }
             LoadSettings(File.OpenRead(path));
             IsMouseVisible = true;
             Root = new RootElement();

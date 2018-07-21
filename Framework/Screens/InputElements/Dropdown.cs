@@ -15,7 +15,7 @@ namespace Spectrum.Framework.Screens.InputElements
     {
         public event Action<ListOption<T>> OnSelectedChanged;
         public DropdownOptionSource<T> OptionSource = null;
-        private List<ListOption<T>> options = new List<ListOption<T>>();
+        public readonly List<ListOption<T>> Options = new List<ListOption<T>>();
         private ListOption<T> selected = null;
         private ListOption<T> childOption = new ListOption<T>();
         public T Selected
@@ -58,7 +58,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public void ClearOptions()
         {
-            foreach (var option in options.ToList())
+            foreach (var option in Options.ToList())
             {
                 RemoveOption(option);
             }
@@ -77,13 +77,13 @@ namespace Spectrum.Framework.Screens.InputElements
                 option.Margin.TopRelative = 1;
             option.OnClick += Option_OnClick;
             option.Display = Expanded ? ElementDisplay.Visible : ElementDisplay.Hidden;
-            options.Add(option);
+            Options.Add(option);
             AddElement(option);
         }
         public void RemoveOption(ListOption<T> option)
         {
             RemoveElement(option);
-            options.Remove(option);
+            Options.Remove(option);
             if (selected == option)
             {
                 childOption.Text = null;

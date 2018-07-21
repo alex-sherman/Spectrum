@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Entities
         public Quaternion Orientation
         {
             get { return orientation; }
-            set { _dirtyPhysics = true; orientation = value; }
+            set { dirtyPhysics = true; orientation = value; }
         }
         public Quaternion invOrientation;
         public Quaternion InvOrientation { get { return invOrientation; } }
@@ -56,7 +56,7 @@ namespace Spectrum.Framework.Entities
         public Vector3 Position
         {
             get { return position; }
-            set { _dirtyPhysics = true; position = value; }
+            set { dirtyPhysics = true; position = value; }
         }
         public object PositionInterpolator(float w, object value)
         {
@@ -140,7 +140,7 @@ namespace Spectrum.Framework.Entities
 
         public int marker = 0;
         private Shape shape;
-        public Shape Shape { get => shape; set { _dirtyPhysics = true; shape = value; } }
+        public Shape Shape { get => shape; set { dirtyPhysics = true; shape = value; } }
         public void ShapeFromModelBounds()
         {
             if (Model != null)
@@ -240,12 +240,12 @@ namespace Spectrum.Framework.Entities
         }
 
         #region Physics Functions
-        private bool _dirtyPhysics = true;
+        protected bool dirtyPhysics = true;
         public void PhysicsUpdate(float timestep)
         {
-            if (!IsStatic || _dirtyPhysics)
+            if (!IsStatic || dirtyPhysics)
             {
-                _dirtyPhysics = false;
+                dirtyPhysics = false;
                 //TODO: This might be useful to cache on the object if its needed elsewhere
                 // or it should just get removed and figure out how to do everything with quaternions
                 Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);

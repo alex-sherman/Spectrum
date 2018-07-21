@@ -62,6 +62,8 @@ namespace Spectrum.Framework.Screens
 
             if (!otherTookInput)
             {
+                if (Rect.Contains(input.MousePosition))
+                    otherTookInput = true;
                 if (input.IsNewKeyPress("GoBack"))
                 {
                     input.Update();

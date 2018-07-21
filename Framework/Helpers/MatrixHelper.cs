@@ -38,7 +38,9 @@ namespace Spectrum.Framework
         {
             vDirection.Normalize();
             vDirection *= -1;
-            Vector3 vUp = new Vector3(0, 1.0f, 0.0f);
+            Vector3 vUp = Vector3.Up;
+            if (vDirection.X == 0 && vDirection.Z == 0)
+                vUp = Vector3.Left;
             Vector3 vRight = Vector3.Cross(vUp, vDirection);
             vRight.Normalize();
             vUp = Vector3.Cross(vDirection, vRight);

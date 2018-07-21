@@ -28,7 +28,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         public void RemoveShape(Shape shape)
         {
-            shapes.Add(shape);
+            shapes.Remove(shape);
         }
 
         public override void SetCurrentShape(int index)

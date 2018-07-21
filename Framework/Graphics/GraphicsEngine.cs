@@ -44,10 +44,15 @@ namespace Spectrum.Framework.Graphics
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
         public static float MultisampleFactor = 1;
+        public static VertexBuffer lineVBuffer;
+        public static SpectrumEffect lineEffect;
+
         public static void Initialize()
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
             device = SpectrumGame.Game.GraphicsDevice;
+            lineEffect = new SpectrumEffect();
+            lineVBuffer = VertexHelper.MakeVertexBuffer(new List<CommonTex>() { new CommonTex(Vector3.Zero), new CommonTex(Vector3.Forward) });
             Settings.Init(device);
             PostProcessEffect.Initialize();
             PostProcessEffect.AAEnabled = true;
@@ -181,9 +186,13 @@ namespace Spectrum.Framework.Graphics
                     {
                         SetBuffers(VBuffer, IBuffer, instanceBuffer);
                         if (primType == PrimitiveType.TriangleStrip)
-                            device.DrawInstancedPrimitives(PrimitiveType.TriangleStrip, 0, 0, IBuffer.IndexCount - 2, instanceBuffer.VertexCount);
+                            device.DrawInstancedPrimitives(primType, 0, 0, IBuffer.IndexCount - 2, instanceBuffer.VertexCount);
                         if (primType == PrimitiveType.TriangleList)
-                            device.DrawInstancedPrimitives(PrimitiveType.TriangleList, 0, 0, IBuffer.IndexCount / 3, instanceBuffer.VertexCount);
+                            device.DrawInstancedPrimitives(primType, 0, 0, IBuffer.IndexCount / 3, instanceBuffer.VertexCount);
+                        if (primType == PrimitiveType.LineList)
+                            device.DrawInstancedPrimitives(primType, 0, 0, IBuffer.IndexCount / 2, instanceBuffer.VertexCount);
+                        if (primType == PrimitiveType.LineStrip)
+                            device.DrawInstancedPrimitives(primType, 0, 0, IBuffer.IndexCount - 1, instanceBuffer.VertexCount);
                     }
                     else
                     {
@@ -192,6 +201,10 @@ namespace Spectrum.Framework.Graphics
                             device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount - 2);
                         if (primType == PrimitiveType.TriangleList)
                             device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount / 3);
+                        if (primType == PrimitiveType.LineList)
+                            device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount / 2);
+                        if (primType == PrimitiveType.LineStrip)
+                            device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount - 1);
                     }
                 }
                 else
@@ -199,6 +212,8 @@ namespace Spectrum.Framework.Graphics
                     SetBuffers(VBuffer, IBuffer);
                     if (primType == PrimitiveType.TriangleStrip)
                         device.DrawPrimitives(primType, 0, VBuffer.VertexCount - 2);
+                    if (primType == PrimitiveType.LineStrip)
+                        device.DrawPrimitives(primType, 0, VBuffer.VertexCount - 1);
                 }
             }
         }

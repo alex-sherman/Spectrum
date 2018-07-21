@@ -17,12 +17,23 @@ namespace Spectrum.Framework.Graphics
         Color clearColor = Color.CornflowerBlue;
         float aspectRatio;
         private Vector3 _position;
-        public Quaternion Rotation { get; set; }
-        private float _yaw, _pitch, _roll;
+        public Quaternion Rotation;
         /// TODO: Retrieve these values from rotation?
-        public float Yaw { get { return _yaw; } set { _yaw = value; Rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
-        public float Pitch { get { return _pitch; } set { _pitch = value; Rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
-        public float Roll { get { return _roll; } set { _roll = value; Rotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, _roll); } }
+        public float Yaw
+        {
+            get => Rotation.Yaw();
+            set { Rotation = Quaternion.CreateFromYawPitchRoll(value, Pitch, Roll); }
+        }
+        public double PitchLimit = 0.001f;
+        public float Pitch
+        {
+            get => Rotation.Pitch();
+            set
+            {
+                Rotation = Quaternion.CreateFromYawPitchRoll(Yaw, (float)Math.Min(Math.Max(value, PitchLimit - Math.PI / 2), Math.PI / 2 - PitchLimit), Roll);
+            }
+        }
+        public float Roll => Rotation.Roll();
 
         public Color ClearColor
         {
@@ -91,26 +102,7 @@ namespace Spectrum.Framework.Graphics
 
         public virtual void UpdateFromVector2(Vector2 desiredRotation)
         {
-            Yaw -= desiredRotation.X;
-            //Make sure the magnitude of the yaw never exceeds 2*PI
-            if (Yaw > 2 * Math.PI)
-            {
-                Yaw -= 2 * (float)Math.PI;
-            }
-            if (Yaw < -2 * Math.PI)
-            {
-                Yaw += 2 * (float)Math.PI;
-            }
-            Pitch -= desiredRotation.Y;
-            //Constrain pitch so you can't do camera flips
-            if (Pitch > MathHelper.PiOver2)
-            {
-                Pitch = MathHelper.PiOver2;
-            }
-            if (Pitch < -MathHelper.PiOver2)
-            {
-                Pitch = -MathHelper.PiOver2;
-            }
+            Rotation = Quaternion.CreateFromYawPitchRoll(Yaw - desiredRotation.X, (float)Math.Min(Math.Max(Pitch - desiredRotation.Y, PitchLimit - Math.PI / 2), Math.PI / 2 - PitchLimit), 0);
         }
 
         public Ray GetMouseRay(Point screenCoords)
@@ -127,5 +119,7 @@ namespace Spectrum.Framework.Graphics
             direction.Normalize();
             return new Ray(nearPoint, direction);
         }
+
+        public Vector3 Forward => Vector3.Transform(Vector3.Forward, Rotation);
     }
 }

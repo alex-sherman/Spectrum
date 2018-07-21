@@ -10,7 +10,19 @@ namespace Spectrum.Framework.Graphics
 {
     public struct RenderProperties
     {
-        public RenderProperties(DrawablePart part, MaterialData material = null, SpectrumEffect effect = null, bool disableDepthBuffer = false, bool disableShadow = false)
+        public RenderProperties(PrimitiveType primitiveType, VertexBuffer vertexBuffer, IndexBuffer indexBuffer, SpectrumEffect effect)
+        {
+            PartID = -1;
+            PrimitiveType = primitiveType;
+            VertexBuffer = vertexBuffer;
+            IndexBuffer = indexBuffer;
+            Material = null;
+            Effect = effect;
+            DisableDepthBuffer = false;
+            DisableShadow = true;
+        }
+        public RenderProperties(DrawablePart part, MaterialData material = null, SpectrumEffect effect = null,
+            bool disableDepthBuffer = false, bool disableShadow = false)
         {
             PartID = part.ReferenceID;
             PrimitiveType = part.primType;

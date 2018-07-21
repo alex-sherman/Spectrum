@@ -19,7 +19,7 @@ namespace Spectrum.Framework.Screens
         public EntityManager Manager = SpectrumGame.Game.EntityManager;
         public RenderTarget2D RenderTarget;
         public Camera Camera;
-        private bool _captureMouse = true;
+        private bool _captureMouse = false;
         public bool CaptureMouse
         {
             get => _captureMouse;
@@ -30,14 +30,16 @@ namespace Spectrum.Framework.Screens
                     _captureMouse = value;
                     if (!value)
                         SpectrumGame.Game.ShowMouse();
+                    else
+                        SpectrumGame.Game.HideMouse();
                 }
             }
         }
-        public override bool HasFocus
+        public bool IsCovered
         {
             get
             {
-                if (!base.HasFocus || Parent.Children.IndexOf(this) != 0)
+                if (Parent.Children.IndexOf(this) != 0)
                     return false;
                 foreach (Element child in Children)
                 {
@@ -99,16 +101,8 @@ namespace Spectrum.Framework.Screens
             bool output = base.HandleInput(otherTookInput, input);
             if (CaptureMouse)
             {
-                if (HasFocus != !SpectrumGame.Game.IsMouseVisible)
-                {
-                    if (HasFocus)
-                        SpectrumGame.Game.HideMouse();
-                    else
-                        SpectrumGame.Game.ShowMouse();
-                }
-                if (HasFocus)
-                    Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
-                                  SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
+                Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
+                              SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
             }
             return output;
         }
