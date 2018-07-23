@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using SharpDX.DirectInput;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,13 +21,10 @@ namespace Spectrum.Framework.Input
     public class SpectrumMouse
     {
         public static bool UseRaw = true;
-        private Mouse mouse;
         Point mousePosition;
         public SpectrumMouse()
         {
             SpectrumGame.Game.WindowForm.MouseMove += WindowForm_MouseMove;
-            mouse = new Mouse(new DirectInput());
-            mouse.Acquire();
         }
 
         private void WindowForm_MouseMove(object sender, MouseEventArgs e)
