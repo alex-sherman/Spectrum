@@ -22,8 +22,7 @@ namespace Spectrum.Framework.Input
     public class InputState
     {
         public static float MouseSensitivity = 0.003f;
-        private static DirectInput di = new DirectInput();
-        private static SpectrumMouse SpecMouse = new SpectrumMouse(di);
+        private static SpectrumMouse SpecMouse = new SpectrumMouse();
         public static InputState Current { get; private set; } = new InputState();
 
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
@@ -54,7 +53,7 @@ namespace Spectrum.Framework.Input
             LastInputState.KeyboardState = KeyboardState;
             KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
             LastInputState.MouseState = MouseState;
-            MouseState = SpecMouse.GetCurrentState();
+            MouseState = SpecMouse.GetCurrentState(MouseState);
             for (int i = 0; i < 4; i++)
             {
                 LastInputState.Gamepads[i] = Gamepads[i];

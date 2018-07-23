@@ -243,16 +243,16 @@ namespace Spectrum
         {
             get { return graphics; }
         }
-        public void ShowMouse()
+        public void ShowMouse(bool resetPosition = true)
         {
             IsMouseVisible = true;
-            Mouse.SetPosition(mousePosition.X, mousePosition.Y);
+            if (resetPosition)
+                Mouse.SetPosition(mousePosition.X, mousePosition.Y);
         }
         public void HideMouse()
         {
             mousePosition = Mouse.GetState().Position;
             IsMouseVisible = false;
-            Mouse.SetPosition(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
         }
     }
 }

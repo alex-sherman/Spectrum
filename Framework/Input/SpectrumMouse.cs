@@ -23,28 +23,32 @@ namespace Spectrum.Framework.Input
     {
         public static bool UseRaw = true;
         private Mouse mouse;
-        public SpectrumMouse(DirectInput di)
+        Point mousePosition;
+        public SpectrumMouse()
         {
-            mouse = new Mouse(di);
+            SpectrumGame.Game.WindowForm.MouseMove += WindowForm_MouseMove;
+            mouse = new Mouse(new DirectInput());
             mouse.Acquire();
         }
-        public SpectrumMouseState GetCurrentState()
+
+        private void WindowForm_MouseMove(object sender, MouseEventArgs e)
         {
-            MouseState state = mouse.GetCurrentState();
+            mousePosition.X = e.X;
+            mousePosition.Y = e.Y;
+        }
+
+        public SpectrumMouseState GetCurrentState(SpectrumMouseState previous = null)
+        {
             bool[] buttons = new bool[16];
-            if (UseRaw)
-                RawMouse.buttons.CopyTo(buttons, 0);
-            else
-                state.Buttons.CopyTo(buttons, 0);
-            Microsoft.Xna.Framework.Input.MouseState xnaMouseState = Microsoft.Xna.Framework.Input.Mouse.GetState();
+            RawMouse.buttons.CopyTo(buttons, 0);
             return new SpectrumMouseState()
             {
                 buttons = buttons,
-                X = xnaMouseState.X,
-                Y = xnaMouseState.Y,
-                DX = UseRaw ? (RawMouse.lastX / 2.0f) : xnaMouseState.X - SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
-                DY = UseRaw ? (RawMouse.lastY / 2.0f) : xnaMouseState.Y - SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2,
-                Scroll =state.Z,
+                X = mousePosition.X,
+                Y = mousePosition.Y,
+                DX = RawMouse.lastX / 2.0f,
+                DY = RawMouse.lastY / 2.0f,
+                Scroll = RawMouse.lastZ,
             };
         }
     }

@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace Spectrum.Framework.Input
 {
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/ms645578(v=vs.85).aspx
     class RawMouse
     {
         #region API structs
@@ -88,6 +89,7 @@ namespace Spectrum.Framework.Input
         public static bool[] buttons = new bool[16];
         public static int lastX = 0;
         public static int lastY = 0;
+        public static int lastZ = 0;
 
         public static bool RegisterRawInputDeviceHandler()
         {
@@ -116,7 +118,10 @@ namespace Spectrum.Framework.Input
                     handle.Free();
                     lastX += rawData.mouse.lastX;
                     lastY += rawData.mouse.lastY;
-                    for(int i = 0; i < 5; i++)
+                    // 0x400 is MouseWHeel
+                    if (rawData.mouse.buttonFlags == 0x0400)
+                        lastZ += rawData.mouse.buttonData;
+                    for (int i = 0; i < 5; i++)
                     {
                         buttons[i] |= (((1 << (i * 2)) & rawData.mouse.buttonFlags) != 0);
                         buttons[i] &= (((2 << (i * 2)) & rawData.mouse.buttonFlags) == 0);
@@ -127,29 +132,33 @@ namespace Spectrum.Framework.Input
         }
 
         static bool inited = false;
-        public static void Update()
-        {
-            lastX = 0;
-            lastY = 0;
-            RAWINPUTDEVICE[] rawInputDevicesToMonitor = new RAWINPUTDEVICE[1];
-            RAWINPUTDEVICE device = new RAWINPUTDEVICE
+
+        static RAWINPUTDEVICE[] rawInputDevicesToMonitor = new RAWINPUTDEVICE[] {
+            new RAWINPUTDEVICE
             {
                 dwFlags = RIDEV_INPUTSINK,
                 hwndTarget = SpectrumGame.Game.Window.Handle,
                 usUsage = 0x2,
                 usUsagePage = 0x1
-            };
-            rawInputDevicesToMonitor[0] = device;
-
-            if (!RegisterRawInputDevices(rawInputDevicesToMonitor, (uint)1, (uint)Marshal.SizeOf(device)))
-            {
-                SpectrumMouse.UseRaw = false;
-                var error = Marshal.GetLastWin32Error();
             }
-            if (SpectrumMouse.UseRaw && !inited && Process.GetCurrentProcess().MainWindowHandle.ToInt32() != 0)
+        };
+        public static void Update()
+        {
+            lastX = 0;
+            lastY = 0;
+            if (SpectrumMouse.UseRaw && Process.GetCurrentProcess().MainWindowHandle.ToInt32() != 0)
             {
-                inited = true;
-                RegisterRawInputDeviceHandler();
+                rawInputDevicesToMonitor[0].hwndTarget = SpectrumGame.Game.Window.Handle;
+                if (!RegisterRawInputDevices(rawInputDevicesToMonitor, (uint)1, (uint)Marshal.SizeOf(typeof(RAWINPUTDEVICE))))
+                {
+                    SpectrumMouse.UseRaw = false;
+                    var error = Marshal.GetLastWin32Error();
+                }
+                if (!inited)
+                {
+                    inited = true;
+                    RegisterRawInputDeviceHandler();
+                }
             }
         }
     }

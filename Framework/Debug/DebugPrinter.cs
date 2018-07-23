@@ -66,7 +66,8 @@ namespace Spectrum.Framework
         }
         public static void print(string msg, params object[] args)
         {
-            msg = String.Format(msg, args);
+            if (args.Length > 0)
+                msg = String.Format(msg, args);
             StackFrame sf; int sfi = 1;
             while ((sf = new StackFrame(sfi, true)).GetMethod().DeclaringType == typeof(DebugPrinter))
                 sfi++;
