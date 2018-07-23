@@ -45,7 +45,7 @@ namespace Spectrum.Framework.Screens
             get { return new Rectangle(Rect.X + Rect.Width - TitleContainer.Rect.Height, Rect.Y + TitleContainer.Rect.Height / 2 - 18, 38, 36); }
         }
 
-        public override ElementDisplay Toggle(bool? show = null)
+        public override bool Toggle(bool? show = null)
         {
             Parent?.MoveElement(this, 0);
             return base.Toggle(show);
@@ -67,7 +67,7 @@ namespace Spectrum.Framework.Screens
                 if (input.IsNewKeyPress("GoBack"))
                 {
                     input.Update();
-                    Display = ElementDisplay.Hidden;
+                    Display = false;
                     otherTookInput = true;
                 }
                 if (input.IsNewMousePress(0))
@@ -79,7 +79,7 @@ namespace Spectrum.Framework.Screens
                     }
                     if (CloseButtonRect.Contains(input.MouseState.X, input.MouseState.Y))
                     {
-                        Display = ElementDisplay.Hidden;
+                        Display = false;
                     }
                     if (TitleContainer.Rect.Contains(input.MouseState.X, input.MouseState.Y))
                     {

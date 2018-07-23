@@ -10,11 +10,6 @@ using System.Text;
 namespace Spectrum.Framework.Screens
 {
     #region DataTypes
-    public enum ElementDisplay
-    {
-        Visible,
-        Hidden
-    }
     public enum PositionType
     {
         InlineLeft,
@@ -33,8 +28,8 @@ namespace Spectrum.Framework.Screens
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
         public List<Element> Children { get { return _children.ToList(); } }
-        public ElementDisplay Display { get; set; }
-        public PositionType Positioning { get; set; }
+        public bool Display;
+        public PositionType Positioning;
         public virtual bool HasFocus { get { return Parent?.HasFocus ?? true; } }
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
@@ -55,7 +50,7 @@ namespace Spectrum.Framework.Screens
 
         public Element()
         {
-            Display = ElementDisplay.Visible;
+            Display = true;
             Positioning = PositionType.InlineLeft;
             Fields["font"] = new ElementField(
                 this,
@@ -131,7 +126,7 @@ namespace Spectrum.Framework.Screens
         {
             foreach (Element child in Children)
             {
-                if (child.Display == ElementDisplay.Visible)
+                if (child.Display)
                     otherTookInput |= child.HandleInput(otherTookInput, input);
             }
             return otherTookInput;
@@ -179,7 +174,7 @@ namespace Spectrum.Framework.Screens
             foreach (Element child in Children)
             {
                 child.Parent = this;
-                if (child.Display == ElementDisplay.Visible)
+                if (child.Display)
                     child.Update(gameTime);
             }
         }
@@ -195,7 +190,7 @@ namespace Spectrum.Framework.Screens
         }
         public virtual void Measure(int width, int height)
         {
-            if (Display == ElementDisplay.Hidden)
+            if (!Display)
             {
                 MeasuredHeight = 0;
                 MeasuredWidth = 0;
@@ -214,7 +209,7 @@ namespace Spectrum.Framework.Screens
         }
         public virtual void Layout(Rectangle bounds)
         {
-            if (Display == ElementDisplay.Hidden)
+            if (!Display)
                 return;
             Bounds = bounds;
             int X = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)) + bounds.X;
@@ -279,7 +274,7 @@ namespace Spectrum.Framework.Screens
             drawChildren.Reverse();
             foreach (Element child in drawChildren)
             {
-                if (child.Display == ElementDisplay.Visible)
+                if (child.Display)
                 {
                     layer = child.DrawWithChildren(gameTime, spritebatch, layer * .9999f);
                 }
@@ -304,9 +299,9 @@ namespace Spectrum.Framework.Screens
             _children.Remove(element);
         }
 
-        public virtual ElementDisplay Toggle(bool? show = null)
+        public virtual bool Toggle(bool? show = null)
         {
-            Display = (!show ?? (Display == ElementDisplay.Visible)) ? ElementDisplay.Hidden : ElementDisplay.Visible;
+            Display = !((!show) ?? Display);
             return Display;
         }
     }

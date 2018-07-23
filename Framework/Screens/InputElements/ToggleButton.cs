@@ -11,15 +11,10 @@ namespace Spectrum.Framework.Screens.InputElements
     public class ToggleButton : Button
     {
         Element valueIndicator;
-        private bool _value = false;
         public bool Value
         {
-            get { return _value; }
-            set
-            {
-                _value = value;
-                valueIndicator.Display = value ? ElementDisplay.Visible : ElementDisplay.Hidden;
-            }
+            get => valueIndicator.Display;
+            set => valueIndicator.Display = value;
         }
         public event OnToggleChanged OnValueChanged = null;
         public ToggleButton() : base(20, 20) { }
@@ -39,7 +34,7 @@ namespace Spectrum.Framework.Screens.InputElements
             valueIndicator.Width = 6;
             valueIndicator.Height = 6;
             valueIndicator.Tags.Add("toggle-indicator");
-            valueIndicator.Display = ElementDisplay.Hidden;
+            Value = false;
             AddElement(valueIndicator);
             OnClick += (_) => ToggleValue();
         }

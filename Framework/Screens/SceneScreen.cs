@@ -43,7 +43,7 @@ namespace Spectrum.Framework.Screens
                     return false;
                 foreach (Element child in Children)
                 {
-                    if (child is GameScreen && (child as GameScreen).Display == ElementDisplay.Visible)
+                    if (child is GameScreen gameScreen && gameScreen.Display)
                         return false;
                 }
                 return true;

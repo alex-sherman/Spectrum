@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens.InputElements
                     _expanded = value;
                     foreach (ListOption<T> option in Children.Where(c => c != childOption))
                     {
-                        option.Display = value ? ElementDisplay.Visible : ElementDisplay.Hidden;
+                        option.Display = value;
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace Spectrum.Framework.Screens.InputElements
             if (Children.Count == 0)
                 option.Margin.TopRelative = 1;
             option.OnClick += Option_OnClick;
-            option.Display = Expanded ? ElementDisplay.Visible : ElementDisplay.Hidden;
+            option.Display = Expanded;
             Options.Add(option);
             AddElement(option);
         }
