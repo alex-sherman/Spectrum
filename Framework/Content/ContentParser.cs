@@ -10,6 +10,7 @@ namespace Spectrum.Framework.Content
     {
         string Prefix { get; set; }
         object Load(string path);
+        void Clear();
     }
     public abstract class CachedContentParser<T, U> : IContentParser where T : class
     {

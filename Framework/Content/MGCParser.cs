@@ -20,5 +20,7 @@ namespace Spectrum.Framework.Content
         {
             return SpectrumGame.Game.Content.Load<T>(path + Suffix);
         }
+
+        public void Clear() { }
     }
 }

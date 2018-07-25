@@ -90,7 +90,7 @@ namespace Spectrum.Framework.Content
                     return null;
                 case JTokenType.Object:
                 case JTokenType.Array:
-                    return JConvert.To(token, targetType);
+                    return JConvert.Read(token, targetType);
                 case JTokenType.Integer:
                     return (int)token;
                 case JTokenType.Float:

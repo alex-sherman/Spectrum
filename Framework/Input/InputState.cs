@@ -139,7 +139,7 @@ namespace Spectrum.Framework.Input
             => IsMouseDown(button) && !LastInputState.IsMouseDown(button);
         public bool IsNewMouseRelease(int button)
             => !IsMouseDown(button) && LastInputState.IsMouseDown(button);
-        public int MouseWheelDistance() => MouseState.Scroll;
+        public int MouseWheelDistance => MouseState.Scroll;
 
 
         #endregion

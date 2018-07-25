@@ -46,6 +46,12 @@ namespace Spectrum.Framework.Content
             Content = content;
         }
 
+        public static void ClearCache()
+        {
+            foreach (var parser in ContentParsers.Values)
+                parser.Clear();
+        }
+
         public static T Load<T>(string name, bool usePrefix = true) where T : class
         {
             if (name == null) return null;

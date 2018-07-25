@@ -7,7 +7,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 {
     public class ListMultishape : Multishape
     {
-        private List<Shape> shapes;
+        public List<Shape> Shapes;
         private int currentShape;
 
         public ListMultishape() : this(new List<Shape>()) { }
@@ -18,17 +18,19 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             {
                 throw new ArgumentException("Cannot use Multishapes in a ListMultishape");
             }
-            this.shapes = shapes;
+            Shapes = shapes;
         }
 
         public void AddShape(Shape shape)
         {
-            shapes.Add(shape);
+            UpdateShape();
+            Shapes.Add(shape);
         }
 
         public void RemoveShape(Shape shape)
         {
-            shapes.Remove(shape);
+            UpdateShape();
+            Shapes.Remove(shape);
         }
 
         public override void SetCurrentShape(int index)
@@ -38,18 +40,18 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         //TODO: These could be optimized
         public override int Prepare(ref LinearMath.JBBox box)
         {
-            return shapes.Count;
+            return Shapes.Count;
         }
 
         public override int Prepare(ref Microsoft.Xna.Framework.Vector3 rayOrigin, ref Microsoft.Xna.Framework.Vector3 rayDelta)
         {
-            return shapes.Count;
+            return Shapes.Count;
         }
 
         protected override Multishape CreateWorkingClone()
         {
             ListMultishape output = new ListMultishape();
-            output.shapes = shapes;
+            output.Shapes = Shapes;
             output.currentShape = currentShape;
 
             return output;
@@ -57,7 +59,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         public override void SupportMapping(ref Microsoft.Xna.Framework.Vector3 direction, out Microsoft.Xna.Framework.Vector3 result)
         {
-            shapes[currentShape].SupportMapping(ref direction, out result);
+            Shapes[currentShape].SupportMapping(ref direction, out result);
         }
     }
 }

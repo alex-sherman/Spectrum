@@ -144,8 +144,10 @@ namespace Spectrum.Framework.Input
         };
         public static void Update()
         {
+            DebugPrinter.log($"{lastX}, {lastY}");
             lastX = 0;
             lastY = 0;
+            lastZ = 0;
             if (SpectrumMouse.UseRaw && Process.GetCurrentProcess().MainWindowHandle.ToInt32() != 0)
             {
                 rawInputDevicesToMonitor[0].hwndTarget = SpectrumGame.Game.Window.Handle;
