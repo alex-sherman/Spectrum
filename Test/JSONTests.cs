@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework;
+using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Physics.Collision.Shapes;
 
 namespace SpectrumTest
@@ -44,6 +45,12 @@ namespace SpectrumTest
             Assert.AreEqual(Matrix.CreateFromYawPitchRoll((float)Math.PI / 2, 0, 0), matrix);
         }
         [TestMethod]
+        public void TestReadWriteMatrix()
+        {
+            var matrix = JConvert.Read<Matrix>(JConvert.Write(Matrix.CreateFromYawPitchRoll((float)Math.PI / 2, 0, 0)));
+            Assert.AreEqual(Matrix.CreateFromYawPitchRoll((float)Math.PI / 2, 0, 0), matrix);
+        }
+        [TestMethod]
         public void TestReadBoxShape()
         {
             var shape = JConvert.Read<Shape>("{'type': 'box', 'size': [1, 2, 3]}");
@@ -60,11 +67,6 @@ namespace SpectrumTest
             Assert.IsInstanceOfType(listShape.Shapes[0], typeof(BoxShape));
             var boxShape = listShape.Shapes[0] as BoxShape;
             Assert.AreEqual(new Vector3(1, 2, 3), boxShape.Size);
-        }
-        [TestMethod]
-        public void TestWriteBoxShape()
-        {
-            var matrix = JConvert.Write(new ListMultishape(new List<Shape>() { new BoxShape() }));
         }
     }
 }

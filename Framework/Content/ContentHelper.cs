@@ -55,7 +55,6 @@ namespace Spectrum.Framework.Content
         public static T Load<T>(string name, bool usePrefix = true) where T : class
         {
             if (name == null) return null;
-            name = name.Replace('/', '\\');
             if (usePrefix && name.Contains('@'))
             {
                 string[] split = name.Split('@');
@@ -73,22 +72,23 @@ namespace Spectrum.Framework.Content
             return load.Invoke(null, new object[] { path, true });
         }
 
-        public T LoadRelative<T>(string path, bool usePrefix) where T : class
+        public T LoadRelative<T>(string name, bool usePrefix) where T : class
         {
             Type t = typeof(T);
+            var path = name.Replace('/', '\\');
             if (ContentParsers.ContainsKey(t))
             {
                 IContentParser parser = ContentParsers[t];
                 if (!usePrefix)
-                    return (T)parser.Load(path);
+                    return (T)parser.Load(path, name);
                 foreach (var directory in Directories)
                 {
-                    T output = (T)parser.Load(Path.Combine(directory, parser.Prefix, path));
+                    T output = (T)parser.Load(Path.Combine(directory, parser.Prefix, path), name);
                     if (output != null)
                         return output;
                 }
             }
-            DebugPrinter.print(string.Format("File not found {0}", path));
+            DebugPrinter.print(string.Format("File not found {0}", name));
             return null;
         }
     }

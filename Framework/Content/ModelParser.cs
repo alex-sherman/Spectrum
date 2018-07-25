@@ -28,6 +28,7 @@ namespace Spectrum.Framework.Content
         public List<string> vertexAttributes = new List<string>();
         public string Directory;
         public string FileName;
+        public string Name;
 
         public ModelParserCache(string fileName)
         {
@@ -76,7 +77,7 @@ namespace Spectrum.Framework.Content
             {
                 parts[part.Key] = part.Value.CreateReference();
             }
-            SpecModel model = new SpecModel(data.FileName, parts, data.materials, data.skinningData?.Clone());
+            SpecModel model = new SpecModel("", data.FileName, parts, data.materials, data.skinningData?.Clone());
             model.Animations = data.animations;
             return model;
         }

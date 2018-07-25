@@ -1,6 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Spectrum.Framework.Content;
+using Spectrum.Framework.Entities;
+using Spectrum.Framework.Graphics;
 using Spectrum.Framework.JSON;
 using Spectrum.Framework.Physics.Collision.Shapes;
 using System;
@@ -13,39 +16,41 @@ namespace Spectrum.Framework
 {
     public class JConvert
     {
-        public static Dictionary<Type, SpectrumJsonConverter> Converters = new Dictionary<Type, SpectrumJsonConverter>();
+        public static List<JsonConverter> Converters = new List<JsonConverter>();
+        static JsonSerializerSettings Settings;
         static JConvert()
         {
-            var vectorConverter = new JVectorConverter();
-            Converters[typeof(Vector2)] = Converters[typeof(Vector3)] = Converters[typeof(Vector4)] = vectorConverter;
-            Converters[typeof(Matrix)] = new JMatrixConverter();
-            Converters[typeof(Shape)] = Converters[typeof(BoxShape)] = new JShapeParser();
+            Converters.Add(new JVectorConverter());
+            Converters.Add(new JMatrixConverter());
+            Converters.Add(new JShapeConverter());
+            Converters.Add(new SimpleConverter<SpecModel>(
+                model => model.Name,
+                token => ContentHelper.Load<SpecModel>((string)token)));
+            Converters.Add(new JInitDataConverter());
+            Converters.Add(new SimpleConverter<TypeData>(
+                typeData => typeData.Type.Name,
+                token => TypeHelper.Types.GetData((string)token)));
+            Settings = new JsonSerializerSettings();
+            foreach (var converter in Converters)
+            {
+                Settings.Converters.Add(converter);
+            }
         }
-        public static object Read(JToken token, Type targetType)
+        public static object Parse(JToken token, Type targetType)
         {
-            if (targetType.IsGenericType && targetType.GetGenericTypeDefinition() == typeof(Nullable<>))
-                targetType = targetType.GetGenericArguments()[0];
-            if (Converters.TryGetValue(targetType, out var converter))
-                return converter.Read(token, targetType);
-            return null;
+            return token?.ToObject(targetType, JsonSerializer.Create(Settings));
         }
-        public static T Read<T>(JToken token)
+        public static T Parse<T>(JToken token)
         {
-            return (T)(Read(token, typeof(T)) ?? default(T));
+            return (T)(Parse(token, typeof(T)) ?? default(T));
         }
         public static T Read<T>(string json)
         {
-            using (JsonTextReader reader = new JsonTextReader(new StringReader(json)))
-                return (T)(Read(JToken.Load(reader), typeof(T)) ?? default(T));
+            return (T)JsonConvert.DeserializeObject(json, typeof(T), Settings);
         }
         public static string Write(object obj)
         {
-            var type = obj.GetType();
-            if (Converters.TryGetValue(type, out var converter))
-                return converter.Write(obj)?.ToString(Formatting.None);
-            var sw = new StringWriter();
-            new JsonSerializer().Serialize(sw, obj);
-            return sw.ToString();
+            return JsonConvert.SerializeObject(obj, Formatting.Indented, Settings);
         }
     }
 }

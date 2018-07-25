@@ -9,10 +9,23 @@ using Newtonsoft.Json.Linq;
 
 namespace Spectrum.Framework.JSON
 {
-    class JVectorConverter : SpectrumJsonConverter
+    class JVectorConverter : JsonConverter
     {
-        public override object Read(JToken token, Type targetType)
+        public static bool IsNumeric(JToken token)
         {
+            return token.Type == JTokenType.Float || token.Type == JTokenType.Integer;
+        }
+
+        public override bool CanConvert(Type objectType)
+        {
+            objectType = TypeHelper.FixGeneric(objectType);
+            return objectType == typeof(Vector2) || objectType == typeof(Vector3) || objectType == typeof(Vector4);
+        }
+
+        public override object ReadJson(JsonReader reader, Type targetType, object existingValue, JsonSerializer serializer)
+        {
+            var token = JToken.ReadFrom(reader);
+            targetType = TypeHelper.FixGeneric(targetType);
             if (token is JArray array)
             {
                 if (targetType == typeof(Vector3) && array.Count == 3 && array.All(IsNumeric))
@@ -25,15 +38,18 @@ namespace Spectrum.Framework.JSON
             return null;
         }
 
-        public override JToken Write(object obj)
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
-            if (obj is Vector3 vector3)
-                return new JArray(vector3.X, vector3.Y, vector3.Z);
-            if (obj is Vector2 vector2)
-                return new JArray(vector2.X, vector2.Y);
-            if (obj is Vector4 vector4)
-                return new JArray(vector4.X, vector4.Y, vector4.Z, vector4.W);
-            return null;
+            JArray array = null;
+            if (value is Vector3 vector3)
+                array = new JArray(vector3.X, vector3.Y, vector3.Z);
+            if (value is Vector2 vector2)
+                array = new JArray(vector2.X, vector2.Y);
+            if (value is Vector4 vector4)
+                array = new JArray(vector4.X, vector4.Y, vector4.Z, vector4.W);
+            writer.Formatting = Formatting.None;
+            array.WriteTo(writer);
+            writer.Formatting = Formatting.Indented;
         }
     }
 }

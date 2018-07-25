@@ -252,10 +252,11 @@
     <Compile Include="Framework\Input\PlayerInformation.cs" />
     <Compile Include="Framework\Input\RawMouse.cs" />
     <Compile Include="Framework\Input\SpectrumMouse.cs" />
+    <Compile Include="Framework\JSON\JInitDataConverter.cs" />
     <Compile Include="Framework\JSON\JMatrixConverter.cs" />
     <Compile Include="Framework\JSON\JVectorConverter.cs" />
-    <Compile Include="Framework\JSON\JShapeParser.cs" />
-    <Compile Include="Framework\JSON\SpectrumJsonConverter.cs" />
+    <Compile Include="Framework\JSON\JShapeConverter.cs" />
+    <Compile Include="Framework\JSON\SimpleConverter.cs" />
     <Compile Include="Framework\Screens\RootElement.cs" />
     <Compile Include="Framework\Screens\SceneScreen.cs" />
     <Compile Include="Framework\VR\VRInput.cs" />

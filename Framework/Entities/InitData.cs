@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Newtonsoft.Json;
 using ProtoBuf;
 using Spectrum.Framework.Network;
 using Spectrum.Framework.Network.Surrogates;
@@ -49,7 +50,10 @@ namespace Spectrum.Framework.Entities
         }
         #endregion
         public string Name;
-        public string TypeName;
+        public string TypeName {
+            get => TypeData.Type.Name;
+            set => TypeData = TypeHelper.Types.GetData(value);
+        }
         public Primitive[] Args = new Primitive[0];
         public Dictionary<string, Primitive> Fields = new Dictionary<string, Primitive>();
         public DefaultDict<string, Dictionary<string, Primitive>> Data
@@ -61,11 +65,11 @@ namespace Spectrum.Framework.Entities
             TypeData = TypeHelper.Types.GetData(type);
             if (TypeData == null)
                 throw new KeyNotFoundException($"Could not find type {type} in TypeData lookup");
-            TypeName = type;
             Args = args.Select(obj => new Primitive(obj)).ToArray();
         }
         [ProtoIgnore]
-        public readonly TypeData TypeData;
+        [JsonIgnore]
+        public TypeData TypeData;
         public object Construct()
         {
             if (TypeData == null)
@@ -132,7 +136,6 @@ namespace Spectrum.Framework.Entities
         protected void CopyFieldsTo(InitData other)
         {
             other.Name = Name;
-            other.TypeName = TypeName;
             other.Args = Args.Select(prim => new Primitive(prim.Object)).ToArray();
             other.Fields = Fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
             other.Data = Data.Copy();
@@ -148,7 +151,6 @@ namespace Spectrum.Framework.Entities
         {
             ImmultableInitData output = new ImmultableInitData(TypeData);
             output.Name = Name;
-            output.TypeName = TypeName;
             output.Args = Args;
             output.Fields = new Dictionary<string, Primitive>(Fields);
             output.FunctionCalls = FunctionCalls.ToList();

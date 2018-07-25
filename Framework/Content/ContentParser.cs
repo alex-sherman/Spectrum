@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Content
     public interface IContentParser
     {
         string Prefix { get; set; }
-        object Load(string path);
+        object Load(string path, string name);
         void Clear();
     }
     public abstract class CachedContentParser<T, U> : IContentParser where T : class
@@ -18,9 +18,9 @@ namespace Spectrum.Framework.Content
         protected abstract T LoadData(string path, string name);
         protected abstract U SafeCopy(T data);
         public string Prefix { get; set; }
-        public U Load(string path)
+        public U Load(string path, string name)
         {
-            if (!cachedData.ContainsKey(path)) { Cache(path); }
+            if (!cachedData.ContainsKey(path)) { Cache(path, name); }
             T data = cachedData[path];
             return data == null ? default(U) : SafeCopy(data);
         }
@@ -40,12 +40,12 @@ namespace Spectrum.Framework.Content
                 throw new FileNotFoundException("The file could not be loaded: ", path);
             return full_path;
         }
-        public virtual void Cache(string path)
+        public virtual void Cache(string path, string name)
         {
             try
             {
                 using (DebugTiming.Content.Time(GetType().Name))
-                    cachedData[path] = LoadData(path, path);
+                    cachedData[path] = LoadData(path, name);
             }
             catch (FileNotFoundException)
             {
@@ -53,9 +53,9 @@ namespace Spectrum.Framework.Content
             }
         }
 
-        object IContentParser.Load(string path)
+        object IContentParser.Load(string path, string name)
         {
-            return Load(path);
+            return Load(path, name);
         }
         public void Clear()
         {

@@ -1,12 +1,15 @@
-﻿using System;
+﻿using ProtoBuf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace Spectrum.Framework.Physics.Collision.Shapes
 {
+    [ProtoContract]
     public class ListMultishape : Multishape
     {
+        [ProtoMember(1)]
         public List<Shape> Shapes;
         private int currentShape;
 
@@ -23,14 +26,14 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         public void AddShape(Shape shape)
         {
-            UpdateShape();
             Shapes.Add(shape);
+            UpdateShape();
         }
 
         public void RemoveShape(Shape shape)
         {
-            UpdateShape();
             Shapes.Remove(shape);
+            UpdateShape();
         }
 
         public override void SetCurrentShape(int index)

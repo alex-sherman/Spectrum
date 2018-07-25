@@ -14,6 +14,7 @@ namespace Spectrum.Framework.Graphics
     public class SpecModel : IEnumerable<DrawablePart>
     {
         public string Path { get; private set; }
+        public string Name { get; private set; }
         public AnimationData Animations { get; set; }
         public SkinningData SkinningData { get; protected set; }
         private int _partIndex = 0;
@@ -26,8 +27,10 @@ namespace Spectrum.Framework.Graphics
             Materials = new Dictionary<string, MaterialData>();
             SkinningData = null;
         }
-        public SpecModel(string path, Dictionary<string, DrawablePart> meshParts, Dictionary<string, MaterialData> materials, SkinningData skinningData)
+        public SpecModel(string name, string path,
+            Dictionary<string, DrawablePart> meshParts, Dictionary<string, MaterialData> materials, SkinningData skinningData)
         {
+            Name = name;
             Path = path;
             MeshParts = meshParts;
             Materials = materials;

@@ -61,5 +61,16 @@ namespace Spectrum.Framework
         {
             return plugins[type];
         }
+        public static Type FixGeneric(Type type)
+        {
+            if (type.IsGenericType)
+            {
+                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
+                    type = type.GetGenericArguments()[0];
+                else
+                    type = type.GetGenericTypeDefinition();
+            }
+            return type;
+        }
     }
 }

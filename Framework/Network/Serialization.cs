@@ -54,6 +54,9 @@ namespace Spectrum.Framework.Network
             }
             Model.Add(typeof(MemoryStream), false).SetSurrogate(typeof(StreamSurrogate));
             Model.Add(typeof(Primitive), false).SetSurrogate(typeof(PrimitiveSurrogate));
+            Model.Add(typeof(Shape), true);
+            Model[typeof(Shape)].AddSubType(1, typeof(BoxShape));
+            Model[typeof(Shape)].AddSubType(2, typeof(ListMultishape));
             //Model.Add(typeof(float[,]), false).SetSurrogate(typeof(FloatArraySurrogate));
         }
         public static void RegisterType(Type type)

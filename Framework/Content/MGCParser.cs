@@ -16,7 +16,7 @@ namespace Spectrum.Framework.Content
             Prefix = prefix;
             Suffix = suffix;
         }
-        public object Load(string path)
+        public object Load(string path, string name)
         {
             return SpectrumGame.Game.Content.Load<T>(path + Suffix);
         }
