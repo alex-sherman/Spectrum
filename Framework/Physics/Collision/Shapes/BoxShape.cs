@@ -146,5 +146,12 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             result.Y = (float)Math.Sign(direction.Y) * halfSize.Y + position.Y;
             result.Z = (float)Math.Sign(direction.Z) * halfSize.Z + position.Z;
         }
+
+        public override void SetScale(float scale)
+        {
+            position *= scale;
+            size *= scale;
+            UpdateShape();
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace Spectrum.Framework.Content
         protected override InitData LoadData(string path, string name)
         {
             using (var reader = new StreamReader(File.OpenRead(path)))
-                return JConvert.Read<InitData>(reader.ReadToEnd());
+                return JConvert.Deserialize<InitData>(reader.ReadToEnd());
         }
 
         protected override InitData SafeCopy(InitData data)

@@ -87,7 +87,7 @@ namespace Spectrum.Framework.Content.ModelParsing
         }
         public ModelParserCache LoadData(string path, string name)
         {
-            var modelData = new ModelParserCache(name);
+            var modelData = new ModelParserCache(name, path);
             List<Vector3> positions = new List<Vector3>();
             List<Vector2> textureUVs = new List<Vector2>();
             List<Vector3> normals = new List<Vector3>();

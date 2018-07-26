@@ -26,11 +26,11 @@ namespace Spectrum.Framework.JSON
                 switch (shapeType)
                 {
                     case "box":
-                        return new BoxShape(JConvert.Parse<Vector3>(obj["size"]),
-                            JConvert.Parse<Vector3?>(obj["position"]));
+                        return new BoxShape(JConvert.Deserialize<Vector3>(obj["size"]),
+                            JConvert.Deserialize<Vector3?>(obj["position"]));
                     case "list":
                         return new ListMultishape(((JArray)obj["shapes"])
-                            .Select(shape => JConvert.Parse<Shape>(shape)).ToList());
+                            .Select(shape => JConvert.Deserialize<Shape>(shape)).ToList());
                     default:
                         break;
                 }
@@ -43,7 +43,8 @@ namespace Spectrum.Framework.JSON
             if (value is BoxShape box)
                 new JObject() {
                     { "type", "box" },
-                    { "size", JToken.FromObject(box.Size, serializer) }
+                    { "size", JToken.FromObject(box.Size, serializer) },
+                    { "position", JToken.FromObject(box.Position, serializer) }
                 }.WriteTo(writer);
             else if (value is ListMultishape listShape)
             {

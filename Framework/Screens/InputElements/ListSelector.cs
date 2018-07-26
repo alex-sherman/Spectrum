@@ -65,6 +65,8 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
+            if (!Display)
+                return false;
             otherTookInput |= base.HandleInput(otherTookInput, input);
             if (otherTookInput || input.IsNewMousePress(0) && !Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y))
             {

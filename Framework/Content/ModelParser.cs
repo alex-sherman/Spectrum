@@ -30,9 +30,11 @@ namespace Spectrum.Framework.Content
         public string FileName;
         public string Name;
 
-        public ModelParserCache(string fileName)
+        public ModelParserCache(string name, string path)
         {
-            this.FileName = fileName;
+            Directory = Path.GetDirectoryName(path);
+            FileName = path;
+            Name = name;
         }
     }
     struct BoneWeight
@@ -77,8 +79,10 @@ namespace Spectrum.Framework.Content
             {
                 parts[part.Key] = part.Value.CreateReference();
             }
-            SpecModel model = new SpecModel("", data.FileName, parts, data.materials, data.skinningData?.Clone());
-            model.Animations = data.animations;
+            SpecModel model = new SpecModel(data.Name, data.FileName, parts, data.materials, data.skinningData?.Clone())
+            {
+                Animations = data.animations
+            };
             return model;
         }
     }

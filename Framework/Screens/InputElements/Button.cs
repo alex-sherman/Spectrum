@@ -34,9 +34,5 @@ namespace Spectrum.Framework.Screens.InputElements
                 spritebatch.DrawString(Font, Text, pos, FontColor, Layer(2));
             }
         }
-        public override void Measure(int width, int height)
-        {
-            base.Measure(width, height);
-        }
     }
 }

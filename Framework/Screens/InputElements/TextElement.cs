@@ -39,10 +39,7 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             base.Draw(time, spritebatch);
             if (Text != null)
-            {
-                Vector2 pos = new Vector2(Rect.X, Rect.Y);
-                spritebatch.DrawString(Font, Text, pos, FontColor, Layer(1));
-            }
+                spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, Layer(2));
         }
     }
 }

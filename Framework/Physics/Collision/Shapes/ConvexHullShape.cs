@@ -57,6 +57,14 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             this.mass = Shape.CalculateMassInertia(this, out shifted, out inertia);
         }
 
+        public override void SetScale(float scale)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+                vertices[i] *= scale;
+            shifted *= scale;
+            UpdateShape();
+        }
+
         /// <summary>
         /// SupportMapping. Finds the point in the shape furthest away from the given direction.
         /// Imagine a plane with a normal in the search direction. Now move the plane along the normal

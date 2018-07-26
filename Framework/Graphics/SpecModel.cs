@@ -11,13 +11,14 @@ using System.Collections;
 
 namespace Spectrum.Framework.Graphics
 {
-    public class SpecModel : IEnumerable<DrawablePart>
+    public class SpecModel
     {
         public string Path { get; private set; }
         public string Name { get; private set; }
         public AnimationData Animations { get; set; }
         public SkinningData SkinningData { get; protected set; }
         private int _partIndex = 0;
+
         public Dictionary<string, DrawablePart> MeshParts { get; private set; }
         public Dictionary<string, MaterialData> Materials { get; private set; }
         public SpecModel()
@@ -57,11 +58,6 @@ namespace Spectrum.Framework.Graphics
         public IEnumerator<DrawablePart> GetEnumerator()
         {
             return MeshParts.Values.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

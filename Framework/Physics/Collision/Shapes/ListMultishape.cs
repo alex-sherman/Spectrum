@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using Microsoft.Xna.Framework;
+using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             return Shapes.Count;
         }
 
-        public override int Prepare(ref Microsoft.Xna.Framework.Vector3 rayOrigin, ref Microsoft.Xna.Framework.Vector3 rayDelta)
+        public override int Prepare(ref Vector3 rayOrigin, ref Vector3 rayDelta)
         {
             return Shapes.Count;
         }
@@ -60,9 +61,16 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             return output;
         }
 
-        public override void SupportMapping(ref Microsoft.Xna.Framework.Vector3 direction, out Microsoft.Xna.Framework.Vector3 result)
+        public override void SupportMapping(ref Vector3 direction, out Vector3 result)
         {
             Shapes[currentShape].SupportMapping(ref direction, out result);
+        }
+
+        public override void SetScale(float scale)
+        {
+            foreach (var shape in Shapes)
+                shape.SetScale(scale);
+            UpdateShape();
         }
     }
 }

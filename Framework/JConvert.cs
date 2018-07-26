@@ -36,19 +36,23 @@ namespace Spectrum.Framework
                 Settings.Converters.Add(converter);
             }
         }
-        public static object Parse(JToken token, Type targetType)
+        public static object Deserialize(JToken token, Type targetType)
         {
             return token?.ToObject(targetType, JsonSerializer.Create(Settings));
         }
-        public static T Parse<T>(JToken token)
+        public static T Deserialize<T>(JToken token)
         {
-            return (T)(Parse(token, typeof(T)) ?? default(T));
+            return (T)(Deserialize(token, typeof(T)) ?? default(T));
         }
-        public static T Read<T>(string json)
+        public static T Deserialize<T>(string json)
         {
             return (T)JsonConvert.DeserializeObject(json, typeof(T), Settings);
         }
-        public static string Write(object obj)
+        public static T DeserializeFile<T>(string json)
+        {
+            return (T)JsonConvert.DeserializeObject(json, typeof(T), Settings);
+        }
+        public static string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj, Formatting.Indented, Settings);
         }

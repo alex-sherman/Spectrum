@@ -352,7 +352,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// </summary>
         public virtual void CalculateMassInertia()
         {
-            this.mass = Shape.CalculateMassInertia(this, out geomCen, out inertia);
+            mass = CalculateMassInertia(this, out geomCen, out inertia);
         }
 
         public virtual void SupportMapping(ref Vector3 direction, out Vector3 result, bool retrievingInformation)
@@ -368,11 +368,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="direction">The direction.</param>
         /// <param name="result">The result.</param>
         public abstract void SupportMapping(ref Vector3 direction, out Vector3 result);
+        public abstract void SetScale(float scale);
 
         public Vector3 SupportMapping(Vector3 direction)
         {
-            Vector3 result;
-            SupportMapping(ref direction, out result);
+            SupportMapping(ref direction, out Vector3 result);
             return result;
         }
 

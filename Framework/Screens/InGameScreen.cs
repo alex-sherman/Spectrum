@@ -17,13 +17,12 @@ namespace Spectrum.Framework.Screens
         bool dragging = false;
         Vector2 dragMouseBegin;
         Vector2 dragBegin;
-        public string Title;
-        public InGameScreen(string title)
+        public TextElement Title;
+        public KeyBind? ToggleButton;
+        public InGameScreen(string title = null)
         {
-            if (title == null)
-                throw new ArgumentNullException("Title cannot be null");
-            this.Title = title;
-
+            Title = new TextElement(title);
+            Display = false;
         }
         public override void Initialize()
         {
@@ -31,13 +30,13 @@ namespace Spectrum.Framework.Screens
             LayoutManager = new LinearLayoutManager(LinearLayoutType.Vertical);
             TitleContainer = new Element();
             TitleContainer.Width = 1.0;
+            TitleContainer.Height.WrapContent = true;
+            TitleContainer.Height = Font.LineSpacing;
             TitleContainer.Tags.Add("ingame-window-title-container");
             AddElement(TitleContainer);
-            TextElement TitleElement = new TextElement(Title);
-            TitleElement.Tags.Add("ingame-window-title");
-            TitleContainer.AddElement(TitleElement);
-            TitleElement.Center();
-            TitleContainer.Height.WrapContent = true;
+            Title.Tags.Add("ingame-window-title");
+            TitleContainer.AddElement(Title);
+            Title.Center();
         }
 
         public Rectangle CloseButtonRect
@@ -59,7 +58,10 @@ namespace Spectrum.Framework.Screens
                 Parent.MoveElement(this, 0);
             }
             otherTookInput |= childTookInput;
-
+            if (!otherTookInput && ToggleButton.HasValue && input.IsNewKeyPress(ToggleButton.Value))
+                Toggle();
+            if (!Display)
+                return otherTookInput;
             if (!otherTookInput)
             {
                 if (Rect.Contains(input.MousePosition))

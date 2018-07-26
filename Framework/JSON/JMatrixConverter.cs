@@ -29,16 +29,16 @@ namespace Spectrum.Framework.JSON
                 Vector3 scale = Vector3.One;
                 Vector3 translation = Vector3.Zero;
                 if (obj["rotation"] != null)
-                    rotation = JConvert.Parse<Vector3>(obj["rotation"]) * (float)(Math.PI / 180);
+                    rotation = JConvert.Deserialize<Vector3>(obj["rotation"]) * (float)(Math.PI / 180);
                 if (obj["scale"] != null)
                 {
                     if (obj["scale"].Type == JTokenType.Array)
-                        scale = JConvert.Parse<Vector3>(obj["scale"]);
+                        scale = JConvert.Deserialize<Vector3>(obj["scale"]);
                     if (obj["scale"].Type == JTokenType.Float)
                         scale = new Vector3((float)obj["scale"]);
                 }
                 if (obj["translation"] != null)
-                    translation = JConvert.Parse<Vector3>(obj["translation"]);
+                    translation = JConvert.Deserialize<Vector3>(obj["translation"]);
                 return Matrix.CreateFromYawPitchRoll(rotation.Y, rotation.X, rotation.Z) * Matrix.CreateScale(scale) * Matrix.CreateTranslation(translation);
             }
             return null;

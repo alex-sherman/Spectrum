@@ -118,5 +118,12 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             }
 
         }
+
+        public override void SetScale(float scale)
+        {
+            height *= scale;
+            radius *= scale;
+            UpdateShape();
+        }
     }
 }

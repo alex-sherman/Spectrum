@@ -81,11 +81,12 @@ namespace Spectrum.Framework.Entities
             Apply(output, true);
             return output;
         }
+        // TODO: Deep copy as an option? Deep copy more things probably as well
         public void Apply(object target, bool firstCall = false)
         {
             foreach (var field in Fields)
             {
-                TypeData.Set(target, field.Key, field.Value.Object);
+                TypeData.Set(target, field.Key, Serializer.DeepClone(field.Value.Object));
             }
             foreach (var dict in Data)
             {

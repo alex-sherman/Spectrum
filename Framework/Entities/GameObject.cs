@@ -233,7 +233,7 @@ namespace Spectrum.Framework.Entities
                 ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
             }
             PhysicsUpdate(0);
-            if (UseFixedRender)
+            if (UseFixedRender && Model != null)
                 foreach (var part in Model)
                     // TODO: Support disable instance here
                     Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer);/*, disableInstancing: DisableInstancing);*/

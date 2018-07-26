@@ -18,8 +18,7 @@ namespace Spectrum.Framework.Content.ModelParsing
     {
         public ModelParserCache LoadData(string path, string name)
         {
-            ModelParserCache modelData = new ModelParserCache(name);
-            modelData.Directory = Path.GetDirectoryName(path);
+            ModelParserCache modelData = new ModelParserCache(name, path);
             JObject jobj;
             using (JsonTextReader reader = new JsonTextReader(new StreamReader(path)))
                 jobj = JObject.Load(reader);

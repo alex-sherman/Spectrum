@@ -46,7 +46,7 @@ namespace Spectrum.Framework.JSON
                     return null;
                 case JTokenType.Object:
                 case JTokenType.Array:
-                    return JConvert.Parse(token, targetType);
+                    return JConvert.Deserialize(token, targetType);
                 case JTokenType.Integer:
                     return (int)token;
                 case JTokenType.Float:

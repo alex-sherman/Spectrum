@@ -342,5 +342,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
             base.UpdateShape();
         }
+
+        public override void SetScale(float scale)
+        {
+            scaleXZ = scale;
+            UpdateShape();
+        }
     }
 }

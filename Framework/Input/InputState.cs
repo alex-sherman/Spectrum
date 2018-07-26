@@ -156,14 +156,19 @@ namespace Spectrum.Framework.Input
             Keys[] pressedKeys = KeyboardState.GetPressedKeys();
             foreach (Keys key in pressedKeys)
             {
-
                 if (IsNewKeyPress(key))
                 {
-
                     if (key == Keys.Back && position > 0)
                     {
-                        position--;
-                        currentString = currentString = currentString.Remove(position, 1);
+                        int count = 0;
+                        if(IsKeyDown(Keys.LeftControl) || IsKeyDown(Keys.RightControl))
+                        {
+                            while (count < currentString.Length - 1 && currentString[currentString.Length - 1 - count] != ' ')
+                                count++;
+                        }
+                        count++;
+                        position -= count;
+                        currentString = currentString.Remove(position, count);
                     }
                     char typedChar = GetChar(key, IsKeyDown(Keys.LeftShift) || IsKeyDown(Keys.RightShift));
                     if (typedChar != (char)0)

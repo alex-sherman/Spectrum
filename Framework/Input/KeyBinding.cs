@@ -20,9 +20,21 @@ namespace Spectrum.Framework.Input
         public KeyBind(VRButtonBinding vrButton, params KeyBind[] modifiers) : this(modifiers) { this.vrButton = vrButton; }
         private KeyBind(params KeyBind[] modifiers)
         {
-            key = null; mouseButton = null; button = null;  vrButton = null;
+            key = null; mouseButton = null; button = null; vrButton = null;
             this.modifiers = modifiers;
         }
+        public static implicit operator KeyBind(Keys key) => new KeyBind(key);
+        public static implicit operator KeyBind(GamepadButton key) => new KeyBind(key);
+        public static implicit operator KeyBind(VRButtonBinding key) => new KeyBind(key);
+        public static KeyBind operator +(KeyBind a, KeyBind b)
+            => new KeyBind()
+            {
+                key = a.key,
+                mouseButton = a.mouseButton,
+                button = a.button,
+                vrButton = a.vrButton,
+                modifiers = a.modifiers.Union(b).ToArray()
+            };
     }
     public class KeyBinding
     {

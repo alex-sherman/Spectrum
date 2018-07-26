@@ -126,8 +126,7 @@ namespace Spectrum.Framework.Screens
         {
             foreach (Element child in Children)
             {
-                if (child.Display)
-                    otherTookInput |= child.HandleInput(otherTookInput, input);
+                otherTookInput |= child.HandleInput(otherTookInput, input);
             }
             return otherTookInput;
         }

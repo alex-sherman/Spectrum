@@ -41,6 +41,8 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
+            if (!Display)
+                return false;
             otherTookInput |= base.HandleInput(otherTookInput, input);
             if (otherTookInput) { return true; }
             if (MouseInside())

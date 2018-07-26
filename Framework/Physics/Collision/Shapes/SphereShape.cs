@@ -97,7 +97,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             inertia.M33 = 0.4f * this.mass * radius * radius;
         }
 
-
+        public override void SetScale(float scale)
+        {
+            radius *= scale;
+            UpdateShape();
+        }
     }
     
 }

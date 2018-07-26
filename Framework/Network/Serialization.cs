@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using ProtoBuf;
 using ProtoBuf.Meta;
 using Spectrum.Framework.Entities;
+using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Network.Surrogates;
 using Spectrum.Framework.Physics.Collision.Shapes;
 using System;
@@ -54,6 +55,7 @@ namespace Spectrum.Framework.Network
             }
             Model.Add(typeof(MemoryStream), false).SetSurrogate(typeof(StreamSurrogate));
             Model.Add(typeof(Primitive), false).SetSurrogate(typeof(PrimitiveSurrogate));
+            Model.Add(typeof(SpecModel), false).SetSurrogate(typeof(ModelSurrogate));
             Model.Add(typeof(Shape), true);
             Model[typeof(Shape)].AddSubType(1, typeof(BoxShape));
             Model[typeof(Shape)].AddSubType(2, typeof(ListMultishape));
