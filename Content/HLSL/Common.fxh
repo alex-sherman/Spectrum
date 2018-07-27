@@ -122,7 +122,7 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 		else {
 			normal = vsout.normal;
 		}
-		float diffuseMagnitude = (dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)) + 1) / 2;
+		float diffuseMagnitude = dot(normalize(normal), normalize(lightPosition - vsout.worldPosition));
 		if(UseShadowMap) {
 			vsout.Pos2DAsSeenByLight /= vsout.Pos2DAsSeenByLight.w;
 			float2 shadowCoord = vsout.Pos2DAsSeenByLight.xy;
@@ -200,7 +200,7 @@ CommonPSOut ApplyTexture(CommonVSOut vsout)
 			color.rgb *= color.a;
 		}
 		else
-            color = textureColor * materialDiffuse;
+			color = textureColor;
     }
 	else
 	{

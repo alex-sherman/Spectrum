@@ -55,6 +55,11 @@ namespace Spectrum.Framework.Entities
             set => TypeData = TypeHelper.Types.GetData(value);
         }
         public Primitive[] Args = new Primitive[0];
+        /// <summary>
+        /// Once stored, all fields are set via reference. This may lead
+        /// to strange side effects if GameObjects mutate field values that were
+        /// set via InitData. Instead be sure to copy any values that must be mutated.
+        /// </summary>
         public Dictionary<string, Primitive> Fields = new Dictionary<string, Primitive>();
         public DefaultDict<string, Dictionary<string, Primitive>> Data
             = new DefaultDict<string, Dictionary<string, Primitive>>(() => new Dictionary<string, Primitive>(), true);
@@ -81,12 +86,11 @@ namespace Spectrum.Framework.Entities
             Apply(output, true);
             return output;
         }
-        // TODO: Deep copy as an option? Deep copy more things probably as well
         public void Apply(object target, bool firstCall = false)
         {
             foreach (var field in Fields)
             {
-                TypeData.Set(target, field.Key, Serializer.DeepClone(field.Value.Object));
+                TypeData.Set(target, field.Key, field.Value.Object);
             }
             foreach (var dict in Data)
             {

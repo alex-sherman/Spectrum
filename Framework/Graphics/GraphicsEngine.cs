@@ -45,6 +45,7 @@ namespace Spectrum.Framework.Graphics
         static FieldInfo textureFieldInfo;
         public static float MultisampleFactor = 1;
         public static VertexBuffer lineVBuffer;
+        public static IndexBuffer lineIBuffer;
         public static SpectrumEffect lineEffect;
 
         public static void Initialize()
@@ -53,6 +54,7 @@ namespace Spectrum.Framework.Graphics
             device = SpectrumGame.Game.GraphicsDevice;
             lineEffect = new SpectrumEffect();
             lineVBuffer = VertexHelper.MakeVertexBuffer(new List<CommonTex>() { new CommonTex(Vector3.Zero), new CommonTex(Vector3.Forward) });
+            lineIBuffer = VertexHelper.MakeIndexBuffer(new ushort[] { 0, 1 });
             Settings.Init(device);
             PostProcessEffect.Initialize();
             PostProcessEffect.AAEnabled = true;
@@ -182,6 +184,7 @@ namespace Spectrum.Framework.Graphics
             {
                 if (IBuffer != null)
                 {
+                    // Instance draws apparently MUST have an IndexBuffer or SharpDX throws an exception
                     if (instanceBuffer != null)
                     {
                         SetBuffers(VBuffer, IBuffer, instanceBuffer);
