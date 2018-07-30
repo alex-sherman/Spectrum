@@ -79,7 +79,7 @@ namespace Spectrum.Framework.Entities
         {
             if (TypeData == null)
             {
-                DebugPrinter.print($"Failed to construct {TypeName}");
+                DebugPrinter.Print($"Failed to construct {TypeName}");
                 return null;
             }
             object output = TypeData.Instantiate(Args.Select(prim => prim.Object).ToArray());
@@ -90,7 +90,14 @@ namespace Spectrum.Framework.Entities
         {
             foreach (var field in Fields)
             {
-                TypeData.Set(target, field.Key, field.Value.Object);
+                try
+                {
+                    TypeData.Set(target, field.Key, field.Value.Object);
+                }
+                catch(Exception e)
+                {
+                    DebugPrinter.Print($"Failed to set field {field.Key} in {TypeName}\n{e}");
+                }
             }
             foreach (var dict in Data)
             {

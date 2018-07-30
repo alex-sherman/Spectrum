@@ -122,7 +122,7 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 		else {
 			normal = vsout.normal;
 		}
-		float diffuseMagnitude = dot(normalize(normal), normalize(lightPosition - vsout.worldPosition));
+		float diffuseMagnitude = max(0, dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)));
 		if(UseShadowMap) {
 			vsout.Pos2DAsSeenByLight /= vsout.Pos2DAsSeenByLight.w;
 			float2 shadowCoord = vsout.Pos2DAsSeenByLight.xy;

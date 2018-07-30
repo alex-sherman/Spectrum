@@ -56,7 +56,7 @@ namespace Spectrum.Framework.Network
             }
             catch (Exception e)
             {
-                DebugPrinter.print(e.Message);
+                DebugPrinter.Print(e.Message);
             }
         }
         public void SendMessage(IPEndPoint dest, byte messageType, NetMessage message)
@@ -82,7 +82,7 @@ namespace Spectrum.Framework.Network
                 }
                 catch (SemaphoreFullException)
                 {
-                    DebugPrinter.print("Write queue is full");
+                    DebugPrinter.Print("Write queue is full");
                 }
             }
         }

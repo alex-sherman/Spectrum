@@ -46,7 +46,7 @@ namespace Spectrum.Framework.Network
                 }
                 catch (Exception e)
                 {
-                    DebugPrinter.print(e.Message);
+                    DebugPrinter.Print(e.Message);
                 }
             }
         }

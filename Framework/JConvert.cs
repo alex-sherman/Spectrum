@@ -21,6 +21,7 @@ namespace Spectrum.Framework
         static JConvert()
         {
             Converters.Add(new JVectorConverter());
+            Converters.Add(new JPointConverter());
             Converters.Add(new JMatrixConverter());
             Converters.Add(new JShapeConverter());
             Converters.Add(new SimpleConverter<SpecModel>(

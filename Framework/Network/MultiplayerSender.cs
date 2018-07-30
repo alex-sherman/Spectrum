@@ -99,7 +99,7 @@ namespace Spectrum.Framework.Network
                 }
                 catch (SemaphoreFullException)
                 {
-                    DebugPrinter.print("Write queue is full");
+                    DebugPrinter.Print("Write queue is full");
                 }
             }
         }

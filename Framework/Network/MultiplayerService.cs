@@ -105,7 +105,7 @@ namespace Spectrum.Framework.Network
                 OnPeerJoinRequested(connection, args);
             else
             {
-                DebugPrinter.print("Dropping client because no OnPeerJoinRequested has been specified");
+                DebugPrinter.Print("Dropping client because no OnPeerJoinRequested has been specified");
                 connection.Terminate();
             }
         }
@@ -156,7 +156,7 @@ namespace Spectrum.Framework.Network
         {
             NatDevice = args.Device;
             _natIP = NatDevice.GetExternalIP();
-            DebugPrinter.print("Found NAT device");
+            DebugPrinter.Print("Found NAT device");
         }
         public void BeginListening(int port = 27007)
         {
@@ -186,7 +186,7 @@ namespace Spectrum.Framework.Network
             }
             if (!natSuccess)
             {
-                DebugPrinter.print("Could not forward port using UpNP");
+                DebugPrinter.Print("Could not forward port using UpNP");
             }
             foreach (IPAddress ip in GetLocalIP())
             {
@@ -206,7 +206,7 @@ namespace Spectrum.Framework.Network
                     if (toAccept == null) { Thread.Sleep(500); continue; }
                     TcpClient newClient = toAccept.AcceptTcpClient();
                     //The tcp client may get closed right away
-                    DebugPrinter.print("Someone connected at " + newClient.Client.RemoteEndPoint.ToString());
+                    DebugPrinter.Print("Someone connected at " + newClient.Client.RemoteEndPoint.ToString());
                     lock (allConnections)
                         allConnections.Add(new Connection(this, newClient, HandshakeStage.Wait));
                 }
@@ -232,11 +232,11 @@ namespace Spectrum.Framework.Network
             }
             catch (SocketException e)
             {
-                DebugPrinter.print(e.Message);
+                DebugPrinter.Print(e.Message);
                 callback(false);
                 return;
             }
-            DebugPrinter.print("Connected to " + hostname + ":" + port);
+            DebugPrinter.Print("Connected to " + hostname + ":" + port);
         }
         private void _connectSteam(ulong steamID, Action<bool> callback)
         {
@@ -247,7 +247,7 @@ namespace Spectrum.Framework.Network
             }
             catch (SocketException e)
             {
-                DebugPrinter.print(e.Message);
+                DebugPrinter.Print(e.Message);
                 return;
             }
         }
@@ -311,7 +311,7 @@ namespace Spectrum.Framework.Network
             }
             if (missingPeers.Count() != 0)
             {
-                DebugPrinter.print("Clients mismatched");
+                DebugPrinter.Print("Clients mismatched");
                 //TODO: Start a timer or something
             }
         }
@@ -423,7 +423,7 @@ namespace Spectrum.Framework.Network
         {
             lock (this)
             {
-                DebugPrinter.print("Peer disconnected " + conn.RemoteIP);
+                DebugPrinter.Print("Peer disconnected " + conn.RemoteIP);
                 _connectedPeers.Remove(conn.PeerID);
                 if (OnPeerLeft != null)
                     OnPeerLeft(new PeerEventArgs(conn.PeerID));
@@ -439,7 +439,7 @@ namespace Spectrum.Framework.Network
             {
                 if (conn.PeerID == new NetID())
                 {
-                    DebugPrinter.print("Attempted to add a connection that hasn't handshaken yet");
+                    DebugPrinter.Print("Attempted to add a connection that hasn't handshaken yet");
                     return false;
                 }
                 if (!_connectedPeers.ContainsKey(conn.PeerID))
@@ -451,7 +451,7 @@ namespace Spectrum.Framework.Network
                 }
                 else
                 {
-                    DebugPrinter.print("A connection to an already attached peer was abandoned");
+                    DebugPrinter.Print("A connection to an already attached peer was abandoned");
                     return false;
                 }
             }

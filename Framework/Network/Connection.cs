@@ -197,7 +197,7 @@ namespace Spectrum.Framework.Network
                     }
                     else
                     {
-                        DebugPrinter.print("Handshake failed, your plugins are inconsistent");
+                        DebugPrinter.Print("Handshake failed, your plugins are inconsistent");
                         Terminate();
                     }
                     break;

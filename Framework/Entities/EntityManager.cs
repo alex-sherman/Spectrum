@@ -239,10 +239,11 @@ namespace Spectrum.Framework.Entities
         public void DrawLine(Vector3 start, Vector3 end, Color color, Matrix? world = null)
         {
             var properties = new RenderProperties(PrimitiveType.LineStrip, GraphicsEngine.lineVBuffer, GraphicsEngine.lineIBuffer, GraphicsEngine.lineEffect);
+            properties.Material = new MaterialData() { DiffuseColor = color };
             var diff = end - start;
             var World = (world ?? Matrix.Identity) * Matrix.CreateScale(diff.Length()) * MatrixHelper.RotationFromDirection(diff) * Matrix.CreateTranslation(start);
             //dynamicNonBatched.Add(new RenderCall(properties, World, new MaterialData() { DiffuseColor = color }));
-            UpdateRenderDict(properties, World, new MaterialData() { DiffuseColor = color }, dynamicBatched);
+            UpdateRenderDict(properties, World, properties.Material, dynamicBatched);
         }
         public void DrawModel(SpecModel model, Matrix world, MaterialData material = null,
             bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)

@@ -88,7 +88,7 @@ namespace Spectrum.Framework.Content
                         return output;
                 }
             }
-            DebugPrinter.print(string.Format("File not found {0}", name));
+            DebugPrinter.Print(string.Format("File not found {0}", name));
             return null;
         }
     }

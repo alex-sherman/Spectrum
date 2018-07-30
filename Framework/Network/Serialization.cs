@@ -45,6 +45,8 @@ namespace Spectrum.Framework.Network
                 return;
             Model.Add(typeof(Vector3), true);
             Model[typeof(Vector3)].Add("X").Add("Y").Add("Z");
+            Model.Add(typeof(Point3), true);
+            Model[typeof(Point3)].Add("X").Add("Y").Add("Z");
             MetaType matrix = Model.Add(typeof(Matrix), true);
             for (int r = 1; r <= 4; r++)
             {

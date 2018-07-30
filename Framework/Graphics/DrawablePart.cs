@@ -9,7 +9,7 @@ using Spectrum.Framework.Physics.LinearMath;
 
 namespace Spectrum.Framework.Graphics
 {
-    public class MaterialData
+    public class MaterialData : IEquatable<MaterialData>
     {
         public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = Color.HotPink };
         public string Id;
@@ -18,6 +18,32 @@ namespace Spectrum.Framework.Graphics
         public Color SpecularColor = Color.Black;
         public Texture2D NormalMap;
         public Texture2D TransparencyMap;
+
+        public override int GetHashCode()
+        {
+            var hashCode = 1496102582;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Id);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(DiffuseColor);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(DiffuseTexture);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(SpecularColor);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(NormalMap);
+            hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(TransparencyMap);
+            return hashCode;
+        }
+        public bool Equals(MaterialData data)
+        {
+            return data != null &&
+                   Id == data.Id &&
+                   DiffuseColor.Equals(data.DiffuseColor) &&
+                   EqualityComparer<Texture2D>.Default.Equals(DiffuseTexture, data.DiffuseTexture) &&
+                   SpecularColor.Equals(data.SpecularColor) &&
+                   EqualityComparer<Texture2D>.Default.Equals(NormalMap, data.NormalMap) &&
+                   EqualityComparer<Texture2D>.Default.Equals(TransparencyMap, data.TransparencyMap);
+        }
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as MaterialData);
+        }
     }
     public class DrawablePart
     {

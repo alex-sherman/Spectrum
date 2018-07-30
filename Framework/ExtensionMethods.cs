@@ -102,7 +102,7 @@ namespace Spectrum.Framework
         }
         public static float Yaw(this Quaternion quaternion)
         {
-            // roll (x-axis rotation)
+            // roll (y-axis rotation)
             double sinr = +2.0 * (quaternion.W * quaternion.Y + quaternion.X * quaternion.Z);
             double cosr = +1.0 - 2.0 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
             return (float)Math.Atan2(sinr, cosr);
@@ -114,15 +114,11 @@ namespace Spectrum.Framework
         }
         public static float Pitch(this Quaternion quaternion)
         {
-            // pitch (y-axis rotation)
+            // pitch (x-axis rotation)
             double sinp = +2.0 * (quaternion.W * quaternion.X - quaternion.Z * quaternion.Y);
             if (Math.Abs(sinp) >= 1)
                 return (float)(Math.Sign(sinp) * Math.PI / 2); // use 90 degrees if out of range
             return (float)Math.Asin(sinp);
-            //// roll (x-axis rotation)
-            //double sinr = +2.0 * (quaternion.W * quaternion.X + quaternion.Y * quaternion.Z);
-            //double cosr = +1.0 - 2.0 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
-            //return (float)Math.Atan2(sinr, cosr);
         }
     }
 }

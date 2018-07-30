@@ -55,19 +55,16 @@ namespace Spectrum.Framework
             }
             catch { }
         }
-        public static void log(string msg, params object[] args) { print(msg, args); }
         public static void PrintOnce(string msg)
         {
             if (!onceMessages.Contains(msg))
             {
-                print(msg);
+                Print(msg);
                 onceMessages.Add(msg);
             }
         }
-        public static void print(string msg, params object[] args)
+        public static void Print(string msg)
         {
-            if (args.Length > 0)
-                msg = String.Format(msg, args);
             StackFrame sf; int sfi = 1;
             while ((sf = new StackFrame(sfi, true)).GetMethod().DeclaringType == typeof(DebugPrinter))
                 sfi++;
@@ -91,6 +88,13 @@ namespace Spectrum.Framework
                     Console.WriteLine(line);
                 }
             }
+        }
+        [Obsolete("Use Print(string) instead")]
+        public static void print(string msg, params object[] args)
+        {
+            if (args.Length > 0)
+                msg = String.Format(msg, args);
+            Print(msg);
         }
         string fform(double d)
         {

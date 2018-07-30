@@ -114,7 +114,7 @@ namespace Spectrum.Framework.Content
             }
             catch (Exception e)
             {
-                DebugPrinter.print(e.Message);
+                DebugPrinter.Print(e.Message);
                 return null;
             }
 

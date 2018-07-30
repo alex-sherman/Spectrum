@@ -46,8 +46,8 @@ namespace Spectrum.Framework.Graphics
         }
         public static Vector3 LightPos;
         public static Matrix LightView;
-        public static Vector3 DiffuseLightColor = new Vector3(0.8f);
-        public static Vector3 AmbientLightColor = new Vector3(0.2f);
+        public static Vector3 DiffuseLightColor = new Vector3(0.7f);
+        public static Vector3 AmbientLightColor = new Vector3(0.7f);
         public static Vector3 SpecularLightColor = new Vector3(1);
         public static Vector3 CameraPos = new Vector3();
         public static bool Clip = false;
