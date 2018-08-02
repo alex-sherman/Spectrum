@@ -109,7 +109,7 @@ namespace Spectrum.Framework.Physics.Collision
             int maxIter = 15;
 
             float distSq = v.LengthSquared();
-            float epsilon = 0.00001f;
+            float epsilon = 0.0001f;
 
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
@@ -356,7 +356,7 @@ namespace Spectrum.Framework.Physics.Collision
             int maxIter = MaxIterations;
 
             float distSq = v.LengthSquared();
-            float epsilon = 0.000001f;
+            float epsilon = 0.0001f;
 
             float VdotR;
 
@@ -391,7 +391,7 @@ namespace Spectrum.Framework.Physics.Collision
                 if (simplexSolver.Closest(out v)) { distSq = v.LengthSquared(); }
                 else distSq = 0.0f;
             }
-            if (maxIter <= 0 && distSq > epsilon * 20)
+            if (maxIter <= 0 && distSq > epsilon)
                 return false;
 
             #region Retrieving hitPoint

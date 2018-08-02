@@ -171,7 +171,7 @@ namespace Spectrum.Framework.Entities
         /// If those updates happen frequently it will degrade performance of other fixed render tasks.
         /// </summary>
         public bool UseFixedRender = false;
-        public RenderCallKey FixedRenderKey;
+        public List<RenderCallKey> FixedRenderKeys = new List<RenderCallKey>();
 
         /// <summary>
         /// The world matrix for the purposes of drawing the game object
@@ -236,7 +236,7 @@ namespace Spectrum.Framework.Entities
             if (UseFixedRender && Model != null)
                 foreach (var part in Model)
                     // TODO: Support disable instance here
-                    Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer);/*, disableInstancing: DisableInstancing);*/
+                    FixedRenderKeys.Add(Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer));/*, disableInstancing: DisableInstancing);*/
         }
 
         #region Physics Functions
@@ -320,8 +320,8 @@ namespace Spectrum.Framework.Entities
         public override void Destroy()
         {
             DebugPrinter.undisplay(this);
-            if (UseFixedRender)
-                Manager.UnregisterDraw(FixedRenderKey);
+            foreach (var renderKey in FixedRenderKeys)
+                Manager.UnregisterDraw(renderKey);
             base.Destroy();
         }
 
