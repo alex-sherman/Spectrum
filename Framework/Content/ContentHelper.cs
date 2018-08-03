@@ -65,6 +65,31 @@ namespace Spectrum.Framework.Content
             return (T)Single.LoadRelative<T>(name, usePrefix);
         }
 
+        public static IEnumerable<string> FindAll<T>(string glob = "*", bool recursive = true)
+        {
+            Type t = typeof(T);
+            Dictionary<string, string> locations = new Dictionary<string, string>();
+            var output = new List<string>();
+            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
+            {
+                var content = plugin.Content;
+                if (ContentParsers.TryGetValue(t, out var parser))
+                {
+                    foreach (var directory in content.Directories)
+                    {
+                        foreach (var result in parser.FindAll(Path.Combine(directory, parser.Prefix), glob, recursive))
+                        {
+                            if (content == Single)
+                                locations[result] = null;
+                            else if (!locations.ContainsKey(result))
+                                locations[result] = plugin.Name;
+                        }
+                    }
+                }
+            }
+            return locations.Select(kvp => (kvp.Value == null ? "" : (kvp.Value + "@")) + kvp.Key);
+        }
+
         public static object LoadType(Type type, string path)
         {
             MethodInfo load = typeof(ContentHelper).GetMethod("Load", new Type[] { typeof(string), typeof(bool) });
@@ -76,9 +101,8 @@ namespace Spectrum.Framework.Content
         {
             Type t = typeof(T);
             var path = name.Replace('/', '\\');
-            if (ContentParsers.ContainsKey(t))
+            if (ContentParsers.TryGetValue(t, out var parser))
             {
-                IContentParser parser = ContentParsers[t];
                 if (!usePrefix)
                     return (T)parser.Load(path, name);
                 foreach (var directory in Directories)

@@ -36,7 +36,20 @@ namespace Spectrum.Framework.Screens
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
         public List<Element> Children { get { return _children.ToList(); } }
-        public bool Display;
+        private bool _display = true;
+        public bool Display
+        {
+            get => _display;
+            set
+            {
+                if (value != _display)
+                {
+                    _display = value;
+                    OnDisplayChanged?.Invoke(value);
+                }
+            }
+        }
+        public event Action<bool> OnDisplayChanged;
         public PositionType Positioning;
         public virtual bool HasFocus { get { return Parent?.HasFocus ?? true; } }
         private bool Initialized = false;
@@ -60,7 +73,6 @@ namespace Spectrum.Framework.Screens
 
         public Element()
         {
-            Display = true;
             Positioning = PositionType.InlineLeft;
             Fields["font"] = new ElementField(
                 this,

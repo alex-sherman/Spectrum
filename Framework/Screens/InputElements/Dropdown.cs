@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens.InputElements
                     _expanded = value;
                     foreach (ListOption<T> option in Children.Where(c => c != childOption))
                     {
-                        option.Display = value;
+                        option.Toggle(value);
                     }
                 }
             }
@@ -76,7 +76,7 @@ namespace Spectrum.Framework.Screens.InputElements
             if (Children.Count == 0)
                 option.Margin.TopRelative = 1;
             option.OnClick += Option_OnClick;
-            option.Display = Expanded;
+            option.Toggle(Expanded);
             Options.Add(option);
             AddElement(option);
         }
@@ -104,9 +104,9 @@ namespace Spectrum.Framework.Screens.InputElements
         public void Select(ListOption<T> option)
         {
             selected = option;
-            childOption.Option = selected.Option;
-            childOption.Text = selected.Text;
-            childOption.Id = selected.Id;
+            childOption.Option = selected == null ? default(T) : selected.Option;
+            childOption.Text = selected?.Text;
+            childOption.Id = selected?.Id ?? 0;
             OnSelectedChanged?.Invoke(selected);
         }
         public override void Measure(int width, int height)

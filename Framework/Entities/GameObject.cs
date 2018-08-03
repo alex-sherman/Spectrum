@@ -170,7 +170,7 @@ namespace Spectrum.Framework.Entities
         /// Fixed render tasks are much faster during draw calls but cannot have changing shader properties.
         /// If those updates happen frequently it will degrade performance of other fixed render tasks.
         /// </summary>
-        public bool UseFixedRender = false;
+        public virtual bool UseFixedRender { get; set; }
         public List<RenderCallKey> FixedRenderKeys = new List<RenderCallKey>();
 
         /// <summary>

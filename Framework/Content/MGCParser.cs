@@ -22,5 +22,10 @@ namespace Spectrum.Framework.Content
         }
 
         public void Clear() { }
+
+        public IEnumerable<string> FindAll(string directory, string glob = "*", bool recursive = true)
+        {
+            return Enumerable.Empty<string>();
+        }
     }
 }

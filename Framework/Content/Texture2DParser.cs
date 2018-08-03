@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Content
     }
     public class Texture2DParser : CachedContentParser<Texture2D>
     {
-        public Texture2DParser()
+        public Texture2DParser() : base("jpg", "png")
         {
             Prefix = "Textures";
         }
@@ -70,8 +70,7 @@ namespace Spectrum.Framework.Content
         }
         protected override Texture2D LoadData(string path, string name)
         {
-            string full_path = TryThrowExtensions(path, ".jpg", ".png");
-            return LoadFromPath(full_path);
+            return LoadFromPath(path);
         }
     }
 }

@@ -49,6 +49,7 @@ namespace Spectrum.Framework.Entities
             return prefabs[name].Construct();
         }
         #endregion
+        public bool Immutable { get; protected set; }
         public string Name;
         public string TypeName {
             get => TypeData.Type.Name;
@@ -127,29 +128,43 @@ namespace Spectrum.Framework.Entities
         }
         public virtual InitData SetDict(string key, object value, string dictField = "Data")
         {
+            if (Immutable)
+                return Clone().SetDict(key, value, dictField);
             Data[dictField][key] = new Primitive(value);
             return this;
         }
         public virtual InitData Set(string name, object value)
         {
+            if (Immutable)
+                return Clone().Set(name, value);
             Fields[name] = new Primitive(value);
             return this;
         }
         public virtual InitData Unset(string name)
         {
+            if (Immutable)
+                return Clone().Unset(name);
             Fields.Remove(name);
             return this;
         }
         public virtual InitData Call(string name, params object[] args)
         {
+            if (Immutable)
+                return Clone().Call(name, args);
             FunctionCalls.Add(new FunctionCall(name, false, args));
             return this;
         }
         public virtual InitData CallOnce(string name, params object[] args)
         {
+            if (Immutable)
+                return Clone().CallOnce(name, args);
             FunctionCalls.Add(new FunctionCall(name, true, args));
             return this;
         }
+        /// <summary>
+        /// Specifically does not copy the immutable flag such that clones begin mutable
+        /// </summary>
+        /// <param name="other"></param>
         protected void CopyFieldsTo(InitData other)
         {
             other.Name = Name;
@@ -164,14 +179,10 @@ namespace Spectrum.Framework.Entities
             CopyFieldsTo(output);
             return output;
         }
-        public ImmultableInitData ToImmutable()
+        public InitData ToImmutable()
         {
-            ImmultableInitData output = new ImmultableInitData(TypeData);
-            output.Name = Name;
-            output.Args = Args;
-            output.Fields = new Dictionary<string, Primitive>(Fields);
-            output.FunctionCalls = FunctionCalls.ToList();
-            return output;
+            Immutable = true;
+            return this;
         }
     }
     public class InitData<T> : InitData where T : class
@@ -209,21 +220,11 @@ namespace Spectrum.Framework.Entities
             base.CallOnce(name, args);
             return this;
         }
+        new public virtual InitData<T> ToImmutable()
+        {
+            base.ToImmutable();
+            return this;
+        }
         public new T Construct() => base.Construct() as T;
-    }
-    [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    [LoadableType]
-    public class ImmultableInitData : InitData
-    {
-        internal ImmultableInitData(TypeData typeData) : base(typeData) { }
-        public ImmultableInitData(string type, params object[] args) : base(type, args) { }
-        public override InitData Set(string name, object value)
-            => Clone().Set(name, value);
-        public override InitData Unset(string name)
-            => Clone().Unset(name);
-        public override InitData Call(string name, params object[] args)
-            => Clone().Call(name, args);
-        public override InitData CallOnce(string name, params object[] args)
-            => Clone().CallOnce(name, args);
     }
 }

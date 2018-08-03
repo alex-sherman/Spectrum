@@ -10,6 +10,7 @@ namespace Spectrum.Framework.Content
     {
         string Prefix { get; set; }
         object Load(string path, string name);
+        IEnumerable<string> FindAll(string directory, string glob, bool recursive);
         void Clear();
     }
     public abstract class CachedContentParser<T, U> : IContentParser where T : class
@@ -17,35 +18,36 @@ namespace Spectrum.Framework.Content
         protected Dictionary<string, T> cachedData = new Dictionary<string, T>();
         protected abstract T LoadData(string path, string name);
         protected abstract U SafeCopy(T data);
+        public IEnumerable<string> Extensions;
         public string Prefix { get; set; }
+        public CachedContentParser() { }
+        public CachedContentParser(params string[] extensions)
+        {
+            Extensions = extensions.ToList();
+        }
         public U Load(string path, string name)
         {
             if (!cachedData.ContainsKey(path)) { Cache(path, name); }
             T data = cachedData[path];
             return data == null ? default(U) : SafeCopy(data);
         }
-        public string TryExtensions(string path, params string[] extensions)
+        string TryExtensions(string path)
         {
             if (File.Exists(path)) return path;
-            foreach (var extension in extensions)
-            {
-                if (File.Exists(path + extension)) return path + extension;
-            }
-            return null;
-        }
-        public string TryThrowExtensions(string path, params string[] extensions)
-        {
-            string full_path = TryExtensions(path, extensions);
-            if(full_path == null)
-                throw new FileNotFoundException("The file could not be loaded: ", path);
-            return full_path;
+            if (Extensions != null)
+                foreach (var extension in Extensions)
+                {
+                    var newPath = $"{path}.{extension}";
+                    if (File.Exists(newPath)) return newPath;
+                }
+            throw new FileNotFoundException("The file could not be loaded: ", path);
         }
         public virtual void Cache(string path, string name)
         {
             try
             {
                 using (DebugTiming.Content.Time(GetType().Name))
-                    cachedData[path] = LoadData(path, name);
+                    cachedData[path] = LoadData(TryExtensions(path), name);
             }
             catch (FileNotFoundException)
             {
@@ -61,9 +63,18 @@ namespace Spectrum.Framework.Content
         {
             cachedData = new Dictionary<string, T>();
         }
+
+        public IEnumerable<string> FindAll(string directory, string glob, bool recursive)
+        {
+            return Directory.EnumerateFiles(directory, glob, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                .Where(path => Extensions.Contains(Path.GetExtension(path).Substring(1)))
+                .Select(path => Path.GetFileNameWithoutExtension(path).Replace(directory + Path.DirectorySeparatorChar, ""));
+        }
     }
     public abstract class CachedContentParser<T> : CachedContentParser<T, T> where T : class
     {
         protected override T SafeCopy(T data) => data;
+        public CachedContentParser() { }
+        public CachedContentParser(params string[] extensions) : base(extensions) { }
     }
 }

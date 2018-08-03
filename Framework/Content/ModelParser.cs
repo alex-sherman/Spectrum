@@ -54,22 +54,15 @@ namespace Spectrum.Framework.Content
             {"g3dj", new G3DJReader()},
             {"obj", new OBJReader()}
         };
-        public ModelParser()
+        public ModelParser() : base(ModelReaders.Keys.ToArray())
         {
             Prefix = "Models";
         }
 
         protected override ModelParserCache LoadData(string path, string name)
         {
-            string fullPath;
-            foreach (var reader in ModelReaders)
-            {
-                if((fullPath = TryExtensions(path, "." + reader.Key)) != null)
-                {
-                    return reader.Value.LoadData(fullPath, name);
-                }
-            }
-            throw new FileNotFoundException("The file could not be loaded: ", path);
+            var extension = Path.GetExtension(path).Substring(1);
+            return ModelReaders[extension].LoadData(path, name);
         }
 
         protected override SpecModel SafeCopy(ModelParserCache data)

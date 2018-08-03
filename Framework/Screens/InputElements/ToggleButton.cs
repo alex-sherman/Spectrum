@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public bool Value
         {
             get => valueIndicator.Display;
-            set => valueIndicator.Display = value;
+            set => valueIndicator.Toggle(value);
         }
         public event OnToggleChanged OnValueChanged = null;
         public ToggleButton() : base(20, 20) { }

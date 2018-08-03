@@ -9,13 +9,12 @@ namespace Spectrum.Framework.Content
 {
     public class ScriptParser : CachedContentParser<ScriptAsset>
     {
-        public ScriptParser()
+        public ScriptParser() : base("py")
         {
             Prefix = "Scripts";
         }
         protected override ScriptAsset LoadData(string path, string name)
         {
-            path = TryThrowExtensions(path, ".py");
             StreamReader reader = new StreamReader(path);
             return new ScriptAsset(path, reader.ReadToEnd());
         }

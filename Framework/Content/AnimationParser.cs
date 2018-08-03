@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Content
     public class AnimationData : DefaultDict<string, AnimationClip> { }
     class AnimationParser : CachedContentParser<AnimationData, AnimationData>
     {
-        public AnimationParser()
+        public AnimationParser() : base("g3dj")
         {
             Prefix = "Models";
         }
@@ -58,7 +58,6 @@ namespace Spectrum.Framework.Content
 
         protected override AnimationData LoadData(string path, string name)
         {
-            path = TryThrowExtensions(path, ".g3dj");
             JsonTextReader reader = new JsonTextReader(new StreamReader(path));
             JObject jobj = JObject.Load(reader);
 

@@ -11,16 +11,15 @@ namespace Spectrum.Framework.Content
 {
     class SoundParser : CachedContentParser<SoundStream, SoundEffect>
     {
-        public SoundParser()
+        public SoundParser() : base("wav", "m4a")
         {
             Prefix = "Sounds";
         }
 
         protected override SoundStream LoadData(string path, string name)
         {
-            name = TryThrowExtensions(path, ".wav", ".m4a");
             var nativefilestream = new NativeFileStream(
-                name,
+                path,
                 NativeFileMode.Open,
                 NativeFileAccess.Read,
                 NativeFileShare.Read);

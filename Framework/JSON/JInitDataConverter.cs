@@ -90,6 +90,8 @@ namespace Spectrum.Framework.JSON
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
             var token = JToken.ReadFrom(reader);
+            if (token.Type == JTokenType.Null)
+                return null;
             Dictionary<string, JToken> jobj =
                 ((IEnumerable<KeyValuePair<string, JToken>>)token).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 

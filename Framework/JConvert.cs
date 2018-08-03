@@ -49,13 +49,23 @@ namespace Spectrum.Framework
         {
             return (T)JsonConvert.DeserializeObject(json, typeof(T), Settings);
         }
-        public static T DeserializeFile<T>(string json)
+        public static T DeserializeFile<T>(string path)
         {
-            return (T)JsonConvert.DeserializeObject(json, typeof(T), Settings);
+            using (var reader = new StreamReader(File.OpenRead(path)))
+                return Deserialize<T>(reader.ReadToEnd());
         }
         public static string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj, Formatting.Indented, Settings);
+        }
+        public static void SerializeFile(object obj, string path)
+        {
+            using (var f = File.Open(path, FileMode.OpenOrCreate))
+            {
+                f.SetLength(0);
+                using (var sw = new StreamWriter(f))
+                    sw.Write(Serialize(obj));
+            }
         }
     }
 }

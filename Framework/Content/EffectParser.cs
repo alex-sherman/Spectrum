@@ -10,13 +10,12 @@ namespace Spectrum.Framework.Content
 {
     class EffectParser : CachedContentParser<byte[], Effect>
     {
-        public EffectParser()
+        public EffectParser() : base("mgfx")
         {
             Prefix = "HLSL";
         }
         protected override byte[] LoadData(string path, string name)
         {
-            path = TryThrowExtensions(path, ".mgfx");
             using (var f = new FileStream(path, FileMode.Open, FileAccess.Read))
             {
                 byte[] output = new byte[f.Length];
