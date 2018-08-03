@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Spectrum.Framework.Screens
 {
-    public class SceneScreen : GameScreen
+    public class SceneScreen : Element
     {
         public EntityManager Manager = SpectrumGame.Game.EntityManager;
         public RenderTarget2D RenderTarget;
@@ -33,20 +33,6 @@ namespace Spectrum.Framework.Screens
                     else
                         SpectrumGame.Game.HideMouse();
                 }
-            }
-        }
-        public bool IsCovered
-        {
-            get
-            {
-                if (Parent.Children.IndexOf(this) != 0)
-                    return false;
-                foreach (Element child in Children)
-                {
-                    if (child is GameScreen gameScreen && gameScreen.Display)
-                        return false;
-                }
-                return true;
             }
         }
         public static Matrix Projection;

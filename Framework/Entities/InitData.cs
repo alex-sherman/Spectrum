@@ -135,6 +135,11 @@ namespace Spectrum.Framework.Entities
             Fields[name] = new Primitive(value);
             return this;
         }
+        public virtual InitData Unset(string name)
+        {
+            Fields.Remove(name);
+            return this;
+        }
         public virtual InitData Call(string name, params object[] args)
         {
             FunctionCalls.Add(new FunctionCall(name, false, args));
@@ -189,6 +194,11 @@ namespace Spectrum.Framework.Entities
             base.Set(name, value);
             return this;
         }
+        new public virtual InitData<T> Unset(string name)
+        {
+            base.Unset(name);
+            return this;
+        }
         new public virtual InitData<T> Call(string name, params object[] args)
         {
             base.Call(name, args);
@@ -209,6 +219,8 @@ namespace Spectrum.Framework.Entities
         public ImmultableInitData(string type, params object[] args) : base(type, args) { }
         public override InitData Set(string name, object value)
             => Clone().Set(name, value);
+        public override InitData Unset(string name)
+            => Clone().Unset(name);
         public override InitData Call(string name, params object[] args)
             => Clone().Call(name, args);
         public override InitData CallOnce(string name, params object[] args)

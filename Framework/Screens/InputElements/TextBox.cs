@@ -16,7 +16,7 @@ namespace Spectrum.Framework.Screens.InputElements
         private int textPosition = 0;
         public TextBox NextBox = null;
         public TextBox PrevBox = null;
-        public InterfaceEventHandler OnContinue;
+        public Action OnContinue;
         public override void Initialize()
         {
             base.Initialize();
@@ -25,7 +25,7 @@ namespace Spectrum.Framework.Screens.InputElements
             OnClick += TextBox_OnClick;
         }
 
-        void TextBox_OnClick(InputElement clicked)
+        void TextBox_OnClick(Element clicked)
         {
             Selected = true;
             textPosition = 0;
@@ -69,7 +69,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 }
                 else if (input.IsNewKeyPress("Continue") && OnContinue != null)
                 {
-                    OnContinue(this);
+                    OnContinue();
                 }
                 input.TakeKeyboardInput(ref textPosition, ref Text);
             }

@@ -11,12 +11,13 @@ using Spectrum.Framework.Content;
 
 namespace Spectrum.Framework.Screens
 {
-    public class InGameScreen : GameScreen
+    public class InGameScreen : Element
     {
         protected Element TitleContainer;
         bool dragging = false;
         Vector2 dragMouseBegin;
         Vector2 dragBegin;
+        public bool CaptureInputWhenFocused = false;
         public TextElement Title;
         public KeyBind? ToggleButton;
         public InGameScreen(string title = null)
@@ -27,6 +28,7 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
+            Positioning = PositionType.Relative;
             LayoutManager = new LinearLayoutManager(LinearLayoutType.Vertical);
             TitleContainer = new Element();
             TitleContainer.Width = 1.0;
@@ -64,12 +66,12 @@ namespace Spectrum.Framework.Screens
                 return otherTookInput;
             if (!otherTookInput)
             {
-                if (Rect.Contains(input.MousePosition))
+                if (CaptureInputWhenFocused && Rect.Contains(input.MousePosition))
                     otherTookInput = true;
                 if (input.IsNewKeyPress("GoBack"))
                 {
                     input.Update();
-                    Display = false;
+                    Close();
                     otherTookInput = true;
                 }
                 if (input.IsNewMousePress(0))
@@ -81,7 +83,7 @@ namespace Spectrum.Framework.Screens
                     }
                     if (CloseButtonRect.Contains(input.MouseState.X, input.MouseState.Y))
                     {
-                        Display = false;
+                        Close();
                     }
                     if (TitleContainer.Rect.Contains(input.MouseState.X, input.MouseState.Y))
                     {
@@ -107,6 +109,12 @@ namespace Spectrum.Framework.Screens
                 }
             }
             return otherTookInput;
+        }
+
+        public virtual void Close()
+        {
+            dragging = false;
+            Display = false;
         }
     }
 }

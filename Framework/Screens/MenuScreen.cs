@@ -10,7 +10,7 @@ using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.Screens
 {
-    public class MenuScreen : GameScreen
+    public class MenuScreen : Element
     {
         private string MenuTitle;
         public MenuScreen(string menuTitle)
@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens
                 if (input.IsNewKeyPress("GoBack"))
                 {
                     otherTookInput = true;
-                    Exit();
+                    Parent.RemoveElement(this);
                 }
             }
             return true;

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Input;
 using System;
@@ -18,6 +19,13 @@ namespace Spectrum.Framework.Screens
         Relative,
         Absolute
     }
+    struct InputHandler
+    {
+        public Func<InputState, bool> Handler;
+        public bool OnKeyPress;
+        public bool RequireDisplay;
+        public bool IgnoreConsumed;
+    }
     #endregion
 
     public class Element
@@ -34,6 +42,7 @@ namespace Spectrum.Framework.Screens
         private bool Initialized = false;
         public List<string> Tags = new List<string>();
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
+        public string HoverText { get { return this["hover-text"]; } }
         public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
         public ImageAsset Texture
         {
@@ -47,6 +56,7 @@ namespace Spectrum.Framework.Screens
             get => Fields["background-color"].ObjValue as Color?;
             set => Fields["background-color"].SetValue(null, value);
         }
+        private readonly Dictionary<KeyBind, InputHandler> inputHandlers = new Dictionary<KeyBind, InputHandler>();
 
         public Element()
         {
@@ -87,6 +97,11 @@ namespace Spectrum.Framework.Screens
                 (value) => ElementField.ColorSetter(value),
                 false
                 );
+            Fields["hover-text"] = new ElementField(
+                this,
+                "hover-text",
+                (value) => (value)
+                );
         }
 
         public virtual void Initialize()
@@ -121,12 +136,37 @@ namespace Spectrum.Framework.Screens
             }
             return output;
         }
-
+        /// <summary>
+        /// Registers a handler for the given keybind. The input will be consumed if either consumesInput is true OR the handler returns true.
+        /// </summary>
+        /// <param name="keybind">The keybind on which to fire the handler</param>
+        /// <param name="handler">An input handler for they keybind returning an override to consumesInput</param>
+        /// <param name="onKeyPress">Restricts the handler to only fire on a new key press</param>
+        /// <param name="requireDisplay">Requires that the element be displayed for the handler to fire</param>
+        /// <param name="ignoreConsumed">Ignores other elements marking the keybind as already consumed</param>
+        public void RegisterHandler(KeyBind keybind, Func<InputState, bool> handler,
+            bool onKeyPress = true, bool requireDisplay = true, bool ignoreConsumed = false)
+        {
+            inputHandlers[keybind] = new InputHandler()
+            {
+                Handler = handler,
+                OnKeyPress = onKeyPress,
+                RequireDisplay = requireDisplay,
+                IgnoreConsumed = ignoreConsumed
+            };
+        }
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
             foreach (Element child in Children)
             {
                 otherTookInput |= child.HandleInput(otherTookInput, input);
+            }
+            foreach (var inputHandler in inputHandlers)
+            {
+                // TODO: Replace !otherTookInput with input consumption for keybind
+                if ((Display || !inputHandler.Value.RequireDisplay) && (!otherTookInput || inputHandler.Value.IgnoreConsumed) &&
+                    (inputHandler.Value.OnKeyPress ? input.IsNewKeyPress(inputHandler.Key) : input.IsKeyDown(inputHandler.Key)))
+                    otherTookInput |= inputHandler.Value.Handler(input);
             }
             return otherTookInput;
         }
@@ -167,6 +207,11 @@ namespace Spectrum.Framework.Screens
         /// The absolute rectangle in terms of screen coordinates for the element
         /// </summary>
         public Rectangle Rect { get; private set; }
+
+        public bool MouseInside()
+        {
+            return Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y);
+        }
 
         public virtual void Update(GameTime gameTime)
         {
@@ -263,6 +308,10 @@ namespace Spectrum.Framework.Screens
             }
             else if (BackgroundColor != null)
                 ImageAsset.Blank.Draw(spritebatch, Rect, BackgroundColor.Value, Z);
+            if (HasFocus && MouseInside() && HoverText != null)
+            {
+                spritebatch.DrawString(Font, HoverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
+            }
         }
 
         public virtual float DrawWithChildren(GameTime gameTime, SpriteBatch spritebatch, float layer)

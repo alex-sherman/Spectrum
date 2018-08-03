@@ -153,6 +153,7 @@ namespace Spectrum.Framework.Input
         /// <returns>Modified string</returns>
         public void TakeKeyboardInput(ref int position, ref string currentString)
         {
+            position = Math.Max(Math.Min(position, currentString.Length), 0);
             Keys[] pressedKeys = KeyboardState.GetPressedKeys();
             foreach (Keys key in pressedKeys)
             {
