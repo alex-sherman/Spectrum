@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Xna.Framework;
+using Spectrum.Framework;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Physics.Collision.Shapes;
@@ -20,11 +21,10 @@ namespace SpectrumTest
         {
             var cs = new CollisionSystemPersistentSAP();
             GameObject test = new GameObject();
-            var p = new Vector3(-4.915751f, 4.986178f, -4.940529f);
-            var d = new Vector3(0.8097232f,- 0.1328402f, 0.5715783f);
-            test.Shape = new BoxShape(new Vector3(160.0045f, 0.526213f, 160.0041f), new Vector3(80.00226f, 0.2631065f, 80.00204f));
+            Ray ray = JConvert.Deserialize<Ray>("{\r\n  \"Direction\":[0.529075,-0.291127771,0.7970723],\r\n  \"Position\":[-1.4831599,12.3906965,-1.33272672]\r\n}");
+            test.Shape = JConvert.Deserialize<Shape>("{\r\n  \"type\": \"box\",\r\n  \"size\": [\r\n    640.018066,\r\n    0.526213,\r\n    640.016357\r\n  ],\r\n  \"position\": [\r\n    320.009033,\r\n    0.2631065,\r\n    320.008179\r\n  ]\r\n}");
             test.PhysicsUpdate(0);
-            var result = cs.Raycast(test, p, d, out Vector3 normal, out float fraction);
+            var result = cs.Raycast(test, ray.Position, ray.Direction, out Vector3 normal, out float fraction);
             Assert.IsTrue(result);
         }
     }

@@ -386,6 +386,12 @@ namespace Spectrum.Framework.Physics.Collision
                         normal = v;
                     }
                 }
+                for (int i = 0; i < simplexSolver.NumVertices; i++)
+                {
+                    simplexSolver.PointsP[i] = x;
+                    simplexSolver.PointsW[i] = x - simplexSolver.PointsQ[i];
+                    simplexSolver.NeedsUpdate = true;
+                }
                 if (!simplexSolver.InSimplex(w))
                     simplexSolver.AddVertex(w, x, p);
                 if (simplexSolver.Closest(out v)) { distSq = v.LengthSquared(); }
@@ -514,14 +520,14 @@ namespace Spectrum.Framework.Physics.Collision
         {
             private const int VertexA = 0, VertexB = 1, VertexC = 2, VertexD = 3;
 
-            private const int VoronoiSimplexMaxVerts = 5;
-            private const bool CatchDegenerateTetrahedron = true;
+            private const int VoronoiSimplexMaxVerts = 4;
+            private const bool CatchDegenerateTetrahedron = false;
 
             private int _numVertices;
 
-            private Vector3[] _simplexVectorW = new Vector3[VoronoiSimplexMaxVerts];
-            private Vector3[] _simplexPointsP = new Vector3[VoronoiSimplexMaxVerts];
-            private Vector3[] _simplexPointsQ = new Vector3[VoronoiSimplexMaxVerts];
+            public Vector3[] PointsW = new Vector3[VoronoiSimplexMaxVerts];
+            public Vector3[] PointsP = new Vector3[VoronoiSimplexMaxVerts];
+            public Vector3[] PointsQ = new Vector3[VoronoiSimplexMaxVerts];
 
             private Vector3 _cachedPA;
             private Vector3 _cachedPB;
@@ -536,31 +542,19 @@ namespace Spectrum.Framework.Physics.Collision
             // If this needs to made multi-threaded a resource pool will be needed
             private SubSimplexClosestResult tempResult = new SubSimplexClosestResult();
 
-            private bool _needsUpdate;
+            public bool NeedsUpdate;
 
             #region ISimplexSolver Members
 
-            public bool FullSimplex
-            {
-                get
-                {
-                    return _numVertices == 4;
-                }
-            }
+            public bool FullSimplex => _numVertices == VoronoiSimplexMaxVerts;
 
-            public int NumVertices
-            {
-                get
-                {
-                    return _numVertices;
-                }
-            }
+            public int NumVertices => _numVertices;
 
             public void Reset()
             {
                 _cachedValidClosest = false;
                 _numVertices = 0;
-                _needsUpdate = true;
+                NeedsUpdate = true;
                 _lastW = new Vector3(1e30f, 1e30f, 1e30f);
                 _cachedBC.Reset();
             }
@@ -568,11 +562,11 @@ namespace Spectrum.Framework.Physics.Collision
             public void AddVertex(Vector3 w, Vector3 p, Vector3 q)
             {
                 _lastW = w;
-                _needsUpdate = true;
+                NeedsUpdate = true;
 
-                _simplexVectorW[_numVertices] = w;
-                _simplexPointsP[_numVertices] = p;
-                _simplexPointsQ[_numVertices] = q;
+                PointsW[_numVertices] = w;
+                PointsP[_numVertices] = p;
+                PointsQ[_numVertices] = q;
 
                 _numVertices++;
             }
@@ -593,7 +587,7 @@ namespace Spectrum.Framework.Physics.Collision
                     float maxV = 0f, curLen2;
                     for (int i = 0; i < numverts; i++)
                     {
-                        curLen2 = _simplexVectorW[i].LengthSquared();
+                        curLen2 = PointsW[i].LengthSquared();
                         if (maxV < curLen2) maxV = curLen2;
                     }
                     return maxV;
@@ -609,9 +603,9 @@ namespace Spectrum.Framework.Physics.Collision
                 yBuf = new Vector3[numverts];
                 for (int i = 0; i < numverts; i++)
                 {
-                    yBuf[i] = _simplexVectorW[i];
-                    pBuf[i] = _simplexPointsP[i];
-                    qBuf[i] = _simplexPointsQ[i];
+                    yBuf[i] = PointsW[i];
+                    pBuf[i] = PointsP[i];
+                    qBuf[i] = PointsQ[i];
                 }
                 return numverts;
             }
@@ -624,7 +618,7 @@ namespace Spectrum.Framework.Physics.Collision
                 //w is in the current (reduced) simplex
                 int numverts = NumVertices;
                 for (int i = 0; i < numverts; i++)
-                    if (_simplexVectorW[i] == w) return true;
+                    if (PointsW[i] == w) return true;
 
                 return false;
             }
@@ -654,9 +648,10 @@ namespace Spectrum.Framework.Physics.Collision
             public void RemoveVertex(int index)
             {
                 _numVertices--;
-                _simplexVectorW[index] = _simplexVectorW[_numVertices];
-                _simplexPointsP[index] = _simplexPointsP[_numVertices];
-                _simplexPointsQ[index] = _simplexPointsQ[_numVertices];
+                PointsW[index] = PointsW[_numVertices];
+                PointsP[index] = PointsP[_numVertices];
+                PointsQ[index] = PointsQ[_numVertices];
+                PointsW[_numVertices] = PointsW[_numVertices] = PointsW[_numVertices] = Vector3.Zero;
             }
 
             public void ReduceVertices(UsageBitfield usedVerts)
@@ -669,10 +664,10 @@ namespace Spectrum.Framework.Physics.Collision
 
             public bool UpdateClosestVectorAndPoints()
             {
-                if (_needsUpdate)
+                if (NeedsUpdate)
                 {
                     _cachedBC.Reset();
-                    _needsUpdate = false;
+                    NeedsUpdate = false;
 
                     Vector3 p, a, b, c, d;
                     switch (NumVertices)
@@ -681,8 +676,8 @@ namespace Spectrum.Framework.Physics.Collision
                             _cachedValidClosest = false;
                             break;
                         case 1:
-                            _cachedPA = _simplexPointsP[0];
-                            _cachedPB = _simplexPointsQ[0];
+                            _cachedPA = PointsP[0];
+                            _cachedPB = PointsQ[0];
                             _cachedV = _cachedPA - _cachedPB;
                             _cachedBC.Reset();
                             _cachedBC.SetBarycentricCoordinates(1f, 0f, 0f, 0f);
@@ -690,8 +685,8 @@ namespace Spectrum.Framework.Physics.Collision
                             break;
                         case 2:
                             //closest point origin from line segment
-                            Vector3 from = _simplexVectorW[0];
-                            Vector3 to = _simplexVectorW[1];
+                            Vector3 from = PointsW[0];
+                            Vector3 to = PointsW[1];
                             Vector3 nearest;
 
                             Vector3 diff = from * (-1);
@@ -726,8 +721,8 @@ namespace Spectrum.Framework.Physics.Collision
                             _cachedBC.SetBarycentricCoordinates(1 - t, t, 0, 0);
                             nearest = from + t * v;
 
-                            _cachedPA = _simplexPointsP[0] + t * (_simplexPointsP[1] - _simplexPointsP[0]);
-                            _cachedPB = _simplexPointsQ[0] + t * (_simplexPointsQ[1] - _simplexPointsQ[0]);
+                            _cachedPA = PointsP[0] + t * (PointsP[1] - PointsP[0]);
+                            _cachedPB = PointsQ[0] + t * (PointsQ[1] - PointsQ[0]);
                             _cachedV = _cachedPA - _cachedPB;
 
                             ReduceVertices(_cachedBC.UsedVertices);
@@ -737,20 +732,20 @@ namespace Spectrum.Framework.Physics.Collision
                         case 3:
                             //closest point origin from triangle
                             p = new Vector3();
-                            a = _simplexVectorW[0];
-                            b = _simplexVectorW[1];
-                            c = _simplexVectorW[2];
+                            a = PointsW[0];
+                            b = PointsW[1];
+                            c = PointsW[2];
 
                             ClosestPtPointTriangle(p, a, b, c, ref _cachedBC);
-                            _cachedPA = _simplexPointsP[0] * _cachedBC.BarycentricCoords[0] +
-                                            _simplexPointsP[1] * _cachedBC.BarycentricCoords[1] +
-                                            _simplexPointsP[2] * _cachedBC.BarycentricCoords[2] +
-                                            _simplexPointsP[3] * _cachedBC.BarycentricCoords[3];
+                            _cachedPA = PointsP[0] * _cachedBC.BarycentricCoords[0] +
+                                            PointsP[1] * _cachedBC.BarycentricCoords[1] +
+                                            PointsP[2] * _cachedBC.BarycentricCoords[2] +
+                                            PointsP[3] * _cachedBC.BarycentricCoords[3];
 
-                            _cachedPB = _simplexPointsQ[0] * _cachedBC.BarycentricCoords[0] +
-                                            _simplexPointsQ[1] * _cachedBC.BarycentricCoords[1] +
-                                            _simplexPointsQ[2] * _cachedBC.BarycentricCoords[2] +
-                                            _simplexPointsQ[3] * _cachedBC.BarycentricCoords[3];
+                            _cachedPB = PointsQ[0] * _cachedBC.BarycentricCoords[0] +
+                                            PointsQ[1] * _cachedBC.BarycentricCoords[1] +
+                                            PointsQ[2] * _cachedBC.BarycentricCoords[2] +
+                                            PointsQ[3] * _cachedBC.BarycentricCoords[3];
 
                             _cachedV = _cachedPA - _cachedPB;
 
@@ -759,24 +754,24 @@ namespace Spectrum.Framework.Physics.Collision
                             break;
                         case 4:
                             p = new Vector3();
-                            a = _simplexVectorW[0];
-                            b = _simplexVectorW[1];
-                            c = _simplexVectorW[2];
-                            d = _simplexVectorW[3];
+                            a = PointsW[0];
+                            b = PointsW[1];
+                            c = PointsW[2];
+                            d = PointsW[3];
 
                             bool hasSeperation = ClosestPtPointTetrahedron(p, a, b, c, d, ref _cachedBC);
 
                             if (hasSeperation)
                             {
-                                _cachedPA = _simplexPointsP[0] * _cachedBC.BarycentricCoords[0] +
-                                                _simplexPointsP[1] * _cachedBC.BarycentricCoords[1] +
-                                                _simplexPointsP[2] * _cachedBC.BarycentricCoords[2] +
-                                                _simplexPointsP[3] * _cachedBC.BarycentricCoords[3];
+                                _cachedPA = PointsP[0] * _cachedBC.BarycentricCoords[0] +
+                                                PointsP[1] * _cachedBC.BarycentricCoords[1] +
+                                                PointsP[2] * _cachedBC.BarycentricCoords[2] +
+                                                PointsP[3] * _cachedBC.BarycentricCoords[3];
 
-                                _cachedPB = _simplexPointsQ[0] * _cachedBC.BarycentricCoords[0] +
-                                                _simplexPointsQ[1] * _cachedBC.BarycentricCoords[1] +
-                                                _simplexPointsQ[2] * _cachedBC.BarycentricCoords[2] +
-                                                _simplexPointsQ[3] * _cachedBC.BarycentricCoords[3];
+                                _cachedPB = PointsQ[0] * _cachedBC.BarycentricCoords[0] +
+                                                PointsQ[1] * _cachedBC.BarycentricCoords[1] +
+                                                PointsQ[2] * _cachedBC.BarycentricCoords[2] +
+                                                PointsQ[3] * _cachedBC.BarycentricCoords[3];
 
                                 _cachedV = _cachedPA - _cachedPB;
                                 ReduceVertices(_cachedBC.UsedVertices);
@@ -916,9 +911,6 @@ namespace Spectrum.Framework.Physics.Collision
                 float signp = Vector3.Dot(p - a, normal); // [AP AB AC]
                 float signd = Vector3.Dot(d - a, normal); // [AD AB AC]
 
-                //if (CatchDegenerateTetrahedron)
-                if (signd * signd < (1e-4f * 1e-4f)) return -1;
-
                 // Points on opposite sides if expression signs are opposite
                 return signp * signd < 0f ? 1 : 0;
             }
@@ -947,12 +939,16 @@ namespace Spectrum.Framework.Physics.Collision
                     return false;
                 }
 
-                if (pointOutsideABC == 0 && pointOutsideACD == 0 && pointOutsideADB == 0 && pointOutsideBDC == 0)
+                var isDegenerate = pointOutsideABC == 0 && pointOutsideACD == 0 && pointOutsideADB == 0 && pointOutsideBDC == 0;
+                if (isDegenerate && CatchDegenerateTetrahedron)
+                {
+                    finalResult.Degenerate = true;
                     return false;
+                }
 
                 float bestSqDist = float.MaxValue;
                 // If point outside face abc then compute closest point on abc
-                if (pointOutsideABC != 0)
+                if (isDegenerate || pointOutsideABC != 0)
                 {
                     ClosestPtPointTriangle(p, a, b, c, ref tempResult);
                     Vector3 q = tempResult.ClosestPointOnSimplex;
@@ -977,7 +973,7 @@ namespace Spectrum.Framework.Physics.Collision
                 }
 
                 // Repeat test for face acd
-                if (pointOutsideACD != 0)
+                if (isDegenerate || pointOutsideACD != 0)
                 {
                     ClosestPtPointTriangle(p, a, c, d, ref tempResult);
                     Vector3 q = tempResult.ClosestPointOnSimplex;
@@ -1001,7 +997,7 @@ namespace Spectrum.Framework.Physics.Collision
                 }
                 // Repeat test for face adb
 
-                if (pointOutsideADB != 0)
+                if (isDegenerate || pointOutsideADB != 0)
                 {
                     ClosestPtPointTriangle(p, a, d, b, ref tempResult);
                     Vector3 q = tempResult.ClosestPointOnSimplex;
@@ -1026,7 +1022,7 @@ namespace Spectrum.Framework.Physics.Collision
                 }
                 // Repeat test for face bdc
 
-                if (pointOutsideBDC != 0)
+                if (isDegenerate || pointOutsideBDC != 0)
                 {
                     ClosestPtPointTriangle(p, b, d, c, ref tempResult);
                     Vector3 q = tempResult.ClosestPointOnSimplex;
@@ -1047,16 +1043,6 @@ namespace Spectrum.Framework.Physics.Collision
                                 tempResult.BarycentricCoords[VertexC],
                                 tempResult.BarycentricCoords[VertexB]);
                     }
-                }
-
-                //help! we ended up full !
-
-                if (finalResult.UsedVertices.UsedVertexA &&
-                    finalResult.UsedVertices.UsedVertexB &&
-                    finalResult.UsedVertices.UsedVertexC &&
-                    finalResult.UsedVertices.UsedVertexD)
-                {
-                    return true;
                 }
 
                 return true;
