@@ -171,6 +171,11 @@ namespace Spectrum.Framework.Input
                         position -= count;
                         currentString = currentString.Remove(position, count);
                     }
+                    if (key == Keys.Right && position < currentString.Length)
+                        position++;
+                    if (key == Keys.Left && position > 0)
+                        position--;
+
                     char typedChar = GetChar(key, IsKeyDown(Keys.LeftShift) || IsKeyDown(Keys.RightShift));
                     if (typedChar != (char)0)
                     {
