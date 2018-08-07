@@ -17,6 +17,14 @@ namespace Spectrum.Framework
         {
             return source.Union(Enumerable.Repeat(item, 1));
         }
+        public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source) where T : struct
+        {
+            return source.Where(t => t.HasValue).Cast<T>();
+        }
+        public static IEnumerable<T> NotNull<T>(this IEnumerable<T> source) where T : class
+        {
+            return source.Where(t => t != null).Cast<T>();
+        }
         public static float DT(this GameTime time)
         {
             return (float)time.ElapsedGameTime.TotalMilliseconds / 1000.0f;

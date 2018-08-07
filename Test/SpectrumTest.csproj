@@ -69,7 +69,7 @@
     <Compile Include="InitDataTests.cs" />
     <Compile Include="JSONTests.cs" />
     <Compile Include="PhysicsTests.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="SerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

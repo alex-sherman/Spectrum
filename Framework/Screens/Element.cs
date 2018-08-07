@@ -149,10 +149,10 @@ namespace Spectrum.Framework.Screens
             return output;
         }
         /// <summary>
-        /// Registers a handler for the given keybind. The input will be consumed if either consumesInput is true OR the handler returns true.
+        /// Registers a handler for the given keybind. The input will be consumed if the handler returns true.
         /// </summary>
         /// <param name="keybind">The keybind on which to fire the handler</param>
-        /// <param name="handler">An input handler for they keybind returning an override to consumesInput</param>
+        /// <param name="handler">An input handler for they keybind returning whether to consume input or not</param>
         /// <param name="onKeyPress">Restricts the handler to only fire on a new key press</param>
         /// <param name="requireDisplay">Requires that the element be displayed for the handler to fire</param>
         /// <param name="ignoreConsumed">Ignores other elements marking the keybind as already consumed</param>
@@ -167,6 +167,18 @@ namespace Spectrum.Framework.Screens
                 IgnoreConsumed = ignoreConsumed
             };
         }
+        /// <summary>
+        /// Registers a handler for the given keybind. The input will be always be consumed.
+        /// </summary>
+        /// <param name="keybind">The keybind on which to fire the handler</param>
+        /// <param name="handler">An input handler for they keybind</param>
+        /// <param name="onKeyPress">Restricts the handler to only fire on a new key press</param>
+        /// <param name="requireDisplay">Requires that the element be displayed for the handler to fire</param>
+        /// <param name="ignoreConsumed">Ignores other elements marking the keybind as already consumed</param>
+        public void RegisterHandler(KeyBind keybind, Action<InputState> handler,
+            bool onKeyPress = true, bool requireDisplay = true, bool ignoreConsumed = false) =>
+            RegisterHandler(keybind, (input) => { handler(input); return true; }, onKeyPress, requireDisplay, ignoreConsumed);
+
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
             foreach (Element child in Children)

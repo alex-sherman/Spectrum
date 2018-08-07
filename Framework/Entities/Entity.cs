@@ -35,6 +35,12 @@ namespace Spectrum.Framework.Entities
                 return tOutput;
             return default(T);
         }
+        public T Get<T>(string key, T ifMissing)
+        {
+            if(!Data.ContainsKey(key) || !(Data[key] is T))
+                Data[key] = ifMissing;
+            return (T)Data[key];
+        }
         public Guid ID;
         /// <summary>
         /// Gets automatically set when constructing with InitData
