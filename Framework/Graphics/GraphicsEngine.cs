@@ -43,7 +43,14 @@ namespace Spectrum.Framework.Graphics
         //static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
         static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
-        public static float MultisampleFactor = 1;
+        private static float _msFactor = 1;
+        public static int Width { get; private set; }
+        public static int Height { get; private set; }
+        public static float MultisampleFactor
+        {
+            get { return _msFactor; }
+            set { _msFactor = value; ResetOnResize(Width, Height); }
+        }
         public static VertexBuffer lineVBuffer;
         public static IndexBuffer lineIBuffer;
         public static SpectrumEffect lineEffect;
@@ -57,7 +64,6 @@ namespace Spectrum.Framework.Graphics
             lineIBuffer = VertexHelper.MakeIndexBuffer(new ushort[] { 0, 1 });
             Settings.Init(device);
             PostProcessEffect.Initialize();
-            PostProcessEffect.AAEnabled = true;
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
             if (SpecVR.Running)
             {
@@ -73,13 +79,14 @@ namespace Spectrum.Framework.Graphics
         }
         public static void ResetOnResize(int width, int height)
         {
+            Width = width; Height = height;
             if (device != null)
             {
                 spriteBatch = new SpriteBatch(device);
                 AATarget?.Dispose();
                 AATarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 DepthTarget?.Dispose();
-                DepthTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                DepthTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
                 PostProcessEffect.DepthTarget = DepthTarget;
                 Water.ResetRenderTargets();
                 PostProcessEffect.ResetViewPort(width, height);

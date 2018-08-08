@@ -6,7 +6,7 @@ float darkness = 0;
 float specularPower;
 float specularIntensity;
 //For AA
-bool AAEnabled = true;
+bool AAEnabled = false;
 float depthBlurStart = 0.95f;
 float depthBlurScale = 0.5f;
 uniform extern texture AATarget;
@@ -29,7 +29,7 @@ sampler DepthSampler = sampler_state
 	Texture = <DepthTarget>;
 	magfilter = LINEAR;
 	minfilter = LINEAR;
-	mipfilter=LINEAR;
+	mipfilter = LINEAR;
 	AddressU = clamp;
 	AddressV = clamp;
 };
@@ -73,7 +73,7 @@ float4 CalcAA(float2 texCoord)
 	return color;
 }
 float getDepth(float2 coord) {
-	return clamp((tex2D(DepthSampler, coord) - depthBlurStart) * depthBlurScale, 0, 1);
+	return clamp((depthBlurStart-tex2D(DepthSampler, coord).r) * depthBlurScale, 0, 1);
 }
 float3 Blur(float3 color, float2 texCoord)
 {
@@ -81,11 +81,11 @@ float3 Blur(float3 color, float2 texCoord)
 	float centerDepth = getDepth(texCoord);
 	if (centerDepth == 0) { return color; }
 	float weightSum = 0;
+	[unroll]
 	for(int i = -2; i <= 2; i++) {
+		[unroll]
 		for(int j = -2; j <= 2; j++) {
-			float depth = getDepth(texCoord + float2(i / viewPort.x, j / viewPort.y));
-			if (centerDepth < depth) continue;
-			float weight = i == 0 && j == 0 ? (1 - depth) : (depth);
+			float weight = i == 0 && j == 0 ? 3 : (centerDepth);
 			float3 lerpColor = i == 0 && j == 0 ? color : tex2D(AASampler, texCoord + float2(i/viewPort.x, j/viewPort.y)).rgb;
 			output += lerpColor * weight;
 			weightSum += weight;
@@ -99,7 +99,7 @@ float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 te
 	float4 color = (float4)1;
 	float2 orgCoord = texCoord;
 	if(AAEnabled){
-		float threshold = .1;
+		float threshold = .8;
 		texCoord.x-=1/viewPort.x;
 		float3 other = tex2D(AASampler,texCoord);
 		if(length(value-other)>threshold){ value = CalcAA(orgCoord); }
@@ -114,6 +114,7 @@ float4 AAPS(float4 position : SV_Position, float4 inputColor : COLOR0, float2 te
 		other = tex2D(AASampler,texCoord);
 		if(length(value-other)>threshold){ value = CalcAA(orgCoord); }
 		texCoord.y-=1/viewPort.y;
+		value.r = 1;
 	}
 	color.rgb = Blur(value, texCoord)*(1-darkness);
 	if(vingette){

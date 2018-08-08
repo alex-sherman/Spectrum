@@ -145,8 +145,8 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
 	CommonPSOut output = (CommonPSOut)0;
 	output.color = color;
-	output.depth.rgb = vsout.position.z / vsout.position.w;
 	output.depth.a = 1;
+	output.depth.r = vsout.position.z / vsout.position.w;
 	return output;
 }
 float3 VSCalculateLight(float3 normal, float3 worldPosition){

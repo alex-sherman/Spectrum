@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Graphics
         }
         public static void ResetViewPort(int width, int height)
         {
-            effect.Parameters["viewPort"].SetValue(new Vector2(SpectrumGame.Game.GraphicsDevice.Viewport.Width, SpectrumGame.Game.GraphicsDevice.Viewport.Height));
+            effect.Parameters["viewPort"].SetValue(new Vector2(width, height));
         }
         public static float DepthBlurStart
         {
