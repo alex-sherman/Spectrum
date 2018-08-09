@@ -10,6 +10,6 @@ namespace Spectrum.Framework
     public interface IDebug
     {
         string Debug();
-        void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch);
+        void DebugDraw(float gameTime);
     }
 }

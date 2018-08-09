@@ -15,8 +15,8 @@ namespace Spectrum.Framework
         private class DebugHolder : IDebug
         {
             readonly Func<string> text;
-            readonly Action<GameTime, SpriteBatch> draw;
-            public DebugHolder(Func<string> text, Action<GameTime, SpriteBatch> draw)
+            readonly Action<float> draw;
+            public DebugHolder(Func<string> text, Action<float> draw)
             {
                 this.text = text;
                 this.draw = draw;
@@ -26,15 +26,15 @@ namespace Spectrum.Framework
                 return text?.Invoke();
             }
 
-            public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)
+            public void DebugDraw(float dt)
             {
-                draw?.Invoke(gameTime, spriteBatch);
+                draw?.Invoke(dt);
             }
         }
         public static HashSet<string> onceMessages = new HashSet<string>();
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
-        public static IDebug display(Func<string> text = null, Action<GameTime, SpriteBatch> draw = null)
+        public static IDebug display(Func<string> text = null, Action<float> draw = null)
         {
             IDebug output = new DebugHolder(text, draw);
             display(output);
@@ -149,21 +149,6 @@ namespace Spectrum.Framework
                 }
                 DrawTimes(2, spritebatch, gameTime.DT());
 
-            }
-            if (SpectrumGame.Game.DebugDrawAll)
-            {
-                foreach (var entity in SpectrumGame.Game.EntityManager)
-                {
-                    if (entity is GameObject)
-                        ((GameObject)entity).DebugDraw(gameTime, spritebatch);
-                }
-            }
-            if (SpectrumGame.Game.DebugDraw)
-            {
-                for (int i = 0; i < objects.Count; i++)
-                {
-                    objects[i].DebugDraw(gameTime, spritebatch);
-                }
             }
         }
     }

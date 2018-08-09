@@ -20,6 +20,11 @@ namespace Spectrum.Framework.Graphics
         {
             effect.Parameters["viewPort"].SetValue(new Vector2(width, height));
         }
+        public static float DepthBlurSigma
+        {
+            get => effect.Parameters["depthBlurSigma"].GetValueSingle();
+            set => effect.Parameters["depthBlurSigma"].SetValue(value); 
+        }
         public static float DepthBlurStart
         {
             get { return effect.Parameters["depthBlurStart"].GetValueSingle(); }

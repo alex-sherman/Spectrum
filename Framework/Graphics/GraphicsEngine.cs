@@ -410,8 +410,8 @@ namespace Spectrum.Framework.Graphics
                 VRRender(view, renderGroups, EVREye.Eye_Right, right_offset);
                 device.SetRenderTarget(VRTargetL);
                 VRRender(view, renderGroups, EVREye.Eye_Left, left_offset);
-                OpenVR.Compositor.Submit(EVREye.Eye_Left, ref textureL, ref bounds, EVRSubmitFlags.Submit_Default);
                 OpenVR.Compositor.Submit(EVREye.Eye_Right, ref textureR, ref bounds, EVRSubmitFlags.Submit_Default);
+                OpenVR.Compositor.Submit(EVREye.Eye_Left, ref textureL, ref bounds, EVRSubmitFlags.Submit_Default);
                 device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);

@@ -295,6 +295,12 @@ namespace Spectrum.Framework.Entities
                     {
                         drawable.Draw(gameTime);
                     }
+
+                    if (SpectrumGame.Game.DebugDraw)
+                    {
+                        if (drawable is GameObject gameObject)
+                            gameObject.DebugDraw(gameTime);
+                    }
                 }
             }
             foreach (var group in dynamicBatched.Values)

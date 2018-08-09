@@ -325,7 +325,7 @@ namespace Spectrum.Framework.Entities
             base.Destroy();
         }
 
-        public void DebugDraw(GameTime gameTime, SpriteBatch spriteBatch)
+        public void DebugDraw(float gameTime)
         {
             if (Shape != null)
             {
@@ -334,18 +334,18 @@ namespace Spectrum.Framework.Entities
                 Shape.GetBoundingBox(ref orientationMat, out boundingBox);
                 Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
                 Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
-                GraphicsEngine.DrawJBBox(boundingBox, Color.Black, spriteBatch);
-                GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
-                GraphicsEngine.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue, spriteBatch);
-                foreach (var arbiter in this.arbiters)
+                Manager.DrawJBBox(boundingBox, Color.Black);
+                //GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
+                Manager.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
+                foreach (var arbiter in arbiters)
                 {
                     foreach (var contact in arbiter.contactList)
                     {
-                        GraphicsEngine.DrawCircle(contact.Position1, 3, Color.Yellow, spriteBatch);
-                        GraphicsEngine.DrawCircle(contact.Position2, 3, Color.HotPink, spriteBatch);
-                        GraphicsEngine.DrawLine(contact.Position1, contact.Position1 - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue, spriteBatch);
-                        GraphicsEngine.DrawLine(contact.Position1, contact.Position1 + contact.normal * contact.accumulatedNormalImpulse, Color.Green, spriteBatch);
-                        GraphicsEngine.DrawLine(contact.Position1, contact.Position1 + contact.tangent * contact.accumulatedTangentImpulse, Color.Red, spriteBatch);
+                        //GraphicsEngine.DrawCircle(contact.Position1, 3, Color.Yellow, spriteBatch);
+                        //GraphicsEngine.DrawCircle(contact.Position2, 3, Color.HotPink, spriteBatch);
+                        Manager.DrawLine(contact.Position1, contact.Position1 - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
+                        Manager.DrawLine(contact.Position1, contact.Position1 + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
+                        Manager.DrawLine(contact.Position1, contact.Position1 + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);
                     }
                 }
             }

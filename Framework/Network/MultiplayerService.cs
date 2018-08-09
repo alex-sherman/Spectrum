@@ -492,7 +492,7 @@ namespace Spectrum.Framework.Network
             }
             return output;
         }
-        public void DebugDraw(GameTime gameTime, Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
+        public void DebugDraw(float dt)
         {
         }
     }

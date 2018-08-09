@@ -9,10 +9,12 @@ float specularIntensity;
 bool AAEnabled = false;
 float depthBlurStart = 0.95f;
 float depthBlurScale = 0.5f;
+float depthBlurSigma = 1.2f;
 uniform extern texture AATarget;
 uniform extern texture DepthTarget;
 float2 viewPort;
 bool vingette = false;
+static const float PI = 3.14159265f;
 
 sampler AASampler = sampler_state
 {
@@ -85,7 +87,7 @@ float3 Blur(float3 color, float2 texCoord)
 	for(int i = -2; i <= 2; i++) {
 		[unroll]
 		for(int j = -2; j <= 2; j++) {
-			float weight = i == 0 && j == 0 ? 3 : (centerDepth);
+			float weight = exp(-(pow(i, 2) + pow(j, 2)) / 2 / depthBlurSigma / centerDepth) / (2 * PI * depthBlurSigma * centerDepth);
 			float3 lerpColor = i == 0 && j == 0 ? color : tex2D(AASampler, texCoord + float2(i/viewPort.x, j/viewPort.y)).rgb;
 			output += lerpColor * weight;
 			weightSum += weight;

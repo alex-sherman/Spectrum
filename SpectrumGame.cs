@@ -36,7 +36,6 @@ namespace Spectrum
 
         public bool Debug = false;
         public bool DebugDraw = false;
-        public bool DebugDrawAll = false;
 
         #region Window Properties
         public event EventHandler OnScreenResize;
