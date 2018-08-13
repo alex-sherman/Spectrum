@@ -421,8 +421,16 @@ namespace Spectrum.Framework.Physics.Collision
 
             #endregion
             normal = v;
-            if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
-                normal.Normalize();
+            //if (!(normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon))
+            {
+                if(simplexSolver.NumVertices == 3)
+                {
+                    normal = Vector3.Cross(simplexSolver.PointsW[1] - simplexSolver.PointsW[0], simplexSolver.PointsW[2] - simplexSolver.PointsW[0]);
+                    if (Vector3.Dot(normal, direction) > 0)
+                        normal *= -1;
+                }
+            }
+            normal.Normalize();
 
             simplexSolverPool.GiveBack(simplexSolver);
 
@@ -662,7 +670,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             public bool UpdateClosestVectorAndPoints()
             {
-                if (NeedsUpdate)
+                if (NeedsUpdate || true)
                 {
                     _cachedBC.Reset();
                     NeedsUpdate = false;
