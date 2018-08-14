@@ -11,10 +11,11 @@ namespace Spectrum.Framework.Graphics
 {
     public class Billboard : GameObject
     {
-        public Vector2 Size;
+        public Vector2 Size = Vector2.One;
         public Billboard()
         {
             DisableInstancing = true;
+            IsStatic = true;
         }
         public override void Draw(float gameTime)
         {

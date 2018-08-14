@@ -115,12 +115,10 @@ namespace Spectrum.Framework.Graphics
 
         private static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
         {
-            device.SetVertexBuffers(new VertexBufferBinding(vertexBuffer, 0, 0), new VertexBufferBinding(instanceBuffer, 0, 1));
-            device.Indices = indexBuffer;
-        }
-        public static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer)
-        {
-            device.SetVertexBuffer(vertexBuffer);
+            if (instanceBuffer != null)
+                device.SetVertexBuffers(new VertexBufferBinding(vertexBuffer, 0, 0), new VertexBufferBinding(instanceBuffer, 0, 1));
+            else
+                device.SetVertexBuffer(vertexBuffer);
             device.Indices = indexBuffer;
         }
         private static void UpdateShadowMap(IEnumerable<RenderCall> renderGroups)
@@ -186,15 +184,15 @@ namespace Spectrum.Framework.Graphics
         }
         public static void Render(PrimitiveType primType, VertexBuffer VBuffer, IndexBuffer IBuffer, DynamicVertexBuffer instanceBuffer)
         {
+            SetBuffers(VBuffer, IBuffer, instanceBuffer);
             //Draw vertex component
             if (VBuffer != null)
             {
+                // Instance draws apparently MUST have an IndexBuffer or SharpDX throws an exception
                 if (IBuffer != null)
                 {
-                    // Instance draws apparently MUST have an IndexBuffer or SharpDX throws an exception
                     if (instanceBuffer != null)
                     {
-                        SetBuffers(VBuffer, IBuffer, instanceBuffer);
                         if (primType == PrimitiveType.TriangleStrip)
                             device.DrawInstancedPrimitives(primType, 0, 0, IBuffer.IndexCount - 2, instanceBuffer.VertexCount);
                         if (primType == PrimitiveType.TriangleList)
@@ -206,7 +204,6 @@ namespace Spectrum.Framework.Graphics
                     }
                     else
                     {
-                        SetBuffers(VBuffer, IBuffer);
                         if (primType == PrimitiveType.TriangleStrip)
                             device.DrawIndexedPrimitives(primType, 0, 0, IBuffer.IndexCount - 2);
                         if (primType == PrimitiveType.TriangleList)
@@ -219,7 +216,6 @@ namespace Spectrum.Framework.Graphics
                 }
                 else
                 {
-                    SetBuffers(VBuffer, IBuffer);
                     if (primType == PrimitiveType.TriangleStrip)
                         device.DrawPrimitives(primType, 0, VBuffer.VertexCount - 2);
                     if (primType == PrimitiveType.LineStrip)

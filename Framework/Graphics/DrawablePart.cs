@@ -67,26 +67,35 @@ namespace Spectrum.Framework.Graphics
         }
         public static DrawablePart From<T>(List<T> vertices) where T : struct, ICommonTex
         {
-            DrawablePart part = new DrawablePart();
-            part.VBuffer = VertexHelper.MakeVertexBuffer(vertices);
-            part.primType = PrimitiveType.TriangleStrip;
-            part.Bounds = GetBounds(vertices);
+            DrawablePart part = new DrawablePart
+            {
+                effect = new SpectrumEffect(),
+                VBuffer = VertexHelper.MakeVertexBuffer(vertices),
+                primType = PrimitiveType.TriangleStrip,
+                Bounds = GetBounds(vertices)
+            };
             return part;
         }
         public static DrawablePart From<T>(List<T> vertices, List<uint> indices) where T : struct, ICommonTex
         {
-            DrawablePart part = new DrawablePart();
-            part.VBuffer = VertexHelper.MakeVertexBuffer(vertices);
-            part.IBuffer = VertexHelper.MakeIndexBuffer(indices);
-            part.Bounds = GetBounds(vertices);
+            DrawablePart part = new DrawablePart
+            {
+                effect = new SpectrumEffect(),
+                VBuffer = VertexHelper.MakeVertexBuffer(vertices),
+                IBuffer = VertexHelper.MakeIndexBuffer(indices),
+                Bounds = GetBounds(vertices)
+            };
             return part;
         }
         public static DrawablePart From<T>(List<T> vertices, List<ushort> indices) where T : struct, ICommonTex
         {
-            DrawablePart part = new DrawablePart();
-            part.VBuffer = VertexHelper.MakeVertexBuffer(vertices);
-            part.IBuffer = VertexHelper.MakeIndexBuffer(indices);
-            part.Bounds = GetBounds(vertices);
+            DrawablePart part = new DrawablePart
+            {
+                effect = new SpectrumEffect(),
+                VBuffer = VertexHelper.MakeVertexBuffer(vertices),
+                IBuffer = VertexHelper.MakeIndexBuffer(indices),
+                Bounds = GetBounds(vertices)
+            };
             return part;
         }
         public DrawablePart CreateReference()
@@ -96,8 +105,8 @@ namespace Spectrum.Framework.Graphics
         public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer, JBBox bounds = default(JBBox))
             : this()
         {
-            this.VBuffer = vBuffer;
-            this.IBuffer = iBuffer;
+            VBuffer = vBuffer;
+            IBuffer = iBuffer;
             Bounds = bounds;
         }
         public DrawablePart() { ReferenceID = LastReferenceID++; }

@@ -27,7 +27,6 @@ namespace Spectrum.Framework.Entities
         private MultiplayerService mpService;
         public readonly PhysicsEngine Physics;
         public bool Paused = false;
-        private static readonly System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
         public EntityManager(MultiplayerService mpService)
         {
             Entities = new EntityCollection();
