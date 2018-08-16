@@ -19,7 +19,7 @@ namespace Spectrum.Framework.JSON
             if (jobj.TryGetValue(key, out JToken calls))
             {
                 if (calls.Type != JTokenType.Object)
-                    throw new InvalidDataException(string.Format("Expected field {0} to be an object", key));
+                    throw new InvalidDataException($"Expected field {key} to be an object");
                 JObject callsObj = (JObject)calls;
                 foreach (var call in callsObj)
                 {
@@ -30,6 +30,26 @@ namespace Spectrum.Framework.JSON
                         output.CallOnce(call.Key, args: callArgs);
                     else
                         output.Call(call.Key, args: callArgs);
+                }
+            }
+        }
+
+        static void ParseData(Dictionary<string, JToken> jobj, InitData output)
+        {
+            if (jobj.TryGetValue("@Dict", out var datas))
+            {
+                if (datas.Type != JTokenType.Object)
+                    throw new InvalidDataException(string.Format("Expected field @Dict to be an object"));
+                JObject datasObj = (JObject)datas;
+                foreach (var data in datasObj)
+                {
+                    if (data.Value.Type != JTokenType.Object)
+                        throw new InvalidDataException($"Expected field @Dict[{data.Key}] to be an array");
+                    JObject dataObj = (JObject)data.Value;
+                    foreach (var kvp in dataObj)
+                    {
+                        output.SetDict(kvp.Key, ParseValue(kvp.Value, typeof(object)), data.Key);
+                    }
                 }
             }
         }
@@ -99,8 +119,10 @@ namespace Spectrum.Framework.JSON
             output.Name = (string)jobj["@Name"];
             ParseCalls(jobj, true, output);
             ParseCalls(jobj, false, output);
+            ParseData(jobj, output);
             jobj.Remove("@Name"); jobj.Remove("@TypeName");
             jobj.Remove("@Call"); jobj.Remove("@CallOnce");
+            jobj.Remove("@Dict");
 
             foreach (var kvp in jobj)
             {

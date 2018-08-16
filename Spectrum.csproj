@@ -246,6 +246,7 @@
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\JSON\JPointConverter.cs" />
     <Compile Include="Framework\Screens\DialogScreen.cs" />
+    <Compile Include="Framework\Utility\ArgParseHelper.cs" />
     <Compile Include="Framework\Utility\Point3.cs" />
     <Compile Include="Framework\IDebug.cs" />
     <Compile Include="Framework\Graphics\Camera.cs" />
