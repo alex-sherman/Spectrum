@@ -110,7 +110,7 @@ namespace Spectrum.Framework
             curPos += Font.MeasureString(toPrint).Y;
             foreach (var timeGroup in DebugTiming.Groups)
             {
-                toPrint = string.Format("{0} ({1})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg");
+                toPrint = string.Format("{0} ({1} {2})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg", fform(timeGroup.FrameAverages().Sum(t => t.Item2)));
                 spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
                 curPos += Font.MeasureString(toPrint).Y;
                 var times = timeGroup.FrameInfo().Take(10);

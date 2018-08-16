@@ -282,10 +282,6 @@ namespace Spectrum.Framework.Entities
         public IEnumerable<RenderCall> GetRenderTasks(float gameTime)
         {
             var drawables = Entities.DrawSorted.Where(e => e.DrawEnabled).ToList();
-            foreach (var batch in dynamicBatched.Values)
-                batch.InstanceBuffer?.Dispose();
-            dynamicBatched.Clear();
-            dynamicNonBatched.Clear();
             foreach (Entity drawable in drawables)
             {
                 using (DebugTiming.Render.Time(drawable.GetType().Name))
@@ -307,6 +303,13 @@ namespace Spectrum.Framework.Entities
             foreach (var group in fixedBatched.Values.Where(group => group.InstanceBuffer == null))
                 group.Squash();
             return fixedBatched.Values.Union(dynamicBatched.Values).Union(dynamicNonBatched);
+        }
+        public void ClearRenderTasks()
+        {
+            foreach (var batch in dynamicBatched.Values)
+                batch.InstanceBuffer?.Dispose();
+            dynamicBatched.Clear();
+            dynamicNonBatched.Clear();
         }
         public T Create<T>(params object[] args) where T : Entity
         {

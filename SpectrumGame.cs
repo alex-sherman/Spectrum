@@ -220,10 +220,6 @@ namespace Spectrum
                     OnScreenResize(this, EventArgs.Empty);
                 }
             }
-            if (SpecVR.Running)
-            {
-                SpecVR.Update(gameTime);
-            }
             InputState.Current.Update();
             Root.Update(gameTime, InputState.Current);
             base.Update(gameTime);
@@ -236,7 +232,12 @@ namespace Spectrum
         protected override void EndDraw()
         {
             using (DebugTiming.Main.Time("GPU Draw"))
+            {
                 base.EndDraw();
+                GraphicsEngine.EndDraw();
+                if (SpecVR.Running)
+                    SpecVR.Update();
+            }
         }
         public GraphicsDeviceManager GraphicsDeviceManager
         {

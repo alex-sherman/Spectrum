@@ -29,7 +29,7 @@ namespace Spectrum.Framework.VR
         public static Matrix LeftHand { get; private set; } = Matrix.Identity;
         public static int RightHandIndex { get; private set; } = -1;
         public static Matrix RightHand { get; private set; } = Matrix.Identity;
-        public static void Update(GameTime time)
+        public static void Update()
         {
             TrackedDevicePose_t[] poses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
             TrackedDevicePose_t[] poses2 = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];

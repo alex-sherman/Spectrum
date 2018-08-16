@@ -67,6 +67,7 @@ namespace Spectrum.Framework.Screens
                     var renderGroups = Manager.GetRenderTasks(gameTime.DT());
                     GraphicsEngine.Render(renderGroups, gameTime, RenderTarget);
                     spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
+                    Manager.ClearRenderTasks();
                 }
             }
         }

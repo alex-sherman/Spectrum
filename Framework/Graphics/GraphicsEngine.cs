@@ -10,6 +10,7 @@ using Valve.VR;
 using System.Reflection;
 using Spectrum.Framework.VR;
 using Spectrum.Framework.Screens;
+using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Graphics
 {
@@ -358,7 +359,6 @@ namespace Spectrum.Framework.Graphics
             };
             RenderQueue(vrPhase, groups);
         }
-
         public static void Render(IEnumerable<RenderCall> renderGroups, GameTime gameTime, RenderTarget2D target)
         {
             BeginRender(gameTime);
@@ -406,8 +406,6 @@ namespace Spectrum.Framework.Graphics
                 VRRender(view, renderGroups, EVREye.Eye_Right, right_offset);
                 device.SetRenderTarget(VRTargetL);
                 VRRender(view, renderGroups, EVREye.Eye_Left, left_offset);
-                OpenVR.Compositor.Submit(EVREye.Eye_Right, ref textureR, ref bounds, EVRSubmitFlags.Submit_Default);
-                OpenVR.Compositor.Submit(EVREye.Eye_Left, ref textureL, ref bounds, EVRSubmitFlags.Submit_Default);
                 device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
@@ -415,6 +413,17 @@ namespace Spectrum.Framework.Graphics
                 spriteBatch.End();
             }
             mainRenderTimer?.Stop();
+        }
+        public static void EndDraw()
+        {
+            if (SpecVR.Running)
+            {
+                using (DebugTiming.Render.Time("VR Submit"))
+                {
+                    var error = OpenVR.Compositor.Submit(EVREye.Eye_Right, ref textureR, ref bounds, EVRSubmitFlags.Submit_Default);
+                    error = OpenVR.Compositor.Submit(EVREye.Eye_Left, ref textureL, ref bounds, EVRSubmitFlags.Submit_Default);
+                }
+            }
         }
     }
 }

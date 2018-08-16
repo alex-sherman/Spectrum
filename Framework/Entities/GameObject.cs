@@ -193,6 +193,7 @@ namespace Spectrum.Framework.Entities
                     output.AddPoint(part.Bounds.Min);
                     output.AddPoint(part.Bounds.Max);
                 }
+                output.Transform(ref ModelTransform);
                 return output;
             }
         }
