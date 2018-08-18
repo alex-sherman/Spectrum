@@ -81,7 +81,7 @@ namespace Spectrum.Framework.Physics
             {
                 if (BodiesBeginCollide != null) BodiesBeginCollide(body1, body2, normal);
                 body1.Collide(body2, point, normal, penetration);
-                body2.Collide(body1, point, normal, penetration);
+                body2.Collide(body1, point, -1 * normal, penetration);
             }
 
             internal void RaiseBodiesEndCollide(GameObject body1, GameObject body2)

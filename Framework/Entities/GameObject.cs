@@ -21,19 +21,13 @@ using Spectrum.Framework.Graphics.Animation;
 
 namespace Spectrum.Framework.Entities
 {
-    public enum BodyType
-    {
-        Dynamic,
-        Static,
-        Ignore
-    }
     public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource
     {
         #region Events
         public event Action<GameObject, Vector3, Vector3, float> OnCollide;
         public event Action<GameObject> OnEndCollide;
         #endregion
-
+        
         #region Physics Fields/Properties
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
@@ -170,8 +164,36 @@ namespace Spectrum.Framework.Entities
         /// Fixed render tasks are much faster during draw calls but cannot have changing shader properties.
         /// If those updates happen frequently it will degrade performance of other fixed render tasks.
         /// </summary>
-        public virtual bool UseFixedRender { get; set; }
-        public List<RenderCallKey> FixedRenderKeys = new List<RenderCallKey>();
+        bool _useFixedRender = false;
+        public virtual bool UseFixedRender
+        {
+            get => _useFixedRender;
+            set
+            {
+                if (IsInitialized)
+                {
+                    if (value && !UseFixedRender)
+                        RegisterDraws();
+                    if (!value && UseFixedRender)
+                        UnregisterDraws();
+                }
+                _useFixedRender = value;
+            }
+        }
+        public virtual void RegisterDraws()
+        {
+            // TODO: Support disable instance here
+            FixedRenderKeys = Model?.MeshParts.Values.Select(part => Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
+            /*, disableInstancing: DisableInstancing);*/).ToList();
+        }
+        public virtual void UnregisterDraws()
+        {
+            if (FixedRenderKeys != null)
+                foreach (var renderKey in FixedRenderKeys)
+                    Manager.UnregisterDraw(renderKey);
+            FixedRenderKeys = null;
+        }
+        public List<RenderCallKey> FixedRenderKeys = null;
 
         /// <summary>
         /// The world matrix for the purposes of drawing the game object
@@ -233,11 +255,9 @@ namespace Spectrum.Framework.Entities
                 ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
                 ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
             }
+            if (UseFixedRender)
+                RegisterDraws();
             PhysicsUpdate(0);
-            if (UseFixedRender && Model != null)
-                foreach (var part in Model)
-                    // TODO: Support disable instance here
-                    FixedRenderKeys.Add(Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer));/*, disableInstancing: DisableInstancing);*/
         }
 
         #region Physics Functions
@@ -321,8 +341,7 @@ namespace Spectrum.Framework.Entities
         public override void Destroy()
         {
             DebugPrinter.undisplay(this);
-            foreach (var renderKey in FixedRenderKeys)
-                Manager.UnregisterDraw(renderKey);
+            UnregisterDraws();
             base.Destroy();
         }
 

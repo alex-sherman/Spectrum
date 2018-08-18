@@ -26,6 +26,7 @@ namespace Spectrum.Framework.Entities
         public bool AllowReplicate;
         public bool AutoReplicate;
         public bool IsLocal;
+        public bool IsInitialized;
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         #endregion
         public DefaultDict<string, object> Data = new DefaultDict<string, object>();
@@ -68,6 +69,7 @@ namespace Spectrum.Framework.Entities
         public virtual void Initialize()
         {
             IsLocal = OwnerGuid == SpectrumGame.Game.MP.ID;
+            IsInitialized = true;
         }
 
         [Replicate]
