@@ -269,6 +269,7 @@ namespace Spectrum.Framework.Entities
             call.Material = material;
             var output = new InstanceData() { World = world };
             call.InstanceData.Add(output);
+            call.InstanceBuffer?.Dispose();
             call.InstanceBuffer = null;
             return output;
         }
