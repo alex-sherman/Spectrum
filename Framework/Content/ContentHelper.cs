@@ -65,7 +65,7 @@ namespace Spectrum.Framework.Content
             return (T)Single.LoadRelative<T>(name, usePrefix);
         }
 
-        public static IEnumerable<string> FindAll<T>(string glob = "*", bool recursive = true)
+        public static IEnumerable<string> FindAll<T>(string glob = "*", bool recursive = true) where T : class
         {
             Type t = typeof(T);
             Dictionary<string, string> locations = new Dictionary<string, string>();
@@ -89,6 +89,9 @@ namespace Spectrum.Framework.Content
             }
             return locations.Select(kvp => (kvp.Value == null ? "" : (kvp.Value + "@")) + kvp.Key);
         }
+
+        public static IEnumerable<T> LoadAll<T>(string glob = "*", bool recursive = true) where T : class
+            => FindAll<T>(glob, recursive).Select(s => Load<T>(s));
 
         public static object LoadType(Type type, string path)
         {

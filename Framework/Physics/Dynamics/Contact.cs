@@ -168,7 +168,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             accumulatedNormalImpulse = 0;
             accumulatedTangentImpulse = -dynamicFriction;
             if (noCollide) return;
-            float e = 0.5f;
+            float e = Restitution;
             Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
             dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
             float dvNormalScalar = Vector3.Dot(dv, normal);
@@ -195,9 +195,6 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             ApplyPush(Vector3.Dot((Position1 - Position2), normal) * normal / contactCount);
         }
-
-        public float AppliedNormalImpulse { get { return accumulatedNormalImpulse; } }
-        public float AppliedTangentImpulse { get { return accumulatedTangentImpulse; } }
 
         /// <summary>
         /// The points in world space gets recalculated by transforming the

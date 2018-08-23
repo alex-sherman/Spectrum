@@ -483,7 +483,7 @@ namespace Spectrum.Framework.Physics
                 Contact c = arbiter.contactList[i];
                 c.UpdatePosition();
                 float slip = (c.p1 - c.p2 - c.Penetration * c.normal).LengthSquared();
-                if (c.Penetration < -contactSettings.breakThreshold || slip > contactSettings.slipThresholdSquared)
+                if (c.body1.Destroying || c.body2.Destroying || c.Penetration < -contactSettings.breakThreshold || slip > contactSettings.slipThresholdSquared)
                 {
                     Contact.Pool.GiveBack(c);
                     arbiter.contactList.RemoveAt(i);
@@ -673,7 +673,7 @@ namespace Spectrum.Framework.Physics
         private void CollisionDetected(GameObject body1, GameObject body2, Vector3 point, Vector3 normal, float penetration)
         {
             Arbiter arbiter = null;
-            if (body1 == null || body2 == null) { return; }
+            if ((body1?.Destroying ?? true) || (body2?.Destroying ?? true)) { return; }
 
             lock (arbiterMap)
             {

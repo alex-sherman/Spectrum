@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Content
         protected Dictionary<string, T> cachedData = new Dictionary<string, T>();
         protected abstract T LoadData(string path, string name);
         protected abstract U SafeCopy(T data);
-        public IEnumerable<string> Extensions;
+        public IEnumerable<string> Extensions = Enumerable.Empty<string>();
         public string Prefix { get; set; }
         public CachedContentParser() { }
         public CachedContentParser(params string[] extensions)
@@ -66,9 +66,18 @@ namespace Spectrum.Framework.Content
 
         public IEnumerable<string> FindAll(string directory, string glob, bool recursive)
         {
-            return Directory.EnumerateFiles(directory, glob, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
-                .Where(path => Extensions.Contains(Path.GetExtension(path).Substring(1)))
-                .Select(path => Path.GetFileNameWithoutExtension(path).Replace(directory + Path.DirectorySeparatorChar, ""));
+            try
+            {
+                var results = Directory.EnumerateFiles(directory, glob, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
+                    .Where(path => Extensions.Contains(Path.GetExtension(path).Substring(1)));
+                return results
+                    .Select(path => Path.Combine(Path.GetDirectoryName(path).Replace(directory + Path.DirectorySeparatorChar, ""), 
+                                    Path.GetFileNameWithoutExtension(path)));
+            }
+            catch(DirectoryNotFoundException)
+            {
+                return Enumerable.Empty<string>();
+            }
         }
     }
     public abstract class CachedContentParser<T> : CachedContentParser<T, T> where T : class

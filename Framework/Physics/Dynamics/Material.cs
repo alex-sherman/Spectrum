@@ -9,8 +9,8 @@ namespace Spectrum.Framework.Physics.Dynamics
     // Maybe some default materials, aka Material.Soft?
     public class Material
     {
-        public float kineticFriction = 0.3f;
+        public float kineticFriction = 0.1f;
         public float staticFriction = 0.6f;
-        public float restitution = 0.0f;
+        public float restitution = 0.2f;
     }
 }
