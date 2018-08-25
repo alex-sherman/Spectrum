@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Screens.InputElements
             }
         }
 
-        public override void Draw(GameTime time, SpriteBatch spritebatch)
+        public override void Draw(float time, SpriteBatch spritebatch)
         {
             base.Draw(time, spritebatch);
             if (Text != null)

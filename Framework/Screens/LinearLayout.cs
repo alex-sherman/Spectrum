@@ -16,7 +16,7 @@ namespace Spectrum.Framework.Screens
     {
         public LinearLayout(LinearLayoutType type = LinearLayoutType.Vertical)
         {
-            this.LayoutManager = new LinearLayoutManager(type);
+            LayoutManager = new LinearLayoutManager(type);
         }
     }
     public class LinearLayoutManager : LayoutManager

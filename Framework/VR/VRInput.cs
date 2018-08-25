@@ -8,12 +8,12 @@ using Valve.VR;
 
 namespace Spectrum.Framework.VR
 {
-    public struct VRButtonBinding
+    public struct VRBinding
     {
         public VRHand Hand;
         public VRButton Button;
         public VRPressType PressType;
-        public VRButtonBinding(VRButton button, VRHand hand = VRHand.Left | VRHand.Right, VRPressType pressType = VRPressType.Pressed)
+        public VRBinding(VRButton button, VRHand hand = VRHand.Left | VRHand.Right, VRPressType pressType = VRPressType.Pressed)
         {
             Hand = hand;
             Button = button;
@@ -147,7 +147,7 @@ namespace Spectrum.Framework.VR
                     return false;
             }
         }
-        public bool IsButtonPressed(VRButtonBinding binding)
+        public bool IsButtonPressed(VRBinding binding)
         {
             return binding.Hand.HasFlag(Hand) && 
                 (

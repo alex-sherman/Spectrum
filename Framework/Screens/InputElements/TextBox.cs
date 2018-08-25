@@ -37,7 +37,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            if (input.IsNewMousePress(0) && !MouseInside())
+            if (input.IsNewMousePress(0) && !MouseInside(input))
             {
                 Selected = false;
             }
@@ -75,7 +75,7 @@ namespace Spectrum.Framework.Screens.InputElements
             }
             return base.HandleInput(otherTookInput, input) || Selected;
         }
-        public override void Draw(GameTime time, SpriteBatch spritebatch)
+        public override void Draw(float time, SpriteBatch spritebatch)
         {
             spritebatch.DrawString(Font, Text, new Vector2(Rect.X + Font.Spacing, Rect.Y), Color.Black, Layer(3));
             if (Selected)

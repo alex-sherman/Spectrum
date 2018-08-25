@@ -7,32 +7,31 @@ namespace Spectrum.Framework.Screens
 {
     public struct RectOffset
     {
-        public float LeftRelative;
-        public int LeftOffset;
-        public int Left(int ParentWidth)
+        public ElementSize Left;
+        public ElementSize Right;
+        public ElementSize Top;
+        public ElementSize Bottom;
+        public int WidthTotal(int parentWidth) => Left.Measure(parentWidth) + Right.Measure(parentWidth);
+        public int HeightTotal(int parentHeight) => Top.Measure(parentHeight) + Bottom.Measure(parentHeight);
+        public static implicit operator RectOffset(int size)
         {
-            return LeftOffset + (int)(LeftRelative * ParentWidth);
+            return new RectOffset()
+            {
+                Left = size,
+                Right = size,
+                Top = size,
+                Bottom = size,
+            };
         }
-
-        public float RightRelative;
-        public int RightOffset;
-        public int Right(int ParentWidth)
+        public static implicit operator RectOffset(float size)
         {
-            return RightOffset + (int)(RightRelative * ParentWidth);
-        }
-
-        public float TopRelative;
-        public int TopOffset;
-        public int Top(int ParentWidth)
-        {
-            return TopOffset + (int)(TopRelative * ParentWidth);
-        }
-
-        public float BottomRelative;
-        public int BottomOffset;
-        public int Bottom(int ParentWidth)
-        {
-            return BottomOffset + (int)(BottomRelative * ParentWidth);
+            return new RectOffset()
+            {
+                Left = size,
+                Right = size,
+                Top = size,
+                Bottom = size,
+            };
         }
     }
 }

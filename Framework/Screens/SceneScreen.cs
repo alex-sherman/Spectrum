@@ -56,7 +56,7 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.ResetOnResize(bounds.Width, bounds.Height);
             }
         }
-        public override void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        public override void Draw(float gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
             if (Camera != null)
@@ -64,7 +64,7 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))
                 {
-                    var renderGroups = Manager.GetRenderTasks(gameTime.DT());
+                    var renderGroups = Manager.GetRenderTasks(gameTime);
                     GraphicsEngine.Render(renderGroups, gameTime, RenderTarget);
                     spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
                     Manager.ClearRenderTasks();

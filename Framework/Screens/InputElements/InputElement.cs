@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             RegisterHandler(new KeyBind(0), (input) =>
             {
-                if (OnClick != null && MouseInside())
+                if (OnClick != null && MouseInside(input))
                 {
                     OnClick(this);
                     return true;
@@ -27,7 +27,7 @@ namespace Spectrum.Framework.Screens.InputElements
             });
             RegisterHandler(new KeyBind(1), (input) =>
             {
-                if (OnRightClick != null && MouseInside())
+                if (OnRightClick != null && MouseInside(input))
                 {
                     OnRightClick(this);
                     return true;

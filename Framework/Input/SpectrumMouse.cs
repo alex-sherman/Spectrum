@@ -8,7 +8,7 @@ using System.Windows.Forms;
 
 namespace Spectrum.Framework.Input
 {
-    public class SpectrumMouseState
+    public class CursorState
     {
         public bool[] buttons;
         public int X;
@@ -33,11 +33,11 @@ namespace Spectrum.Framework.Input
             mousePosition.Y = e.Y;
         }
 
-        public SpectrumMouseState GetCurrentState(SpectrumMouseState previous = null)
+        public CursorState GetCurrentState(CursorState previous = null)
         {
             bool[] buttons = new bool[16];
             RawMouse.buttons.CopyTo(buttons, 0);
-            return new SpectrumMouseState()
+            return new CursorState()
             {
                 buttons = buttons,
                 X = mousePosition.X,

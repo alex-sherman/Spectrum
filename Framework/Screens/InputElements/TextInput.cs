@@ -27,7 +27,7 @@ namespace Spectrum.Framework.Screens.InputElements
             otherTookInput = base.HandleInput(otherTookInput, input);
             if(Selected)
             {
-                if (input.IsNewMousePress(0) && !MouseInside())
+                if (input.IsNewMousePress(0) && !MouseInside(input))
                 {
                     Selected = false;
                     return false;
@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Screens.InputElements
             MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
             MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
         }
-        public override void Draw(GameTime time, SpriteBatch spritebatch)
+        public override void Draw(float time, SpriteBatch spritebatch)
         {
             base.Draw(time, spritebatch);
             spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, Layer(2));

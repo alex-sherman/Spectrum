@@ -66,9 +66,9 @@ namespace Spectrum.Framework.Input
         public float Value(InputState input, PlayerInformation player)
         {
             if (horizontal)
-                return input.MouseState.DX * scalar;
+                return input.CursorState.DX * scalar;
             else
-                return input.MouseState.DY * scalar;
+                return input.CursorState.DY * scalar;
         }
     }
     public struct Axis1

@@ -66,7 +66,7 @@ namespace Spectrum.Framework.Screens
                 return otherTookInput;
             if (!otherTookInput)
             {
-                if (CaptureInputWhenFocused && Rect.Contains(input.MousePosition))
+                if (CaptureInputWhenFocused && MouseInside(input))
                     otherTookInput = true;
                 if (input.IsNewKeyPress("GoBack"))
                 {
@@ -76,33 +76,33 @@ namespace Spectrum.Framework.Screens
                 }
                 if (input.IsNewMousePress(0))
                 {
-                    if (Rect.Contains(input.MouseState.X, input.MouseState.Y))
+                    if (Rect.Contains(input.CursorState.X, input.CursorState.Y))
                     {
                         otherTookInput = true;
                         Parent.MoveElement(this, 0);
                     }
-                    if (CloseButtonRect.Contains(input.MouseState.X, input.MouseState.Y))
+                    if (CloseButtonRect.Contains(input.CursorState.X, input.CursorState.Y))
                     {
                         Close();
                     }
-                    if (TitleContainer.Rect.Contains(input.MouseState.X, input.MouseState.Y))
+                    if (TitleContainer.Rect.Contains(input.CursorState.X, input.CursorState.Y))
                     {
                         dragging = true;
-                        dragMouseBegin.X = input.MouseState.X;
-                        dragMouseBegin.Y = input.MouseState.Y;
+                        dragMouseBegin.X = input.CursorState.X;
+                        dragMouseBegin.Y = input.CursorState.Y;
                         dragBegin.X = Rect.X;
                         dragBegin.Y = Rect.Y;
                         otherTookInput = true;
                     }
                 }
-                if (!input.MouseState.buttons[0])
+                if (!input.CursorState.buttons[0])
                 {
                     dragging = false;
                 }
                 if (dragging)
                 {
                     otherTookInput = true;
-                    Vector2 newPos = new Vector2(input.MouseState.X, input.MouseState.Y) - dragMouseBegin + dragBegin;
+                    Vector2 newPos = new Vector2(input.CursorState.X, input.CursorState.Y) - dragMouseBegin + dragBegin;
 
                     X = (int)newPos.X;
                     Y = (int)newPos.Y;

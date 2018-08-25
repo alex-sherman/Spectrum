@@ -227,7 +227,7 @@ namespace Spectrum
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-            Root.Draw(gameTime);
+            Root.Draw(gameTime.DT());
         }
         protected override void EndDraw()
         {

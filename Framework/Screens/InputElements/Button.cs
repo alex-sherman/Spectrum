@@ -10,8 +10,6 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class Button : InputElement
     {
-        public string Text;
-
         public Button(int width, int height)
         {
             Width = width;
@@ -23,16 +21,6 @@ namespace Spectrum.Framework.Screens.InputElements
             AddElement(new TextElement(text));
             Width.WrapContent = true;
             Height.WrapContent = true;
-        }
-
-        public override void Draw(GameTime time, SpriteBatch spritebatch)
-        {
-            base.Draw(time, spritebatch);
-            if (Text != null)
-            {
-                Vector2 pos = new Vector2(Rect.X, Rect.Y) + (new Vector2(Rect.Width, Rect.Height) - Font.MeasureString(Text)) / 2;
-                spritebatch.DrawString(Font, Text, pos, FontColor, Layer(2));
-            }
         }
     }
 }

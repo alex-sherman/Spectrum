@@ -13,8 +13,8 @@ namespace Spectrum.Framework.Screens
     #region DataTypes
     public enum PositionType
     {
-        InlineLeft,
-        InlineRight,
+        Inline,
+        // TODO: Add flags for horizontal vs vertical
         Center,
         Relative,
         Absolute
@@ -31,7 +31,7 @@ namespace Spectrum.Framework.Screens
     public class Element
     {
         public static SpriteFont DefaultFont;
-        public LayoutManager LayoutManager { get; protected set; }
+        public LayoutManager LayoutManager;
         public Element Parent { get; private set; }
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
@@ -73,7 +73,7 @@ namespace Spectrum.Framework.Screens
 
         public Element()
         {
-            Positioning = PositionType.InlineLeft;
+            Positioning = PositionType.Inline;
             Fields["font"] = new ElementField(
                 this,
                 "font",
@@ -196,7 +196,6 @@ namespace Spectrum.Framework.Screens
         }
 
         public RectOffset Margin;
-        public RectOffset Padding;
 
         public ElementSize Width;
         public int MeasuredWidth { get; set; }
@@ -206,10 +205,7 @@ namespace Spectrum.Framework.Screens
 
         public void Center()
         {
-            Margin.LeftRelative = .5f;
-            Margin.RightRelative = .5f;
-            Margin.LeftOffset = -MeasuredWidth / 2;
-            Margin.RightOffset = MeasuredWidth / 2;
+            Positioning = PositionType.Center;
         }
 
         public int X;
@@ -232,9 +228,9 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         public Rectangle Rect { get; private set; }
 
-        public bool MouseInside()
+        public bool MouseInside(InputState input)
         {
-            return Rect.Contains(Mouse.GetState().X, Mouse.GetState().Y);
+            return Rect.Contains(input.MousePosition.X, input.MousePosition.Y);
         }
 
         public virtual void Update(GameTime gameTime)
@@ -248,13 +244,10 @@ namespace Spectrum.Framework.Screens
         }
         public virtual void OnMeasure(int width, int height)
         {
+            MeasuredWidth = Width.Measure(width, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max());
+            MeasuredHeight = Height.Measure(height, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max());
             if (LayoutManager != null)
                 LayoutManager.OnMeasure(this, width, height);
-            else
-            {
-                MeasuredWidth = Width.Measure(width, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max());
-                MeasuredHeight = Height.Measure(height, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max());
-            }
         }
         public virtual void Measure(int width, int height)
         {
@@ -267,12 +260,12 @@ namespace Spectrum.Framework.Screens
             height = Height.CropParentSize(height);
             foreach (var child in Children)
             {
-                child.Measure(width, height);
+                child.Measure(width - Margin.WidthTotal(width), height - Margin.HeightTotal(height));
             }
             OnMeasure(width, height);
             foreach (var child in Children)
             {
-                child.Measure(MeasuredWidth, MeasuredHeight);
+                child.Measure(MeasuredWidth - Margin.WidthTotal(width), MeasuredHeight - Margin.HeightTotal(height));
             }
         }
         public virtual void Layout(Rectangle bounds)
@@ -280,9 +273,15 @@ namespace Spectrum.Framework.Screens
             if (!Display)
                 return;
             Bounds = bounds;
-            int X = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)) + bounds.X;
-            int Y = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)) + bounds.Y;
-            Rect = new Rectangle(X, Y, bounds.Width, bounds.Height);
+            int X = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)) + bounds.X + Margin.Left.Measure(Parent?.MeasuredWidth ?? 0);
+            int Y = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)) + bounds.Y + Margin.Top.Measure(Parent?.MeasuredHeight ?? 0);
+            Rect = new Rectangle()
+            {
+                X = X,
+                Y = Y,
+                Width = bounds.Width - Margin.Left.Measure(Parent?.MeasuredWidth ?? 0) - Margin.Right.Measure(Parent?.MeasuredWidth ?? 0),
+                Height = bounds.Height - Margin.Top.Measure(Parent?.MeasuredHeight ?? 0) - Margin.Bottom.Measure(Parent?.MeasuredHeight ?? 0)
+            };
             if (LayoutManager != null)
                 LayoutManager.OnLayout(this, bounds);
             else
@@ -294,19 +293,19 @@ namespace Spectrum.Framework.Screens
                 {
                     switch (child.Positioning)
                     {
-                        case PositionType.InlineLeft:
-                            if ((XOffset > 0 && XOffset + child.MeasuredWidth + child.Margin.Left(MeasuredWidth) > MeasuredWidth))
+                        case PositionType.Inline:
+                            if ((XOffset > 0 && XOffset + child.MeasuredWidth > MeasuredWidth))
                             {
                                 XOffset = 0;
                                 YOffset += MaxRowHeight;
                                 MaxRowHeight = 0;
                             }
                             child.Layout(new Rectangle(XOffset, YOffset, child.MeasuredWidth, child.MeasuredHeight));
-                            MaxRowHeight = Math.Max(MaxRowHeight, child.MeasuredHeight + child.Margin.Top(MeasuredHeight) + child.Margin.Bottom(MeasuredWidth));
-                            XOffset += child.MeasuredWidth + child.Margin.Left(MeasuredWidth) + child.Margin.Right(MeasuredWidth);
+                            MaxRowHeight = Math.Max(MaxRowHeight, child.MeasuredHeight);
+                            XOffset += child.MeasuredWidth;
                             break;
                         case PositionType.Center:
-                            child.Layout(new Rectangle(MeasuredWidth / 2 - child.MeasuredWidth / 2, MeasuredHeight / 2 - child.MeasuredHeight / 2, child.MeasuredWidth, child.MeasuredHeight));
+                            child.Layout(new Rectangle(Rect.Width / 2 - child.MeasuredWidth / 2, Rect.Height / 2 - child.MeasuredHeight / 2, child.MeasuredWidth, child.MeasuredHeight));
                             break;
                         case PositionType.Absolute:
                         case PositionType.Relative:
@@ -320,7 +319,7 @@ namespace Spectrum.Framework.Screens
 
         }
 
-        public virtual void Draw(GameTime gameTime, SpriteBatch spritebatch)
+        public virtual void Draw(float gameTime, SpriteBatch spritebatch)
         {
             if (Texture != null)
             {
@@ -332,13 +331,14 @@ namespace Spectrum.Framework.Screens
             }
             else if (BackgroundColor != null)
                 ImageAsset.Blank.Draw(spritebatch, Rect, BackgroundColor.Value, Z);
-            if (HasFocus && MouseInside() && HoverText != null)
-            {
-                spritebatch.DrawString(Font, HoverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
-            }
+            // TODO
+            //if (HasFocus && MouseInside() && HoverText != null)
+            //{
+            //    spritebatch.DrawString(Font, HoverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
+            //}
         }
 
-        public virtual float DrawWithChildren(GameTime gameTime, SpriteBatch spritebatch, float layer)
+        public virtual float DrawWithChildren(float gameTime, SpriteBatch spritebatch, float layer)
         {
             Z = layer;
             Draw(gameTime, spritebatch);
@@ -358,13 +358,14 @@ namespace Spectrum.Framework.Screens
             _children.Remove(child);
             _children.Insert(newIndex, child);
         }
-        public virtual void AddElement(Element element, int? index = null)
+        public virtual T AddElement<T>(T element, int? index = null) where T : Element
         {
             if (element.Initialized)
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
             _children.Insert(index ?? _children.Count, element);
             element.Initialize();
+            return element;
         }
         public virtual void RemoveElement(Element element)
         {

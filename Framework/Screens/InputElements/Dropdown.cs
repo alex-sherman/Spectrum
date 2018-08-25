@@ -74,7 +74,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public void AddOption(ListOption<T> option)
         {
             if (Children.Count == 0)
-                option.Margin.TopRelative = 1;
+                option.Margin.Top = 1f;
             option.OnClick += Option_OnClick;
             option.Toggle(Expanded);
             Options.Add(option);

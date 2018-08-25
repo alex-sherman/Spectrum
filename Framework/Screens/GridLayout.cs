@@ -9,12 +9,12 @@ namespace Spectrum.Framework.Screens
 {
     public class GridLayout : Element
     {
-        public GridLayout(int cols) { this.LayoutManager = new GridLayoutManager(cols); }
+        public GridLayout(int cols) { LayoutManager = new GridLayoutManager(cols); }
     }
     public class GridLayoutManager : LayoutManager
     {
         int Cols;
-        public GridLayoutManager(int cols) { this.Cols = cols; }
+        public GridLayoutManager(int cols) { Cols = cols; }
         public void OnLayout(Element element, Rectangle bounds)
         {
             int curRow = 0;
@@ -34,42 +34,34 @@ namespace Spectrum.Framework.Screens
         private List<int> colWidths = new List<int>();
         public void OnMeasure(Element element, int width, int height)
         {
-            if (element.Height.WrapContent || element.Width.WrapContent)
+            rowHeights.Clear();
+            colWidths.Clear();
+            colWidths.AddRange(Enumerable.Repeat(0, Cols));
+            int curRow = 0;
+            int curCol = 0;
+            int curRowHeight = 0;
+            int childWidth = width;
+            childWidth /= Cols;
+            int childHeight = height;
+            foreach (var child in element.Children)
             {
-                rowHeights.Clear();
-                colWidths.Clear();
-                colWidths.AddRange(Enumerable.Repeat(0, Cols));
-                int curRow = 0;
-                int curCol = 0;
-                int curRowHeight = 0;
-                int childWidth = width;
-                childWidth /= Cols;
-                int childHeight = height;
-                foreach (var child in element.Children)
+                child.Measure(width, height);
+                curRowHeight = Math.Max(child.MeasuredHeight, curRowHeight);
+                colWidths[curCol] = Math.Max(colWidths[curCol], child.MeasuredWidth);
+                curCol += 1;
+                if (curCol == Cols)
                 {
-
-                    child.Measure(width, height);
-                    curRowHeight = Math.Max(child.MeasuredHeight, curRowHeight);
-                    colWidths[curCol] = Math.Max(colWidths[curCol], child.MeasuredWidth);
-                    curCol += 1;
-                    if (curCol == Cols)
-                    {
-                        rowHeights.Add(curRowHeight);
-                        curRowHeight = 0;
-                        curRow += 1;
-                        curCol = 0;
-                    }
+                    rowHeights.Add(curRowHeight);
+                    curRowHeight = 0;
+                    curRow += 1;
+                    curCol = 0;
                 }
-                rowHeights.Add(curRowHeight);
-                if (element.Height.WrapContent)
-                    element.MeasuredHeight = rowHeights.DefaultIfEmpty(0).Sum();
-                if (element.Width.WrapContent)
-                    element.MeasuredWidth = colWidths.DefaultIfEmpty(0).Sum();
             }
-            if (!element.Height.WrapContent)
-                element.MeasuredHeight = height;
-            if (!element.Width.WrapContent)
-                element.MeasuredWidth = width;
+            rowHeights.Add(curRowHeight);
+            if (element.Height.WrapContent)
+                element.MeasuredHeight = rowHeights.DefaultIfEmpty(0).Sum();
+            if (element.Width.WrapContent)
+                element.MeasuredWidth = colWidths.DefaultIfEmpty(0).Sum();
         }
     }
 }

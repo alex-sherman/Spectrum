@@ -34,7 +34,7 @@ namespace Spectrum.Framework.Screens
             base.Update(gameTime);
         }
 
-        public void Draw(GameTime gameTime)
+        public void Draw(float gameTime)
         {
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);

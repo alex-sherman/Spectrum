@@ -73,7 +73,7 @@ namespace Spectrum.Framework.Entities
 
         public float inactiveTime = 0.0f;
 
-        public bool IsActive;
+        public bool IsActive = true;
         public bool AllowDeactivation;
 
         /// <summary>
@@ -239,7 +239,6 @@ namespace Spectrum.Framework.Entities
             : base()
         {
             Model = null;
-            IsActive = true;
             inertia = new Matrix();
             invInertia = invInertiaWorld = new Matrix();
             invOrientation = orientation = Quaternion.Identity;

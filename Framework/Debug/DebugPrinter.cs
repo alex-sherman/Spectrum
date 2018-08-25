@@ -122,7 +122,7 @@ namespace Spectrum.Framework
                 }
             }
         }
-        public override void Draw(GameTime gameTime, SpriteBatch spritebatch)
+        public override void Draw(float gameTime, SpriteBatch spritebatch)
         {
             base.Draw(gameTime, spritebatch);
 
@@ -147,7 +147,7 @@ namespace Spectrum.Framework
                     spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, Z);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                DrawTimes(2, spritebatch, gameTime.DT());
+                DrawTimes(2, spritebatch, gameTime);
 
             }
         }

@@ -279,7 +279,7 @@ namespace Spectrum.Framework.Graphics
             }
         }
 
-        public static void BeginRender(GameTime gameTime)
+        public static void BeginRender()
         {
             device.DepthStencilState = DepthStencilState.Default;
             device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
@@ -359,13 +359,13 @@ namespace Spectrum.Framework.Graphics
             };
             RenderQueue(vrPhase, groups);
         }
-        public static void Render(IEnumerable<RenderCall> renderGroups, GameTime gameTime, RenderTarget2D target)
+        public static void Render(IEnumerable<RenderCall> renderGroups, float gameTime, RenderTarget2D target)
         {
-            BeginRender(gameTime);
+            BeginRender();
             WaterEffect.ReflectionView = Camera.ReflectionView;
             WaterEffect.ReflectionProj = Camera.ReflectionProjection;
             SpectrumEffect.CameraPos = Camera.Position;
-            WaterEffect.WaterTime += gameTime.ElapsedGameTime.Milliseconds / 20.0f;
+            WaterEffect.WaterTime += gameTime * 50;
 
             using (DebugTiming.Render.Time("Update Shadow"))
                 UpdateShadowMap(renderGroups);

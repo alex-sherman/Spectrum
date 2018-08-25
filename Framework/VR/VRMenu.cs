@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Spectrum.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Spectrum.Framework.Content;
+using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.VR
 {
@@ -16,7 +17,8 @@ namespace Spectrum.Framework.VR
     {
         public RootElement Root;
         public RenderTarget2D Target;
-        public Point RenderTargetSize;
+        public Point RenderTargetSize = new Point(1024, 1024);
+        public InputState InputState = new InputState(true);
         public VRMenu()
         {
             AllowReplicate = false;
@@ -30,8 +32,44 @@ namespace Spectrum.Framework.VR
         }
         public override void Update(GameTime gameTime)
         {
-            Root.Update(gameTime, new Input.InputState());
+            InputState.Update();
+            InputState.CursorState = GetCursorState(InputState);
+            Root.Update(gameTime, InputState);
+        }
+        public override void Draw(float gameTime)
+        {
             Root.Draw(gameTime);
+            base.Draw(gameTime);
+        }
+        public CursorState GetCursorState(InputState input)
+        {
+            var buttons = new bool[16];
+            var camera = GraphicsEngine.Camera;
+            int X = 0;
+            int Y = 0;
+            if (camera != null)
+            {
+                var position = camera.Position - input.VRHMD.Position + input.VRControllers[1].Position;
+                var direction = Vector3.Transform(Vector3.Forward, input.VRControllers[1].Rotation);
+                if (Manager.Physics.CollisionSystem.Raycast(this, position, direction, out Vector3 normal, out float fraction))
+                {
+                    buttons[0] = input.IsKeyDown(new VRBinding(VRButton.BetterTrigger));
+                    buttons[1] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Touchpad));
+                    Vector3 localPos = Vector3.Transform(position + direction * fraction, Matrix.Invert(World));
+                    Vector2 cursorPos = new Vector2(localPos.X / Size.X, -localPos.Y / Size.Y) + Vector2.One / 2;
+                    X = (int)(cursorPos.X * RenderTargetSize.X);
+                    Y = (int)(cursorPos.Y * RenderTargetSize.Y);
+                }
+            }
+            return new CursorState()
+            {
+                DX = 0,
+                DY = 0,
+                buttons = buttons,
+                Scroll = 0,
+                X = X,
+                Y = Y,
+            };
         }
     }
 }

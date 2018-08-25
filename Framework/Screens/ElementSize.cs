@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Screens
         public bool WrapContent;
         public bool ParentRelative;
         public static ElementSize Zero = new ElementSize(0);
-        private double Size;
+        public double Size;
         public ElementSize(double size)
         {
             Size = size;
@@ -32,7 +32,7 @@ namespace Spectrum.Framework.Screens
                 return 0;
             return (int)Size;
         }
-        public int Measure(int parent, int content)
+        public int Measure(int parent, int content = 0)
         {
             if(WrapContent)
             {

@@ -26,22 +26,24 @@ namespace Spectrum.Framework.Input
         public static InputState Current { get; private set; } = new InputState();
 
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
-        public SpectrumMouseState MouseState;
+        public CursorState CursorState;
         public Gamepad[] Gamepads = new Gamepad[4];
         public VRHMD VRHMD = new VRHMD();
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
         private InputState LastInputState;
+        public bool DisableCursorState { get; private set; }
 
-        public InputState()
+        public InputState(bool disableCursorState = false)
         {
+            DisableCursorState = disableCursorState;
             KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
-            MouseState = SpecMouse.GetCurrentState();
+            if (!DisableCursorState)
+                CursorState = SpecMouse.GetCurrentState();
             LastInputState = null;
             for (int i = 0; i < 4; i++)
             {
                 Gamepads[i] = new Gamepad(new SharpDX.XInput.Controller((SharpDX.XInput.UserIndex)i));
             }
-
         }
 
         #region Public Methods
@@ -52,8 +54,9 @@ namespace Spectrum.Framework.Input
                 LastInputState = new InputState();
             LastInputState.KeyboardState = KeyboardState;
             KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
-            LastInputState.MouseState = MouseState;
-            MouseState = SpecMouse.GetCurrentState(MouseState);
+            LastInputState.CursorState = CursorState;
+            if (!DisableCursorState)
+                CursorState = SpecMouse.GetCurrentState(CursorState);
             for (int i = 0; i < 4; i++)
             {
                 LastInputState.Gamepads[i] = Gamepads[i];
@@ -105,7 +108,7 @@ namespace Spectrum.Framework.Input
         public bool IsKeyDown(Keys key) => KeyboardState.IsKeyDown(key);
         private bool IsButtonDown(GamepadButton button, int gamepadIndex)
             => Gamepads[gamepadIndex].IsButtonPressed(button);
-        private bool IsButtonDown(VRButtonBinding button)
+        private bool IsButtonDown(VRBinding button)
             => VRControllers.Any(controller => controller.IsButtonPressed(button));
         public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo = null)
             => IsKeyDown(bindingName, playerInfo) && !LastInputState.IsKeyDown(bindingName, playerInfo);
@@ -132,14 +135,14 @@ namespace Spectrum.Framework.Input
                 output.Normalize();
             return output;
         }
-        public Point MousePosition { get { return new Point(MouseState.X, MouseState.Y); } }
+        public Point MousePosition { get { return new Point(CursorState.X, CursorState.Y); } }
         public bool IsMouseDown(int button)
-            => button >= MouseState.buttons.Length ? false : MouseState.buttons[button];
+            => button >= CursorState.buttons.Length ? false : CursorState.buttons[button];
         public bool IsNewMousePress(int button)
             => IsMouseDown(button) && !LastInputState.IsMouseDown(button);
         public bool IsNewMouseRelease(int button)
             => !IsMouseDown(button) && LastInputState.IsMouseDown(button);
-        public int MouseWheelDistance => MouseState.Scroll;
+        public int MouseWheelDistance => CursorState.Scroll;
 
 
         #endregion
@@ -162,7 +165,7 @@ namespace Spectrum.Framework.Input
                     if (key == Keys.Back && position > 0)
                     {
                         int count = 0;
-                        if(IsKeyDown(Keys.LeftControl) || IsKeyDown(Keys.RightControl))
+                        if (IsKeyDown(Keys.LeftControl) || IsKeyDown(Keys.RightControl))
                         {
                             while (count < currentString.Length - 1 && currentString[currentString.Length - 1 - count] != ' ')
                                 count++;
