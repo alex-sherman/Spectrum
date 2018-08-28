@@ -482,8 +482,7 @@ namespace Spectrum.Framework.Physics
             {
                 Contact c = arbiter.contactList[i];
                 c.UpdatePosition();
-                float slip = (c.p1 - c.p2 - c.Penetration * c.normal).LengthSquared();
-                if (c.body1.Destroying || c.body2.Destroying || c.Penetration < -contactSettings.breakThreshold || slip > contactSettings.slipThresholdSquared)
+                if (c.body1.Destroying || c.body2.Destroying || c.Penetration < -contactSettings.breakThreshold || c.slip > contactSettings.slipThresholdSquared)
                 {
                     Contact.Pool.GiveBack(c);
                     arbiter.contactList.RemoveAt(i);
@@ -553,8 +552,6 @@ namespace Spectrum.Framework.Physics
                     for (int e = 0; e < contactCount; e++)
                     {
                         arbiter.contactList[e].NewIterate(contactCount);
-                        //if (i == -1) arbiter.contactList[e].PrepareForIteration(timestep);
-                        //arbiter.contactList[e].Iterate();
                     }
                 }
 

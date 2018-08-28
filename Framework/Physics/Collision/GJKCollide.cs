@@ -281,39 +281,22 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 bc = c - b;
             Vector3 bd = d - b;
 
-            Vector3 acd = Vector3.Cross(ad, ac);
+            Vector3 adc = Vector3.Cross(ad, ac);
             Vector3 abd = Vector3.Cross(ab, ad);
             Vector3 abc = Vector3.Cross(ac, ab);
             //No need to check BCD since A was the last added point, it certainly must be in
             //the direction of the origin from BCD
-
             Vector3 aO = -a;
-
             if (abc.IsInSameDirection(aO))
-            {
                 simplex.RemoveAt(0);
-                direction = abc;
-            }
-            else if (acd.IsInSameDirection(aO))
-            {
+            else if (adc.IsInSameDirection(aO))
                 simplex.RemoveAt(2);
-                direction = acd;
-            }
             else if (abd.IsInSameDirection(aO))
-            {
                 simplex.RemoveAt(1);
-                direction = abd;
-            }
             else
-            {
                 return true;
-            }
-            if (simplex.Count < 3)
-            {
-
-            }
-
-            return false;
+            // The remaining triangle needs to be correctly wound such that 1-0 x 2-0 points to the origin
+            return ProcessTriangle(simplex, ref direction);
         }
         #endregion
 

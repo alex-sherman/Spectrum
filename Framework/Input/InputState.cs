@@ -25,6 +25,7 @@ namespace Spectrum.Framework.Input
         private static SpectrumMouse SpecMouse = new SpectrumMouse();
         public static InputState Current { get; private set; } = new InputState();
 
+        public float DT;
         public Microsoft.Xna.Framework.Input.KeyboardState KeyboardState;
         public CursorState CursorState;
         public Gamepad[] Gamepads = new Gamepad[4];
@@ -48,10 +49,12 @@ namespace Spectrum.Framework.Input
 
         #region Public Methods
 
-        public void Update()
+        public void Update(float dt)
         {
             if (LastInputState == null)
                 LastInputState = new InputState();
+            LastInputState.DT = dt;
+            DT = dt;
             LastInputState.KeyboardState = KeyboardState;
             KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
             LastInputState.CursorState = CursorState;
@@ -112,14 +115,12 @@ namespace Spectrum.Framework.Input
             => VRControllers.Any(controller => controller.IsButtonPressed(button));
         public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo = null)
             => IsKeyDown(bindingName, playerInfo) && !LastInputState.IsKeyDown(bindingName, playerInfo);
-        public bool IsNewKeyPress(Keys key)
-            => IsKeyDown(key) && !LastInputState.IsKeyDown(key);
         public bool IsNewKeyPress(KeyBind button)
             => IsKeyDown(button) && !LastInputState.IsKeyDown(button);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
             => !IsKeyDown(bindingName, playerInfo) && LastInputState.IsKeyDown(bindingName, playerInfo);
-        public bool IsNewKeyRelease(Keys key)
-            => !IsKeyDown(key) && LastInputState.IsKeyDown(key);
+        public bool IsNewKeyRelease(KeyBind button)
+            => !IsKeyDown(button) && LastInputState.IsKeyDown(button);
         public float GetAxis1D(string axisName, PlayerInformation playerInfo = null)
         {
             playerInfo = playerInfo ?? PlayerInformation.Default;

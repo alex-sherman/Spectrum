@@ -32,7 +32,7 @@ namespace Spectrum.Framework.VR
         }
         public override void Update(GameTime gameTime)
         {
-            InputState.Update();
+            InputState.Update(gameTime.DT());
             InputState.CursorState = GetCursorState(InputState);
             Root.Update(gameTime, InputState);
         }

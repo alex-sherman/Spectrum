@@ -19,10 +19,16 @@ namespace Spectrum.Framework.Screens
         Relative,
         Absolute
     }
+    public enum KeyPressType
+    {
+        Press,
+        Release,
+        Hold,
+    }
     struct InputHandler
     {
         public Func<InputState, bool> Handler;
-        public bool OnKeyPress;
+        public KeyPressType OnKeyPress;
         public bool RequireDisplay;
         public bool IgnoreConsumed;
     }
@@ -153,16 +159,16 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         /// <param name="keybind">The keybind on which to fire the handler</param>
         /// <param name="handler">An input handler for they keybind returning whether to consume input or not</param>
-        /// <param name="onKeyPress">Restricts the handler to only fire on a new key press</param>
+        /// <param name="pressType">Selects which press type the handler should fire on</param>
         /// <param name="requireDisplay">Requires that the element be displayed for the handler to fire</param>
         /// <param name="ignoreConsumed">Ignores other elements marking the keybind as already consumed</param>
         public void RegisterHandler(KeyBind keybind, Func<InputState, bool> handler,
-            bool onKeyPress = true, bool requireDisplay = true, bool ignoreConsumed = false)
+            KeyPressType pressType = KeyPressType.Press, bool requireDisplay = true, bool ignoreConsumed = false)
         {
             inputHandlers[keybind] = new InputHandler()
             {
                 Handler = handler,
-                OnKeyPress = onKeyPress,
+                OnKeyPress = pressType,
                 RequireDisplay = requireDisplay,
                 IgnoreConsumed = ignoreConsumed
             };
@@ -172,12 +178,12 @@ namespace Spectrum.Framework.Screens
         /// </summary>
         /// <param name="keybind">The keybind on which to fire the handler</param>
         /// <param name="handler">An input handler for they keybind</param>
-        /// <param name="onKeyPress">Restricts the handler to only fire on a new key press</param>
+        /// <param name="pressType">Selects which press type the handler should fire on</param>
         /// <param name="requireDisplay">Requires that the element be displayed for the handler to fire</param>
         /// <param name="ignoreConsumed">Ignores other elements marking the keybind as already consumed</param>
         public void RegisterHandler(KeyBind keybind, Action<InputState> handler,
-            bool onKeyPress = true, bool requireDisplay = true, bool ignoreConsumed = false) =>
-            RegisterHandler(keybind, (input) => { handler(input); return true; }, onKeyPress, requireDisplay, ignoreConsumed);
+            KeyPressType pressType = KeyPressType.Press, bool requireDisplay = true, bool ignoreConsumed = false) =>
+            RegisterHandler(keybind, (input) => { handler(input); return true; }, pressType, requireDisplay, ignoreConsumed);
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
@@ -188,8 +194,22 @@ namespace Spectrum.Framework.Screens
             foreach (var inputHandler in inputHandlers)
             {
                 // TODO: Replace !otherTookInput with input consumption for keybind
-                if ((Display || !inputHandler.Value.RequireDisplay) && (!otherTookInput || inputHandler.Value.IgnoreConsumed) &&
-                    (inputHandler.Value.OnKeyPress ? input.IsNewKeyPress(inputHandler.Key) : input.IsKeyDown(inputHandler.Key)))
+                switch (inputHandler.Value.OnKeyPress)
+                {
+                    case KeyPressType.Press:
+                        if (!input.IsNewKeyPress(inputHandler.Key))
+                            continue;
+                        break;
+                    case KeyPressType.Release:
+                        if (!input.IsNewKeyRelease(inputHandler.Key))
+                            continue;
+                        break;
+                    case KeyPressType.Hold:
+                        if (!input.IsKeyDown(inputHandler.Key))
+                            continue;
+                        break;
+                }
+                if ((Display || !inputHandler.Value.RequireDisplay) && (!otherTookInput || inputHandler.Value.IgnoreConsumed))
                     otherTookInput |= inputHandler.Value.Handler(input);
             }
             return otherTookInput;
@@ -283,7 +303,7 @@ namespace Spectrum.Framework.Screens
                 Height = bounds.Height - Margin.Top.Measure(Parent?.MeasuredHeight ?? 0) - Margin.Bottom.Measure(Parent?.MeasuredHeight ?? 0)
             };
             if (LayoutManager != null)
-                LayoutManager.OnLayout(this, bounds);
+                LayoutManager.OnLayout(this, Rect);
             else
             {
                 int XOffset = 0;
@@ -358,7 +378,7 @@ namespace Spectrum.Framework.Screens
             _children.Remove(child);
             _children.Insert(newIndex, child);
         }
-        public virtual T AddElement<T>(T element, int? index = null) where T : Element
+        public T AddElement<T>(T element, int? index = null) where T : Element
         {
             if (element.Initialized)
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
@@ -367,7 +387,7 @@ namespace Spectrum.Framework.Screens
             element.Initialize();
             return element;
         }
-        public virtual void RemoveElement(Element element)
+        public void RemoveElement(Element element)
         {
             _children.Remove(element);
         }

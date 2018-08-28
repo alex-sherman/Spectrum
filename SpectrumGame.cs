@@ -220,7 +220,7 @@ namespace Spectrum
                     OnScreenResize(this, EventArgs.Empty);
                 }
             }
-            InputState.Current.Update();
+            InputState.Current.Update(gameTime.DT());
             Root.Update(gameTime, InputState.Current);
             base.Update(gameTime);
         }

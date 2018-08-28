@@ -68,9 +68,10 @@ namespace Spectrum.Framework.Screens
             {
                 if (CaptureInputWhenFocused && MouseInside(input))
                     otherTookInput = true;
+                // TODO: Change this to RegisterHandler and consume the input
                 if (input.IsNewKeyPress("GoBack"))
                 {
-                    input.Update();
+                    input.Update(input.DT);
                     Close();
                     otherTookInput = true;
                 }

@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spectrum.Framework;
-using Spectrum.Framework.Physics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace Spectrum.Framework.Graphics
 {
@@ -13,10 +10,7 @@ namespace Spectrum.Framework.Graphics
     public class Camera
     {
         public Matrix Projection;
-        CullMode culling = CullMode.None;
-        Color clearColor = Color.CornflowerBlue;
-        float aspectRatio;
-        private Vector3 _position;
+        public Vector3 Position;
         public Quaternion Rotation;
         /// TODO: Retrieve these values from rotation?
         public float Yaw
@@ -35,24 +29,6 @@ namespace Spectrum.Framework.Graphics
         }
         public float Roll => Rotation.Roll();
 
-        public Color ClearColor
-        {
-            get { return clearColor; }
-            set { clearColor = value; }
-        }
-
-        public CullMode Culling
-        {
-            get { return culling; }
-            set { culling = value; }
-        }
-
-        public float AspectRatio
-        {
-            get { return aspectRatio; }
-            set { aspectRatio = value; }
-        }
-
         public virtual Matrix ReflectionProjection
         {
             get
@@ -69,17 +45,6 @@ namespace Spectrum.Framework.Graphics
                     Position,
                     Vector3.Transform(Vector3.Forward, Rotation) + Position,
                     Vector3.Transform(Vector3.Up, Rotation));
-            }
-        }
-        public virtual Vector3 Position
-        {
-            get
-            {
-                return _position;
-            }
-            set
-            {
-                _position = value;
             }
         }
 

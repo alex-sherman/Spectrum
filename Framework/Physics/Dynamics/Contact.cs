@@ -172,10 +172,6 @@ namespace Spectrum.Framework.Physics.Dynamics
             Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
             dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
             float dvNormalScalar = Vector3.Dot(dv, normal);
-            if (dvNormalScalar > 0)
-            {
-                return;
-            }
             Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
             tangent = dvTangent;
@@ -190,10 +186,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             ApplyImpulse(J / contactCount);
             if (Penetration > settings.allowedPenetration)
             {
-                ApplyImpulse((Penetration - settings.allowedPenetration) * normal / contactCount);
+                ApplyPush((Penetration - settings.allowedPenetration) * normal / contactCount);
             }
-
-            ApplyPush(Vector3.Dot((Position1 - Position2), normal) * normal / contactCount);
         }
 
         /// <summary>
@@ -210,6 +204,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             Vector3 dist; Vector3.Subtract(ref p1, ref p2, out dist);
             Penetration = Vector3.Dot(dist, normal);
+            slip = (p1 - p2 - Penetration * normal).LengthSquared();
         }
 
         public void ApplyImpulse(Vector3 impulse)
@@ -296,11 +291,8 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             if (push.LengthSquared() == 0)
                 return;
-            push /= 2;
             if (!treatBody1AsStatic && !treatBody2AsStatic)
-            {
                 push /= 2;
-            }
             if (!treatBody1AsStatic)
             {
                 body1.position -= push;

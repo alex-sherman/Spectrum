@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using ProtoBuf;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,13 +26,13 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             Shapes = shapes;
         }
 
-        public void AddShape(Shape shape)
+        public void Add(Shape shape)
         {
             Shapes.Add(shape);
             UpdateShape();
         }
 
-        public void RemoveShape(Shape shape)
+        public void Remove(Shape shape)
         {
             Shapes.Remove(shape);
             UpdateShape();

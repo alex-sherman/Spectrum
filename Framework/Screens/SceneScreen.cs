@@ -59,7 +59,7 @@ namespace Spectrum.Framework.Screens
         public override void Draw(float gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
-            if (Camera != null)
+            if (Camera != null && RenderTarget != null)
             {
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))

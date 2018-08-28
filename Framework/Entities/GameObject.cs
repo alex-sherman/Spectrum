@@ -355,16 +355,22 @@ namespace Spectrum.Framework.Entities
                 Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
                 Manager.DrawJBBox(boundingBox, Color.Black);
                 //GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
-                Manager.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
-                foreach (var arbiter in arbiters)
+                if (!IsStatic)
                 {
-                    foreach (var contact in arbiter.contactList)
+                    Manager.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
+                    foreach (var arbiter in arbiters.Where(arb => !arb.body1.NoCollide && !arb.body2.NoCollide))
                     {
-                        //GraphicsEngine.DrawCircle(contact.Position1, 3, Color.Yellow, spriteBatch);
-                        //GraphicsEngine.DrawCircle(contact.Position2, 3, Color.HotPink, spriteBatch);
-                        Manager.DrawLine(contact.Position1, contact.Position1 - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
-                        Manager.DrawLine(contact.Position1, contact.Position1 + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
-                        Manager.DrawLine(contact.Position1, contact.Position1 + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);
+                        foreach (var contact in arbiter.contactList)
+                        {
+                            var myPosition = contact.body1 == this ? contact.Position1 : contact.Position2;
+                            var otherPosition = contact.body1 == this ? contact.Position2 : contact.Position1;
+                            //GraphicsEngine.DrawCircle(myPosition, 3, Color.Yellow, SpectrumGame.Game.Root.SpriteBatch);
+                            //GraphicsEngine.DrawCircle(otherPosition, 3, Color.HotPink, SpectrumGame.Game.Root.SpriteBatch);
+                            Manager.DrawLine(myPosition, myPosition - contact.normal, Color.Orange);
+                            Manager.DrawLine(myPosition, myPosition - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
+                            Manager.DrawLine(myPosition, myPosition + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
+                            Manager.DrawLine(myPosition, myPosition + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);
+                        }
                     }
                 }
             }

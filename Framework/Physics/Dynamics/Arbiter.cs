@@ -183,16 +183,18 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         private float ContactScore(Contact test)
         {
-            return contactList.Sum((other) => other == test ? 0 : (test.Position1 - other.Position1).Length());
+            return test.Penetration - (float)Math.Pow(test.slip, 0.5);
+            //return contactList.Sum((other) => other == test ? 0 : (test.Position1 - other.Position1).Length());
         }
 
         private Contact FindWorstContact()
         {
-            var testList = contactList.Select((contact, index) => new Tuple<int, Contact, float>(index, contact, ContactScore(contact)))
-                .OrderByDescending((test) => test.Item2.Penetration)
+            var testList = contactList
+                .OrderByDescending((test) => test.Penetration)
                 .Skip(1)
-                .OrderBy((test) => test.Item3).ToList();
-            return testList.First().Item2;
+                .OrderBy(ContactScore).ToList();
+            return testList.First();
+            //return contactList.OrderBy(ContactScore).First();
         }
 
         private void ReplaceContact(ref Vector3 point, ref Vector3 n, float p, int index,
