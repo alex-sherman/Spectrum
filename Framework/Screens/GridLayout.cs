@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Screens
 {
     public class GridLayout : Element
     {
-        public GridLayout(int cols) { LayoutManager = new GridLayoutManager(cols); }
+        public GridLayout(int cols) { Width = 1f; Height = 1f; LayoutManager = new GridLayoutManager(cols); }
     }
     public class GridLayoutManager : LayoutManager
     {

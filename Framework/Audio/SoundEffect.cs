@@ -1,8 +1,10 @@
 ﻿using SharpDX;
+using SharpDX.MediaFoundation;
 using SharpDX.Multimedia;
 using SharpDX.XAudio2;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -10,49 +12,26 @@ namespace Spectrum.Framework.Audio
 {
     public class SoundEffect
     {
-        private readonly SoundStream _stream;
-        private readonly AudioBuffer _buffer;
-        internal readonly SourceVoice _voice;
-        public bool Loop { get; set; }
+        public List<DataPointer> Samples;
+        public WaveFormat WaveFormat;
 
-        public SoundEffect(SoundStream stream)
+        public SoundEffect(Stream stream)
         {
-            _stream = stream;
-            _buffer = new AudioBuffer
-                          {
-                              Stream = _stream,
-                              AudioBytes = (int)_stream.Length,
-                              Flags = BufferFlags.EndOfStream
-
-                          };
-
-            _voice = new SourceVoice(AudioManager._xaudio2, stream.Format, true);
-            _voice.BufferEnd += _voice_BufferEnd;
+            AudioDecoder audioDecoder = new AudioDecoder(stream);
+            WaveFormat = audioDecoder.WaveFormat;
+            Samples = audioDecoder.GetSamples().Select(sample =>
+            {
+                var output = new DataPointer(Utilities.AllocateMemory(sample.Size), sample.Size);
+                Utilities.CopyMemory(output.Pointer, sample.Pointer, sample.Size);
+                return output;
+            }).ToList();
         }
-
-        void _voice_BufferEnd(IntPtr obj)
+        ~SoundEffect()
         {
-            if (Loop)
-                Play();
-        }
+            if (Samples != null)
+                foreach (var sample in Samples)
+                    Utilities.FreeMemory(sample.Pointer);
 
-        public void Play()
-        {
-            _voice.FlushSourceBuffers();
-            _voice.SubmitSourceBuffer(_buffer, _stream.DecodedPacketsInfo);
-            _voice.Start();
-        }
-
-        public float Volume
-        {
-            get { return _voice.Volume; }
-            set { _voice.SetVolume(value); }
-        }
-
-        public void Dispose()
-        {
-            _voice.Stop();
-            _voice.Dispose();
         }
     }
 }

@@ -151,7 +151,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         internal Arbiter Add(GameObject body1, GameObject body2)
         {
             var arbiter = Arbiter.Pool.GetNew();
-            arbiter.body1 = body1; arbiter.body2 = body2;
+            arbiter.Body1 = body1; arbiter.Body2 = body2;
             arbiter.system = collision;
             dictionary.Add(new ArbiterKey(body1, body2), arbiter);
             islands.ArbiterCreated(arbiter);
@@ -165,7 +165,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         internal void Remove(Arbiter arbiter)
         {
-            lookUpKey.SetBodies(arbiter.body1, arbiter.body2);
+            lookUpKey.SetBodies(arbiter.Body1, arbiter.Body2);
             dictionary.Remove(lookUpKey);
             islands.ArbiterRemoved(arbiter);
             Arbiter.Pool.GiveBack(arbiter);

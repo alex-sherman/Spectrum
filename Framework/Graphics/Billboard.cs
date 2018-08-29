@@ -24,7 +24,7 @@ namespace Spectrum.Framework.Graphics
                 new CommonTex(new Vector3(-0.5f, 0, 0.5f), Vector3.UnitY, new Vector2(0, 1)),
                 new CommonTex(new Vector3(0.5f, 0, 0.5f), Vector3.UnitY, new Vector2(1, 1))
             });
-            BillboardPart.effect = new SpectrumEffect();
+            BillboardPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
         public static Matrix GetBillboardTransform(Quaternion rotation, Vector3 position, Vector2 size)
             => Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
@@ -38,7 +38,7 @@ namespace Spectrum.Framework.Graphics
         public override void Initialize()
         {
             base.Initialize();
-            Shape = new BoxShape(new Vector3(Size.X / 2, Size.Y / 2, 0));
+            Shape = new BoxShape(new Vector3(Size.X, Size.Y, 0));
         }
         public override void Draw(float gameTime)
         {

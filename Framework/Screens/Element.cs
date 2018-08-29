@@ -127,13 +127,15 @@ namespace Spectrum.Framework.Screens
             Type tagType = GetType();
             while (tagType != typeof(Element))
             {
-                this.Tags.Add(tagType.Name.ToLower());
+                Tags.Add(tagType.Name.ToLower());
                 tagType = tagType.BaseType;
             }
             foreach (ElementField field in Fields.Values)
             {
                 field.Initialize();
             }
+            foreach (var child in Children)
+                child.Initialize();
             Initialized = true;
         }
 
@@ -384,7 +386,8 @@ namespace Spectrum.Framework.Screens
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
             _children.Insert(index ?? _children.Count, element);
-            element.Initialize();
+            if (Initialized)
+                element.Initialize();
             return element;
         }
         public void RemoveElement(Element element)

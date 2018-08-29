@@ -185,9 +185,9 @@ namespace Spectrum.Framework.Physics
         /// </summary>
         public void ResetResourcePools()
         {
-            IslandManager.Pool.ResetResourcePool();
-            Arbiter.Pool.ResetResourcePool();
-            Contact.Pool.ResetResourcePool();
+            IslandManager.Pool.Clear();
+            Arbiter.Pool.Clear();
+            Contact.Pool.Clear();
         }
 
         /// <summary>
@@ -323,7 +323,7 @@ namespace Spectrum.Framework.Physics
             foreach (Arbiter arbiter in body.arbiters.ToList())
             {
                 arbiterMap.Remove(arbiter);
-                events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
+                events.RaiseBodiesEndCollide(arbiter.Body1, arbiter.Body2);
             }
 
             foreach (Constraint constraint in body.constraints)
@@ -478,18 +478,18 @@ namespace Spectrum.Framework.Physics
 
         private void UpdateArbiterContacts(Arbiter arbiter)
         {
-            for (int i = arbiter.contactList.Count - 1; i >= 0; i--)
+            for (int i = arbiter.ContactList.Count - 1; i >= 0; i--)
             {
-                Contact c = arbiter.contactList[i];
+                Contact c = arbiter.ContactList[i];
                 c.UpdatePosition();
                 if (c.body1.Destroying || c.body2.Destroying || c.Penetration < -contactSettings.breakThreshold || c.slip > contactSettings.slipThresholdSquared)
                 {
                     Contact.Pool.GiveBack(c);
-                    arbiter.contactList.RemoveAt(i);
+                    arbiter.ContactList.RemoveAt(i);
                 }
             }
 
-            if (arbiter.contactList.Count == 0)
+            if (arbiter.ContactList.Count == 0)
             {
                 lock (removedArbiterStack) { removedArbiterStack.Push(arbiter); }
                 return;
@@ -510,7 +510,7 @@ namespace Spectrum.Framework.Physics
                 Arbiter arbiter = removedArbiterStack.Pop();
                 arbiterMap.Remove(arbiter);
 
-                events.RaiseBodiesEndCollide(arbiter.body1, arbiter.body2);
+                events.RaiseBodiesEndCollide(arbiter.Body1, arbiter.Body2);
             }
 
         }
@@ -548,10 +548,10 @@ namespace Spectrum.Framework.Physics
                 // Contact and Collision
                 foreach (Arbiter arbiter in island.arbiter)
                 {
-                    int contactCount = arbiter.contactList.Count;
+                    int contactCount = arbiter.ContactList.Count;
                     for (int e = 0; e < contactCount; e++)
                     {
-                        arbiter.contactList[e].NewIterate(contactCount);
+                        arbiter.ContactList[e].NewIterate(contactCount);
                     }
                 }
 
@@ -685,7 +685,7 @@ namespace Spectrum.Framework.Physics
 
             Contact contact = null;
 
-            if (arbiter.body1 == body1)
+            if (arbiter.Body1 == body1)
             {
                 Vector3.Negate(ref normal, out normal);
                 contact = arbiter.AddContact(point, normal, penetration, contactSettings);

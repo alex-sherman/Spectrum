@@ -26,7 +26,7 @@ using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Collision.Shapes;
 #endregion
 
-namespace Spectrum.Framework.Physics
+namespace Spectrum.Framework
 {
 
     /// <summary>
@@ -38,54 +38,38 @@ namespace Spectrum.Framework.Physics
     public class ResourcePool<T>
     {
         private Stack<T> stack = new Stack<T>();
-
-        /// <summary>
-        /// Creates a new instance of the ResourcePool class.
-        /// </summary>
-        public ResourcePool()
+        readonly Func<T> constructor;
+        readonly Action<T> onAcquire;
+        public ResourcePool(Func<T> constructor = null, Action<T> onAcquire = null)
         {
+            this.constructor = constructor;
+            this.onAcquire = onAcquire;
         }
 
-        /// <summary>
-        /// Removes all cached resources.
-        /// So they can get garbage collected.
-        /// </summary>
-        public void ResetResourcePool()
+        public void Clear()
         {
-            lock (stack) { stack.Clear(); }
+            lock (stack)
+                stack.Clear();
         }
 
-        public int Count { get { return stack.Count; } }
-
-        /// <summary>
-        /// Gives a resource back to the pool.
-        /// </summary>
-        /// <param name="obj">The resource to give back</param>
+        public int Count => stack.Count;
+        
         public void GiveBack(T obj)
         {
             lock (stack) { stack.Push(obj); }
         }
 
-        /// <summary>
-        /// Get a free resource.
-        /// </summary>
-        /// <returns>The free resource.</returns>
         public T GetNew()
         {
-            T freeObj;
-
             lock (stack)
             {
                 if (stack.Count == 0)
-                {
-                    freeObj = Activator.CreateInstance<T>();
-                    stack.Push(freeObj);
-                }
+                    return constructor == null ? Activator.CreateInstance<T>() : constructor();
 
-                freeObj = stack.Pop();
+                var freeObj = stack.Pop();
+                onAcquire?.Invoke(freeObj);
+                return freeObj;
             }
-
-            return freeObj;
         }
     }
     #endregion

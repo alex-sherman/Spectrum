@@ -138,7 +138,7 @@ namespace Spectrum.Framework.Physics.Collision
             triBoxes = null;
             tris = null;
             nodes = null;
-            nodeStackPool.ResetResourcePool();
+            nodeStackPool.Clear();
         }
         #endregion
 
@@ -254,7 +254,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             // now convert to the tighter Node from BuildNodes
             nodes = new Node[buildNodes.Count];
-            nodeStackPool = new ArrayResourcePool<ushort>(buildNodes.Count);
+            nodeStackPool = new ResourcePool<ushort[]>(() => new ushort[buildNodes.Count]);
             //nodeStack = new UInt16[buildNodes.Count];
             for (int i = 0; i < nodes.Length; i++)
             {
@@ -397,7 +397,7 @@ namespace Spectrum.Framework.Physics.Collision
         }
         #endregion
 
-        private ArrayResourcePool<UInt16> nodeStackPool;
+        private ResourcePool<ushort[]> nodeStackPool;
 
         /// <summary>
         /// Returns all triangles which intersect the given axis aligned bounding box.

@@ -63,19 +63,6 @@ namespace Spectrum.Framework
             spritebatch.DrawString(font, text, pos, textColor, 0, Vector2.Zero, 1, SpriteEffects.None, layer);
         }
 
-        public static void DrawString(this SpriteBatch spritebatch, SpriteFont font, string text, Vector3 position, Color textColor, float scale = 1, float layer = 1)
-        {
-            Vector3 cameraPosition = GraphicsEngine.ViewPosition(position);
-            Vector3 screenPos = GraphicsEngine.ViewToScreenPosition(cameraPosition);
-            float size = scale * (screenPos - GraphicsEngine.ViewToScreenPosition(cameraPosition + Vector3.Up)).Length() / font.LineSpacing / font.LineSpacing;
-            if (screenPos.Z < 1 && screenPos.Z > 0)
-            {
-
-                spritebatch.DrawString(font, text, new Vector2(screenPos.X, screenPos.Y) - font.MeasureString(text) * size / 2,
-                    textColor, 0, Vector2.Zero, size, SpriteEffects.None, layer);
-            }
-        }
-
         public static void Draw(this SpriteBatch spritebatch, Texture2D tex, Rectangle rect, Color c, float layer)
         {
             spritebatch.Draw(tex, rect, null, c, 0, Vector2.Zero, SpriteEffects.None, layer);

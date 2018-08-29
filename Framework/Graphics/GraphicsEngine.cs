@@ -50,7 +50,7 @@ namespace Spectrum.Framework.Graphics
         public static float MultisampleFactor
         {
             get { return _msFactor; }
-            set { _msFactor = value; ResetOnResize(Width, Height); }
+            set { _msFactor = value; if (Width != 0 && Height != 0) ResetOnResize(Width, Height); }
         }
         public static VertexBuffer lineVBuffer;
         public static IndexBuffer lineIBuffer;
@@ -58,7 +58,7 @@ namespace Spectrum.Framework.Graphics
 
         public static void Initialize()
         {
-            textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+            textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", BindingFlags.Instance | BindingFlags.NonPublic);
             device = SpectrumGame.Game.GraphicsDevice;
             lineEffect = new SpectrumEffect();
             lineVBuffer = VertexHelper.MakeVertexBuffer(new List<CommonTex>() { new CommonTex(Vector3.Zero), new CommonTex(Vector3.Forward) });
@@ -67,16 +67,20 @@ namespace Spectrum.Framework.Graphics
             PostProcessEffect.Initialize();
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
             if (SpecVR.Running)
-            {
-                uint width = 0, height = 0;
-                OpenVR.System.GetRecommendedRenderTargetSize(ref width, ref height);
-                VRTargetL = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-                SharpDX.Direct3D11.Texture2D nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTargetL);
-                textureL = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
-                VRTargetR = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-                nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTargetR);
-                textureR = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
-            }
+                GenerateVRTargets();
+        }
+        static void GenerateVRTargets()
+        {
+            uint width = 0, height = 0;
+            OpenVR.System.GetRecommendedRenderTargetSize(ref width, ref height);
+            width = (uint)(width * MultisampleFactor);
+            height = (uint)(height * MultisampleFactor);
+            VRTargetL = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+            SharpDX.Direct3D11.Texture2D nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTargetL);
+            textureL = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
+            VRTargetR = new RenderTarget2D(device, (int)width, (int)height, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+            nativeTexture = (SharpDX.Direct3D11.Texture2D)textureFieldInfo.GetValue(VRTargetR);
+            textureR = new Texture_t() { eType = ETextureType.DirectX, eColorSpace = EColorSpace.Auto, handle = nativeTexture.NativePointer };
         }
         public static void ResetOnResize(int width, int height)
         {
@@ -91,11 +95,9 @@ namespace Spectrum.Framework.Graphics
                 PostProcessEffect.DepthTarget = DepthTarget;
                 Water.ResetRenderTargets();
                 PostProcessEffect.ResetViewPort(width, height);
+                if (SpecVR.Running)
+                    GenerateVRTargets();
             }
-        }
-        public static Vector3 ViewPosition(Vector3 WorldPosition)
-        {
-            return Vector3.Transform(WorldPosition, Camera.View);
         }
         public static Vector3 ViewToScreenPosition(Vector3 ViewPosition)
         {
@@ -285,68 +287,6 @@ namespace Spectrum.Framework.Graphics
             device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
             UpdateRasterizer();
         }
-        public static void DrawJBBox(JBBox box, Color color, SpriteBatch spriteBatch)
-        {
-            Vector3 corner1 = new Vector3(box.Min.X, box.Min.Y, box.Min.Z);
-            Vector3 corner2 = new Vector3(box.Min.X, box.Min.Y, box.Max.Z);
-            Vector3 corner3 = new Vector3(box.Max.X, box.Min.Y, box.Min.Z);
-            Vector3 corner4 = new Vector3(box.Max.X, box.Min.Y, box.Max.Z);
-            Vector3 corner5 = new Vector3(box.Min.X, box.Max.Y, box.Min.Z);
-            Vector3 corner6 = new Vector3(box.Min.X, box.Max.Y, box.Max.Z);
-            Vector3 corner7 = new Vector3(box.Max.X, box.Max.Y, box.Min.Z);
-            Vector3 corner8 = new Vector3(box.Max.X, box.Max.Y, box.Max.Z);
-
-            //Bottom
-            DrawLine(corner1, corner2, color, spriteBatch);
-            DrawLine(corner1, corner3, color, spriteBatch);
-            DrawLine(corner4, corner2, color, spriteBatch);
-            DrawLine(corner4, corner3, color, spriteBatch);
-
-            //Top
-            DrawLine(corner5, corner6, color, spriteBatch);
-            DrawLine(corner5, corner7, color, spriteBatch);
-            DrawLine(corner8, corner6, color, spriteBatch);
-            DrawLine(corner8, corner7, color, spriteBatch);
-
-            //Sides
-            DrawLine(corner1, corner5, color, spriteBatch);
-            DrawLine(corner2, corner6, color, spriteBatch);
-            DrawLine(corner3, corner7, color, spriteBatch);
-            DrawLine(corner4, corner8, color, spriteBatch);
-        }
-        public static void DrawLine(Vector3 P1, Vector3 P2, Color color, SpriteBatch spriteBatch)
-        {
-            if (FullScreenPos(P1).Z >= 1 || FullScreenPos(P2).Z >= 1) { return; }
-
-            Vector2 start = ScreenPos(P1);
-            Vector2 edge = ScreenPos(P2) - start;
-            // calculate angle to rotate line
-            float angle =
-                (float)Math.Atan2(edge.Y, edge.X);
-            spriteBatch.Draw(ContentHelper.Blank, start, null, color, angle, Vector2.Zero, new Vector2(edge.Length(), 1.2f), SpriteEffects.None, 0);
-        }
-        public static void DrawCircle(Vector3 P1, float radius, Color color, SpriteBatch spriteBatch)
-        {
-            if (FullScreenPos(P1).Z >= 1) { return; }
-
-            Vector2 start = ScreenPos(P1);
-            spriteBatch.Draw(ContentHelper.Blank, start, null, color, 0, Vector2.Zero, radius, SpriteEffects.None, 0);
-        }
-        public static void DrawSprite(Texture2D tex, Vector3 P1, Vector3 P2, Color color, SpriteBatch batch, int height = -1)
-        {
-            Vector2 start = ScreenPos(P1);
-            Vector2 toDraw = start - ScreenPos(P2);
-            float length = toDraw.Length();
-            Vector2 scale = new Vector2(length / tex.Width, 1);
-            if (height != -1)
-            {
-                scale.Y = 1.0f * height / tex.Width;
-            }
-            float rotate = (float)Math.Atan((double)(toDraw.Y / toDraw.X));
-            if (toDraw.X > 0) { rotate += (float)Math.PI; }
-            batch.Draw(tex, start, null, color, rotate,
-                new Vector2(0, tex.Height / 2), scale, SpriteEffects.None, 0f);
-        }
 
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
         private static void VRRender(Matrix camera, IEnumerable<RenderCall> groups, EVREye eye, Matrix eye_offset)
@@ -369,11 +309,6 @@ namespace Spectrum.Framework.Graphics
 
             using (DebugTiming.Render.Time("Update Shadow"))
                 UpdateShadowMap(renderGroups);
-
-            PostProcessEffect.Technique = "PassThrough";
-            //TODO: Draw spritebatch stuff to separate target, and superimpose over game
-            //spriteBatch.Begin(0, BlendState.AlphaBlend, SamplerState.LinearClamp, null, null, effect: PostProcessEffect.effect);
-            //if (Settings.enableWater) { UpdateWater(drawables); }
 
             //Begin rendering this to the Anti Aliasing texture
             device.SetRenderTargets(AATarget, DepthTarget);

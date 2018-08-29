@@ -109,43 +109,21 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <summary>
         /// The first body.
         /// </summary>
-        public GameObject Body1 { get { return body1; } }
+        public GameObject Body1;
 
         /// <summary>
         /// The second body.
         /// </summary>
-        public GameObject Body2 { get { return body2; } }
+        public GameObject Body2;
 
         /// <summary>
         /// The contact list containing all contacts of both bodies.
         /// </summary>
-        public List<Contact> ContactList { get { return contactList; } }
+        public List<Contact> ContactList = new List<Contact>();
 
         /// <summary>
         /// </summary>
         public static ResourcePool<Arbiter> Pool = new ResourcePool<Arbiter>();
-
-        // internal values for faster access within the engine
-        public GameObject body1, body2;
-        public List<Contact> contactList;
-
-        /// <summary>
-        /// Initializes a new instance of the Arbiter class.
-        /// </summary>
-        public Arbiter()
-        {
-            this.contactList = new List<Contact>();
-        }
-
-        /// <summary>
-        /// Removes all contacts from this arbiter.
-        /// The world will remove the arbiter automatically next frame
-        /// or add new contacts.
-        /// </summary>
-        public void Invalidate()
-        {
-            contactList.Clear();
-        }
 
         /// <summary>
         /// Adds a contact to the arbiter (threadsafe). No more than four contacts 
@@ -160,19 +138,19 @@ namespace Spectrum.Framework.Physics.Dynamics
             ContactSettings contactSettings)
         {
             Vector3 relPos1;
-            Vector3.Subtract(ref point, ref body1.position, out relPos1);
+            Vector3.Subtract(ref point, ref Body1.position, out relPos1);
 
             Contact remove;
 
-            lock (contactList)
+            lock (ContactList)
             {
                 Contact contact = Contact.Pool.GetNew();
-                contact.Initialize(system, body1, body2, ref point, ref normal, penetration, true, contactSettings);
-                contactList.Add(contact);
-                if (this.contactList.Count == 5)
+                contact.Initialize(system, Body1, Body2, ref point, ref normal, penetration, true, contactSettings);
+                ContactList.Add(contact);
+                if (this.ContactList.Count == 5)
                 {
                     remove = FindWorstContact();
-                    contactList.Remove(remove);
+                    ContactList.Remove(remove);
                     if (remove == contact)
                         return null;
                     return contact;
@@ -189,7 +167,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         private Contact FindWorstContact()
         {
-            var testList = contactList
+            var testList = ContactList
                 .OrderByDescending((test) => test.Penetration)
                 .Skip(1)
                 .OrderBy(ContactScore).ToList();
@@ -200,22 +178,22 @@ namespace Spectrum.Framework.Physics.Dynamics
         private void ReplaceContact(ref Vector3 point, ref Vector3 n, float p, int index,
             ContactSettings contactSettings)
         {
-            Contact contact = contactList[index];
+            Contact contact = ContactList[index];
 
-            Debug.Assert(body1 == contact.body1, "Body1 and Body2 not consistent.");
+            Debug.Assert(Body1 == contact.body1, "Body1 and Body2 not consistent.");
 
-            contact.Initialize(system, body1, body2, ref point, ref n, p, false, contactSettings);
+            contact.Initialize(system, Body1, Body2, ref point, ref n, p, false, contactSettings);
 
         }
 
         private int GetCacheEntry(ref Vector3 realRelPos1, float contactBreakThreshold)
         {
             float shortestDist = contactBreakThreshold * contactBreakThreshold;
-            int size = contactList.Count;
+            int size = ContactList.Count;
             int nearestPoint = -1;
             for (int i = 0; i < size; i++)
             {
-                Vector3 diffA; Vector3.Subtract(ref contactList[i].relativePos1,ref realRelPos1,out diffA);
+                Vector3 diffA; Vector3.Subtract(ref ContactList[i].relativePos1,ref realRelPos1,out diffA);
                 float distToManiPoint = diffA.LengthSquared();
                 if (distToManiPoint < shortestDist)
                 {

@@ -75,7 +75,8 @@ namespace Spectrum.Framework.Input
                     VRControllers[i].Update();
                 }
             }
-            RawMouse.Update();
+            if (!DisableCursorState)
+                RawMouse.Update();
         }
         public bool IsKeyDown(string bindingName, PlayerInformation playerInfo = null, bool ignoreModifiers = false)
         {

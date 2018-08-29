@@ -26,36 +26,18 @@ namespace Spectrum.Framework.Audio
 
         public static Vector3 ListenerPosition
         {
-            get
-            {
-                return V3ToV3(Listener.Position);
-            }
-            set
-            {
-                Listener.Position = V3ToV3(value);
-            }
+            get => V3ToV3(Listener.Position);
+            set => Listener.Position = V3ToV3(value);
         }
         public static Vector3 ListenerForward
         {
-            get
-            {
-                return V3ToV3(Listener.OrientFront);
-            }
-            set
-            {
-                Listener.OrientFront = V3ToV3(value);
-            }
+            get => V3ToV3(Listener.OrientFront);
+            set => Listener.OrientFront = V3ToV3(value);
         }
         public static Vector3 ListenerUp
         {
-            get
-            {
-                return V3ToV3(Listener.OrientTop);
-            }
-            set
-            {
-                Listener.OrientTop = V3ToV3(value);
-            }
+            get => V3ToV3(Listener.OrientTop);
+            set => Listener.OrientTop = V3ToV3(value);
         }
 
         public static void Init()

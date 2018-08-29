@@ -173,6 +173,10 @@
     <Reference Include="SharpDX.DirectInput">
       <HintPath>Dependencies\SharpDX.DirectInput.dll</HintPath>
     </Reference>
+    <Reference Include="SharpDX.MediaFoundation, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Dependencies\SharpDX.MediaFoundation.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX.XAudio2, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Dependencies\SharpDX.XAudio2.dll</HintPath>
@@ -209,8 +213,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Framework\Audio\AudioPlayer.cs" />
     <Compile Include="Framework\Audio\Emitter.cs" />
     <Compile Include="Framework\Audio\AudioManager.cs" />
+    <Compile Include="Framework\Audio\MusicPlayer.cs" />
     <Compile Include="Framework\Audio\SoundEffect.cs" />
     <Compile Include="Framework\Content\AnimationParser.cs" />
     <Compile Include="Framework\Content\ContentParser.cs" />
@@ -310,7 +316,7 @@
     <Compile Include="Framework\Physics\LinearMath\JMath.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Framework\Physics\ResourcePool.cs" />
+    <Compile Include="Framework\ResourcePool.cs" />
     <Compile Include="Framework\Physics\ThreadManager.cs" />
     <Compile Include="Framework\Physics\PhysicsEngine.cs" />
     <Compile Include="Framework\Screens\Element.cs" />

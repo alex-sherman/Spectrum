@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Screens.InputElements
 
         public Button(string text) : this()
         {
-            AddElement(new TextElement(text));
+            AddElement(new TextElement(text) { Positioning = PositionType.Center });
         }
 
         public Button(params Element[] elements)

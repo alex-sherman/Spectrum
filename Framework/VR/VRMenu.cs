@@ -19,6 +19,7 @@ namespace Spectrum.Framework.VR
         public RenderTarget2D Target;
         public Point RenderTargetSize = new Point(1024, 1024);
         public InputState InputState = new InputState(true);
+        public bool Interactive;
         public VRMenu()
         {
             AllowReplicate = false;
@@ -33,20 +34,28 @@ namespace Spectrum.Framework.VR
         public override void Update(GameTime gameTime)
         {
             InputState.Update(gameTime.DT());
-            InputState.CursorState = GetCursorState(InputState);
+            if (Interactive)
+                InputState.CursorState = GetCursorState(InputState);
+            else
+                InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
             Root.Update(gameTime, InputState);
         }
         public override void Draw(float gameTime)
         {
             Root.Draw(gameTime);
             base.Draw(gameTime);
+            if(InputState.CursorState.X != -1 || InputState.CursorState.Y != -1)
+            {
+                var basePosition = GraphicsEngine.Camera.Position - InputState.VRHMD.Position + InputState.VRControllers[1].Position;
+                Manager.DrawLine(basePosition, basePosition + Vector3.Transform(Vector3.Forward, InputState.VRControllers[1].Rotation), Color.Black);
+            }
         }
         public CursorState GetCursorState(InputState input)
         {
             var buttons = new bool[16];
             var camera = GraphicsEngine.Camera;
-            int X = 0;
-            int Y = 0;
+            int X = -1;
+            int Y = -1;
             if (camera != null)
             {
                 var position = camera.Position - input.VRHMD.Position + input.VRControllers[1].Position;

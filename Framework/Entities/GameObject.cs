@@ -358,9 +358,9 @@ namespace Spectrum.Framework.Entities
                 if (!IsStatic)
                 {
                     Manager.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
-                    foreach (var arbiter in arbiters.Where(arb => !arb.body1.NoCollide && !arb.body2.NoCollide))
+                    foreach (var arbiter in arbiters.Where(arb => !arb.Body1.NoCollide && !arb.Body2.NoCollide))
                     {
-                        foreach (var contact in arbiter.contactList)
+                        foreach (var contact in arbiter.ContactList)
                         {
                             var myPosition = contact.body1 == this ? contact.Position1 : contact.Position2;
                             var otherPosition = contact.body1 == this ? contact.Position2 : contact.Position1;

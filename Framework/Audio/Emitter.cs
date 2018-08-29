@@ -8,10 +8,9 @@ using System.Text;
 
 namespace Spectrum.Framework.Audio
 {
-    public class SoundEmitter
+    public class SoundEmitter : AudioPlayer
     {
         private Emitter _emitter;
-        private List<SoundEffect> _sounds = new List<SoundEffect>();
 
         public Vector3 Position
         {
@@ -44,31 +43,16 @@ namespace Spectrum.Framework.Audio
             };
         }
 
-        public void RegisterSoundEffect(SoundEffect sound)
-        {
-            _sounds.Add(sound);
-        }
-
-        void streamingSourceVoice_Stopped(object sender, EventArgs e)
-        {
-            SoundEffect sound = sender as SoundEffect;
-            UnregisterSoundEffect(sender as SoundEffect);
-        }
-        public void UnregisterSoundEffect(SoundEffect sound)
-        {
-            _sounds.Remove(sound);
-        }
-
         public void Update(GameObject emitted)
         {
             Position = emitted.position;
             Up = Vector3.Up;
             Forward = Vector3.Forward;
-            foreach (var sound in _sounds)
+            if (voice != null)
             {
                 DspSettings dspSettings = new DspSettings(1, AudioManager.DestinationChannels);
                 AudioManager.X3DAudio.Calculate(AudioManager.Listener, _emitter, CalculateFlags.Matrix, dspSettings);
-                sound._voice.SetOutputMatrix(1, AudioManager.DestinationChannels, dspSettings.MatrixCoefficients);
+                voice.SetOutputMatrix(1, AudioManager.DestinationChannels, dspSettings.MatrixCoefficients);
             }
         }
     }

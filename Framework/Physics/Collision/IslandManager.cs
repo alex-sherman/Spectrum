@@ -34,28 +34,28 @@ namespace Spectrum.Framework.Physics.Collision
 
         public void ArbiterCreated(Arbiter arbiter)
         {
-            AddConnection(arbiter.body1, arbiter.body2);
+            AddConnection(arbiter.Body1, arbiter.Body2);
 
-            arbiter.body1.arbiters.Add(arbiter);
-            arbiter.body2.arbiters.Add(arbiter);
+            arbiter.Body1.arbiters.Add(arbiter);
+            arbiter.Body2.arbiters.Add(arbiter);
 
-            if (arbiter.body1.island != null)
-                arbiter.body1.island.arbiter.Add(arbiter);
-            else if (arbiter.body2.island != null)
-                arbiter.body2.island.arbiter.Add(arbiter);
+            if (arbiter.Body1.island != null)
+                arbiter.Body1.island.arbiter.Add(arbiter);
+            else if (arbiter.Body2.island != null)
+                arbiter.Body2.island.arbiter.Add(arbiter);
         }
 
         public void ArbiterRemoved(Arbiter arbiter)
         {
-            arbiter.body1.arbiters.Remove(arbiter);
-            arbiter.body2.arbiters.Remove(arbiter);
+            arbiter.Body1.arbiters.Remove(arbiter);
+            arbiter.Body2.arbiters.Remove(arbiter);
 
-            if (arbiter.body1.island != null)
-                arbiter.body1.island.arbiter.Remove(arbiter);
-            else if (arbiter.body2.island != null)
-                arbiter.body2.island.arbiter.Remove(arbiter);
+            if (arbiter.Body1.island != null)
+                arbiter.Body1.island.arbiter.Remove(arbiter);
+            else if (arbiter.Body2.island != null)
+                arbiter.Body2.island.arbiter.Remove(arbiter);
 
-            RemoveConnection(arbiter.body1, arbiter.body2);
+            RemoveConnection(arbiter.Body1, arbiter.Body2);
         }
 
         public void ConstraintCreated(Constraint constraint)
