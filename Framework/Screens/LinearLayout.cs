@@ -17,6 +17,17 @@ namespace Spectrum.Framework.Screens
         public LinearLayout(LinearLayoutType type = LinearLayoutType.Vertical)
         {
             LayoutManager = new LinearLayoutManager(type);
+            switch (type)
+            {
+                case LinearLayoutType.Vertical:
+                    Width = 1f;
+                    Height.WrapContent = true;
+                    break;
+                case LinearLayoutType.Horizontal:
+                    Height = 1f;
+                    Width.WrapContent = true;
+                    break;
+            }
         }
     }
     public class LinearLayoutManager : LayoutManager
@@ -64,11 +75,13 @@ namespace Spectrum.Framework.Screens
                     contentHeight = layoutChildren.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
                     contentWidth = layoutChildren.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
                     break;
-                default:
-                    break;
             }
             element.MeasuredWidth = element.Width.Measure(width, contentWidth);
             element.MeasuredHeight = element.Height.Measure(height, contentHeight);
+            foreach (var child in layoutChildren)
+            {
+                child.Measure(element.MeasuredWidth, element.MeasuredHeight);
+            }
         }
     }
 }

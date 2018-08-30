@@ -22,10 +22,10 @@ namespace Spectrum.Framework.Audio
         public SoundEffect SoundEffect
         {
             get => _sound;
-            set {
+            set
+            {
                 _sound = value;
-                voice?.Stop();
-                voice?.Dispose();
+                DisposeVoice();
                 if (value != null)
                 {
                     voice = new SourceVoice(AudioManager._xaudio2, value.WaveFormat);
@@ -59,7 +59,7 @@ namespace Spectrum.Framework.Audio
             get => _state;
             set
             {
-                if(voice == null)
+                if (voice == null)
                 {
                     _state = AudioState.Stopped;
                     return;
@@ -112,8 +112,8 @@ namespace Spectrum.Framework.Audio
                     buffer.AudioDataPointer = SoundEffect.Samples[index].Pointer;
                     buffer.AudioBytes = SoundEffect.Samples[index].Size;
                     index++;
-                        queuedBuffers.Add(buffer);
-                        voice.SubmitSourceBuffer(buffer, null);
+                    queuedBuffers.Add(buffer);
+                    voice.SubmitSourceBuffer(buffer, null);
                 }
             }
         }
@@ -129,12 +129,17 @@ namespace Spectrum.Framework.Audio
             }
         }
 
-        public void Dispose()
+        public void DisposeVoice()
         {
-            if (!voice.IsDisposed)
+            lock (this)
             {
-                voice.Stop();
-                voice.Dispose();
+                if (!(voice?.IsDisposed ?? true))
+                {
+                    voice.FlushSourceBuffers();
+                    voice.Stop();
+                    //voice.Dispose();
+                    voice = null;
+                }
             }
         }
     }

@@ -14,6 +14,7 @@ namespace Spectrum.Framework.Audio
     {
         AudioPlayer player = new AudioPlayer();
         public IReadOnlyList<SoundEffect> Tracks => tracks;
+        private int trackIndex = 0;
         public SoundEffect CurrentTrack => Tracks.FirstOrDefault();
         List<SoundEffect> tracks = new List<SoundEffect>();
         public bool Repeat;
@@ -23,31 +24,46 @@ namespace Spectrum.Framework.Audio
             get => player.Volume;
             set => player.Volume = value;
         }
+
         float fadeVolumeInitial;
         float fadeTimeInitial;
         float fadeTime;
         float fadeTarget;
+
         public MusicPlayer()
         {
             AllowReplicate = false;
             player.Loop = false;
-            player.OnTrackEnd += startNextTrack;
+            player.OnTrackEnd += Next;
         }
         public void SetTracks(IEnumerable<SoundEffect> tracks)
         {
             this.tracks = tracks.ToList();
             player.SoundEffect = CurrentTrack;
         }
-        void startNextTrack()
+        public void Next()
         {
-            if (Repeat)
-                tracks.Add(tracks[0]);
-            if (tracks.Any())
+            trackIndex++;
+            if (trackIndex >= tracks.Count)
             {
-                tracks.RemoveAt(0);
-                var track = tracks.FirstOrDefault();
-                player.SoundEffect = track;
+                if (Repeat)
+                    trackIndex = 0;
+                else
+                    return;
             }
+            player.SoundEffect = tracks[trackIndex];
+        }
+        public void Previous()
+        {
+            trackIndex--;
+            if (trackIndex < 0)
+            {
+                if (Repeat)
+                    trackIndex = tracks.Count - 1;
+                else
+                    trackIndex = 0;
+            }
+            player.SoundEffect = tracks[trackIndex];
         }
         public void FadeTo(float volumeTarget, float time)
         {
@@ -55,7 +71,6 @@ namespace Spectrum.Framework.Audio
             fadeVolumeInitial = Volume;
             fadeTimeInitial = fadeTime = time;
         }
-
         public AudioState State
         {
             get => player.State;
@@ -65,7 +80,6 @@ namespace Spectrum.Framework.Audio
                 player.State = value;
             }
         }
-        
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);

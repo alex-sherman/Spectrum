@@ -8,15 +8,14 @@ using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.Screens.InputElements
 {
-    public delegate void OnSliderChanged(float value);
     public class Slider : InputElement
     {
         InputElement sliderPull;
         Element sliderTrack;
         bool dragging = false;
         float sliderValue = 0;
-        public event OnSliderChanged OnValueChanged = null;
-        public event OnSliderChanged OnSliderFinished = null;
+        public event Action<float> OnValueChanged = null;
+        public event Action<float> OnSliderFinished = null;
         public float Value
         {
             get { return sliderValue; }
@@ -28,14 +27,15 @@ namespace Spectrum.Framework.Screens.InputElements
         public Slider()
         {
             Tags.Add("slider");
+            Width = 100;
+            Height = 20;
         }
         public override void Initialize()
         {
             base.Initialize();
             sliderPull = new InputElement();
             sliderPull.Tags.Add("slider-pull");
-            sliderPull.Width = 10;
-            sliderPull.Height = 10;
+            sliderPull.Height = 0.5f;
             sliderPull.Positioning = PositionType.Relative;
             AddElement(sliderPull);
             sliderPull.OnClick += (_) => dragging = true;
@@ -47,13 +47,12 @@ namespace Spectrum.Framework.Screens.InputElements
             AddElement(sliderTrack);
 
             OnClick += (_) => dragging = true;
-            Width = 100;
-            Height = 20;
         }
         public override void OnMeasure(int width, int height)
         {
             base.OnMeasure(width, height);
-            sliderTrack.Width = MeasuredWidth - 10;
+            sliderPull.Width = sliderPull.MeasuredHeight;
+            sliderTrack.Width = MeasuredWidth - sliderPull.MeasuredHeight;
         }
         public override void Layout(Rectangle bounds)
         {

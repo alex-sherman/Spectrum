@@ -268,8 +268,6 @@ namespace Spectrum.Framework.Screens
         {
             MeasuredWidth = Width.Measure(width, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max());
             MeasuredHeight = Height.Measure(height, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max());
-            if (LayoutManager != null)
-                LayoutManager.OnMeasure(this, width, height);
         }
         public virtual void Measure(int width, int height)
         {
@@ -280,14 +278,19 @@ namespace Spectrum.Framework.Screens
             }
             width = Width.CropParentSize(width);
             height = Height.CropParentSize(height);
-            foreach (var child in Children)
+            if (LayoutManager != null)
+                LayoutManager.OnMeasure(this, width, height);
+            else
             {
-                child.Measure(width - Margin.WidthTotal(width), height - Margin.HeightTotal(height));
-            }
-            OnMeasure(width, height);
-            foreach (var child in Children)
-            {
-                child.Measure(MeasuredWidth - Margin.WidthTotal(width), MeasuredHeight - Margin.HeightTotal(height));
+                foreach (var child in Children)
+                {
+                    child.Measure(width - Margin.WidthTotal(width), height - Margin.HeightTotal(height));
+                }
+                OnMeasure(width, height);
+                foreach (var child in Children)
+                {
+                    child.Measure(MeasuredWidth - Margin.WidthTotal(width), MeasuredHeight - Margin.HeightTotal(height));
+                }
             }
         }
         public virtual void Layout(Rectangle bounds)

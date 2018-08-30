@@ -45,7 +45,7 @@ namespace Spectrum.Framework.Screens
             int childHeight = height;
             foreach (var child in element.Children)
             {
-                child.Measure(width, height);
+                child.Measure(childWidth, 0);
                 curRowHeight = Math.Max(child.MeasuredHeight, curRowHeight);
                 colWidths[curCol] = Math.Max(colWidths[curCol], child.MeasuredWidth);
                 curCol += 1;
@@ -58,10 +58,20 @@ namespace Spectrum.Framework.Screens
                 }
             }
             rowHeights.Add(curRowHeight);
-            if (element.Height.WrapContent)
-                element.MeasuredHeight = rowHeights.DefaultIfEmpty(0).Sum();
-            if (element.Width.WrapContent)
-                element.MeasuredWidth = colWidths.DefaultIfEmpty(0).Sum();
+            curRow = 0;
+            curCol = 0;
+            foreach (var child in element.Children)
+            {
+                child.Measure(childWidth, rowHeights[curRow]);
+                curCol += 1;
+                if (curCol == Cols)
+                {
+                    curRow += 1;
+                    curCol = 0;
+                }
+            }
+            element.MeasuredHeight = element.Height.Measure(height, rowHeights.DefaultIfEmpty(0).Sum());
+            element.MeasuredWidth = element.Width.Measure(width, colWidths.DefaultIfEmpty(0).Sum());
         }
     }
 }
