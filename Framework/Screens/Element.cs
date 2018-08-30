@@ -19,16 +19,10 @@ namespace Spectrum.Framework.Screens
         Relative,
         Absolute
     }
-    public enum KeyPressType
-    {
-        Press,
-        Release,
-        Hold,
-    }
     struct InputHandler
     {
         public Func<InputState, bool> Handler;
-        public KeyPressType OnKeyPress;
+        public KeyPressType PressType;
         public bool RequireDisplay;
         public bool IgnoreConsumed;
     }
@@ -45,7 +39,7 @@ namespace Spectrum.Framework.Screens
         private bool _display = true;
         public bool Display
         {
-            get => _display;
+            get => _display && (Parent?.Display ?? true);
             set
             {
                 if (value != _display)
@@ -170,7 +164,7 @@ namespace Spectrum.Framework.Screens
             inputHandlers[keybind] = new InputHandler()
             {
                 Handler = handler,
-                OnKeyPress = pressType,
+                PressType = pressType,
                 RequireDisplay = requireDisplay,
                 IgnoreConsumed = ignoreConsumed
             };
@@ -195,8 +189,9 @@ namespace Spectrum.Framework.Screens
             }
             foreach (var inputHandler in inputHandlers)
             {
-                // TODO: Replace !otherTookInput with input consumption for keybind
-                switch (inputHandler.Value.OnKeyPress)
+                if (input.IsConsumed(inputHandler.Key, inputHandler.Value.PressType))
+                    continue;
+                switch (inputHandler.Value.PressType)
                 {
                     case KeyPressType.Press:
                         if (!input.IsNewKeyPress(inputHandler.Key))
@@ -212,7 +207,13 @@ namespace Spectrum.Framework.Screens
                         break;
                 }
                 if ((Display || !inputHandler.Value.RequireDisplay) && (!otherTookInput || inputHandler.Value.IgnoreConsumed))
-                    otherTookInput |= inputHandler.Value.Handler(input);
+                {
+                    if(inputHandler.Value.Handler(input))
+                    {
+                        otherTookInput = true;
+                        input.ConsumeInput(inputHandler.Key, inputHandler.Value.PressType);
+                    }
+                }
             }
             return otherTookInput;
         }

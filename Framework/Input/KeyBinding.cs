@@ -35,6 +35,31 @@ namespace Spectrum.Framework.Input
                 vrButton = a.vrButton,
                 modifiers = a.modifiers.Union(b).ToArray()
             };
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is KeyBind))
+            {
+                return false;
+            }
+
+            var bind = (KeyBind)obj;
+            return EqualityComparer<Keys?>.Default.Equals(key, bind.key) &&
+                   EqualityComparer<int?>.Default.Equals(mouseButton, bind.mouseButton) &&
+                   EqualityComparer<GamepadButton?>.Default.Equals(button, bind.button) &&
+                   EqualityComparer<VRBinding?>.Default.Equals(vrButton, bind.vrButton) &&
+                   modifiers.Length == bind.modifiers.Length && modifiers.Zip(bind.modifiers, (a, b) => a.Equals(b)).All(b => b);
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -92915133;
+            hashCode = hashCode * -1521134295 + EqualityComparer<Keys?>.Default.GetHashCode(key);
+            hashCode = hashCode * -1521134295 + EqualityComparer<int?>.Default.GetHashCode(mouseButton);
+            hashCode = hashCode * -1521134295 + EqualityComparer<GamepadButton?>.Default.GetHashCode(button);
+            hashCode = hashCode * -1521134295 + EqualityComparer<VRBinding?>.Default.GetHashCode(vrButton);
+            return hashCode;
+        }
     }
     public class KeyBinding
     {

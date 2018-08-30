@@ -46,7 +46,8 @@ namespace Spectrum.Framework.Screens.InputElements
             sliderTrack.Positioning = PositionType.Relative;
             AddElement(sliderTrack);
 
-            OnClick += (_) => dragging = true;
+            OnClick += (_) =>
+                dragging = true;
         }
         public override void OnMeasure(int width, int height)
         {

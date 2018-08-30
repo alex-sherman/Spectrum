@@ -19,6 +19,14 @@ using System.Collections.Generic;
 
 namespace Spectrum.Framework.Input
 {
+    [Flags]
+    public enum KeyPressType
+    {
+        None,
+        Press,
+        Release,
+        Hold,
+    }
     public class InputState
     {
         public static float MouseSensitivity = 0.003f;
@@ -33,6 +41,7 @@ namespace Spectrum.Framework.Input
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
         private InputState LastInputState;
         public bool DisableCursorState { get; private set; }
+        public DefaultDict<KeyBind, KeyPressType> consumedNewKeyPresses = new DefaultDict<KeyBind, KeyPressType>();
 
         public InputState(bool disableCursorState = false)
         {
@@ -51,6 +60,7 @@ namespace Spectrum.Framework.Input
 
         public void Update(float dt)
         {
+            consumedNewKeyPresses.Clear();
             if (LastInputState == null)
                 LastInputState = new InputState();
             LastInputState.DT = dt;
@@ -77,6 +87,14 @@ namespace Spectrum.Framework.Input
             }
             if (!DisableCursorState)
                 RawMouse.Update();
+        }
+        public void ConsumeInput(KeyBind key, KeyPressType pressType)
+        {
+            consumedNewKeyPresses[key] |= pressType;
+        }
+        public bool IsConsumed(KeyBind key, KeyPressType pressType)
+        {
+            return consumedNewKeyPresses[key].HasFlag(pressType);
         }
         public bool IsKeyDown(string bindingName, PlayerInformation playerInfo = null, bool ignoreModifiers = false)
         {

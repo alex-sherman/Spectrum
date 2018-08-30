@@ -61,17 +61,18 @@ namespace Spectrum.Framework.Screens
             }
             otherTookInput |= childTookInput;
             if (!otherTookInput && ToggleButton.HasValue && input.IsNewKeyPress(ToggleButton.Value))
+            {
+                input.ConsumeInput(ToggleButton.Value, KeyPressType.Press);
                 Toggle();
+            }
             if (!Display)
                 return otherTookInput;
             if (!otherTookInput)
             {
                 if (CaptureInputWhenFocused && MouseInside(input))
                     otherTookInput = true;
-                // TODO: Change this to RegisterHandler and consume the input
-                if (input.IsNewKeyPress("GoBack"))
+                if (!input.IsConsumed(Keys.Escape, KeyPressType.Press) && input.IsNewKeyPress(Keys.Escape))
                 {
-                    input.Update(input.DT);
                     Close();
                     otherTookInput = true;
                 }
