@@ -42,7 +42,6 @@ namespace Spectrum.Framework.Graphics
         static RenderPhaseInfo sceneRenderPhase = new RenderPhaseInfo();
         static RenderPhaseInfo shadowRenderPhase = new RenderPhaseInfo() { GenerateShadowMap = true };
         //static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
-        static Texture2D phaseShadowMap;
         static FieldInfo textureFieldInfo;
         private static float _msFactor = 1;
         public static int Width { get; private set; }
@@ -130,7 +129,6 @@ namespace Spectrum.Framework.Graphics
             device.Clear(Color.Black);
             renderGroups = renderGroups.Where(group => !group.Properties.DisableDepthBuffer);
             shadowRenderPhase.Projection = SpectrumEffect.LightView * Settings.lightProjection;
-            phaseShadowMap = null;
             RenderQueue(shadowRenderPhase, renderGroups);
         }
         public static void UpdateWater(List<Entity> scene)
@@ -171,18 +169,12 @@ namespace Spectrum.Framework.Graphics
         }
         public static void UpdateRasterizer()
         {
-            RasterizerState foo = new RasterizerState();
-            if (wireFrame)
+            device.RasterizerState = new RasterizerState()
             {
-                foo.FillMode = FillMode.WireFrame;
-            }
-            else
-            {
-                foo.FillMode = FillMode.Solid;
-            }
-            foo.MultiSampleAntiAlias = false;
-            foo.CullMode = CullMode.None;
-            device.RasterizerState = foo;
+                FillMode = wireFrame ? FillMode.WireFrame : FillMode.Solid,
+                MultiSampleAntiAlias = false,
+                CullMode = CullMode.None,
+            };
             device.BlendState = BlendState.AlphaBlend;
         }
         public static void Render(PrimitiveType primType, VertexBuffer VBuffer, IndexBuffer IBuffer, DynamicVertexBuffer instanceBuffer)
@@ -242,7 +234,8 @@ namespace Spectrum.Framework.Graphics
                 {
                     effect.View = phase.View;
                     effect.Projection = phase.Projection;
-                    effect.ShadowMap = phaseShadowMap;
+                    // TODO: Fix shadow map
+                    effect.ShadowMap = null;
                     MaterialData material = group.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
                     effect.Texture = material.DiffuseTexture;
@@ -281,16 +274,10 @@ namespace Spectrum.Framework.Graphics
             }
         }
 
-        public static void BeginRender()
-        {
-            device.DepthStencilState = DepthStencilState.Default;
-            device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
-            UpdateRasterizer();
-        }
-
         private static VRTextureBounds_t bounds = new VRTextureBounds_t() { uMin = 0, uMax = 1f, vMax = 1f, vMin = 0 };
-        private static void VRRender(Matrix camera, IEnumerable<RenderCall> groups, EVREye eye, Matrix eye_offset)
+        private static void VRRender(Matrix camera, IEnumerable<RenderCall> groups, EVREye eye, Matrix eye_offset, RenderTarget2D target)
         {
+            device.SetRenderTarget(target);
             device.Clear(clearColor);
             RenderPhaseInfo vrPhase = new RenderPhaseInfo
             {
@@ -299,55 +286,81 @@ namespace Spectrum.Framework.Graphics
             };
             RenderQueue(vrPhase, groups);
         }
-        public static void Render(IEnumerable<RenderCall> renderGroups, float gameTime, RenderTarget2D target)
+
+        public static void BeginRender(Camera camera)
         {
-            BeginRender();
-            WaterEffect.ReflectionView = Camera.ReflectionView;
-            WaterEffect.ReflectionProj = Camera.ReflectionProjection;
-            SpectrumEffect.CameraPos = Camera.Position;
-            WaterEffect.WaterTime += gameTime * 50;
+            device.DepthStencilState = DepthStencilState.Default;
+            // Disables frame rate limiting
+            device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
+            UpdateRasterizer();
+            SpectrumEffect.CameraPos = camera.Position;
+        }
+
+        /// <summary>
+        /// Renders the provided groups to the render target with no post processing
+        /// </summary>
+        public static void RenderSimple(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        {
+            BeginRender(camera);
+            device.SetRenderTarget(target);
+            device.Clear(clearColor);
+            RenderPhaseInfo simplePhase = new RenderPhaseInfo
+            {
+                View = camera.View,
+                Projection = camera.Projection,
+            };
+            RenderQueue(simplePhase, renderGroups);
+        }
+
+        /// <summary>
+        /// Renders the provided groups to the render target with post processing requiring
+        /// that the post process targets be configured accordingly.
+        /// </summary>
+        public static void RenderScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        {
+            BeginRender(camera);
 
             using (DebugTiming.Render.Time("Update Shadow"))
                 UpdateShadowMap(renderGroups);
 
             //Begin rendering this to the Anti Aliasing texture
+            var mainRenderTimer = DebugTiming.Render.Time("Main Render");
+            sceneRenderPhase.View = camera.View;
+            sceneRenderPhase.Projection = camera.Projection;
             device.SetRenderTargets(AATarget, DepthTarget);
             device.Clear(clearColor);
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
-            var mainRenderTimer = DebugTiming.Render.Time("Main Render");
-            sceneRenderPhase.View = Camera.View;
-            sceneRenderPhase.Projection = Camera.Projection;
-            phaseShadowMap = shadowMap;
-            if (!SpecVR.Running)
+            RenderQueue(sceneRenderPhase, renderGroups);
+            //Clear the screen and perform anti aliasing
+            device.SetRenderTarget(target);
+            using (DebugTiming.Render.Time("Post Process"))
             {
-                RenderQueue(sceneRenderPhase, renderGroups);
-                //Clear the screen and perform anti aliasing
-                device.SetRenderTarget(target);
-                using (DebugTiming.Render.Time("Post Process"))
-                {
-                    device.Clear(clearColor);
-                    PostProcessEffect.Technique = "AAPP";
-                    spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
-                    spriteBatch.Draw(AATarget, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
-                    spriteBatch.End();
-                }
-            }
-            else
-            {
-                Matrix left_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
-                Matrix right_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
-                var view = Camera.View;
-                device.SetRenderTarget(VRTargetR);
-                VRRender(view, renderGroups, EVREye.Eye_Right, right_offset);
-                device.SetRenderTarget(VRTargetL);
-                VRRender(view, renderGroups, EVREye.Eye_Left, left_offset);
-                device.SetRenderTarget(target);
                 device.Clear(clearColor);
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
-                spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, device.Viewport.Width, device.Viewport.Height), Color.White);
+                PostProcessEffect.Technique = "AAPP";
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
+                spriteBatch.Draw(AATarget, new Rectangle(0, 0, target.Width, target.Height), Color.White);
                 spriteBatch.End();
             }
             mainRenderTimer?.Stop();
+        }
+        public static void RenderVRScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        {
+            BeginRender(camera);
+
+            var vrRenderTimer = DebugTiming.Render.Time("VR Render");
+            Matrix left_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
+            Matrix right_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
+            VRRender(camera.View, renderGroups, EVREye.Eye_Right, right_offset, VRTargetR);
+            VRRender(camera.View, renderGroups, EVREye.Eye_Left, left_offset, VRTargetR);
+            if (target != null)
+            {
+                device.SetRenderTarget(target);
+                device.Clear(clearColor);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
+                spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, target.Width, target.Height), Color.White);
+                spriteBatch.End();
+            }
+            vrRenderTimer?.Stop();
         }
         public static void EndDraw()
         {

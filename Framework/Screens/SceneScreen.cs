@@ -11,6 +11,7 @@ using Spectrum.Framework.Content;
 using Spectrum.Framework.Physics;
 using Spectrum.Framework.Input;
 using Microsoft.Xna.Framework.Input;
+using Spectrum.Framework.VR;
 
 namespace Spectrum.Framework.Screens
 {
@@ -65,7 +66,10 @@ namespace Spectrum.Framework.Screens
                 using (DebugTiming.Main.Time("Draw"))
                 {
                     var renderGroups = Manager.GetRenderTasks(gameTime);
-                    GraphicsEngine.Render(renderGroups, gameTime, RenderTarget);
+                    if (SpecVR.Running)
+                        GraphicsEngine.RenderVRScene(Camera, renderGroups, RenderTarget);
+                    else
+                        GraphicsEngine.RenderScene(Camera, renderGroups, RenderTarget);
                     spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
                     Manager.ClearRenderTasks();
                 }

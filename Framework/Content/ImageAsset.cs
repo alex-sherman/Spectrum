@@ -19,6 +19,7 @@ namespace Spectrum.Framework.Content
         // Marking as public requires a reference to SVG to resolve method
         internal ImageAsset(SvgDocument svg) { this.svg = svg; }
         public ImageAsset(Texture2D texture) { this.texture = texture; }
+        public static implicit operator ImageAsset(Texture2D texture) => new ImageAsset(texture);
         public ImageAsset() { }
         public void Rasterize(int width, int height)
         {
