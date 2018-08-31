@@ -39,6 +39,7 @@ namespace Spectrum.Framework.Input
         public Gamepad[] Gamepads = new Gamepad[4];
         public VRHMD VRHMD = new VRHMD();
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
+        public VRController VRFromHand(VRHand hand) => VRControllers[hand == VRHand.Right ? 1 : 0];
         private InputState LastInputState;
         public bool DisableCursorState { get; private set; }
         public DefaultDict<KeyBind, KeyPressType> consumedNewKeyPresses = new DefaultDict<KeyBind, KeyPressType>();

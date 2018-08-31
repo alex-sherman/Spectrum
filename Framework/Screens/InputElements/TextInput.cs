@@ -13,7 +13,8 @@ namespace Spectrum.Framework.Screens.InputElements
     {
         public bool Selected = false;
         public int CursorPosition = 0;
-        public string Text = "";
+        private string text = "";
+        public string Text { get => text; set => text = value ?? ""; }
         public TextInput()
         {
             Width = 250;
@@ -25,27 +26,27 @@ namespace Spectrum.Framework.Screens.InputElements
             if (!Display)
                 return false;
             otherTookInput = base.HandleInput(otherTookInput, input);
-            if(Selected)
+            if (Selected)
             {
                 if (input.IsNewMousePress(0) && !MouseInside(input))
                 {
                     Selected = false;
                     return false;
                 }
-                input.TakeKeyboardInput(ref CursorPosition, ref Text);
+                input.TakeKeyboardInput(ref CursorPosition, ref text);
                 return true;
             }
             return otherTookInput;
         }
         public override void OnMeasure(int width, int height)
         {
-            MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
-            MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+            MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(text).X);
+            MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(text).Y));
         }
         public override void Draw(float time, SpriteBatch spritebatch)
         {
             base.Draw(time, spritebatch);
-            spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, Layer(2));
+            spritebatch.DrawString(Font, text, new Vector2(Rect.X, Rect.Y), FontColor, Layer(2));
         }
     }
 }

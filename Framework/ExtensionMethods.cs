@@ -57,6 +57,10 @@ namespace Spectrum.Framework
         {
             return Vector3.Dot(source, normal) * normal;
         }
+        public static Vector3 ProjectUnto(this Vector3 source, Vector3 planeNormal)
+        {
+            return source - source.Project(planeNormal);
+        }
 
         public static void DrawString(this SpriteBatch spritebatch, SpriteFont font, string text, Vector2 pos, Color textColor, float layer)
         {

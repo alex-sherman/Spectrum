@@ -132,9 +132,9 @@ namespace Spectrum.Framework.VR
                 case VRButton.DPad_Down:
                     return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitY) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Left:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitX) > Math.Cos(Math.PI / 4);
-                case VRButton.DPad_Right:
                     return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                case VRButton.DPad_Right:
+                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitX) > Math.Cos(Math.PI / 4);
                 case VRButton.Axis0:
                 case VRButton.Axis1:
                 case VRButton.Axis2:

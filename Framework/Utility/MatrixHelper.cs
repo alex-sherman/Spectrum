@@ -76,7 +76,10 @@ namespace Spectrum.Framework
         }
         public static Quaternion ToQuaternion(this Matrix matrix)
         {
-            return Quaternion.CreateFromRotationMatrix(matrix);
+            var r0 = new Vector3(matrix.M11, matrix.M12, matrix.M13); r0.Normalize();
+            var r1 = new Vector3(matrix.M21, matrix.M22, matrix.M23); r1.Normalize();
+            var r2 = new Vector3(matrix.M31, matrix.M32, matrix.M33); r2.Normalize();
+            return Quaternion.CreateFromRotationMatrix(new Matrix(new Vector4(r0, 0), new Vector4(r1, 0), new Vector4(r2, 0), new Vector4(0, 0, 0, 1)));
         }
         public static Matrix ToMatrix(this Quaternion quaternion)
         {

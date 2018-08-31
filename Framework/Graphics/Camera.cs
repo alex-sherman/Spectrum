@@ -12,6 +12,7 @@ namespace Spectrum.Framework.Graphics
         public Matrix Projection;
         public Vector3 Position;
         public Quaternion Rotation;
+        public Matrix Transform = Matrix.Identity;
         /// TODO: Retrieve these values from rotation?
         public float Yaw
         {
@@ -41,7 +42,7 @@ namespace Spectrum.Framework.Graphics
         {
             get
             {
-                return Matrix.CreateLookAt(
+                return Transform * Matrix.CreateLookAt(
                     Position,
                     Vector3.Transform(Vector3.Forward, Rotation) + Position,
                     Vector3.Transform(Vector3.Up, Rotation));
