@@ -33,7 +33,7 @@ namespace Spectrum.Framework.Screens.InputElements
             valueIndicator.Positioning = PositionType.Center;
             valueIndicator.Width = 6;
             valueIndicator.Height = 6;
-            valueIndicator.Tags.Add("toggle-indicator");
+            valueIndicator.AddTag("toggle-indicator");
             Value = false;
             AddElement(valueIndicator);
             OnClick += (_) => ToggleValue();

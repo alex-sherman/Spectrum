@@ -43,72 +43,57 @@ namespace Spectrum.Framework.Screens
         {
             string output = null;
             int matchIndex = -1;
-            foreach (string tag in element.Tags)
+            for (int i = matchIndex + 1; i < TagOverrides.Count; i++)
             {
-                for (int i = matchIndex + 1; i < TagOverrides.Count; i++)
+                if ((TagOverrides[i].Item1 == null || element.HasTag(TagOverrides[i].Item1)) && TagOverrides[i].Item2 == fieldName)
                 {
-                    if ((TagOverrides[i].Item1 == null || TagOverrides[i].Item1 == tag) && TagOverrides[i].Item2 == fieldName)
-                    {
-                        output = TagOverrides[i].Item3;
-                        matchIndex = i;
-                    }
+                    output = TagOverrides[i].Item3;
+                    matchIndex = i;
                 }
             }
             return output;
         }
 
         private Func<string, object> setter;
+        private string _styleStrValue;
+        private object _styleValue;
         private string _strValue;
         private object _value;
-        private object defaultValue;
-        public object ObjValue
-        {
-            get
-            {
-                return _value ?? defaultValue;
-            }
-        }
+        private bool hasElementValue => _value != null;
         private string fieldName;
         private bool inherited;
         private Element element;
-        private bool initialized = false;
-        public ElementField(Element element, string fieldName, Func<string, object> setter, bool inherited = true, object defaultValue = null)
+        public object ObjValue => hasElementValue ? _value : _styleValue;
+        public string StrValue
+        {
+            get => hasElementValue ? _strValue : _styleStrValue;
+            set => SetValue(value, setter(value));
+        }
+        public void SetValue(string strValue, object objValue)
+        {
+            _strValue = strValue;
+            _value = objValue;
+        }
+        public ElementField(Element element, string fieldName, Func<string, object> setter, bool inherited = true)
         {
             this.element = element;
             this.fieldName = fieldName;
             this.setter = setter;
             this.inherited = inherited;
-            this.defaultValue = defaultValue;
         }
-        public void Initialize()
+        public void UpdateFromStyle()
         {
-            if (!initialized)
+            string overrideValue = FindTagOverride(element, fieldName);
+            if (overrideValue != null)
             {
-                _value = defaultValue;
-                string overrideValue = ElementField.FindTagOverride(element, fieldName);
-                if (overrideValue != null)
-                {
-                    _strValue = overrideValue;
-                    _value = setter(overrideValue);
-                }
-                else if (element.Parent != null && inherited && element.Parent.Fields.ContainsKey(fieldName))
-                {
-                    _strValue = element.Parent.Fields[fieldName].StrValue;
-                    _value = element.Parent.Fields[fieldName].ObjValue;
-                }
+                _styleStrValue = overrideValue;
+                _styleValue = setter(overrideValue);
             }
-            initialized = true;
-        }
-        public void SetValue(string strValue, object objValue)
-        {
-            initialized = true;
-            _strValue = strValue;
-            _value = objValue;
-        }
-        public string StrValue
-        {
-            get => _strValue;
-            set => SetValue(value, setter(value));
+            else if (element.Parent != null && inherited && element.Parent.Fields.ContainsKey(fieldName))
+            {
+                _styleStrValue = element.Parent.Fields[fieldName].StrValue;
+                _styleValue = element.Parent.Fields[fieldName].ObjValue;
+            }
         }
     }
 }

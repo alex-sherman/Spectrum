@@ -65,6 +65,10 @@ namespace Spectrum.Framework.Screens
             int contentWidth = 0;
             int contentHeight = 0;
             var layoutChildren = element.Children.Where(c => c.Positioning != PositionType.Relative && c.Positioning != PositionType.Absolute);
+            foreach (var child in layoutChildren)
+            {
+                child.Measure(0, 0);
+            }
             switch (LayoutType)
             {
                 case LinearLayoutType.Vertical:

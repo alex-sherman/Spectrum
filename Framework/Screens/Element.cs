@@ -53,7 +53,22 @@ namespace Spectrum.Framework.Screens
         public PositionType Positioning;
         public virtual bool HasFocus { get { return Parent?.HasFocus ?? true; } }
         private bool Initialized = false;
-        public List<string> Tags = new List<string>();
+        private HashSet<string> Tags = new HashSet<string>();
+        public bool HasTag(string tag) => Tags.Contains(tag);
+        public void AddTag(string tag)
+        {
+            Tags.Add(tag);
+            foreach (ElementField field in Fields.Values)
+                field.UpdateFromStyle();
+        }
+        public bool RemoveTag(string tag)
+        {
+            var output = Tags.Remove(tag);
+            foreach (ElementField field in Fields.Values)
+                field.UpdateFromStyle();
+            return output;
+        }
+
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
         public string HoverText { get { return this["hover-text"]; } }
         public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
@@ -77,8 +92,7 @@ namespace Spectrum.Framework.Screens
             Fields["font"] = new ElementField(
                 this,
                 "font",
-                ElementField.ContentSetter<SpriteFont>,
-                defaultValue: DefaultFont
+                ElementField.ContentSetter<SpriteFont>
                 );
             Fields["font-color"] = new ElementField(
                 this,
@@ -114,10 +128,6 @@ namespace Spectrum.Framework.Screens
                 "hover-text",
                 (value) => (value)
                 );
-        }
-
-        public virtual void Initialize()
-        {
             Type tagType = GetType();
             while (tagType != typeof(Element))
             {
@@ -125,9 +135,11 @@ namespace Spectrum.Framework.Screens
                 tagType = tagType.BaseType;
             }
             foreach (ElementField field in Fields.Values)
-            {
-                field.Initialize();
-            }
+                field.UpdateFromStyle();
+        }
+
+        public virtual void Initialize()
+        {
             foreach (var child in Children)
                 child.Initialize();
             Initialized = true;
@@ -208,7 +220,7 @@ namespace Spectrum.Framework.Screens
                 }
                 if ((Display || !inputHandler.Value.RequireDisplay) && (!otherTookInput || inputHandler.Value.IgnoreConsumed))
                 {
-                    if(inputHandler.Value.Handler(input))
+                    if (inputHandler.Value.Handler(input))
                     {
                         otherTookInput = true;
                         input.ConsumeInput(inputHandler.Key, inputHandler.Value.PressType);
@@ -276,6 +288,7 @@ namespace Spectrum.Framework.Screens
             {
                 MeasuredHeight = 0;
                 MeasuredWidth = 0;
+                return;
             }
             width = Width.CropParentSize(width);
             height = Height.CropParentSize(height);
@@ -298,15 +311,19 @@ namespace Spectrum.Framework.Screens
         {
             if (!Display)
                 return;
-            Bounds = bounds;
-            int X = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)) + bounds.X + Margin.Left.Measure(Parent?.MeasuredWidth ?? 0);
-            int Y = (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)) + bounds.Y + Margin.Top.Measure(Parent?.MeasuredHeight ?? 0);
+            Bounds = new Rectangle()
+            {
+                X = bounds.X + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)),
+                Y = bounds.Y + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)),
+                Width = bounds.Width,
+                Height = bounds.Height,
+            };
             Rect = new Rectangle()
             {
-                X = X,
-                Y = Y,
-                Width = bounds.Width - Margin.Left.Measure(Parent?.MeasuredWidth ?? 0) - Margin.Right.Measure(Parent?.MeasuredWidth ?? 0),
-                Height = bounds.Height - Margin.Top.Measure(Parent?.MeasuredHeight ?? 0) - Margin.Bottom.Measure(Parent?.MeasuredHeight ?? 0)
+                X = Bounds.X + Margin.Left.Measure(Parent?.MeasuredWidth ?? 0),
+                Y = Bounds.Y + Margin.Top.Measure(Parent?.MeasuredHeight ?? 0),
+                Width = Bounds.Width - Margin.Left.Measure(Parent?.MeasuredWidth ?? 0) - Margin.Right.Measure(Parent?.MeasuredWidth ?? 0),
+                Height = Bounds.Height - Margin.Top.Measure(Parent?.MeasuredHeight ?? 0) - Margin.Bottom.Measure(Parent?.MeasuredHeight ?? 0)
             };
             if (LayoutManager != null)
                 LayoutManager.OnLayout(this, Rect);
@@ -353,10 +370,10 @@ namespace Spectrum.Framework.Screens
             }
             if (Background != null)
             {
-                Background.Draw(spritebatch, Rect, BackgroundColor ?? Color.White, Z);
+                Background.Draw(spritebatch, Bounds, BackgroundColor ?? Color.White, Z);
             }
             else if (BackgroundColor != null)
-                ImageAsset.Blank.Draw(spritebatch, Rect, BackgroundColor.Value, Z);
+                ImageAsset.Blank.Draw(spritebatch, Bounds, BackgroundColor.Value, Z);
             // TODO
             //if (HasFocus && MouseInside() && HoverText != null)
             //{

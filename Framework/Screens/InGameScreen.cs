@@ -34,9 +34,9 @@ namespace Spectrum.Framework.Screens
             TitleContainer.Width = 1.0;
             TitleContainer.Height.WrapContent = true;
             TitleContainer.Height = Font.LineSpacing;
-            TitleContainer.Tags.Add("ingame-window-title-container");
+            TitleContainer.AddTag("ingame-window-title-container");
             AddElement(TitleContainer);
-            Title.Tags.Add("ingame-window-title");
+            Title.AddTag("ingame-window-title");
             TitleContainer.AddElement(Title);
             Title.Center();
         }

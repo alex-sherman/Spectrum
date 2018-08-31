@@ -351,7 +351,7 @@ namespace Spectrum.Framework.Graphics
             Matrix left_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
             Matrix right_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
             VRRender(camera.View, renderGroups, EVREye.Eye_Right, right_offset, VRTargetR);
-            VRRender(camera.View, renderGroups, EVREye.Eye_Left, left_offset, VRTargetR);
+            VRRender(camera.View, renderGroups, EVREye.Eye_Left, left_offset, VRTargetL);
             if (target != null)
             {
                 device.SetRenderTarget(target);

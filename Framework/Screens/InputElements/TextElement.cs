@@ -9,7 +9,20 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class TextElement : Element
     {
-        public string Text;
+        private bool _dirty = false;
+        private string _text;
+        public string Text
+        {
+            get => _text;
+            set
+            {
+                if (_text != value)
+                {
+                    _text = value;
+                    _dirty = true;
+                }
+            }
+        }
         public Func<string> TextSource;
 
         public TextElement(string text = null)
@@ -24,14 +37,19 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             if (TextSource != null)
                 Text = TextSource();
-            if (Text == null)
+            if (_dirty)
             {
-                MeasuredWidth = 0;
-                MeasuredHeight = Font.LineSpacing;
-            }
-            else {
-                MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
-                MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+                _dirty = false;
+                if (Text == null)
+                {
+                    MeasuredWidth = 0;
+                    MeasuredHeight = Font.LineSpacing;
+                }
+                else
+                {
+                    MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
+                    MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+                }
             }
         }
 

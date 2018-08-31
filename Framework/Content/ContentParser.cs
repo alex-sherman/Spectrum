@@ -71,8 +71,8 @@ namespace Spectrum.Framework.Content
                 var results = Directory.EnumerateFiles(directory, glob, recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly)
                     .Where(path => Extensions.Contains(Path.GetExtension(path).Substring(1)));
                 return results
-                    .Select(path => Path.Combine(Path.GetDirectoryName(path).Replace(directory, "").TrimStart('\\'), 
-                                    Path.GetFileNameWithoutExtension(path)));
+                    .Select(path => Path.Combine(Path.GetDirectoryName(path).Replace(directory, "").TrimStart('\\').TrimStart('/'), 
+                                    Path.GetFileNameWithoutExtension(path)).Replace('\\', '/'));
             }
             catch(DirectoryNotFoundException)
             {

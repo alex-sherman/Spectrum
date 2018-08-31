@@ -26,7 +26,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public Slider()
         {
-            Tags.Add("slider");
+            AddTag("slider");
             Width = 100;
             Height = 20;
         }
@@ -34,14 +34,14 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             base.Initialize();
             sliderPull = new InputElement();
-            sliderPull.Tags.Add("slider-pull");
+            sliderPull.AddTag("slider-pull");
             sliderPull.Height = 0.5f;
             sliderPull.Positioning = PositionType.Relative;
             AddElement(sliderPull);
             sliderPull.OnClick += (_) => dragging = true;
 
             sliderTrack = new Element();
-            sliderTrack.Tags.Add("slider-track");
+            sliderTrack.AddTag("slider-track");
             sliderTrack.Height = 2;
             sliderTrack.Positioning = PositionType.Relative;
             AddElement(sliderTrack);
