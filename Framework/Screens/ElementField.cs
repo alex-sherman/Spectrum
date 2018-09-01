@@ -94,6 +94,10 @@ namespace Spectrum.Framework.Screens
                 _styleStrValue = element.Parent.Fields[fieldName].StrValue;
                 _styleValue = element.Parent.Fields[fieldName].ObjValue;
             }
+            else
+            {
+                _styleStrValue = null; _styleValue = null;
+            }
         }
     }
 }

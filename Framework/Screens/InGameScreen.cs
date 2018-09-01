@@ -24,6 +24,8 @@ namespace Spectrum.Framework.Screens
         {
             Title = new TextElement(title);
             Display = false;
+            Width.WrapContent = true;
+            Height.WrapContent = true;
         }
         public override void Initialize()
         {

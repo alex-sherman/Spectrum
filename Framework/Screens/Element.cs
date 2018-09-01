@@ -78,6 +78,11 @@ namespace Spectrum.Framework.Screens
             set { Fields["image"].SetValue(null, value); }
         }
         public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
+        public Color? FillColor
+        {
+            get => Fields["fill-color"].ObjValue as Color?;
+            set => Fields["fill-color"].SetValue(null, value);
+        }
         public ImageAsset Background { get { return Fields["background"].ObjValue as ImageAsset; } }
         public Color? BackgroundColor
         {
@@ -103,6 +108,12 @@ namespace Spectrum.Framework.Screens
                 this,
                 "background",
                 ElementField.ContentSetter<ImageAsset>,
+                false
+                );
+            Fields["fill-color"] = new ElementField(
+                this,
+                "fill-color",
+                (value) => ElementField.ColorSetter(value),
                 false
                 );
             Fields["background-color"] = new ElementField(
@@ -364,16 +375,15 @@ namespace Spectrum.Framework.Screens
 
         public virtual void Draw(float gameTime, SpriteBatch spritebatch)
         {
-            if (Texture != null)
-            {
-                Texture.Draw(spritebatch, Rect, TextureColor, Layer(1));
-            }
             if (Background != null)
-            {
                 Background.Draw(spritebatch, Bounds, BackgroundColor ?? Color.White, Z);
-            }
             else if (BackgroundColor != null)
                 ImageAsset.Blank.Draw(spritebatch, Bounds, BackgroundColor.Value, Z);
+
+            if (Texture != null)
+                Texture.Draw(spritebatch, Rect, TextureColor, Layer(1));
+            else if(FillColor != null)
+                ImageAsset.Blank.Draw(spritebatch, Rect, FillColor.Value, Layer(2));
             // TODO
             //if (HasFocus && MouseInside() && HoverText != null)
             //{
