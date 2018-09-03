@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Graphics
 
     public class Camera
     {
-        public Matrix Projection;
+        public Matrix Projection = Matrix.Identity;
         public Vector3 Position;
         public Quaternion Rotation;
         public Matrix Transform = Matrix.Identity;

@@ -41,7 +41,9 @@ namespace Spectrum.Framework.Screens
         public SceneScreen()
         {
             Width = 1.0;
+            Width.WrapContent = false;
             Height = 1.0;
+            Height.WrapContent = false;
         }
         public override void Layout(Rectangle bounds)
         {

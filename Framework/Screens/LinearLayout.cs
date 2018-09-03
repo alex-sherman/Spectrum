@@ -45,19 +45,28 @@ namespace Spectrum.Framework.Screens
             {
                 if (item.Positioning != PositionType.Relative && item.Positioning != PositionType.Absolute)
                 {
-                    // TODO: Parent relative doesn't account for size
-                    int width = LayoutType == LinearLayoutType.Horizontal ? item.MeasuredWidth :
-                        (item.Width.ParentRelative ? element.MeasuredWidth : item.MeasuredWidth);
-                    int height = LayoutType == LinearLayoutType.Vertical ? item.MeasuredHeight :
-                        (item.Height.ParentRelative ? element.MeasuredHeight : item.MeasuredHeight);
-                    item.Layout(new Rectangle(currentX, currentY, width, height));
+                    item.Layout(new Rectangle(currentX, currentY, item.MeasuredWidth, item.MeasuredHeight));
                     if (LayoutType == LinearLayoutType.Vertical)
-                        currentY += height;
+                        currentY += item.MeasuredHeight;
                     if (LayoutType == LinearLayoutType.Horizontal)
-                        currentX += width;
+                        currentX += item.MeasuredWidth;
                 }
                 else
                     item.Layout(new Rectangle(item.X, item.Y, item.MeasuredWidth, item.MeasuredHeight));
+            }
+        }
+        private void getContentDims(IEnumerable<Element> children, ref int contentWidth, ref int contentHeight)
+        {
+            switch (LayoutType)
+            {
+                case LinearLayoutType.Vertical:
+                    contentHeight = children.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
+                    contentWidth = children.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
+                    break;
+                case LinearLayoutType.Horizontal:
+                    contentHeight = children.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
+                    contentWidth = children.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
+                    break;
             }
         }
         public void OnMeasure(Element element, int width, int height)
@@ -65,27 +74,12 @@ namespace Spectrum.Framework.Screens
             int contentWidth = 0;
             int contentHeight = 0;
             var layoutChildren = element.Children.Where(c => c.Positioning != PositionType.Relative && c.Positioning != PositionType.Absolute);
+            getContentDims(layoutChildren, ref contentWidth, ref contentHeight);
             foreach (var child in layoutChildren)
-            {
-                child.Measure(0, 0);
-            }
-            switch (LayoutType)
-            {
-                case LinearLayoutType.Vertical:
-                    contentHeight = layoutChildren.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
-                    contentWidth = layoutChildren.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
-                    break;
-                case LinearLayoutType.Horizontal:
-                    contentHeight = layoutChildren.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
-                    contentWidth = layoutChildren.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
-                    break;
-            }
-            element.MeasuredWidth = element.Width.Measure(width, contentWidth);
-            element.MeasuredHeight = element.Height.Measure(height, contentHeight);
-            foreach (var child in layoutChildren)
-            {
-                child.Measure(element.MeasuredWidth, element.MeasuredHeight);
-            }
+                child.Measure(element.PreChildWidth(width, contentWidth), element.PreChildHeight(height, contentHeight));
+            getContentDims(layoutChildren, ref contentWidth, ref contentHeight);
+            element.MeasuredWidth = element.MeasureWidth(width, contentWidth);
+            element.MeasuredHeight = element.MeasureHeight(height, contentHeight);
         }
     }
 }

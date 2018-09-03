@@ -53,14 +53,14 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             base.OnMeasure(width, height);
             sliderPull.Width = sliderPull.MeasuredHeight;
-            sliderTrack.Width = MeasuredWidth - sliderPull.MeasuredHeight;
+            sliderTrack.Width = MeasuredWidth - Padding.WidthTotal(width) - sliderPull.MeasuredHeight;
         }
         public override void Layout(Rectangle bounds)
         {
-            sliderTrack.Y = MeasuredHeight / 2 - sliderTrack.MeasuredHeight / 2;
-            sliderTrack.X = MeasuredWidth / 2 - sliderTrack.MeasuredWidth / 2;
+            sliderTrack.Y = Rect.Height / 2 - sliderTrack.MeasuredHeight / 2;
+            sliderTrack.X = Rect.Width / 2 - sliderTrack.MeasuredWidth / 2;
             sliderPull.X = (int)(sliderTrack.MeasuredWidth * sliderValue) + sliderTrack.X - sliderPull.MeasuredWidth / 2;
-            sliderPull.Y = MeasuredHeight / 2 - sliderPull.MeasuredHeight / 2;
+            sliderPull.Y = Rect.Height / 2 - sliderPull.MeasuredHeight / 2;
             base.Layout(bounds);
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
@@ -72,7 +72,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 dragging = false;
             }
             otherTookInput |= base.HandleInput(otherTookInput, input);
-            if(dragging)
+            if (dragging)
             {
                 otherTookInput = true;
                 Value = (input.CursorState.X - sliderTrack.Rect.Left) * 1.0f / sliderTrack.MeasuredWidth;

@@ -9,6 +9,8 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class TextElement : Element
     {
+        private int _measuredWidth;
+        private int _measuredHeight;
         private bool _dirty = false;
         private string _text;
         public string Text
@@ -42,15 +44,21 @@ namespace Spectrum.Framework.Screens.InputElements
                 _dirty = false;
                 if (Text == null)
                 {
-                    MeasuredWidth = 0;
-                    MeasuredHeight = Font.LineSpacing;
+                    _measuredWidth = 0;
+                    _measuredHeight = Font.LineSpacing;
                 }
                 else
                 {
-                    MeasuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
-                    MeasuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+                    _measuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
+                    _measuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
                 }
             }
+            MeasuredWidth = _measuredWidth;
+            MeasuredHeight = _measuredHeight;
+        }
+        public override void Layout(Rectangle bounds)
+        {
+            base.Layout(bounds);
         }
 
         public override void Draw(float time, SpriteBatch spritebatch)

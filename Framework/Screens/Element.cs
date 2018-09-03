@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Screens
         public Element Parent { get; private set; }
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
-        public List<Element> Children { get { return _children.ToList(); } }
+        public IEnumerable<Element> Children { get { return _children; } }
         private bool _display = true;
         public bool Display
         {
@@ -94,6 +94,8 @@ namespace Spectrum.Framework.Screens
         public Element()
         {
             Positioning = PositionType.Inline;
+            Width = new ElementSize(wrapContent: true);
+            Height = new ElementSize(wrapContent: true);
             Fields["font"] = new ElementField(
                 this,
                 "font",
@@ -206,7 +208,7 @@ namespace Spectrum.Framework.Screens
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
-            foreach (Element child in Children)
+            foreach (Element child in Children.ToList())
             {
                 otherTookInput |= child.HandleInput(otherTookInput, input);
             }
@@ -242,6 +244,7 @@ namespace Spectrum.Framework.Screens
         }
 
         public RectOffset Margin;
+        public RectOffset Padding;
 
         public ElementSize Width;
         public int MeasuredWidth { get; set; }
@@ -281,19 +284,44 @@ namespace Spectrum.Framework.Screens
 
         public virtual void Update(GameTime gameTime)
         {
-            foreach (Element child in Children)
+            foreach (Element child in Children.Where(c => c.Display))
+                child.Update(gameTime);
+        }
+
+        public int MeasureWidth(int parentWidth, int contentWidth) =>
+            Width.Measure(parentWidth, contentWidth + Padding.WidthTotal(parentWidth)) + Margin.WidthTotal(parentWidth);
+        public int MeasureHeight(int parentHeight, int contentHeight) =>
+            Height.Measure(parentHeight, contentHeight + Padding.HeightTotal(parentHeight)) + Margin.HeightTotal(parentHeight);
+        private int MaxChildWidth => Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max();
+        private int MaxChildHeight => Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max();
+
+        // Calculate the dims to pass to a child before considering margin
+        public int PreChildWidth(int parentWidth, int contentWidth = 0) =>
+            Math.Max(0, Width.Measure(parentWidth, contentWidth + Padding.WidthTotal(parentWidth)) - Padding.WidthTotal(parentWidth));
+        public int PreChildHeight(int parentHeight, int contentHeight = 0) =>
+            Math.Max(0, Height.Measure(parentHeight, contentHeight + Padding.HeightTotal(parentHeight)) - Padding.HeightTotal(parentHeight));
+
+        // Calculate the dims to pass to a child considering margins
+        public int PostChildWidth(int width, int parentWidth) =>
+            Math.Max(0, width - Margin.WidthTotal(parentWidth) - Padding.WidthTotal(parentWidth));
+        public int PostChildHeight(int height, int parentHeight) =>
+            Math.Max(0, height - Margin.HeightTotal(parentHeight) - Padding.HeightTotal(parentHeight));
+
+        public void ClearMeasure()
+        {
+            MeasuredWidth = 0;
+            MeasuredHeight = 0;
+            foreach (var child in Children)
             {
-                child.Parent = this;
-                if (child.Display)
-                    child.Update(gameTime);
+                child.ClearMeasure();
             }
         }
         public virtual void OnMeasure(int width, int height)
         {
-            MeasuredWidth = Width.Measure(width, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max());
-            MeasuredHeight = Height.Measure(height, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max());
+            MeasuredWidth = MeasureWidth(width, MaxChildWidth);
+            MeasuredHeight = MeasureHeight(height, MaxChildHeight);
         }
-        public virtual void Measure(int width, int height)
+        public virtual void Measure(int parentWidth, int parentHeight)
         {
             if (!Display)
             {
@@ -301,21 +329,16 @@ namespace Spectrum.Framework.Screens
                 MeasuredWidth = 0;
                 return;
             }
-            width = Width.CropParentSize(width);
-            height = Height.CropParentSize(height);
             if (LayoutManager != null)
-                LayoutManager.OnMeasure(this, width, height);
+                LayoutManager.OnMeasure(this, parentWidth, parentHeight);
             else
             {
                 foreach (var child in Children)
                 {
-                    child.Measure(width - Margin.WidthTotal(width), height - Margin.HeightTotal(height));
+                    child.Measure(PreChildWidth(parentWidth, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max()),
+                        PreChildHeight(parentHeight, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max()));
                 }
-                OnMeasure(width, height);
-                foreach (var child in Children)
-                {
-                    child.Measure(MeasuredWidth - Margin.WidthTotal(width), MeasuredHeight - Margin.HeightTotal(height));
-                }
+                OnMeasure(parentWidth, parentHeight);
             }
         }
         public virtual void Layout(Rectangle bounds)
@@ -331,10 +354,10 @@ namespace Spectrum.Framework.Screens
             };
             Rect = new Rectangle()
             {
-                X = Bounds.X + Margin.Left.Measure(Parent?.MeasuredWidth ?? 0),
-                Y = Bounds.Y + Margin.Top.Measure(Parent?.MeasuredHeight ?? 0),
-                Width = Bounds.Width - Margin.Left.Measure(Parent?.MeasuredWidth ?? 0) - Margin.Right.Measure(Parent?.MeasuredWidth ?? 0),
-                Height = Bounds.Height - Margin.Top.Measure(Parent?.MeasuredHeight ?? 0) - Margin.Bottom.Measure(Parent?.MeasuredHeight ?? 0)
+                X = Bounds.X + Margin.Left.Measure(bounds.Width) + Padding.Left.Measure(bounds.Width),
+                Y = Bounds.Y + Margin.Top.Measure(bounds.Height) + Padding.Right.Measure(bounds.Height),
+                Width = PostChildWidth(Bounds.Width, Parent?.Rect.Width ?? 0),
+                Height = PostChildHeight(Bounds.Height, Parent?.Rect.Height ?? 0),
             };
             if (LayoutManager != null)
                 LayoutManager.OnLayout(this, Rect);
@@ -370,7 +393,6 @@ namespace Spectrum.Framework.Screens
                     }
                 }
             }
-
         }
 
         public virtual void Draw(float gameTime, SpriteBatch spritebatch)
@@ -382,29 +404,24 @@ namespace Spectrum.Framework.Screens
 
             if (Texture != null)
                 Texture.Draw(spritebatch, Rect, TextureColor, Layer(1));
-            else if(FillColor != null)
-                ImageAsset.Blank.Draw(spritebatch, Rect, FillColor.Value, Layer(2));
-            // TODO
-            //if (HasFocus && MouseInside() && HoverText != null)
-            //{
-            //    spritebatch.DrawString(Font, HoverText, new Vector2(Mouse.GetState().X + 15, Mouse.GetState().Y), Color.Black, 0);
-            //}
+            else if (FillColor != null)
+                ImageAsset.Blank.Draw(spritebatch, Rect, FillColor.Value, Layer(1));
         }
 
         public virtual float DrawWithChildren(float gameTime, SpriteBatch spritebatch, float layer)
         {
             Z = layer;
             Draw(gameTime, spritebatch);
-            List<Element> drawChildren = Children;
+            List<Element> drawChildren = Children.ToList();
             drawChildren.Reverse();
             foreach (Element child in drawChildren)
             {
                 if (child.Display)
                 {
-                    layer = child.DrawWithChildren(gameTime, spritebatch, layer * .9999f);
+                    layer = child.DrawWithChildren(gameTime, spritebatch, layer * (1 - ZDiff * ZLayers));
                 }
             }
-            return layer * .9999f;
+            return layer * (1 - ZDiff * ZLayers);
         }
         public void MoveElement(Element child, int newIndex)
         {

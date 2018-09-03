@@ -15,39 +15,22 @@ namespace Spectrum.Framework.Screens
     public struct ElementSize
     {
         public bool WrapContent;
-        public bool ParentRelative;
         public static ElementSize Zero = new ElementSize(0);
-        public double Size;
-        public ElementSize(double size)
+        public static ElementSize WrapFill = new ElementSize(0, 1, true);
+        public double Relative;
+        public int Flat;
+        public ElementSize(int flat = 0, double relative = 0, bool wrapContent = false)
         {
-            Size = size;
-            WrapContent = false;
-            ParentRelative = false;
-        }
-        public int CropParentSize(int parent)
-        {
-            if (ParentRelative)
-                return parent;
-            else if (WrapContent)
-                return 0;
-            return (int)Size;
+            Flat = flat;
+            Relative = relative;
+            WrapContent = wrapContent;
         }
         public int Measure(int parent, int content = 0)
         {
-            if(WrapContent)
-            {
-                if (ParentRelative)
-                    return Math.Max(content, (int)(parent * Size));
-                else
-                    return Math.Max(content, (int)Size);
-            }
+            if (WrapContent)
+                return Math.Max(content, (int)(parent * Relative) + Flat);
             else
-            {
-                if (ParentRelative)
-                    return (int)(parent * Size);
-                else
-                    return (int)Size;
-            }
+                return (int)(parent * Relative) + Flat;
         }
         public static implicit operator ElementSize(int size)
         {
@@ -55,7 +38,7 @@ namespace Spectrum.Framework.Screens
         }
         public static implicit operator ElementSize(double size)
         {
-            return new ElementSize(size) { ParentRelative = true };
+            return new ElementSize(relative: size);
         }
         #region Equality
         public static bool operator ==(ElementSize a, ElementSize b)
@@ -76,16 +59,16 @@ namespace Spectrum.Framework.Screens
 
             var size = (ElementSize)obj;
             return WrapContent == size.WrapContent &&
-                   ParentRelative == size.ParentRelative &&
-                   Size == size.Size;
+                   Flat == size.Flat &&
+                   Relative == size.Relative;
         }
 
         public override int GetHashCode()
         {
             var hashCode = 76549531;
             hashCode = hashCode * -1521134295 + WrapContent.GetHashCode();
-            hashCode = hashCode * -1521134295 + ParentRelative.GetHashCode();
-            hashCode = hashCode * -1521134295 + Size.GetHashCode();
+            hashCode = hashCode * -1521134295 + Flat.GetHashCode();
+            hashCode = hashCode * -1521134295 + Relative.GetHashCode();
             return hashCode;
         }
         #endregion

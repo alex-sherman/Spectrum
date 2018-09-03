@@ -27,10 +27,13 @@ namespace Spectrum.Framework.Screens
     
         public void Update(GameTime gameTime, InputState input)
         {
-            Measure(PixelWidth, PixelHeight);
-            Layout(new Rectangle(0, 0, PixelWidth, PixelHeight));
+            // Needs to happen first because DrawEnabled will be updated in these handlers
             if (HasFocus)
                 HandleInput(false, input);
+            ClearMeasure();
+            Measure(0, 0);
+            Measure(PixelWidth, PixelHeight);
+            Layout(new Rectangle(0, 0, PixelWidth, PixelHeight));
             base.Update(gameTime);
         }
 

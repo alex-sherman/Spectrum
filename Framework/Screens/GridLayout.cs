@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Screens
 {
     public class GridLayout : Element
     {
-        public GridLayout(int cols) { Width = 1f; Height = 1f; LayoutManager = new GridLayoutManager(cols); }
+        public GridLayout(int cols) { LayoutManager = new GridLayoutManager(cols); }
     }
     public class GridLayoutManager : LayoutManager
     {
@@ -21,7 +21,7 @@ namespace Spectrum.Framework.Screens
             int curCol = 0;
             foreach (var item in element.Children)
             {
-                item.Layout(new Rectangle(curCol * bounds.Width / Cols, rowHeights.Where((h, i) => i < curRow).Sum(), bounds.Width / Cols, rowHeights[curRow]));
+                item.Layout(new Rectangle(colWidths.Where((h, i) => i < curCol).Sum(), rowHeights.Where((h, i) => i < curRow).Sum(), colWidths[curCol], rowHeights[curRow]));
                 curCol += 1;
                 if (curCol == Cols)
                 {
@@ -40,12 +40,12 @@ namespace Spectrum.Framework.Screens
             int curRow = 0;
             int curCol = 0;
             int curRowHeight = 0;
-            int childWidth = width;
-            childWidth /= Cols;
             int childHeight = height;
             foreach (var child in element.Children)
             {
-                child.Measure(childWidth, 0);
+                // Without passing in content dimensions children cannot have a parent percentage
+                // that is affected by other childrens' dimensions. Might be fine for grids?
+                child.Measure(element.PreChildWidth(width), element.PreChildHeight(height));
                 curRowHeight = Math.Max(child.MeasuredHeight, curRowHeight);
                 colWidths[curCol] = Math.Max(colWidths[curCol], child.MeasuredWidth);
                 curCol += 1;
@@ -58,20 +58,8 @@ namespace Spectrum.Framework.Screens
                 }
             }
             rowHeights.Add(curRowHeight);
-            curRow = 0;
-            curCol = 0;
-            foreach (var child in element.Children)
-            {
-                child.Measure(childWidth, rowHeights[curRow]);
-                curCol += 1;
-                if (curCol == Cols)
-                {
-                    curRow += 1;
-                    curCol = 0;
-                }
-            }
-            element.MeasuredHeight = element.Height.Measure(height, rowHeights.DefaultIfEmpty(0).Sum());
-            element.MeasuredWidth = element.Width.Measure(width, colWidths.DefaultIfEmpty(0).Sum());
+            element.MeasuredHeight = element.MeasureHeight(height, rowHeights.DefaultIfEmpty(0).Sum());
+            element.MeasuredWidth = element.MeasureWidth(width, colWidths.DefaultIfEmpty(0).Sum());
         }
     }
 }
