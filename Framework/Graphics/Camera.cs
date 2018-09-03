@@ -3,32 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.Xna.Framework;
+using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework.Graphics
 {
-
-    public class Camera
+    public class Camera : ITransform
     {
         public Matrix Projection = Matrix.Identity;
         public Vector3 Position;
-        public Quaternion Rotation;
+        Vector3 ITransform.Position => Position;
+        public Quaternion Orientation;
+        Quaternion ITransform.Orientation => Orientation;
         public Matrix Transform = Matrix.Identity;
         /// TODO: Retrieve these values from rotation?
         public float Yaw
         {
-            get => Rotation.Yaw();
-            set { Rotation = Quaternion.CreateFromYawPitchRoll(value, Pitch, Roll); }
+            get => Orientation.Yaw();
+            set { Orientation = Quaternion.CreateFromYawPitchRoll(value, Pitch, Roll); }
         }
         public double PitchLimit = 0.001f;
         public float Pitch
         {
-            get => Rotation.Pitch();
+            get => Orientation.Pitch();
             set
             {
-                Rotation = Quaternion.CreateFromYawPitchRoll(Yaw, (float)Math.Min(Math.Max(value, PitchLimit - Math.PI / 2), Math.PI / 2 - PitchLimit), Roll);
+                Orientation = Quaternion.CreateFromYawPitchRoll(Yaw, (float)Math.Min(Math.Max(value, PitchLimit - Math.PI / 2), Math.PI / 2 - PitchLimit), Roll);
             }
         }
-        public float Roll => Rotation.Roll();
+        public float Roll => Orientation.Roll();
 
         public virtual Matrix ReflectionProjection
         {
@@ -44,8 +46,8 @@ namespace Spectrum.Framework.Graphics
             {
                 return Transform * Matrix.CreateLookAt(
                     Position,
-                    Vector3.Transform(Vector3.Forward, Rotation) + Position,
-                    Vector3.Transform(Vector3.Up, Rotation));
+                    Vector3.Transform(Vector3.Forward, Orientation) + Position,
+                    Vector3.Transform(Vector3.Up, Orientation));
             }
         }
 
@@ -56,10 +58,10 @@ namespace Spectrum.Framework.Graphics
                 Vector3 refCP = Position;
                 refCP.Y = -refCP.Y + 2 * Water.waterHeight;
 
-                Vector3 refTP = Vector3.Transform(Vector3.Forward, Rotation) + Position;
+                Vector3 refTP = Vector3.Transform(Vector3.Forward, Orientation) + Position;
                 refTP.Y = -refTP.Y + 2 * Water.waterHeight;
 
-                Vector3 cameraRight = Vector3.Transform(new Vector3(1, 0, 0), Rotation);
+                Vector3 cameraRight = Vector3.Transform(new Vector3(1, 0, 0), Orientation);
                 Vector3 invUpVector = Vector3.Cross(cameraRight, refTP - refCP);
 
                 return Matrix.CreateLookAt(refCP, refTP, invUpVector);
@@ -68,7 +70,7 @@ namespace Spectrum.Framework.Graphics
 
         public virtual void UpdateFromVector2(Vector2 desiredRotation)
         {
-            Rotation = Quaternion.CreateFromYawPitchRoll(Yaw - desiredRotation.X, (float)Math.Min(Math.Max(Pitch - desiredRotation.Y, PitchLimit - Math.PI / 2), Math.PI / 2 - PitchLimit), 0);
+            Orientation = Quaternion.CreateFromYawPitchRoll(Yaw - desiredRotation.X, (float)Math.Min(Math.Max(Pitch - desiredRotation.Y, PitchLimit - Math.PI / 2), Math.PI / 2 - PitchLimit), 0);
         }
 
         public Ray GetMouseRay(Point screenCoords)
@@ -86,6 +88,6 @@ namespace Spectrum.Framework.Graphics
             return new Ray(nearPoint, direction);
         }
 
-        public Vector3 Forward => Vector3.Transform(Vector3.Forward, Rotation);
+        public Vector3 Forward => Vector3.Transform(Vector3.Forward, Orientation);
     }
 }

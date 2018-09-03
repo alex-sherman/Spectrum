@@ -14,14 +14,13 @@ using Spectrum.Framework.Physics.Collision.Shapes;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Dynamics.Constraints;
-using Spectrum.Framework.Entities;
 using Spectrum.Framework.Audio;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics.Animation;
 
 namespace Spectrum.Framework.Entities
 {
-    public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource
+    public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource, ITransform
     {
         #region Events
         public event Action<GameObject, Vector3, Vector3, float> OnCollide;

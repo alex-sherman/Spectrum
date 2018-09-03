@@ -55,7 +55,7 @@ namespace Spectrum.Framework.Entities
         public int UpdateOrder { get; protected set; }
         public int DrawOrder { get; protected set; }
         public bool Enabled { get; set; }
-        public bool DrawEnabled { get; set; }
+        public virtual bool DrawEnabled { get; set; }
         public bool Destroying { get; private set; }
         public event Action OnDestroy;
 

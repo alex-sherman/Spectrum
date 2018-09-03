@@ -19,15 +19,13 @@ namespace Spectrum.Framework.Graphics
         {
             BillboardPart = DrawablePart.From(new List<CommonTex>()
             {
-                new CommonTex(new Vector3(-0.5f, 0, -0.5f), Vector3.UnitY, new Vector2(0,0)),
-                new CommonTex(new Vector3(0.5f, 0, -0.5f), Vector3.UnitY, new Vector2(1, 0)),
-                new CommonTex(new Vector3(-0.5f, 0, 0.5f), Vector3.UnitY, new Vector2(0, 1)),
-                new CommonTex(new Vector3(0.5f, 0, 0.5f), Vector3.UnitY, new Vector2(1, 1))
+                new CommonTex(new Vector3(-0.5f, -0.5f, 0), Vector3.UnitY, new Vector2(0,1)),
+                new CommonTex(new Vector3(0.5f, -0.5f, 0), Vector3.UnitY, new Vector2(1, 1)),
+                new CommonTex(new Vector3(-0.5f,  0.5f, 0), Vector3.UnitY, new Vector2(0, 0)),
+                new CommonTex(new Vector3(0.5f,  0.5f, 0), Vector3.UnitY, new Vector2(1, 0))
             });
             BillboardPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
-        public static Matrix GetBillboardTransform(Quaternion rotation, Vector3 position, Vector2 size)
-            => Matrix.CreateScale(size.X, 0, size.Y) * Matrix.CreateFromQuaternion(rotation) * Matrix.CreateTranslation(position);
         public Vector2 Size = Vector2.One;
         public Billboard()
         {
@@ -40,21 +38,21 @@ namespace Spectrum.Framework.Graphics
             base.Initialize();
             Shape = new BoxShape(new Vector3(Size.X, Size.Y, 0));
         }
+        public void Draw(Matrix world)
+        {
+            Manager.DrawPart(
+                BillboardPart,
+                Matrix.CreateScale(Size.X, Size.Y, 0) * world,
+                Material,
+                disableDepthBuffer: DisableDepthBuffer,
+                disableInstancing: DisableInstancing
+            );
+        }
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);
             if (Material != null)
-            {
-                Manager.DrawPart(
-                    BillboardPart,
-                    GetBillboardTransform(
-                        Quaternion.Concatenate(Quaternion.CreateFromAxisAngle(Vector3.Right, (float)Math.PI / 2), orientation),
-                        position, Size),
-                    Material,
-                    disableDepthBuffer: DisableDepthBuffer,
-                    disableInstancing: DisableInstancing
-                );
-            }
+                Draw(World);
         }
     }
 }

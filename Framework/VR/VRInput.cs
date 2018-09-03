@@ -126,7 +126,7 @@ namespace Spectrum.Framework.VR
             switch (check)
             {
                 case VRButton.BetterTrigger:
-                    return touched ? State.rAxis1.x > 0.1 : State.rAxis1.x > 0.95;
+                    return touched ? State.rAxis1.x > 0.1 : State.rAxis1.x > 0.99;
                 case VRButton.DPad_Up:
                     return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitY) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Down:
