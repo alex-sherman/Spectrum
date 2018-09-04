@@ -46,7 +46,7 @@ namespace Spectrum.Framework.Graphics
             MeshParts["part_" + _partIndex] = part;
             _partIndex++;
         }
-        public void Update(GameTime gameTime)
+        public void Update(float dt)
         {
             foreach (var part in MeshParts.Values)
             {

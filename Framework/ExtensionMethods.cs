@@ -27,7 +27,7 @@ namespace Spectrum.Framework
         }
         public static float DT(this GameTime time)
         {
-            return (float)time.ElapsedGameTime.TotalMilliseconds / 1000.0f;
+            return (float)(time.ElapsedGameTime.TotalMilliseconds / 1000);
         }
 
         public static Plugin GetPlugin(this Type type)

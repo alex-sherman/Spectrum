@@ -25,7 +25,7 @@ namespace Spectrum.Framework.Screens
             Initialize();
         }
     
-        public void Update(GameTime gameTime, InputState input)
+        public void Update(float dt, InputState input)
         {
             // Needs to happen first because DrawEnabled will be updated in these handlers
             if (HasFocus)
@@ -34,7 +34,7 @@ namespace Spectrum.Framework.Screens
             Measure(0, 0);
             Measure(PixelWidth, PixelHeight);
             Layout(new Rectangle(0, 0, PixelWidth, PixelHeight));
-            base.Update(gameTime);
+            base.Update(dt);
         }
 
         public void Draw(float gameTime)

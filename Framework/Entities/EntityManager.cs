@@ -150,14 +150,14 @@ namespace Spectrum.Framework.Entities
         }
         #endregion
 
-        public void Update(GameTime gameTime)
+        public void Update(float gameTime)
         {
             if (Paused) { return; }
             using (DebugTiming.Main.Time("Physics"))
                 Physics.Update(gameTime);
 
-            tickTenthTimer += gameTime.ElapsedGameTime.Milliseconds;
-            tickOneTimer += gameTime.ElapsedGameTime.Milliseconds;
+            tickTenthTimer += gameTime;
+            tickOneTimer += gameTime;
 
             using (DebugTiming.Main.Time("Entity Update"))
             {
@@ -169,9 +169,9 @@ namespace Spectrum.Framework.Entities
                         if (updateables[i].Enabled)
                         {
                             updateables[i].Update(gameTime);
-                            if (tickOneTimer >= 1000)
+                            if (tickOneTimer >= 1)
                                 updateables[i].TickOne();
-                            if (tickTenthTimer >= 100)
+                            if (tickTenthTimer >= 0.1)
                                 updateables[i].TickTenth();
                         }
                         else

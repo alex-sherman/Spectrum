@@ -80,12 +80,12 @@ namespace Spectrum.Framework.Audio
                 player.State = value;
             }
         }
-        public override void Update(GameTime gameTime)
+        public override void Update(float dt)
         {
-            base.Update(gameTime);
+            base.Update(dt);
             if (fadeTimeInitial != 0)
             {
-                fadeTime -= gameTime.DT();
+                fadeTime -= dt;
                 if (fadeTime > 0)
                 {
                     var w = fadeTime / fadeTimeInitial;

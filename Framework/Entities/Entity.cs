@@ -95,14 +95,14 @@ namespace Spectrum.Framework.Entities
             replicateNextUpdate = true;
         }
 
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update(float dt)
         {
             if (AllowReplicate)
-                ReplicationData?.Interpolate(gameTime.DT());
+                ReplicationData?.Interpolate(dt);
             if (CanReplicate)
             {
                 if (replicateCounter > 0)
-                    replicateCounter -= gameTime.DT();
+                    replicateCounter -= dt;
 
                 if (replicateNextUpdate || (replicateCounter <= 0 && AutoReplicate))
                 {
@@ -112,7 +112,7 @@ namespace Spectrum.Framework.Entities
                 }
             }
         }
-        public virtual void DisabledUpdate(GameTime time) { }
+        public virtual void DisabledUpdate(float time) { }
         [Obsolete]
         public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
         public virtual void Draw(float gameTime) { }

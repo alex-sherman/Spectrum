@@ -220,7 +220,7 @@ namespace Spectrum
                 }
             }
             InputState.Current.Update(gameTime.DT());
-            Root.Update(gameTime, InputState.Current);
+            Root.Update(gameTime.DT(), InputState.Current);
             base.Update(gameTime);
         }
         protected override void Draw(GameTime gameTime)

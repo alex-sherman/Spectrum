@@ -467,11 +467,11 @@ namespace Spectrum.Framework.Physics
             sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
         }
 
-        public void Update(GameTime gameTime)
+        public void Update(float gameTime)
         {
             if (!Paused)
             {
-                timestep = Math.Min(1 / 30.0f, Timestep == 0 ? (float)gameTime.ElapsedGameTime.TotalMilliseconds / 1000.0f : Timestep);
+                timestep = Math.Min(1 / 30.0f, Timestep == 0 ? gameTime : Timestep);
                 Step(timestep, true);
             }
         }

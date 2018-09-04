@@ -317,17 +317,17 @@ namespace Spectrum.Framework.Entities
             }
             return output;
         }
-        public override void Update(GameTime gameTime)
+        public override void Update(float dt)
         {
-            base.Update(gameTime);
-            AnimationPlayer?.Update(gameTime.DT());
+            base.Update(dt);
+            AnimationPlayer?.Update(dt);
             if (SoundEmitter != null)
                 SoundEmitter.Update(this);
-            if (Model != null) { Model.Update(gameTime); }
+            if (Model != null) { Model.Update(dt); }
         }
-        public override void Draw(float gameTime)
+        public override void Draw(float dt)
         {
-            base.Draw(gameTime);
+            base.Draw(dt);
             if (!UseFixedRender && Model != null)
             {
                 foreach (var part in Model)

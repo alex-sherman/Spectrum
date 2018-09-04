@@ -17,7 +17,7 @@ namespace Spectrum.Framework.VR
     {
         public KeyBind? ToggleButton;
         public ITransform Attached;
-        public Vector3 Offset;
+        public Vector3 Offset = Vector3.Forward * 2;
         public ITransform Cursor;
         public RootElement Root = new RootElement();
         public RenderTarget2D Target;
@@ -41,26 +41,26 @@ namespace Spectrum.Framework.VR
             base.Initialize();
             Texture = Root.Target = (Target = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, RenderTargetSize.X, RenderTargetSize.Y));
         }
-        public override void Update(GameTime gameTime)
+        public override void Update(float dt)
         {
-            InputState.Update(gameTime.DT());
+            InputState.Update(dt);
             if (ToggleButton.HasValue && InputState.IsNewKeyPress(ToggleButton.Value))
                 DrawEnabled ^= true;
-            if (Cursor != null)
-                InputState.CursorState = GetCursorState(InputState);
-            else
-                InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
-            Root.Update(gameTime, InputState);
         }
-        public override void Draw(float gameTime)
+        public override void Draw(float dt)
         {
-            Root.Draw(gameTime);
             if (Attached != null)
             {
                 Position = Attached.Position + Vector3.Transform(Offset, Attached.Orientation);
                 Orientation = Attached.Orientation;
             }
-            base.Draw(gameTime);
+            if (Cursor != null)
+                InputState.CursorState = GetCursorState(InputState);
+            else
+                InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
+            Root.Update(dt, InputState);
+            Root.Draw(dt);
+            base.Draw(dt);
             if (hitPosition.HasValue)
             {
                 var basePosition = Cursor.Position;
@@ -80,8 +80,8 @@ namespace Spectrum.Framework.VR
                 var direction = Vector3.Transform(Vector3.Forward, Cursor.Orientation);
                 if (Manager.Physics.CollisionSystem.Raycast(this, _position, direction, out Vector3 normal, out float fraction))
                 {
-                    buttons[0] = input.IsKeyDown(new VRBinding(VRButton.BetterTrigger));
-                    buttons[1] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Touchpad));
+                    buttons[0] = input.IsKeyDown(new VRBinding(VRButton.BetterTrigger, VRHand.Right));
+                    buttons[1] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Touchpad, VRHand.Right));
                     hitPosition = _position + direction * fraction;
                     Vector3 localPos = Vector3.Transform(hitPosition.Value, Matrix.Invert(World));
                     Vector2 cursorPos = new Vector2(localPos.X / Size.X, -localPos.Y / Size.Y) + Vector2.One / 2;

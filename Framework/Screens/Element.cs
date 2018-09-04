@@ -35,7 +35,8 @@ namespace Spectrum.Framework.Screens
         public Element Parent { get; private set; }
         public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
-        public IEnumerable<Element> Children { get { return _children; } }
+        //TODO: Maybe cache this and update during Update(), can't be modified during a frame though
+        public List<Element> Children { get { return _children.ToList(); } }
         private bool _display = true;
         public bool Display
         {
@@ -208,7 +209,7 @@ namespace Spectrum.Framework.Screens
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
-            foreach (Element child in Children.ToList())
+            foreach (Element child in Children)
             {
                 otherTookInput |= child.HandleInput(otherTookInput, input);
             }
@@ -282,7 +283,7 @@ namespace Spectrum.Framework.Screens
             return Rect.Contains(input.MousePosition.X, input.MousePosition.Y);
         }
 
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update(float gameTime)
         {
             foreach (Element child in Children.Where(c => c.Display))
                 child.Update(gameTime);

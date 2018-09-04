@@ -78,14 +78,15 @@ namespace Spectrum.Framework.Screens
             }
         }
 
-        public override void Update(GameTime gameTime)
+        public override void Update(float dt)
         {
             using (DebugTiming.Main.Time("Update"))
             {
-                using (DebugTiming.Main.Time("MPCallback"))
-                    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
-                Manager.Update(gameTime);
-                base.Update(gameTime);
+                //TODO: Fix multiplayer update
+                //using (DebugTiming.Main.Time("MPCallback"))
+                //    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
+                Manager.Update(dt);
+                base.Update(dt);
             }
         }
 
