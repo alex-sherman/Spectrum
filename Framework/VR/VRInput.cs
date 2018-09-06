@@ -113,7 +113,7 @@ namespace Spectrum.Framework.VR
             Axis0Direction = Axis[0];
             Axis0Direction.Normalize();
             var rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
-            RotationDelta = rotation * Quaternion.Inverse(Rotation);
+            RotationDelta = Quaternion.Inverse(Rotation) * rotation;
             Rotation = rotation;
             Pointing = Quaternion.CreateFromAxisAngle(Vector3.Right, -(float)Math.PI / 3f).Concat(Rotation);
             var position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;

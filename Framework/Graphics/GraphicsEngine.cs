@@ -343,6 +343,7 @@ namespace Spectrum.Framework.Graphics
             }
             mainRenderTimer?.Stop();
         }
+        static float vrRenderFraction = 0.25f;
         public static void RenderVRScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
         {
             BeginRender(camera);
@@ -357,7 +358,10 @@ namespace Spectrum.Framework.Graphics
                 device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
-                spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, target.Width, target.Height), Color.White);
+                var widthCut = (int)(VRTargetR.Width * vrRenderFraction);
+                var heightCut = (int)(VRTargetR.Height * vrRenderFraction);
+                spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, target.Width, target.Height),
+                    new Rectangle(widthCut / 2, heightCut / 2, VRTargetR.Width - widthCut, VRTargetR.Height - heightCut), Color.White);
                 spriteBatch.End();
             }
             vrRenderTimer?.Stop();

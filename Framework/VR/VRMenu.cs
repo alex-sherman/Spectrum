@@ -61,7 +61,7 @@ namespace Spectrum.Framework.VR
             Root.Update(dt, InputState);
             Root.Draw(dt);
             base.Draw(dt);
-            if (hitPosition.HasValue)
+            if (Cursor != null && hitPosition.HasValue)
             {
                 var basePosition = Cursor.Position;
                 Manager.DrawLine(basePosition, hitPosition.Value, Color.Black);
