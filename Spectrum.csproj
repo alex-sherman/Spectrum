@@ -250,6 +250,7 @@
     <Compile Include="Framework\Graphics\RenderTask.cs" />
     <Compile Include="Framework\Graphics\VertexTypes.cs" />
     <Compile Include="Framework\Screens\ElementSelector.cs" />
+    <Compile Include="Framework\Screens\ElementStyle.cs" />
     <Compile Include="Framework\Transform.cs" />
     <Compile Include="Framework\JSON\JPointConverter.cs" />
     <Compile Include="Framework\Screens\DialogScreen.cs" />
@@ -322,7 +323,6 @@
     <Compile Include="Framework\Physics\ThreadManager.cs" />
     <Compile Include="Framework\Physics\PhysicsEngine.cs" />
     <Compile Include="Framework\Screens\Element.cs" />
-    <Compile Include="Framework\Screens\ElementField.cs" />
     <Compile Include="Framework\Screens\GridLayout.cs" />
     <Compile Include="Framework\Screens\InGameScreen.cs" />
     <Compile Include="Framework\Input\InputState.cs" />
@@ -332,7 +332,6 @@
     <Compile Include="Framework\Screens\InputElements\ListOption.cs" />
     <Compile Include="Framework\Screens\InputElements\ListSelector.cs" />
     <Compile Include="Framework\Screens\InputElements\Slider.cs" />
-    <Compile Include="Framework\Screens\InputElements\TextBox.cs" />
     <Compile Include="Framework\Screens\InputElements\TextElement.cs" />
     <Compile Include="Framework\Screens\InputElements\ToggleButton.cs" />
     <Compile Include="Framework\Screens\LayoutManager.cs" />

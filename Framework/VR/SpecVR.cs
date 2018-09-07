@@ -19,6 +19,13 @@ namespace Spectrum.Framework.VR
                 Running = error == EVRInitError.None;
                 if (!Running)
                     OpenVR.Shutdown();
+                else
+                {
+                    Listen(EVREventType.VREvent_HideKeyboard, (_) => IsKeyboardVisible = false);
+                    Listen(EVREventType.VREvent_KeyboardClosed, (_) => IsKeyboardVisible = false);
+                    Listen(EVREventType.VREvent_KeyboardDone, (_) => IsKeyboardVisible = false);
+                    Listen(EVREventType.VREvent_ShowKeyboard, (_) => IsKeyboardVisible = true);
+                }
             }
             return Running;
         }
@@ -65,14 +72,42 @@ namespace Spectrum.Framework.VR
             if (RightHandIndex != -1)
                 RightHand = poses[RightHandIndex].mDeviceToAbsoluteTracking;
         }
+        public static void PollEvents()
+        {
+            var size = (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VREvent_t));
+            VREvent_t retEvent = new VREvent_t();
+            while (OpenVR.System.PollNextEvent(ref retEvent, size))
+            {
+                if (listeners.TryGetValue((EVREventType)retEvent.eventType, out List<Action<VREvent_t>> handlers))
+                    foreach (var handler in handlers)
+                        handler(retEvent);
+            }
+        }
+        static DefaultDict<EVREventType, List<Action<VREvent_t>>> listeners =
+            new DefaultDict<EVREventType, List<Action<VREvent_t>>>(() => new List<Action<VREvent_t>>(), true);
+        public static void Listen(EVREventType eventType, Action<VREvent_t> handler)
+        {
+            listeners[eventType].Add(handler);
+        }
         public static Vector3 HeadPosition(Vector3? basis = null, Vector3? orientedOffset = null)
         {
             var derp = Vector3.Transform((orientedOffset ?? Vector3.Zero), HeadPose.ToQuaternion());
             return (basis ?? Vector3.Zero) + HeadPose.Translation + derp;
         }
-        public static void SetKeyboardVisible(bool display)
+        static StringBuilder textBuilder = new StringBuilder(1024);
+        public static bool IsKeyboardVisible { get; private set; }
+        public static void ShowKeyboard(string existingText = "")
         {
-            OpenVR.Overlay.ShowKeyboard(0, 0, "Prefab Name", 64, "", true, 0);
+            textBuilder.Clear();
+            textBuilder.Append(existingText);
+            OpenVR.Overlay.ShowKeyboard(0, 0, "Prefab Name", 64, textBuilder.ToString(), false, 0);
+        }
+        public static void HideKeyboard() => OpenVR.Overlay.HideKeyboard();
+        public static string GetKeyBoardText()
+        {
+            OpenVR.Overlay.GetKeyboardText(textBuilder, 1024);
+
+            return textBuilder.ToString();
         }
     }
 }

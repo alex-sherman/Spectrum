@@ -25,17 +25,6 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             foreach (var element in elements)
                 AddElement(element);
-
-            Width.WrapContent = true;
-            Height.WrapContent = true;
-        }
-        public override void Measure(int parentWidth, int parentHeight)
-        {
-            base.Measure(parentWidth, parentHeight);
-        }
-        public override void Layout(Rectangle bounds)
-        {
-            base.Layout(bounds);
         }
     }
 }

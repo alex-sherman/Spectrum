@@ -193,7 +193,7 @@ namespace Spectrum
             MP.Dispose();
             if (UsingSteam)
             {
-                Steamworks.SteamAPI.Shutdown();
+                SteamAPI.Shutdown();
             }
         }
         /// <summary>
@@ -206,8 +206,8 @@ namespace Spectrum
             DebugTiming.StartFrame();
             if (UsingSteam)
             {
-                Steamworks.SteamAPI.RunCallbacks();
-                Steamworks.SteamUtils.RunFrame();
+                SteamAPI.RunCallbacks();
+                SteamUtils.RunFrame();
             }
             if (graphics.PreferredBackBufferHeight != WindowForm.ClientRectangle.Height || graphics.PreferredBackBufferWidth != WindowForm.ClientRectangle.Width)
             {
@@ -219,6 +219,8 @@ namespace Spectrum
                     OnScreenResize(this, EventArgs.Empty);
                 }
             }
+            if (SpecVR.Running)
+                SpecVR.PollEvents();
             InputState.Current.Update(gameTime.DT());
             Root.Update(gameTime.DT(), InputState.Current);
             base.Update(gameTime);

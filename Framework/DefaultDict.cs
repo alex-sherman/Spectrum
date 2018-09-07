@@ -16,17 +16,22 @@ namespace Spectrum.Framework
         Dictionary<TKey, TValue> internalDict = new Dictionary<TKey, TValue>();
         Func<TKey, TValue> Constructor = (_) => default(TValue);
         bool _addToDictionary;
+        public DefaultDict() { }
+        public DefaultDict(bool addToDictionary)
+            : this()
+        {
+            _addToDictionary = addToDictionary;
+        }
         public DefaultDict(Func<TValue> constructor, bool addToDictionary = false)
+            : this(addToDictionary)
         {
             Constructor = (_) => constructor();
-            _addToDictionary = addToDictionary;
         }
         public DefaultDict(Func<TKey, TValue> constructor, bool addToDictionary = false)
+            : this(addToDictionary)
         {
             Constructor = constructor;
-            _addToDictionary = addToDictionary;
         }
-        public DefaultDict() { }
         /// <summary>
         /// Returns null when the key doesn't exist
         /// </summary>

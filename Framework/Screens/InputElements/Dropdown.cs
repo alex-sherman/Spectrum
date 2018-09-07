@@ -31,21 +31,20 @@ namespace Spectrum.Framework.Screens.InputElements
                 if (_expanded != value)
                 {
                     _expanded = value;
-                    foreach (ListOption<T> option in Children.Where(c => c != childOption))
+                    foreach (var option in Children.Where(c => c is ListOption<T> && c != childOption))
                     {
                         option.Toggle(value);
                     }
                 }
             }
         }
-
         public Dropdown(params ListOption<T>[] options)
         {
+            AddElement(new TextElement("+") { Positioning = PositionType.Relative });
             AddElement(childOption);
             SetOptions(options.ToList());
             OnClick += Dropdown_OnClick;
-            Width = 100;
-            Width.WrapContent = true;
+            Width = new ElementSize { Flat = 100, WrapContent = true };
         }
 
         void Dropdown_OnClick(InputElement clicked)
@@ -74,7 +73,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public void AddOption(ListOption<T> option)
         {
             if (!Children.Any())
-                option.Margin.Top = 1f;
+                option.Margin = new RectOffset() { Top = 1.0 };
             option.OnClick += Option_OnClick;
             option.Toggle(Expanded);
             Options.Add(option);
@@ -108,15 +107,6 @@ namespace Spectrum.Framework.Screens.InputElements
             childOption.Text = selected?.Text;
             childOption.Id = selected?.Id ?? 0;
             OnSelectedChanged?.Invoke(selected);
-        }
-        public override void Measure(int width, int height)
-        {
-            base.Measure(width, height);
-        }
-        public override void OnMeasure(int width, int height)
-        {
-            base.OnMeasure(width, height);
-            MeasuredHeight = Font.LineSpacing;
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {

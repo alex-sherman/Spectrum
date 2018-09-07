@@ -31,9 +31,55 @@ namespace Spectrum.Framework.Screens
     public class Element
     {
         public static SpriteFont DefaultFont;
+        #region Style
+        private ElementStyle inheritedStyle;
+        private ElementStyle style;
+        public ImageAsset Texture
+        {
+            get => style.Texture ?? inheritedStyle.Texture;
+            set => style.Texture = value;
+        }
+        public Color TextureColor { get => style.TextureColor ?? inheritedStyle.TextureColor ?? Color.White; }
+        public ImageAsset Background
+        {
+            get => style.Background ?? inheritedStyle.Background;
+            set => style.Background = value;
+        }
+        public Color FontColor { get => style.FontColor ?? inheritedStyle.FontColor ?? Color.Black; }
+        public Color? FillColor
+        {
+            get => style.FillColor ?? inheritedStyle.FillColor;
+            set => style.FillColor = value;
+        }
+        public Color? BackgroundColor
+        {
+            get => style.BackgroundColor ?? inheritedStyle.BackgroundColor;
+            set => style.BackgroundColor = value;
+        }
+        public SpriteFont Font
+        {
+            get => ElementStyle.Value(style.Font, inheritedStyle.Font);
+            set => style.Font = value;
+        }
+        public RectOffset Margin
+        {
+            get => ElementStyle.Value(style.Margin, inheritedStyle.Margin);
+            set => style.Margin = value;
+        }
+        public RectOffset Padding { get => ElementStyle.Value(style.Padding, inheritedStyle.Padding); set => style.Padding = value; }
+        public ElementSize Width
+        {
+            get => style.Width ?? inheritedStyle.Width ?? new ElementSize(wrapContent: true);
+            set => style.Width = value;
+        }
+        public ElementSize Height
+        {
+            get => style.Height ?? inheritedStyle.Height ?? new ElementSize(wrapContent: true);
+            set => style.Height = value;
+        }
+        #endregion
         public LayoutManager LayoutManager;
         public Element Parent { get; private set; }
-        public Dictionary<string, ElementField> Fields = new Dictionary<string, ElementField>();
         private List<Element> _children = new List<Element>();
         //TODO: Maybe cache this and update during Update(), can't be modified during a frame though
         public List<Element> Children { get { return _children.ToList(); } }
@@ -71,15 +117,18 @@ namespace Spectrum.Framework.Screens
             if (!Tags.Contains(tag))
             {
                 Tags.Add(tag);
-                foreach (ElementField field in Fields.Values)
-                    field.UpdateFromStyle();
+                UpdateStyle();
             }
         }
         public void AddTagsFromType(Type type)
         {
             if (type != typeof(object) && type != typeof(Element))
             {
-                AddTag(type.Name.ToLower());
+                string name = type.Name.ToLower();
+                int index;
+                if ((index = name.IndexOf('`')) > 0)
+                    name = name.Substring(0, index);
+                AddTag(name);
                 AddTagsFromType(type.BaseType);
             }
         }
@@ -87,105 +136,30 @@ namespace Spectrum.Framework.Screens
         {
             if (Tags.Remove(tag))
             {
-                foreach (ElementField field in Fields.Values)
-                    field.UpdateFromStyle();
+                UpdateStyle();
                 return true;
             }
             return false;
         }
 
-        public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
-        public string HoverText { get { return this["hover-text"]; } }
-        public Color FontColor { get { return (Color)(Fields["font-color"].ObjValue ?? Color.Black); } }
-        public ImageAsset Texture
-        {
-            get { return Fields["image"].ObjValue as ImageAsset; }
-            set { Fields["image"].SetValue(null, value); }
-        }
-        public Color TextureColor { get { return (Color)(Fields["image-color"].ObjValue ?? Color.White); } }
-        public Color? FillColor
-        {
-            get => Fields["fill-color"].ObjValue as Color?;
-            set => Fields["fill-color"].SetValue(null, value);
-        }
-        public ImageAsset Background
-        {
-            get => Fields["background"].ObjValue as ImageAsset;
-            set => Fields["background"].SetValue(null, value);
-        }
-        public Color? BackgroundColor
-        {
-            get => Fields["background-color"].ObjValue as Color?;
-            set => Fields["background-color"].SetValue(null, value);
-        }
         private readonly Dictionary<KeyBind, InputHandler> inputHandlers = new Dictionary<KeyBind, InputHandler>();
 
         public Element()
         {
             Positioning = PositionType.Inline;
-            Width = new ElementSize(wrapContent: true);
-            Height = new ElementSize(wrapContent: true);
-            Fields["font"] = new ElementField(
-                this,
-                "font",
-                ElementField.ContentSetter<SpriteFont>
-                );
-            Fields["font-color"] = new ElementField(
-                this,
-                "font-color",
-                (value) => ElementField.ColorSetter(value)
-                );
-            Fields["background"] = new ElementField(
-                this,
-                "background",
-                ElementField.ContentSetter<ImageAsset>,
-                false
-                );
-            Fields["fill-color"] = new ElementField(
-                this,
-                "fill-color",
-                (value) => ElementField.ColorSetter(value),
-                false
-                );
-            Fields["background-color"] = new ElementField(
-                this,
-                "background-color",
-                (value) => ElementField.ColorSetter(value),
-                false
-                );
-            Fields["image"] = new ElementField(
-                this,
-                "image",
-                ElementField.ContentSetter<ImageAsset>,
-                false
-                );
-            Fields["image-color"] = new ElementField(
-                this,
-                "image-color",
-                (value) => ElementField.ColorSetter(value),
-                false
-                );
-            Fields["hover-text"] = new ElementField(
-                this,
-                "hover-text",
-                (value) => (value)
-                );
             AddTagsFromType(GetType());
-            foreach (ElementField field in Fields.Values)
-                field.UpdateFromStyle();
         }
 
+        public void UpdateStyle()
+        {
+            inheritedStyle = ElementStyle.GetStyle(this);
+        }
         public virtual void Initialize()
         {
+            UpdateStyle();
             foreach (var child in Children)
                 child.Initialize();
             Initialized = true;
-        }
-
-        public string this[string key]
-        {
-            get { return Fields[key].StrValue; }
-            set { if (Fields[key].StrValue != value) Fields[key].StrValue = value; }
         }
 
         public List<Element> FindAll(Func<Element, bool> Predicate)
@@ -267,13 +241,7 @@ namespace Spectrum.Framework.Screens
             return otherTookInput;
         }
 
-        public RectOffset Margin;
-        public RectOffset Padding;
-
-        public ElementSize Width;
         public int MeasuredWidth { get; set; }
-
-        public ElementSize Height;
         public int MeasuredHeight { get; set; }
 
         public void Center()

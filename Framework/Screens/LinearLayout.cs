@@ -21,11 +21,9 @@ namespace Spectrum.Framework.Screens
             {
                 case LinearLayoutType.Vertical:
                     Width = 1f;
-                    Height.WrapContent = true;
                     break;
                 case LinearLayoutType.Horizontal:
                     Height = 1f;
-                    Width.WrapContent = true;
                     break;
             }
         }

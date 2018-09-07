@@ -26,9 +26,7 @@ namespace Spectrum.Framework.Screens.InputElements
             base.Initialize();
             AddElement(text);
             text.Center();
-            Width = 1.0;
-            Width.WrapContent = true;
-            Height.WrapContent = true;
+            Width = ElementSize.WrapFill;
         }
     }
 }

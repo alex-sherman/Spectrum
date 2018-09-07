@@ -40,10 +40,8 @@ namespace Spectrum.Framework.Screens
         public static bool Dirty;
         public SceneScreen()
         {
-            Width = 1.0;
-            Width.WrapContent = false;
-            Height = 1.0;
-            Height.WrapContent = false;
+            Width = ElementSize.WrapFill;
+            Height = ElementSize.WrapFill;
         }
         public override void Layout(Rectangle bounds)
         {

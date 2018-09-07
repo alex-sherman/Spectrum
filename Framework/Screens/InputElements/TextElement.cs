@@ -27,13 +27,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public Func<string> TextSource;
 
-        public TextElement(string text = null)
-            : base()
-        {
-            Text = text;
-            Width.WrapContent = true;
-            Height.WrapContent = true;
-        }
+        public TextElement(string text = null) { Text = text; }
 
         public override void OnMeasure(int width, int height)
         {
@@ -44,21 +38,17 @@ namespace Spectrum.Framework.Screens.InputElements
                 _dirty = false;
                 if (Text == null)
                 {
-                    _measuredWidth = 0;
-                    _measuredHeight = Font.LineSpacing;
+                    _measuredWidth = MeasureWidth(width, 0);
+                    _measuredHeight = MeasureHeight(height, (int)Font.MeasureString("a").Y);
                 }
                 else
                 {
-                    _measuredWidth = Width.Measure(width, (int)Font.MeasureString(Text).X);
-                    _measuredHeight = Height.Measure(height, (int)Math.Max(Font.LineSpacing, Font.MeasureString(Text).Y));
+                    _measuredWidth = MeasureWidth(width, (int)Font.MeasureString(Text).X);
+                    _measuredHeight = MeasureHeight(height, (int)Math.Max(Font.MeasureString("a").Y, Font.MeasureString(Text).Y));
                 }
             }
             MeasuredWidth = _measuredWidth;
             MeasuredHeight = _measuredHeight;
-        }
-        public override void Layout(Rectangle bounds)
-        {
-            base.Layout(bounds);
         }
 
         public override void Draw(float time, SpriteBatch spritebatch)

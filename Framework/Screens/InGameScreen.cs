@@ -24,8 +24,6 @@ namespace Spectrum.Framework.Screens
         {
             Title = new TextElement(title);
             Display = false;
-            Width.WrapContent = true;
-            Height.WrapContent = true;
         }
         public override void Initialize()
         {
@@ -34,8 +32,7 @@ namespace Spectrum.Framework.Screens
             LayoutManager = new LinearLayoutManager(LinearLayoutType.Vertical);
             TitleContainer = new Element();
             TitleContainer.Width = 1.0;
-            TitleContainer.Height.WrapContent = true;
-            TitleContainer.Height = Font.LineSpacing;
+            TitleContainer.Height = new ElementSize(Font.LineSpacing, wrapContent: true);
             TitleContainer.AddTag("ingame-window-title-container");
             AddElement(TitleContainer);
             Title.AddTag("ingame-window-title");

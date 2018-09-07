@@ -18,11 +18,13 @@ namespace Spectrum.Framework.Screens
         public static implicit operator Selector(string selector) => Parse(selector);
         public static Selector operator &(Selector a, Selector b) => new Selector((e) => a.Matches(e) && b.Matches(e));
         public static Selector operator |(Selector a, Selector b) => new Selector((e) => a.Matches(e) || b.Matches(e));
+        public static Selector operator !(Selector a) => new Selector((e) => !a.Matches(e));
         public static Selector Parent(Selector selector, bool recursive = false)
         {
             bool parent(Element e) => selector.Matches(e.Parent) || (recursive && (e.Parent != null && parent(e.Parent)));
             return new Selector(parent);
         }
+        public static Selector IsVR = Parent(Parse("vrmenu"), true);
         public virtual bool Matches(Element element)
         {
             return _selector(element);

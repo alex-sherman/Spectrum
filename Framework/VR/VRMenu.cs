@@ -18,16 +18,25 @@ namespace Spectrum.Framework.VR
         public Matrix CameraTransform = Matrix.Identity;
         public KeyBind? ToggleButton;
         public ITransform Attached;
+        private ITransform frozen;
+        public ITransform UsedTransform => FreezePosition ? frozen : Attached;
         public Vector3 Offset = Vector3.Forward * 2;
         public ITransform Cursor;
         public RootElement Root = new RootElement();
         public RenderTarget2D Target;
         public Point RenderTargetSize = new Point(1024, 1024);
         public InputState InputState = new InputState(true);
+        public bool FreezePosition = false;
         public override bool DrawEnabled
         {
-            get => base.DrawEnabled; set
+            get => base.DrawEnabled;
+            set
             {
+                if (value && FreezePosition)
+                {
+                    frozen = new Transform(Attached.Position,
+                        Quaternion.CreateFromYawPitchRoll((float)Attached.Orientation.Yaw(), (float)Attached.Orientation.Pitch(), 0));
+                }
                 base.DrawEnabled = value;
                 Root.Display = value;
             }
@@ -58,10 +67,10 @@ namespace Spectrum.Framework.VR
                 InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
             Root.Update(dt, InputState);
             Root.Draw(dt);
-            if (Attached != null)
+            if (UsedTransform != null)
             {
-                Position = Attached.Position + Vector3.Transform(Offset, Attached.Orientation);
-                Orientation = Attached.Orientation;
+                Position = UsedTransform.Position + Vector3.Transform(Offset, UsedTransform.Orientation);
+                Orientation = UsedTransform.Orientation;
             }
             Draw(World * CameraTransform);
             if (Cursor != null && hitPosition.HasValue)

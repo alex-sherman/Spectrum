@@ -26,7 +26,7 @@ namespace Spectrum.Framework
             PreloadedContent = property.GetCustomAttributes().FirstOrDefault(attr => attr is PreloadedContentAttribute) as PreloadedContentAttribute;
         }
         public Type MemberType { get { return property?.PropertyType ?? field?.FieldType; } }
-        public void SetValue(object obj, object value) { property?.SetValue(obj, value); field?.SetValue(obj, value); }
+        public object SetValue(object obj, object value) { property?.SetValue(obj, value); field?.SetValue(obj, value); return obj; }
         public object GetValue(object obj) { return property?.GetValue(obj) ?? field?.GetValue(obj); }
         public PreloadedContentAttribute PreloadedContent = null;
         public bool IsStatic = false;

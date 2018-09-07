@@ -51,18 +51,6 @@ namespace Spectrum.Framework.Screens.InputElements
             }
             Close();
         }
-
-        public override void Measure(int width, int height)
-        {
-            base.Measure(width, height);
-        }
-
-        public override void Layout(Rectangle bounds)
-        {
-            base.Layout(bounds);
-        }
-
-
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
             if (!Display)
