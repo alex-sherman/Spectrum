@@ -52,6 +52,7 @@ namespace Spectrum.Framework.Audio
                     return;
             }
             player.SoundEffect = tracks[trackIndex];
+            player.State = AudioState.Playing;
         }
         public void Previous()
         {
