@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Input;
+using Spectrum.Framework.VR;
 
 namespace Spectrum.Framework.Screens.InputElements
 {
@@ -19,7 +20,14 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             Width = 250;
             Height = Font.LineSpacing;
-            OnClick += (_) => Selected = true;
+            OnClick += (_) =>
+            {
+                Selected = true;
+                if(SpecVR.Running)
+                {
+                    
+                }
+            };
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {

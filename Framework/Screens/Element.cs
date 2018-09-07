@@ -46,8 +46,18 @@ namespace Spectrum.Framework.Screens
                 if (value != _display)
                 {
                     _display = value;
-                    OnDisplayChanged?.Invoke(value);
+                    if (Parent?.Display ?? true)
+                        checkDisplayChanged(_display, true);
                 }
+            }
+        }
+        private void checkDisplayChanged(bool newDisplay, bool force = false)
+        {
+            if (_display || force)
+            {
+                OnDisplayChanged?.Invoke(newDisplay);
+                foreach (var child in Children)
+                    child.checkDisplayChanged(newDisplay);
             }
         }
         public event Action<bool> OnDisplayChanged;
@@ -58,16 +68,30 @@ namespace Spectrum.Framework.Screens
         public bool HasTag(string tag) => Tags.Contains(tag);
         public void AddTag(string tag)
         {
-            Tags.Add(tag);
-            foreach (ElementField field in Fields.Values)
-                field.UpdateFromStyle();
+            if (!Tags.Contains(tag))
+            {
+                Tags.Add(tag);
+                foreach (ElementField field in Fields.Values)
+                    field.UpdateFromStyle();
+            }
+        }
+        public void AddTagsFromType(Type type)
+        {
+            if (type != typeof(object) && type != typeof(Element))
+            {
+                AddTag(type.Name.ToLower());
+                AddTagsFromType(type.BaseType);
+            }
         }
         public bool RemoveTag(string tag)
         {
-            var output = Tags.Remove(tag);
-            foreach (ElementField field in Fields.Values)
-                field.UpdateFromStyle();
-            return output;
+            if (Tags.Remove(tag))
+            {
+                foreach (ElementField field in Fields.Values)
+                    field.UpdateFromStyle();
+                return true;
+            }
+            return false;
         }
 
         public SpriteFont Font { get { return Fields["font"].ObjValue as SpriteFont; } }
@@ -84,7 +108,11 @@ namespace Spectrum.Framework.Screens
             get => Fields["fill-color"].ObjValue as Color?;
             set => Fields["fill-color"].SetValue(null, value);
         }
-        public ImageAsset Background { get { return Fields["background"].ObjValue as ImageAsset; } }
+        public ImageAsset Background
+        {
+            get => Fields["background"].ObjValue as ImageAsset;
+            set => Fields["background"].SetValue(null, value);
+        }
         public Color? BackgroundColor
         {
             get => Fields["background-color"].ObjValue as Color?;
@@ -142,12 +170,7 @@ namespace Spectrum.Framework.Screens
                 "hover-text",
                 (value) => (value)
                 );
-            Type tagType = GetType();
-            while (tagType != typeof(Element))
-            {
-                Tags.Add(tagType.Name.ToLower());
-                tagType = tagType.BaseType;
-            }
+            AddTagsFromType(GetType());
             foreach (ElementField field in Fields.Values)
                 field.UpdateFromStyle();
         }
@@ -356,7 +379,7 @@ namespace Spectrum.Framework.Screens
             Rect = new Rectangle()
             {
                 X = Bounds.X + Margin.Left.Measure(bounds.Width) + Padding.Left.Measure(bounds.Width),
-                Y = Bounds.Y + Margin.Top.Measure(bounds.Height) + Padding.Right.Measure(bounds.Height),
+                Y = Bounds.Y + Margin.Top.Measure(bounds.Height) + Padding.Top.Measure(bounds.Height),
                 Width = PostChildWidth(Bounds.Width, Parent?.Rect.Width ?? 0),
                 Height = PostChildHeight(Bounds.Height, Parent?.Rect.Height ?? 0),
             };

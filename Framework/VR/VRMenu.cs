@@ -15,6 +15,7 @@ namespace Spectrum.Framework.VR
 {
     public class VRMenu : Billboard
     {
+        public Matrix CameraTransform = Matrix.Identity;
         public KeyBind? ToggleButton;
         public ITransform Attached;
         public Vector3 Offset = Vector3.Forward * 2;
@@ -35,6 +36,8 @@ namespace Spectrum.Framework.VR
         {
             AllowReplicate = false;
             NoCollide = true;
+            Root.OnDisplayChanged += (display) => DrawEnabled = display;
+            Root.AddTagsFromType(GetType());
         }
         public override void Initialize()
         {
@@ -49,22 +52,22 @@ namespace Spectrum.Framework.VR
         }
         public override void Draw(float dt)
         {
-            if (Attached != null)
-            {
-                Position = Attached.Position + Vector3.Transform(Offset, Attached.Orientation);
-                Orientation = Attached.Orientation;
-            }
             if (Cursor != null)
                 InputState.CursorState = GetCursorState(InputState);
             else
                 InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
             Root.Update(dt, InputState);
             Root.Draw(dt);
-            base.Draw(dt);
+            if (Attached != null)
+            {
+                Position = Attached.Position + Vector3.Transform(Offset, Attached.Orientation);
+                Orientation = Attached.Orientation;
+            }
+            Draw(World * CameraTransform);
             if (Cursor != null && hitPosition.HasValue)
             {
-                var basePosition = Cursor.Position;
-                Manager.DrawLine(basePosition, hitPosition.Value, Color.Black);
+                var basePosition = Vector3.Transform(Cursor.Position, CameraTransform);
+                Manager.DrawLine(basePosition, Vector3.Transform(hitPosition.Value, CameraTransform), Color.Black);
             }
         }
         protected Vector3? hitPosition;

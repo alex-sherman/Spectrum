@@ -70,5 +70,9 @@ namespace Spectrum.Framework.VR
             var derp = Vector3.Transform((orientedOffset ?? Vector3.Zero), HeadPose.ToQuaternion());
             return (basis ?? Vector3.Zero) + HeadPose.Translation + derp;
         }
+        public static void SetKeyboardVisible(bool display)
+        {
+            OpenVR.Overlay.ShowKeyboard(0, 0, "Prefab Name", 64, "", true, 0);
+        }
     }
 }

@@ -9,6 +9,19 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens
 {
+    struct TagOverride
+    {
+        public Selector Selector;
+        public string Field;
+        public string Value;
+
+        public TagOverride(Selector selector, string field, string value)
+        {
+            Selector = selector;
+            Field = field;
+            Value = value;
+        }
+    }
     public class ElementField
     {
         public static Color ColorSetter(string value)
@@ -34,24 +47,23 @@ namespace Spectrum.Framework.Screens
             return JToken.Parse(value).Value<T>();
         }
 
-        public static List<Tuple<string, string, string>> TagOverrides = new List<Tuple<string, string, string>>();
-        public static void OverrideTag(string tag, string name, string value)
-        {
-            TagOverrides.Add(new Tuple<string, string, string>(tag, name, value));
-        }
+        private static List<TagOverride> TagOverrides = new List<TagOverride>();
+        public static void OverrideTag(string selector, string field, string value)
+            => OverrideTag(Selector.Parse(selector), field, value);
+        public static void OverrideTag(Selector selector, string field, string value)
+            => TagOverrides.Add(new TagOverride(selector, field, value));
+        public static void OverrideTag(string field, string value)
+            => TagOverrides.Add(new TagOverride(null, field, value));
         private static string FindTagOverride(Element element, string fieldName)
         {
-            string output = null;
-            int matchIndex = -1;
-            for (int i = matchIndex + 1; i < TagOverrides.Count; i++)
+            for (int i = 0; i < TagOverrides.Count; i++)
             {
-                if ((TagOverrides[i].Item1 == null || element.HasTag(TagOverrides[i].Item1)) && TagOverrides[i].Item2 == fieldName)
+                if ((TagOverrides[i].Selector?.Matches(element) ?? true) && TagOverrides[i].Field == fieldName)
                 {
-                    output = TagOverrides[i].Item3;
-                    matchIndex = i;
+                    return TagOverrides[i].Value;
                 }
             }
-            return output;
+            return null;
         }
 
         private Func<string, object> setter;
