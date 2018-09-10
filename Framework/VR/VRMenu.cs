@@ -92,7 +92,7 @@ namespace Spectrum.Framework.VR
                 var direction = Vector3.Transform(Vector3.Forward, Cursor.Orientation);
                 if (Manager.Physics.CollisionSystem.Raycast(this, _position, direction, out Vector3 normal, out float fraction))
                 {
-                    buttons[0] = input.IsKeyDown(new VRBinding(VRButton.BetterTrigger, VRHand.Right));
+                    buttons[0] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Trigger, VRHand.Right));
                     buttons[1] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Touchpad, VRHand.Right));
                     hitPosition = _position + direction * fraction;
                     Vector3 localPos = Vector3.Transform(hitPosition.Value, Matrix.Invert(World));

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Spectrum.Framework.VR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,75 +7,25 @@ using System.Text;
 using System.Threading.Tasks;
 using Valve.VR;
 
-namespace Spectrum.Framework.VR
+namespace Spectrum.Framework.Input
 {
-    public struct VRBinding
+    public struct Hysteresis
     {
-        public VRHand Hand;
-        public VRButton Button;
-        public VRPressType PressType;
-        public VRBinding(VRButton button, VRHand hand = VRHand.Left | VRHand.Right, VRPressType pressType = VRPressType.Pressed)
+        public int Axis;
+        public bool UseY;
+        public float Exit;
+        public float Enter;
+        public bool IsPressed(VRController controller, bool lastPressed)
         {
-            Hand = hand;
-            Button = button;
-            PressType = pressType;
-        }
-    }
-    
-    public enum VRButton
-    {
-        System = 0,
-        ApplicationMenu = 1,
-        Grip = 2,
-        DPad_Left = 3,
-        DPad_Up = 4,
-        DPad_Right = 5,
-        DPad_Down = 6,
-        A = 7,
-        ProximitySensor = 31,
-        Axis0 = 32,
-        Axis1 = 33,
-        Axis2 = 34,
-        Axis3 = 35,
-        Axis4 = 36,
-        SteamVR_Touchpad = 32,
-        SteamVR_Trigger = 33,
-        Dashboard_Back = 2,
-        Max = 64,
-        BetterTrigger = 65,
-    }
-    [Flags]
-    public enum VRHand
-    {
-        Left = 1,
-        Right = 2
-    }
-    [Flags]
-    public enum VRPressType
-    {
-        Pressed = 1,
-        Touched = 2
-    }
-    public struct VRHMD
-    {
-        public Vector3 Position;
-        public Vector3 PositionDelta;
-        public Vector3 Direction;
-        public Quaternion Rotation;
-        public Quaternion RotationDelta;
-        public void Update()
-        {
-            var position = SpecVR.HeadPose.Translation;
-            PositionDelta = position - Position;
-            Position = position;
-            var rotation = SpecVR.HeadPose.ToQuaternion();
-            RotationDelta = rotation * Quaternion.Inverse(Rotation);
-            Rotation = rotation;
+            var axis = controller.Axis[Axis];
+            float currentValue = UseY ? axis.Y : axis.X;
+            return currentValue >= Enter || (lastPressed && currentValue > Exit);
         }
     }
     public struct VRController
     {
-        public VRHand Hand { get; private set; }
+        public static Dictionary<VRButton, Hysteresis> ButtonHysteresis = new Dictionary<VRButton, Hysteresis>();
+        public readonly VRHand Hand;
         public ulong PressedButtons;
         public ulong TouchedButtons;
         public VRControllerState_t State;
@@ -102,14 +53,19 @@ namespace Spectrum.Framework.VR
         public void Update()
         {
             int index = Hand == VRHand.Left ? SpecVR.LeftHandIndex : SpecVR.RightHandIndex;
-            if(index != -1)
+            if (index != -1)
                 OpenVR.System.GetControllerState((uint)index, ref State, 64);
+            var lastPressed = PressedButtons;
             PressedButtons = State.ulButtonPressed;
+            foreach (var hysteresis in ButtonHysteresis)
+                SetFlagRaw(ref PressedButtons, hysteresis.Key, hysteresis.Value.IsPressed(this, CheckFlagRaw(lastPressed, hysteresis.Key)));
             TouchedButtons = State.ulButtonTouched;
             Axis[0].X = State.rAxis0.x;
             Axis[0].Y = State.rAxis0.y;
             Axis[1].X = State.rAxis1.x;
             Axis[1].Y = State.rAxis1.y;
+            Axis[2].X = State.rAxis2.x;
+            Axis[2].Y = State.rAxis2.y;
             Axis0Direction = Axis[0];
             Axis0Direction.Normalize();
             var rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
@@ -125,8 +81,6 @@ namespace Spectrum.Framework.VR
             var flags = touched ? TouchedButtons : PressedButtons;
             switch (check)
             {
-                case VRButton.BetterTrigger:
-                    return touched ? State.rAxis1.x > 0.1 : State.rAxis1.x >= 1;
                 case VRButton.DPad_Up:
                     return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitY) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Down:
@@ -135,21 +89,22 @@ namespace Spectrum.Framework.VR
                     return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitX) > Math.Cos(Math.PI / 4);
                 case VRButton.DPad_Right:
                     return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitX) > Math.Cos(Math.PI / 4);
-                case VRButton.Axis0:
-                case VRButton.Axis1:
-                case VRButton.Axis2:
-                case VRButton.Axis3:
-                case VRButton.Grip:
-                case VRButton.System:
-                case VRButton.ApplicationMenu:
-                    return (flags & ((1ul) << (int)check)) != 0;
                 default:
-                    return false;
+                    return CheckFlagRaw(flags, check);
             }
+        }
+        private bool CheckFlagRaw(ulong flags, VRButton check) => (flags & ((1ul) << (int)check)) != 0;
+        private void SetFlagRaw(ref ulong flags, VRButton check, bool value)
+        {
+            ulong singleBit = ((1ul) << (int)check);
+            if (value)
+                flags |= singleBit;
+            else
+                flags &= (~singleBit);
         }
         public bool IsButtonPressed(VRBinding binding)
         {
-            return binding.Hand.HasFlag(Hand) && 
+            return binding.Hand.HasFlag(Hand) &&
                 (
                     (binding.PressType.HasFlag(VRPressType.Pressed) && CheckFlag(false, binding.Button))
                     || (binding.PressType.HasFlag(VRPressType.Touched) && CheckFlag(true, binding.Button))

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Spectrum.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,15 @@ using Valve.VR;
 
 namespace Spectrum.Framework.VR
 {
+    public enum VRHardwareType
+    {
+        Vive,
+        Oculus,
+        Unknown = 63,
+    }
     public static class SpecVR
     {
+        public static VRHardwareType HardwareType;
         public static bool Init()
         {
             if (OpenVR.IsHmdPresent())
@@ -25,6 +33,40 @@ namespace Spectrum.Framework.VR
                     Listen(EVREventType.VREvent_KeyboardClosed, (_) => IsKeyboardVisible = false);
                     Listen(EVREventType.VREvent_KeyboardDone, (_) => IsKeyboardVisible = false);
                     Listen(EVREventType.VREvent_ShowKeyboard, (_) => IsKeyboardVisible = true);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    ETrackedPropertyError tError = ETrackedPropertyError.TrackedProp_Success;
+                    OpenVR.System.GetStringTrackedDeviceProperty(0, ETrackedDeviceProperty.Prop_TrackingSystemName_String, stringBuilder, 64, ref tError);
+                    switch (stringBuilder.ToString())
+                    {
+                        case "oculus":
+                            HardwareType = VRHardwareType.Oculus;
+                            break;
+                        case "lighthouse":
+                            HardwareType = VRHardwareType.Vive;
+                            break;
+                        default:
+                            HardwareType = VRHardwareType.Unknown;
+                            break;
+                    }
+                    switch (HardwareType)
+                    {
+                        case VRHardwareType.Vive:
+                            VRController.ButtonHysteresis[VRButton.SteamVR_Trigger] = new Hysteresis()
+                            {
+                                Axis = 1,
+                                Enter = 1,
+                                Exit = 0.95f,
+                            };
+                            break;
+                        case VRHardwareType.Oculus:
+                            VRController.ButtonHysteresis[VRButton.Grip] = new Hysteresis()
+                            {
+                                Axis = 2,
+                                Enter = 0.5f,
+                                Exit = 0.4f,
+                            };
+                            break;
+                    }
                 }
             }
             return Running;
@@ -76,7 +118,8 @@ namespace Spectrum.Framework.VR
         {
             var size = (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VREvent_t));
             VREvent_t retEvent = new VREvent_t();
-            while (OpenVR.System.PollNextEvent(ref retEvent, size))
+            // The limit of 100 came from a bug on other Alex's system, it seems like events still make their way in even with the limit
+            for (int i = 0; i < 100 && OpenVR.System.PollNextEvent(ref retEvent, size); i++)
             {
                 if (listeners.TryGetValue((EVREventType)retEvent.eventType, out List<Action<VREvent_t>> handlers))
                     foreach (var handler in handlers)

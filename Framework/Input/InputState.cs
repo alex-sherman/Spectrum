@@ -40,7 +40,7 @@ namespace Spectrum.Framework.Input
         public VRHMD VRHMD = new VRHMD();
         public VRController[] VRControllers = new VRController[] { new VRController(VRHand.Left), new VRController(VRHand.Right) };
         public VRController VRFromHand(VRHand hand) => VRControllers[hand == VRHand.Right ? 1 : 0];
-        private InputState LastInputState;
+        public InputState Last;
         public bool DisableCursorState { get; private set; }
         public DefaultDict<KeyBind, KeyPressType> consumedNewKeyPresses = new DefaultDict<KeyBind, KeyPressType>();
 
@@ -50,7 +50,7 @@ namespace Spectrum.Framework.Input
             KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
             if (!DisableCursorState)
                 CursorState = SpecMouse.GetCurrentState();
-            LastInputState = null;
+            Last = null;
             for (int i = 0; i < 4; i++)
             {
                 Gamepads[i] = new Gamepad(new SharpDX.XInput.Controller((SharpDX.XInput.UserIndex)i));
@@ -62,27 +62,27 @@ namespace Spectrum.Framework.Input
         public void Update(float dt)
         {
             consumedNewKeyPresses.Clear();
-            if (LastInputState == null)
-                LastInputState = new InputState();
-            LastInputState.DT = dt;
+            if (Last == null)
+                Last = new InputState();
+            Last.DT = DT;
             DT = dt;
-            LastInputState.KeyboardState = KeyboardState;
+            Last.KeyboardState = KeyboardState;
             KeyboardState = Microsoft.Xna.Framework.Input.Keyboard.GetState();
-            LastInputState.CursorState = CursorState;
+            Last.CursorState = CursorState;
             if (!DisableCursorState)
                 CursorState = SpecMouse.GetCurrentState(CursorState);
             for (int i = 0; i < 4; i++)
             {
-                LastInputState.Gamepads[i] = Gamepads[i];
+                Last.Gamepads[i] = Gamepads[i];
                 Gamepads[i].Update();
             }
             if (SpecVR.Running)
             {
-                LastInputState.VRHMD = VRHMD;
+                Last.VRHMD = VRHMD;
                 VRHMD.Update();
                 for (int i = 0; i < 2; i++)
                 {
-                    LastInputState.VRControllers[i] = VRControllers[i];
+                    Last.VRControllers[i] = VRControllers[i];
                     VRControllers[i].Update();
                 }
             }
@@ -134,13 +134,13 @@ namespace Spectrum.Framework.Input
         private bool IsButtonDown(VRBinding button)
             => VRControllers.Any(controller => controller.IsButtonPressed(button));
         public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo = null)
-            => IsKeyDown(bindingName, playerInfo) && !LastInputState.IsKeyDown(bindingName, playerInfo);
+            => IsKeyDown(bindingName, playerInfo) && !Last.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyPress(KeyBind button)
-            => IsKeyDown(button) && !LastInputState.IsKeyDown(button);
+            => IsKeyDown(button) && !Last.IsKeyDown(button);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
-            => !IsKeyDown(bindingName, playerInfo) && LastInputState.IsKeyDown(bindingName, playerInfo);
+            => !IsKeyDown(bindingName, playerInfo) && Last.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyRelease(KeyBind button)
-            => !IsKeyDown(button) && LastInputState.IsKeyDown(button);
+            => !IsKeyDown(button) && Last.IsKeyDown(button);
         public float GetAxis1D(string axisName, PlayerInformation playerInfo = null)
         {
             playerInfo = playerInfo ?? PlayerInformation.Default;
@@ -160,9 +160,9 @@ namespace Spectrum.Framework.Input
         public bool IsMouseDown(int button)
             => button < (CursorState?.buttons?.Length ?? 0) && CursorState.buttons[button];
         public bool IsNewMousePress(int button)
-            => button < (CursorState?.buttons?.Length ?? 0) && IsMouseDown(button) && !LastInputState.IsMouseDown(button);
+            => button < (CursorState?.buttons?.Length ?? 0) && IsMouseDown(button) && !Last.IsMouseDown(button);
         public bool IsNewMouseRelease(int button)
-            => button < (CursorState?.buttons?.Length ?? 0) && !IsMouseDown(button) && LastInputState.IsMouseDown(button);
+            => button < (CursorState?.buttons?.Length ?? 0) && !IsMouseDown(button) && Last.IsMouseDown(button);
         public int MouseWheelDistance => CursorState?.Scroll ?? 0;
 
 
