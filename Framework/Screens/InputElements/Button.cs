@@ -10,21 +10,15 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class Button : InputElement
     {
-        public Button(int width, int height) : this()
+        public readonly TextElement TextElement;
+        public string Text
         {
-            Width = width;
-            Height = height;
+            get => TextElement.Text;
+            set => TextElement.Text = value;
         }
-
-        public Button(string text) : this()
+        public Button(string text)
         {
-            AddElement(new TextElement(text) { Positioning = PositionType.Center });
-        }
-
-        public Button(params Element[] elements)
-        {
-            foreach (var element in elements)
-                AddElement(element);
+            TextElement = AddElement(new TextElement(text) { Positioning = PositionType.Center });
         }
     }
 }

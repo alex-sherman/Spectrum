@@ -42,7 +42,7 @@ namespace Spectrum.Framework.Input
         public VRController VRFromHand(VRHand hand) => VRControllers[hand == VRHand.Right ? 1 : 0];
         public InputState Last;
         public bool DisableCursorState { get; private set; }
-        public DefaultDict<KeyBind, KeyPressType> consumedNewKeyPresses = new DefaultDict<KeyBind, KeyPressType>();
+        public DefaultDict<KeyBind, bool> consumedKeys = new DefaultDict<KeyBind, bool>();
 
         public InputState(bool disableCursorState = false)
         {
@@ -61,7 +61,6 @@ namespace Spectrum.Framework.Input
 
         public void Update(float dt)
         {
-            consumedNewKeyPresses.Clear();
             if (Last == null)
                 Last = new InputState();
             Last.DT = DT;
@@ -88,16 +87,13 @@ namespace Spectrum.Framework.Input
             }
             if (!DisableCursorState)
                 RawMouse.Update();
+            consumedKeys.SetFrom(consumedKeys.Where(kvp => kvp.Value && IsKeyDown(kvp.Key, false)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
         }
-        public void ConsumeInput(KeyBind key, KeyPressType pressType)
-        {
-            consumedNewKeyPresses[key] |= pressType;
-        }
-        public bool IsConsumed(KeyBind key, KeyPressType pressType)
-        {
-            return consumedNewKeyPresses[key].HasFlag(pressType);
-        }
-        public bool IsKeyDown(string bindingName, PlayerInformation playerInfo = null, bool ignoreModifiers = false)
+        public void ConsumeInput(KeyBind key, bool hold)
+            => consumedKeys[key] = hold;
+        public bool IsConsumed(KeyBind key)
+            => consumedKeys.ContainsKey(key);
+        public bool IsKeyDown(string bindingName, PlayerInformation playerInfo = null)
         {
             InputLayout layout = (playerInfo ?? PlayerInformation.Default).Layout;
             if (!layout.KeyBindings.TryGetValue(bindingName, out KeyBinding binding))
@@ -105,42 +101,35 @@ namespace Spectrum.Framework.Input
                 DebugPrinter.PrintOnce("Binding not found " + bindingName);
                 return false;
             }
-            return binding.Options.Any(button => IsKeyDown(button, playerInfo, ignoreModifiers));
+            return binding.Options.Any(button => IsKeyDown(button));
         }
-        public bool IsKeyDown(KeyBind button, PlayerInformation playerInfo = null, bool ignoreModifiers = false)
+        public bool IsKeyDown(KeyBind button, bool consultConsumed = true)
         {
-            playerInfo = playerInfo ?? PlayerInformation.Default;
-            if (!ignoreModifiers && !button.modifiers.All(modifier => IsKeyDown(modifier, playerInfo)))
+            if (consultConsumed && consumedKeys.ContainsKey(button))
                 return false;
-            if (playerInfo.UsesKeyboard)
-            {
-                if ((button.key != null && IsKeyDown(button.key.Value)) ||
-                    (button.mouseButton != null && IsMouseDown(button.mouseButton.Value)))
-                    return true;
-            }
-            foreach (int gamepadIndex in playerInfo.UsedGamepads)
-            {
-                if (button.button != null && IsButtonDown((GamepadButton)button.button, gamepadIndex)) { return true; }
-            }
+            if (!button.modifiers.All(modifier => IsKeyDown(modifier)))
+                return false;
+            if ((button.key != null && KeyboardState.IsKeyDown(button.key.Value)) ||
+                (button.mouseButton != null && IsMouseDown(button.mouseButton.Value)))
+                return true;
+            // TODO: Use a field in KeyBind to specify the gamepad index
+            //foreach (int gamepadIndex in playerInfo.UsedGamepads)
+            //{
+            //    if (button.button != null && Gamepads[gamepadIndex].IsButtonPressed(button.button)) { return true; }
+            //}
             if (SpecVR.Running && button.vrButton != null)
-            {
-                if (IsButtonDown(button.vrButton.Value)) { return true; }
-            }
+                if (VRControllers.Any(controller => controller.IsButtonPressed(button.vrButton.Value)))
+                    return true;
             return false;
         }
-        public bool IsKeyDown(Keys key) => KeyboardState.IsKeyDown(key);
-        private bool IsButtonDown(GamepadButton button, int gamepadIndex)
-            => Gamepads[gamepadIndex].IsButtonPressed(button);
-        private bool IsButtonDown(VRBinding button)
-            => VRControllers.Any(controller => controller.IsButtonPressed(button));
         public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo = null)
             => IsKeyDown(bindingName, playerInfo) && !Last.IsKeyDown(bindingName, playerInfo);
-        public bool IsNewKeyPress(KeyBind button)
-            => IsKeyDown(button) && !Last.IsKeyDown(button);
+        public bool IsNewKeyPress(KeyBind button, bool consultConsumed = true)
+            => (!consultConsumed || !consumedKeys.ContainsKey(button)) && IsKeyDown(button, false) && !Last.IsKeyDown(button, false);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
             => !IsKeyDown(bindingName, playerInfo) && Last.IsKeyDown(bindingName, playerInfo);
-        public bool IsNewKeyRelease(KeyBind button)
-            => !IsKeyDown(button) && Last.IsKeyDown(button);
+        public bool IsNewKeyRelease(KeyBind button, bool consultConsumed = true)
+            => (!consultConsumed || !consumedKeys.ContainsKey(button)) && !IsKeyDown(button, false) && Last.IsKeyDown(button, false);
         public float GetAxis1D(string axisName, PlayerInformation playerInfo = null)
         {
             playerInfo = playerInfo ?? PlayerInformation.Default;

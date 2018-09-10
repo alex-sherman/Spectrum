@@ -57,7 +57,10 @@ namespace Spectrum.Framework
         }
         public Dictionary<TKey, TValue>.ValueCollection Values { get { return internalDict.Values; } }
         public Dictionary<TKey, TValue>.KeyCollection Keys { get { return internalDict.Keys; } }
-
+        public void SetFrom(IDictionary<TKey, TValue> dict)
+        {
+            internalDict = new Dictionary<TKey, TValue>(dict);
+        }
         ICollection<TKey> IDictionary<TKey, TValue>.Keys
         {
             get
@@ -101,13 +104,9 @@ namespace Spectrum.Framework
         }
         public DefaultDict<TKey, TValue> Copy()
         {
-            DefaultDict<TKey, TValue> output = new DefaultDict<TKey, TValue>();
+            DefaultDict<TKey, TValue> output = new DefaultDict<TKey, TValue>() { internalDict = new Dictionary<TKey, TValue>(internalDict) };
             output.Constructor = Constructor;
             output._addToDictionary = _addToDictionary;
-            foreach (TKey key in internalDict.Keys)
-            {
-                output.internalDict[key] = internalDict[key];
-            }
             return output;
         }
 

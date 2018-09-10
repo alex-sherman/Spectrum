@@ -61,7 +61,7 @@ namespace Spectrum.Framework.Screens
             otherTookInput |= childTookInput;
             if (!otherTookInput && ToggleButton.HasValue && input.IsNewKeyPress(ToggleButton.Value))
             {
-                input.ConsumeInput(ToggleButton.Value, KeyPressType.Press);
+                input.ConsumeInput(ToggleButton.Value, false);
                 Toggle();
             }
             if (!Display)
@@ -70,7 +70,7 @@ namespace Spectrum.Framework.Screens
             {
                 if (CaptureInputWhenFocused && MouseInside(input))
                     otherTookInput = true;
-                if (!input.IsConsumed(Keys.Escape, KeyPressType.Press) && input.IsNewKeyPress(Keys.Escape))
+                if (input.IsNewKeyPress(Keys.Escape))
                 {
                     Close();
                     otherTookInput = true;

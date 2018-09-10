@@ -212,7 +212,7 @@ namespace Spectrum.Framework.Screens
             }
             foreach (var inputHandler in inputHandlers)
             {
-                if (input.IsConsumed(inputHandler.Key, inputHandler.Value.PressType))
+                if (input.IsConsumed(inputHandler.Key))
                     continue;
                 switch (inputHandler.Value.PressType)
                 {
@@ -234,7 +234,7 @@ namespace Spectrum.Framework.Screens
                     if (inputHandler.Value.Handler(input))
                     {
                         otherTookInput = true;
-                        input.ConsumeInput(inputHandler.Key, inputHandler.Value.PressType);
+                        input.ConsumeInput(inputHandler.Key, inputHandler.Value.PressType == KeyPressType.Hold);
                     }
                 }
             }

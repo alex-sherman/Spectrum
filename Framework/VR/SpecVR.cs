@@ -119,7 +119,8 @@ namespace Spectrum.Framework.VR
             var size = (uint)System.Runtime.InteropServices.Marshal.SizeOf(typeof(VREvent_t));
             VREvent_t retEvent = new VREvent_t();
             // The limit of 100 came from a bug on other Alex's system, it seems like events still make their way in even with the limit
-            for (int i = 0; i < 100 && OpenVR.System.PollNextEvent(ref retEvent, size); i++)
+            while(OpenVR.System.PollNextEvent(ref retEvent, size))
+            //for (int i = 0; i < 100 && OpenVR.System.PollNextEvent(ref retEvent, size); i++)
             {
                 if (listeners.TryGetValue((EVREventType)retEvent.eventType, out List<Action<VREvent_t>> handlers))
                     foreach (var handler in handlers)

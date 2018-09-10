@@ -17,15 +17,6 @@ namespace Spectrum.Framework.Screens
         public LinearLayout(LinearLayoutType type = LinearLayoutType.Vertical)
         {
             LayoutManager = new LinearLayoutManager(type);
-            switch (type)
-            {
-                case LinearLayoutType.Vertical:
-                    Width = 1f;
-                    break;
-                case LinearLayoutType.Horizontal:
-                    Height = 1f;
-                    break;
-            }
         }
     }
     public class LinearLayoutManager : LayoutManager

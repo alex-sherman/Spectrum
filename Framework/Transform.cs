@@ -15,6 +15,10 @@ namespace Spectrum.Framework
     public class Transform : ITransform
     {
         public Transform() { }
+        public Transform(Vector3 position)
+        {
+            Position = position;
+        }
         public Transform(Vector3 position, Quaternion rotation)
         {
             Position = position;
@@ -22,7 +26,7 @@ namespace Spectrum.Framework
         }
         public Vector3 Position;
         Vector3 ITransform.Position => Position;
-        public Quaternion Orientation;
+        public Quaternion Orientation = Quaternion.Identity;
         Quaternion ITransform.Orientation => Orientation;
         public static Transform From(ITransform transform)
             => new Transform(transform.Position, transform.Orientation);
