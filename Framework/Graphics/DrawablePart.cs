@@ -9,12 +9,24 @@ using Spectrum.Framework.Physics.LinearMath;
 
 namespace Spectrum.Framework.Graphics
 {
+    [Flags]
+    public enum SamplerMode
+    {
+        Linear = 0b10,
+        Wrap = 0b01,
+
+        LinearClamp = 0b10,
+        LinearWrap = 0b11,
+        PointClamp = 0b00,
+        PointWrap = 0b01,
+    }
     public class MaterialData : IEquatable<MaterialData>
     {
         public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = Color.HotPink };
         public string Id;
         public Color DiffuseColor = Color.White;
         public Texture2D DiffuseTexture;
+        public SamplerMode DiffuseSampler = SamplerMode.LinearWrap;
         public Color SpecularColor = Color.Black;
         public Texture2D NormalMap;
         public Texture2D TransparencyMap;
@@ -25,6 +37,7 @@ namespace Spectrum.Framework.Graphics
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Id);
             hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(DiffuseColor);
             hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(DiffuseTexture);
+            hashCode = hashCode * -1521134295 + EqualityComparer<SamplerMode>.Default.GetHashCode(DiffuseSampler);
             hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(SpecularColor);
             hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(NormalMap);
             hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(TransparencyMap);
@@ -36,6 +49,7 @@ namespace Spectrum.Framework.Graphics
                    Id == data.Id &&
                    DiffuseColor.Equals(data.DiffuseColor) &&
                    EqualityComparer<Texture2D>.Default.Equals(DiffuseTexture, data.DiffuseTexture) &&
+                   EqualityComparer<SamplerMode>.Default.Equals(DiffuseSampler, data.DiffuseSampler) &&
                    SpecularColor.Equals(data.SpecularColor) &&
                    EqualityComparer<Texture2D>.Default.Equals(NormalMap, data.NormalMap) &&
                    EqualityComparer<Texture2D>.Default.Equals(TransparencyMap, data.TransparencyMap);

@@ -28,6 +28,7 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             base.Initialize();
+            OnDisplayChanged += (display) => { if (display) Parent?.MoveElement(this, 0); };
             Positioning = PositionType.Relative;
             LayoutManager = new LinearLayoutManager(LinearLayoutType.Vertical);
             TitleContainer = new Element();
@@ -43,12 +44,6 @@ namespace Spectrum.Framework.Screens
         public Rectangle CloseButtonRect
         {
             get { return new Rectangle(Rect.X + Rect.Width - TitleContainer.Rect.Height, Rect.Y + TitleContainer.Rect.Height / 2 - 18, 38, 36); }
-        }
-
-        public override bool Toggle(bool? show = null)
-        {
-            Parent?.MoveElement(this, 0);
-            return base.Toggle(show);
         }
 
         public override bool HandleInput(bool otherTookInput, InputState input)
