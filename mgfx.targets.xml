@@ -1,0 +1,29 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MGFXPath Condition="$(MGFXPath) == ''">Dependencies\Utils\2MGFX</MGFXPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvailableItemName Include="MGFXCompile" />
+  </ItemGroup>
+
+  <Target Name="BuildMGFX" BeforeTargets="Compile" Inputs="%(MGFXCompile.Identity)" Outputs="@(MGFXCompile->'%(RelativeDir)%(Filename).mgfx')">
+    <Exec Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"/>
+  </Target>
+  <Target Name="ReBuildMGFX" AfterTargets="Rebuild">
+    <Exec Condition="%(MGFXCompile.Identity)!=''" Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"
+          Outputs="@(MGFXCompile.Identity -> %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx)"/>
+  </Target>
+  <Target Name="BuildMGFXContent">
+    <ItemGroup>
+      <Content Condition="%(MGFXCompile.Identity)!=''" Include="%(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+  </Target>
+  <PropertyGroup>
+    <AssignTargetPathsDependsOn>
+      BuildMGFXContent;
+      $(AssignTargetPathsDependsOn);
+    </AssignTargetPathsDependsOn>
+  </PropertyGroup>
+</Project>

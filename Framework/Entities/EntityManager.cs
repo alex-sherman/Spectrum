@@ -257,6 +257,7 @@ namespace Spectrum.Framework.Entities
         {
             RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
             material = material ?? part.material;
+            world = part.permanentTransform * part.transform * world;
             if (disableInstancing)
                 dynamicNonBatched.Add(new RenderCall(properties, world, material));
             else

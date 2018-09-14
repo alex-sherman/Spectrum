@@ -70,14 +70,17 @@ namespace Spectrum.Framework.Graphics
         public VertexBuffer VBuffer;
         public IndexBuffer IBuffer;
         public PrimitiveType primType = PrimitiveType.TriangleList;
-        public JBBox Bounds { get; private set; }
-        public static JBBox GetBounds<T>(List<T> vertices) where T : struct, ICommonTex
+        List<ICommonTex> vertices = null;
+        public JBBox Bounds
         {
-            JBBox output = JBBox.SmallBox;
-            foreach (var vert in vertices)
-                output.AddPoint(vert.Position);
+            get
+            {
+                JBBox output = JBBox.SmallBox;
+                foreach (var vert in vertices)
+                    output.AddPoint(Vector3.Transform(vert.Position, permanentTransform * transform));
 
-            return output;
+                return output;
+            }
         }
         public static DrawablePart From<T>(List<T> vertices) where T : struct, ICommonTex
         {
@@ -86,7 +89,7 @@ namespace Spectrum.Framework.Graphics
                 effect = new SpectrumEffect(),
                 VBuffer = VertexHelper.MakeVertexBuffer(vertices),
                 primType = PrimitiveType.TriangleStrip,
-                Bounds = GetBounds(vertices)
+                vertices = vertices.Cast<ICommonTex>().ToList(),
             };
             return part;
         }
@@ -97,7 +100,7 @@ namespace Spectrum.Framework.Graphics
                 effect = new SpectrumEffect(),
                 VBuffer = VertexHelper.MakeVertexBuffer(vertices),
                 IBuffer = VertexHelper.MakeIndexBuffer(indices),
-                Bounds = GetBounds(vertices)
+                vertices = vertices.Cast<ICommonTex>().ToList(),
             };
             return part;
         }
@@ -108,20 +111,19 @@ namespace Spectrum.Framework.Graphics
                 effect = new SpectrumEffect(),
                 VBuffer = VertexHelper.MakeVertexBuffer(vertices),
                 IBuffer = VertexHelper.MakeIndexBuffer(indices),
-                Bounds = GetBounds(vertices)
+                vertices = vertices.Cast<ICommonTex>().ToList(),
             };
             return part;
         }
         public DrawablePart CreateReference()
         {
-            return new DrawablePart(VBuffer, IBuffer, Bounds) { ReferenceID = ReferenceID, effect = effect, material = material, permanentTransform = permanentTransform };
+            return new DrawablePart(VBuffer, IBuffer) { ReferenceID = ReferenceID, effect = effect, material = material, permanentTransform = permanentTransform, vertices = vertices };
         }
-        public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer, JBBox bounds = default(JBBox))
+        public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer)
             : this()
         {
             VBuffer = vBuffer;
             IBuffer = iBuffer;
-            Bounds = bounds;
         }
         public DrawablePart() { ReferenceID = LastReferenceID++; }
     }

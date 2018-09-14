@@ -28,6 +28,7 @@ namespace Spectrum.Framework.Content
         public static Dictionary<Type, IContentParser> ContentParsers = new Dictionary<Type, IContentParser>()
             {
                 {typeof(Effect), new EffectParser()},
+                {typeof(SpectrumEffect), new SpectrumEffectParser()},
                 {typeof(SpecModel), new ModelParser()},
                 {typeof(AnimationData), new AnimationParser()},
                 {typeof(ImageAsset), new ImageAssetParser()},

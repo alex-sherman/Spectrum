@@ -378,7 +378,7 @@
     <Compile Include="Framework\Graphics\Water.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\HLSL\SkinnedEffect.fx" />
+    <MGFXCompile Include="Content\HLSL\SkinnedEffect.fx" />
     <Content Include="Content\Textures\missing.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -390,16 +390,17 @@
       <Link>steam_api.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Content\HLSL\build.py" />
-    <Content Include="Content\HLSL\PostProcessEffect.fx" />
-    <Content Include="Content\HLSL\SpectrumEffect.fx" />
-    <Content Include="Content\HLSL\TerrainEffect.fx" />
-    <Content Include="Content\HLSL\WaterEffect.fx" />
+    <MGFXCompile Include="Content\HLSL\PostProcessEffect.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </MGFXCompile>
+    <MGFXCompile Include="Content\HLSL\SpectrumEffect.fx" />
+    <MGFXCompile Include="Content\HLSL\TerrainEffect.fx" />
+    <MGFXCompile Include="Content\HLSL\WaterEffect.fx" />
     <Content Include="Content\Textures\blank.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="openvr_api.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -430,24 +431,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\HLSL\PostProcessEffect.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\HLSL\SpectrumEffect.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\HLSL\TerrainEffect.mgfx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\HLSL\WaterEffect.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Content\HLSL\Common.fxh" />
+    <None Include="Content\HLSL\Common.fxh" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\HLSL\SkinnedEffect.mgfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="Content\HLSL\Header.fxh" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
@@ -461,8 +448,21 @@
     <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
   </PropertyGroup>
   <PropertyGroup>
-    <PreBuildEvent>python $(ProjectDir)Content\HLSL\build.py $(ProjectDir)\Content\HLSL $(ProjectDir)\Dependencies\Utils\2MGFX.exe $(ProjectDir)\Content\HLSL\</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <CustomBuildStep>
+      <Command>makecab.exe $(MGFXCompile) $(TargetName).cab</Command>
+      <Outputs>$(TargetName).cab</Outputs>
+      <Inputs>$(TargetFileName)</Inputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <PropertyGroup>
+    <CustomBuildAfterTargets>Compile</CustomBuildAfterTargets>
+    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
+  </PropertyGroup>
+  <Import Project="mgfx.targets.xml" />
   <!--
       To modify your build process, add your task inside one of the targets below and uncomment it. 
       Other similar extension points exist, see Microsoft.Common.targets.
