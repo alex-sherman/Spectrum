@@ -101,17 +101,17 @@ namespace Spectrum.Framework.Content
             return load.Invoke(null, new object[] { path, true });
         }
 
-        public T LoadRelative<T>(string name, bool usePrefix) where T : class
+        public T LoadRelative<T>(string name, bool usePrefix, bool refreshCache = false) where T : class
         {
             Type t = typeof(T);
             var path = name.Replace('/', '\\');
             if (ContentParsers.TryGetValue(t, out var parser))
             {
                 if (!usePrefix)
-                    return (T)parser.Load(path, name);
+                    return (T)parser.Load(path, name, refreshCache);
                 foreach (var directory in Directories)
                 {
-                    T output = (T)parser.Load(Path.Combine(directory, parser.Prefix, path), name);
+                    T output = (T)parser.Load(Path.Combine(directory, parser.Prefix, path), name, refreshCache);
                     if (output != null)
                         return output;
                 }

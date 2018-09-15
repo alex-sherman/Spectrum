@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Spectrum.Framework.Screens.InputElements
 {
     public delegate void OnToggleChanged(bool value);
-    public class ToggleButton : InputElement
+    public class Checkbox : InputElement
     {
         Element valueIndicator;
         public bool Value
@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Screens.InputElements
             set => valueIndicator.Toggle(value);
         }
         public event OnToggleChanged OnValueChanged = null;
-        public ToggleButton()
+        public Checkbox()
         {
             Width = 20; Height = 20;
         }

@@ -32,7 +32,11 @@ namespace Spectrum.Framework.Entities
             Entities = new EntityCollection();
             Physics = new PhysicsEngine(new CollisionSystemPersistentSAP());
             OnEntityAdded += (entity) => { if (entity is GameObject go) Physics.AddBody(go); };
-            OnEntityRemoved += (entity) => { if (entity is GameObject go) Physics.RemoveBody(go); };
+            OnEntityRemoved += (entity) =>
+            {
+                if (entity is GameObject go)
+                    Physics.RemoveBody(go);
+            };
             this.mpService = mpService;
             RegisterCallbacks();
         }
@@ -161,27 +165,26 @@ namespace Spectrum.Framework.Entities
 
             using (DebugTiming.Main.Time("Entity Update"))
             {
-                List<Entity> updateables = Entities.UpdateSorted;
-                for (int i = 0; i < updateables.Count; i++)
+                foreach (var updateable in Entities.UpdateSorted)
                 {
-                    using (DebugTiming.Update.Time(updateables[i].GetType().Name))
+                    using (DebugTiming.Update.Time(updateable.GetType().Name))
                     {
-                        if (updateables[i].Enabled)
+                        if (updateable.Enabled)
                         {
-                            updateables[i].Update(gameTime);
+                            updateable.Update(gameTime);
                             if (tickOneTimer >= 1)
-                                updateables[i].TickOne();
+                                updateable.TickOne();
                             if (tickTenthTimer >= 0.1)
-                                updateables[i].TickTenth();
+                                updateable.TickTenth();
                         }
                         else
-                            updateables[i].DisabledUpdate(gameTime);
-                        if (updateables[i].Destroying)
-                        {
-                            updateables[i].CallOnDestroy();
-                            Remove(updateables[i].ID);
-                        }
+                            updateable.DisabledUpdate(gameTime);
                     }
+                }
+                foreach (var destroy in Entities.Destroying.ToList())
+                {
+                    destroy.CallOnDestroy();
+                    Remove(destroy.ID);
                 }
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
@@ -377,7 +380,7 @@ namespace Spectrum.Framework.Entities
         }
         public void ClearEntities(Func<Entity, bool> predicate = null)
         {
-            foreach (Entity entity in Entities.UpdateSorted)
+            foreach (Entity entity in Entities.All.ToList())
             {
                 if (predicate == null || predicate(entity))
                     Remove(entity.ID);
@@ -393,7 +396,7 @@ namespace Spectrum.Framework.Entities
 
         public IEnumerable<T> FindAll<T>()
         {
-            return Entities.Map.Values.Where(e => e is T).Cast<T>();
+            return Entities.UpdateSorted.Where(e => e is T).Cast<T>();
         }
 
         public IEnumerable<Entity> FindByPrefab(string prefab)
@@ -408,7 +411,7 @@ namespace Spectrum.Framework.Entities
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return Entities.UpdateSorted.GetEnumerator();
         }
     }
 }

@@ -36,7 +36,12 @@ namespace Spectrum.Framework
                 }
             }
         }
-        public static void LoadPrefabs(Plugin plugin)
+        public static void LoadPrefabs(bool refreshCache = false)
+        {
+            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
+                LoadPrefabs(plugin, refreshCache);
+        }
+        public static void LoadPrefabs(Plugin plugin, bool refreshCache = false)
         {
             try
             {
@@ -44,7 +49,7 @@ namespace Spectrum.Framework
                 var files = Directory.GetFiles(path, "*.json", SearchOption.AllDirectories);
                 foreach (String filename in files)
                 {
-                    InitData prefab = plugin.Content.LoadRelative<InitData>(filename.Substring(path.Length + 1), true);
+                    InitData prefab = plugin.Content.LoadRelative<InitData>(filename.Substring(path.Length + 1), true, refreshCache);
                     if (prefab?.Name != null)
                         InitData.Register(prefab.Name, prefab);
                 }
@@ -54,9 +59,7 @@ namespace Spectrum.Framework
         }
         public static void ReloadPrefabs(EntityManager manager)
         {
-            ((InitDataParser)ContentHelper.ContentParsers[typeof(InitData)]).Clear();
-            foreach (var plugin in SpectrumGame.Game.Plugins.Values)
-                LoadHelper.LoadPrefabs(plugin);
+            LoadPrefabs(true);
             foreach (var prefab in InitData.Prefabs)
             {
                 foreach (var entity in manager.FindByPrefab(prefab.Key))

@@ -13,8 +13,10 @@ namespace Spectrum.Framework.Entities
         public Dictionary<Guid, Entity> Map = new Dictionary<Guid, Entity>();
         private List<Entity> updatedSorted = new List<Entity>();
         private List<Entity> drawSorted = new List<Entity>();
-        public List<Entity> UpdateSorted { get { lock (this) { return updatedSorted.ToList(); } } }
-        public List<Entity> DrawSorted { get { lock (this) { return drawSorted.ToList(); } } }
+        public IEnumerable<Entity> UpdateSorted { get { lock (this) { return updatedSorted.Where(e => !e.Destroying); } } }
+        public IEnumerable<Entity> DrawSorted { get { lock (this) { return drawSorted.Where(e => !e.Destroying); } } }
+        public IEnumerable<Entity> Destroying { get { lock (this) { return Map.Values.Where(e => e.Destroying); } } }
+        public IEnumerable<Entity> All { get { lock (this) { return Map.Values; } } }
 
         public void Add(Entity entity)
         {

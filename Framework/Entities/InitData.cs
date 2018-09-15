@@ -226,5 +226,6 @@ namespace Spectrum.Framework.Entities
             return this;
         }
         public new T Construct() => base.Construct() as T;
+        public InitData ToNonGeneric() => base.Clone();
     }
 }

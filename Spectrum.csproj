@@ -335,7 +335,7 @@
     <Compile Include="Framework\Screens\InputElements\ListSelector.cs" />
     <Compile Include="Framework\Screens\InputElements\Slider.cs" />
     <Compile Include="Framework\Screens\InputElements\TextElement.cs" />
-    <Compile Include="Framework\Screens\InputElements\ToggleButton.cs" />
+    <Compile Include="Framework\Screens\InputElements\Checkbox.cs" />
     <Compile Include="Framework\Screens\LayoutManager.cs" />
     <Compile Include="Framework\Screens\LinearLayout.cs" />
     <Compile Include="Framework\Screens\MenuScreen.cs" />

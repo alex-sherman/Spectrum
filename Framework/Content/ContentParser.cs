@@ -9,7 +9,7 @@ namespace Spectrum.Framework.Content
     public interface IContentParser
     {
         string Prefix { get; set; }
-        object Load(string path, string name);
+        object Load(string path, string name, bool refreshCache);
         IEnumerable<string> FindAll(string directory, string glob, bool recursive);
         void Clear();
     }
@@ -25,9 +25,9 @@ namespace Spectrum.Framework.Content
         {
             Extensions = extensions.ToList();
         }
-        public U Load(string path, string name)
+        public U Load(string path, string name, bool refreshCache)
         {
-            if (!cachedData.ContainsKey(path)) { Cache(path, name); }
+            if (refreshCache || !cachedData.ContainsKey(path)) { Cache(path, name); }
             T data = cachedData[path];
             return data == null ? default(U) : SafeCopy(data);
         }
@@ -55,9 +55,9 @@ namespace Spectrum.Framework.Content
             }
         }
 
-        object IContentParser.Load(string path, string name)
+        object IContentParser.Load(string path, string name, bool refreshCache)
         {
-            return Load(path, name);
+            return Load(path, name, refreshCache);
         }
         public void Clear()
         {
