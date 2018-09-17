@@ -62,8 +62,8 @@ namespace Spectrum.Framework.VR
                             VRController.ButtonHysteresis[VRButton.Grip] = new Hysteresis()
                             {
                                 Axis = 2,
-                                Enter = 0.5f,
-                                Exit = 0.4f,
+                                Enter = 0.95f,
+                                Exit = 0.8f,
                             };
                             break;
                     }

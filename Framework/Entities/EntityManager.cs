@@ -165,7 +165,7 @@ namespace Spectrum.Framework.Entities
 
             using (DebugTiming.Main.Time("Entity Update"))
             {
-                foreach (var updateable in Entities.UpdateSorted)
+                foreach (var updateable in Entities.UpdateSorted.ToList())
                 {
                     using (DebugTiming.Update.Time(updateable.GetType().Name))
                     {

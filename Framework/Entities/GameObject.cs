@@ -182,6 +182,8 @@ namespace Spectrum.Framework.Entities
         public virtual void RegisterDraws()
         {
             // TODO: Support disable instance here
+            if (FixedRenderKeys != null)
+                UnregisterDraws();
             FixedRenderKeys = Model?.MeshParts.Values.Select(part => Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
             /*, disableInstancing: DisableInstancing);*/).ToList();
         }
