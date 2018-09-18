@@ -293,12 +293,6 @@ namespace Spectrum.Framework.Screens
         public int PreChildHeight(int parentHeight, int contentHeight = 0) =>
             Math.Max(0, Height.Measure(parentHeight, contentHeight + Padding.HeightTotal(parentHeight)) - Padding.HeightTotal(parentHeight));
 
-        // Calculate the dims to pass to a child considering margins
-        public int PostChildWidth(int width, int parentWidth) =>
-            Math.Max(0, width - Margin.WidthTotal(parentWidth) - Padding.WidthTotal(parentWidth));
-        public int PostChildHeight(int height, int parentHeight) =>
-            Math.Max(0, height - Margin.HeightTotal(parentHeight) - Padding.HeightTotal(parentHeight));
-
         public void ClearMeasure()
         {
             MeasuredWidth = 0;
@@ -337,19 +331,21 @@ namespace Spectrum.Framework.Screens
         {
             if (!Display)
                 return;
+            // Accounts for Margin
             Bounds = new Rectangle()
             {
-                X = bounds.X + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)),
-                Y = bounds.Y + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)),
-                Width = bounds.Width,
-                Height = bounds.Height,
+                X = bounds.X + Margin.Left.Measure(bounds.Width) + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)),
+                Y = bounds.Y + Margin.Top.Measure(bounds.Height) + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)),
+                Width = Math.Max(0, bounds.Width - Margin.WidthTotal(Parent?.Rect.Width ?? 0)),
+                Height = Math.Max(0, bounds.Height - Margin.HeightTotal(Parent?.Rect.Height ?? 0)),
             };
+            // Accounts for Padding
             Rect = new Rectangle()
             {
-                X = Bounds.X + Margin.Left.Measure(bounds.Width) + Padding.Left.Measure(bounds.Width),
-                Y = Bounds.Y + Margin.Top.Measure(bounds.Height) + Padding.Top.Measure(bounds.Height),
-                Width = PostChildWidth(Bounds.Width, Parent?.Rect.Width ?? 0),
-                Height = PostChildHeight(Bounds.Height, Parent?.Rect.Height ?? 0),
+                X = Bounds.X + Padding.Left.Measure(bounds.Width),
+                Y = Bounds.Y + Padding.Top.Measure(bounds.Height),
+                Width = Math.Max(0, Bounds.Width - Padding.WidthTotal(Parent?.Rect.Width ?? 0)),
+                Height = Math.Max(0, Bounds.Height - Padding.HeightTotal(Parent?.Rect.Height ?? 0)),
             };
             if (LayoutManager != null)
                 LayoutManager.OnLayout(this, Rect);

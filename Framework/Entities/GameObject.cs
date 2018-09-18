@@ -23,10 +23,13 @@ namespace Spectrum.Framework.Entities
     public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource, ITransform
     {
         #region Events
+        /// <summary>
+        /// Hit game object, position, normal, penetration
+        /// </summary>
         public event Action<GameObject, Vector3, Vector3, float> OnCollide;
         public event Action<GameObject> OnEndCollide;
         #endregion
-        
+
         #region Physics Fields/Properties
         [Flags]
         public enum DampingType { None = 0x00, Angular = 0x01, Linear = 0x02 }
@@ -209,13 +212,9 @@ namespace Spectrum.Framework.Entities
         {
             get
             {
-                JBBox output = new JBBox(Vector3.Zero, Vector3.Zero);
-                if (Model == null) return output;
-                foreach (var part in Model)
-                {
-                    output.AddPoint(part.Bounds.Min);
-                    output.AddPoint(part.Bounds.Max);
-                }
+                if (Model == null)
+                    return new JBBox();
+                var output = Model.Bounds;
                 output.Transform(ref ModelTransform);
                 return output;
             }

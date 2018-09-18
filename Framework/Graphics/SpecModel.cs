@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Collections;
+using Spectrum.Framework.Physics.LinearMath;
 
 namespace Spectrum.Framework.Graphics
 {
@@ -36,6 +37,19 @@ namespace Spectrum.Framework.Graphics
             MeshParts = meshParts;
             Materials = materials;
             SkinningData = skinningData;
+        }
+        public JBBox Bounds
+        {
+            get
+            {
+                JBBox output = new JBBox(Vector3.Zero, Vector3.Zero);
+                foreach (var part in this)
+                {
+                    output.AddPoint(part.Bounds.Min);
+                    output.AddPoint(part.Bounds.Max);
+                }
+                return output;
+            }
         }
         /// <summary>
         /// Be careful using this because the GameObject's RenderTasks will not get updated
