@@ -15,7 +15,8 @@ namespace Spectrum.Framework.Input
         public int Y;
         public float DX;
         public float DY;
-        public int Scroll;
+        public int ScrollX;
+        public int ScrollY;
     }
 
     public class SpectrumMouse
@@ -44,7 +45,7 @@ namespace Spectrum.Framework.Input
                 Y = mousePosition.Y,
                 DX = RawMouse.lastX / 2.0f,
                 DY = RawMouse.lastY / 2.0f,
-                Scroll = RawMouse.lastZ,
+                ScrollY = RawMouse.lastZ,
             };
         }
     }

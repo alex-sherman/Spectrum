@@ -24,7 +24,7 @@ namespace Spectrum.Framework.Screens
             SpriteBatch = new SpriteBatch(SpectrumGame.Game.GraphicsDevice);
             Initialize();
         }
-    
+
         public void Update(float dt, InputState input)
         {
             // Needs to happen first because DrawEnabled will be updated in these handlers
@@ -41,12 +41,20 @@ namespace Spectrum.Framework.Screens
         {
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
-            DrawWithChildren(gameTime, SpriteBatch, 1.0f);
+            var children = RecursiveChildren.ToList();
+            children.Reverse();
+
+            for (int i = 0; i < children.Count; i++)
+            {
+                var child = children[i];
+                if (child.Display)
+                    child.Draw(gameTime, SpriteBatch, i * 1.0f / children.Count);
+            }
             SpectrumGame.Game.GraphicsDevice.SetRenderTarget(Target);
             if (Target != null)
                 SpectrumGame.Game.GraphicsDevice.Clear(Color.Transparent);
             SpriteBatch.End();
         }
-    
+
     }
 }

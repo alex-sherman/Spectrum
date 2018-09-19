@@ -83,6 +83,7 @@ namespace Spectrum.Framework.Screens
         private List<Element> _children = new List<Element>();
         //TODO: Maybe cache this and update during Update(), can't be modified during a frame though
         public List<Element> Children { get { return _children.ToList(); } }
+        public IEnumerable<Element> RecursiveChildren => new List<Element>() { this }.Union(_children.SelectMany(child => child.RecursiveChildren));
         private bool _display = true;
         public bool Display
         {
@@ -108,6 +109,7 @@ namespace Spectrum.Framework.Screens
         }
         public event Action<bool> OnDisplayChanged;
         public PositionType Positioning;
+        public bool IsInline => Positioning == PositionType.Center || Positioning == PositionType.Inline;
         public virtual bool HasFocus { get { return Parent?.HasFocus ?? true; } }
         private bool Initialized = false;
         private HashSet<string> Tags = new HashSet<string>();
@@ -210,6 +212,12 @@ namespace Spectrum.Framework.Screens
             {
                 otherTookInput |= child.HandleInput(otherTookInput, input);
             }
+            if(!(input.IsConsumed(new KeyBind(-1)) || input.IsConsumed(new KeyBind(-2))) && MouseInside(input) && input.MouseScrollY != 0 && AllowScrollY)
+            {
+                input.ConsumeInput(new KeyBind(-1), false);
+                input.ConsumeInput(new KeyBind(-2), false);
+                ScrollY += input.MouseScrollY / 10;
+            }
             foreach (var inputHandler in inputHandlers)
             {
                 if (input.IsConsumed(inputHandler.Key))
@@ -253,13 +261,11 @@ namespace Spectrum.Framework.Screens
         public int Y;
         public int AbsoluteX { get; private set; }
         public int AbsoluteY { get; private set; }
-        protected const float ZDiff = 0.00001f;
-        protected const int ZLayers = 10;
-        public float Z { get; private set; }
-        public float Layer(int layer)
-        {
-            return Z - ZDiff * layer / ZLayers;
-        }
+        public int ScrollX;
+        public int ScrollY;
+        public bool AllowScrollX;
+        public bool AllowScrollY;
+        public bool HideOverflow = false;
         /// <summary>
         /// A bounding rectangle with a relative offset that accounts for padding from the parent but is not necessarily relative to the parent
         /// </summary>
@@ -284,8 +290,8 @@ namespace Spectrum.Framework.Screens
             Width.Measure(parentWidth, contentWidth + Padding.WidthTotal(parentWidth)) + Margin.WidthTotal(parentWidth);
         public int MeasureHeight(int parentHeight, int contentHeight) =>
             Height.Measure(parentHeight, contentHeight + Padding.HeightTotal(parentHeight)) + Margin.HeightTotal(parentHeight);
-        private int MaxChildWidth => Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max();
-        private int MaxChildHeight => Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max();
+        private int MaxChildWidth => Children.Where(c => c.IsInline).Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max();
+        private int MaxChildHeight => Children.Where(c => c.IsInline).Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max();
 
         // Calculate the dims to pass to a child before considering margin
         public int PreChildWidth(int parentWidth, int contentWidth = 0) =>
@@ -383,33 +389,17 @@ namespace Spectrum.Framework.Screens
             }
         }
 
-        public virtual void Draw(float gameTime, SpriteBatch spritebatch)
+        public virtual void Draw(float gameTime, SpriteBatch spritebatch, float layer)
         {
             if (Background != null)
-                Background.Draw(spritebatch, Bounds, BackgroundColor ?? Color.White, Z);
+                Background.Draw(spritebatch, Bounds, BackgroundColor ?? Color.White, layer);
             else if (BackgroundColor != null)
-                ImageAsset.Blank.Draw(spritebatch, Bounds, BackgroundColor.Value, Z);
+                ImageAsset.Blank.Draw(spritebatch, Bounds, BackgroundColor.Value, layer);
 
             if (Texture != null)
-                Texture.Draw(spritebatch, Rect, TextureColor, Layer(1));
+                Texture.Draw(spritebatch, Rect, TextureColor, layer);
             else if (FillColor != null)
-                ImageAsset.Blank.Draw(spritebatch, Rect, FillColor.Value, Layer(1));
-        }
-
-        public virtual float DrawWithChildren(float gameTime, SpriteBatch spritebatch, float layer)
-        {
-            Z = layer;
-            Draw(gameTime, spritebatch);
-            List<Element> drawChildren = Children.ToList();
-            drawChildren.Reverse();
-            foreach (Element child in drawChildren)
-            {
-                if (child.Display)
-                {
-                    layer = child.DrawWithChildren(gameTime, spritebatch, layer * (1 - ZDiff * ZLayers));
-                }
-            }
-            return layer * (1 - ZDiff * ZLayers);
+                ImageAsset.Blank.Draw(spritebatch, Rect, FillColor.Value, layer);
         }
         public void MoveElement(Element child, int newIndex)
         {

@@ -15,9 +15,14 @@ namespace Spectrum.Framework.Screens.InputElements
     {
         public event Action<ListOption<T>> OnSelectedChanged;
         public DropdownOptionSource<T> OptionSource = null;
-        public readonly List<ListOption<T>> Options = new List<ListOption<T>>();
         private ListOption<T> selected = null;
         private ListOption<T> childOption = new ListOption<T>();
+        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true };
+        public int MaxHeight
+        {
+            get => optionContainer.Width.WrapContent ? 0 : optionContainer.Width.Flat;
+            set => optionContainer.Width = new ElementSize(value, wrapContent: value == 0);
+        }
         public T Selected
         {
             get { return childOption.Option; }
@@ -31,16 +36,14 @@ namespace Spectrum.Framework.Screens.InputElements
                 if (_expanded != value)
                 {
                     _expanded = value;
-                    foreach (var option in Children.Where(c => c is ListOption<T> && c != childOption))
-                    {
-                        option.Toggle(value);
-                    }
+                    optionContainer.Display = value;
                 }
             }
         }
         public Dropdown(params ListOption<T>[] options)
         {
             AddElement(new TextElement("+") { Positioning = PositionType.Relative });
+            AddElement(optionContainer);
             AddElement(childOption);
             SetOptions(options.ToList());
             OnClick += Dropdown_OnClick;
@@ -57,9 +60,9 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public void ClearOptions()
         {
-            foreach (var option in Options.ToList())
+            foreach (var option in optionContainer.Children.ToList())
             {
-                RemoveOption(option);
+                RemoveOption(option as ListOption<T>);
             }
         }
         public void SetOptions(IEnumerable<ListOption<T>> options)
@@ -72,17 +75,13 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public void AddOption(ListOption<T> option)
         {
-            if (!Children.Any())
-                option.Margin = new RectOffset() { Top = 1.0 };
             option.OnClick += Option_OnClick;
-            option.Toggle(Expanded);
-            Options.Add(option);
-            AddElement(option);
+            optionContainer.AddElement(option);
         }
         public void RemoveOption(ListOption<T> option)
         {
-            RemoveElement(option);
-            Options.Remove(option);
+            optionContainer.RemoveElement(option);
+            option.OnClick -= Option_OnClick;
             if (selected == option)
             {
                 childOption.Text = null;

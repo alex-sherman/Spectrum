@@ -112,7 +112,7 @@ namespace Spectrum.Framework.VR
                 DX = 0,
                 DY = 0,
                 buttons = buttons,
-                Scroll = 0,
+                ScrollY = 0,
                 X = X,
                 Y = Y,
             };

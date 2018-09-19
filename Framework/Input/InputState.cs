@@ -147,12 +147,27 @@ namespace Spectrum.Framework.Input
         }
         public Point MousePosition { get { return new Point(CursorState.X, CursorState.Y); } }
         public bool IsMouseDown(int button)
-            => button < (CursorState?.buttons?.Length ?? 0) && CursorState.buttons[button];
+        {
+            if (button >= (CursorState?.buttons?.Length ?? 0))
+                return false;
+            if (button >= 0)
+                return CursorState.buttons[button];
+            if (button == -1)
+                return MouseScrollY > 0;
+            if (button == -2)
+                return MouseScrollY < 0;
+            if (button == -3)
+                return MouseScrollX > 0;
+            if (button == -4)
+                return MouseScrollX < 0;
+            return false;
+        }
         public bool IsNewMousePress(int button)
             => button < (CursorState?.buttons?.Length ?? 0) && IsMouseDown(button) && !Last.IsMouseDown(button);
         public bool IsNewMouseRelease(int button)
             => button < (CursorState?.buttons?.Length ?? 0) && !IsMouseDown(button) && Last.IsMouseDown(button);
-        public int MouseWheelDistance => CursorState?.Scroll ?? 0;
+        public int MouseScrollY => CursorState?.ScrollY ?? 0;
+        public int MouseScrollX => CursorState?.ScrollX ?? 0;
 
 
         #endregion

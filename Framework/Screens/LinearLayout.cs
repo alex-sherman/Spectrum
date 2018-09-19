@@ -28,8 +28,10 @@ namespace Spectrum.Framework.Screens
         }
         public void OnLayout(Element element, Rectangle bounds)
         {
-            int currentX = 0;
-            int currentY = 0;
+            int currentX = element.ScrollX;
+            int currentY = element.ScrollY;
+            Rectangle relativeBounds = bounds;
+            relativeBounds.X = relativeBounds.Y = 0;
             foreach (var item in element.Children)
             {
                 if (item.Positioning != PositionType.Relative && item.Positioning != PositionType.Absolute)

@@ -57,9 +57,9 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.ResetOnResize(bounds.Width, bounds.Height);
             }
         }
-        public override void Draw(float gameTime, SpriteBatch spriteBatch)
+        public override void Draw(float gameTime, SpriteBatch spriteBatch, float layer)
         {
-            base.Draw(gameTime, spriteBatch);
+            base.Draw(gameTime, spriteBatch, layer);
             if (Camera != null && RenderTarget != null)
             {
                 GraphicsEngine.Camera = Camera;
@@ -70,7 +70,7 @@ namespace Spectrum.Framework.Screens
                         GraphicsEngine.RenderVRScene(Camera, renderGroups, RenderTarget);
                     else
                         GraphicsEngine.RenderScene(Camera, renderGroups, RenderTarget);
-                    spriteBatch.Draw(RenderTarget, Rect, Color.White, Z);
+                    spriteBatch.Draw(RenderTarget, Rect, Color.White, layer);
                     Manager.ClearRenderTasks();
                 }
             }

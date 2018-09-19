@@ -101,30 +101,30 @@ namespace Spectrum.Framework
             return String.Format("{0:0.00}", d);
         }
         private float averageFPS = 0;
-        private void DrawTimes(int startLine, SpriteBatch spritebatch, float dt)
+        private void DrawTimes(int startLine, SpriteBatch spritebatch, float dt, float layer)
         {
             float curPos = (startLine) * Font.LineSpacing;
             averageFPS = (float)(averageFPS * 0.95 + (1.0 / dt) * 0.05);
             string toPrint = averageFPS.ToString("0.00");
-            spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
+            spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, layer);
             curPos += Font.MeasureString(toPrint).Y;
             foreach (var timeGroup in DebugTiming.Groups)
             {
                 toPrint = string.Format("{0} ({1} {2})\n---------------", timeGroup.Name, timeGroup.ShowCumulative ? "Sum" : "Avg", fform(timeGroup.FrameAverages().Sum(t => t.Item2)));
-                spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
+                spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, layer);
                 curPos += Font.MeasureString(toPrint).Y;
                 var times = timeGroup.FrameInfo().Take(10);
                 foreach (var time in times)
                 {
                     toPrint = time.Item1 + ": " + fform(time.Item2.TotalTime) + " (" + fform(time.Item2.AvgerageTime) + "x" + time.Item2.Count + ")";
-                    spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, Z);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, layer);
                     curPos += Font.MeasureString(toPrint).Y;
                 }
             }
         }
-        public override void Draw(float gameTime, SpriteBatch spritebatch)
+        public override void Draw(float gameTime, SpriteBatch spritebatch, float layer)
         {
-            base.Draw(gameTime, spritebatch);
+            base.Draw(gameTime, spritebatch, layer);
 
             if (SpectrumGame.Game.Debug)
             {
@@ -136,7 +136,7 @@ namespace Spectrum.Framework
                         strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            spritebatch.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, Z);
+                            spritebatch.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, layer);
                         }
                     }
                 }
@@ -144,10 +144,10 @@ namespace Spectrum.Framework
                 for (int i = 0; i < objects.Count; i++)
                 {
                     string toPrint = objects[i].Debug();
-                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, Z);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, layer);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                DrawTimes(2, spritebatch, gameTime);
+                DrawTimes(2, spritebatch, gameTime, layer);
 
             }
         }
