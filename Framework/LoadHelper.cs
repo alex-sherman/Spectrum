@@ -45,14 +45,8 @@ namespace Spectrum.Framework
         {
             try
             {
-                var path = Path.Combine(plugin.Content.Directories[0], "InitData");
-                var files = Directory.GetFiles(path, "*.json", SearchOption.AllDirectories);
-                foreach (String filename in files)
-                {
-                    InitData prefab = plugin.Content.LoadRelative<InitData>(filename.Substring(path.Length + 1), true, refreshCache);
-                    if (prefab?.Name != null)
-                        InitData.Register(prefab.Name, prefab);
-                }
+                foreach (var prefab in ContentHelper.LoadAll<InitData>().Where(p => p?.Name != null))
+                    InitData.Register(prefab.Name, prefab);
             }
             catch (DirectoryNotFoundException) { }
             catch (FileNotFoundException) { }

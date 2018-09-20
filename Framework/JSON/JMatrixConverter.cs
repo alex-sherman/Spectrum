@@ -46,11 +46,10 @@ namespace Spectrum.Framework.JSON
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
+            var oldF = writer.Formatting;
             writer.Formatting = Formatting.None;
-            serializer.Formatting = Formatting.None;
             serializer.Serialize(writer, ((Matrix)value).ToArray());
-            serializer.Formatting = Formatting.Indented;
-            writer.Formatting = Formatting.Indented;
+            writer.Formatting = oldF;
         }
     }
 }

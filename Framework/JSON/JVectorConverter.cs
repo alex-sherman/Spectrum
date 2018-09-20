@@ -47,9 +47,10 @@ namespace Spectrum.Framework.JSON
                 array = new JArray(vector2.X, vector2.Y);
             if (value is Vector4 vector4)
                 array = new JArray(vector4.X, vector4.Y, vector4.Z, vector4.W);
+            var oldF = writer.Formatting;
             writer.Formatting = Formatting.None;
             array.WriteTo(writer);
-            writer.Formatting = Formatting.Indented;
+            writer.Formatting = oldF;
         }
     }
 }

@@ -51,6 +51,8 @@ namespace Spectrum.Framework.Entities
         #endregion
         public bool Immutable { get; protected set; }
         public string Name;
+        public string Path { get; set; }
+        public string FullPath { get; set; }
         public string TypeName {
             get => TypeData.Type.Name;
             set => TypeData = TypeHelper.Types.GetData(value);
@@ -168,6 +170,8 @@ namespace Spectrum.Framework.Entities
         protected void CopyFieldsTo(InitData other)
         {
             other.Name = Name;
+            other.Path = Path;
+            other.FullPath = FullPath;
             other.Args = Args.Select(prim => new Primitive(prim.Object)).ToArray();
             other.Fields = Fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
             other.Data = Data.Copy();

@@ -41,17 +41,19 @@ namespace Spectrum.Framework.JSON
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value is BoxShape box)
-                new JObject() {
-                    { "type", "box" },
-                    { "size", JToken.FromObject(box.Size, serializer) },
-                    { "position", JToken.FromObject(box.Position, serializer) }
-                }.WriteTo(writer);
+                serializer.Serialize(writer, new
+                {
+                    type = "box",
+                    size = box.Size,
+                    position = box.Position,
+                });
             else if (value is ListMultishape listShape)
             {
-                new JObject() {
-                    { "type", "list" },
-                    { "shapes", new JArray(listShape.Shapes.Select(shape => JToken.FromObject(shape, serializer))) }
-                }.WriteTo(writer);
+                serializer.Serialize(writer, new
+                {
+                    type = "list",
+                    shapes = listShape.Shapes
+                });
             }
             else
                 throw new NotImplementedException();

@@ -95,16 +95,16 @@ namespace Spectrum.Framework.JSON
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             var init = (InitData)value;
-            var jobj = new JObject()
+            var jobj = new Dictionary<string, object>()
             {
                 { "@Name", init.Name },
                 { "@TypeName", init.TypeName },
             };
             foreach (var kvp in init.Fields)
             {
-                jobj[kvp.Key] = JToken.FromObject(kvp.Value.Object, serializer);
+                jobj[kvp.Key] = kvp.Value.Object;
             }
-            jobj.WriteTo(writer);
+            serializer.Serialize(writer, jobj);
         }
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)

@@ -17,7 +17,17 @@ namespace Spectrum.Framework
     public class JConvert
     {
         public static List<JsonConverter> Converters = new List<JsonConverter>();
-        static JsonSerializerSettings Settings;
+        static JsonSerializerSettings Settings {
+            get
+            {
+                var settings = new JsonSerializerSettings();
+                foreach (var converter in Converters)
+                {
+                    settings.Converters.Add(converter);
+                }
+                return settings;
+            }
+        }
         static JConvert()
         {
             Converters.Add(new JVectorConverter());
@@ -31,11 +41,6 @@ namespace Spectrum.Framework
             Converters.Add(new SimpleConverter<TypeData>(
                 typeData => typeData.Type.Name,
                 token => TypeHelper.Types.GetData((string)token)));
-            Settings = new JsonSerializerSettings();
-            foreach (var converter in Converters)
-            {
-                Settings.Converters.Add(converter);
-            }
         }
         public static object Deserialize(JToken token, Type targetType)
         {

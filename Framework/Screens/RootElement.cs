@@ -16,7 +16,7 @@ namespace Spectrum.Framework.Screens
         public int PixelWidth { get { return Target?.Width ?? SpectrumGame.Game.GraphicsDevice.Viewport.Width; } }
         public int PixelHeight { get { return Target?.Height ?? SpectrumGame.Game.GraphicsDevice.Viewport.Height; } }
         public SpriteBatch SpriteBatch;
-        public override bool HasFocus => SpectrumGame.Game.IsActive;
+        public override bool HasFocus => SpectrumGame.Game.IsActive && SpectrumGame.Game.WindowForm.Focused;
         public RootElement()
         {
             Width = 1.0;
