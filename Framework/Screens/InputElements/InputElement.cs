@@ -35,5 +35,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 return false;
             });
         }
+        public void Click() => OnClick?.Invoke(this);
+        public void RightClick() => OnRightClick?.Invoke(this);
     }
 }

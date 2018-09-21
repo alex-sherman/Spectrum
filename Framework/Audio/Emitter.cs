@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SharpDX.Mathematics.Interop;
 using SharpDX.X3DAudio;
 using Spectrum.Framework.Entities;
 using System;
@@ -32,14 +33,14 @@ namespace Spectrum.Framework.Audio
 
         public SoundEmitter()
         {
-            _emitter = new SharpDX.X3DAudio.Emitter()
+            _emitter = new Emitter()
             {
                 ChannelCount = 1,
                 CurveDistanceScaler = 20,
-                OrientFront = new SharpDX.Vector3(0, 0, 1),
-                OrientTop = new SharpDX.Vector3(0, 1, 0),
-                Position = new SharpDX.Vector3(0, 0, 0),
-                Velocity = new SharpDX.Vector3(0, 0, 0)
+                OrientFront = new RawVector3(0, 0, 1),
+                OrientTop = new RawVector3(0, 1, 0),
+                Position = new RawVector3(0, 0, 0),
+                Velocity = new RawVector3(0, 0, 0)
             };
         }
 

@@ -40,6 +40,8 @@ namespace Spectrum.Framework.Screens
         public static bool Dirty;
         public SceneScreen()
         {
+            ZDetach = true;
+            Z = 100;
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }

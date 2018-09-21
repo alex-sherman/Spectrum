@@ -279,7 +279,7 @@
     <Compile Include="Framework\Screens\SceneScreen.cs" />
     <Compile Include="Framework\LSystem\LNode.cs" />
     <Compile Include="Framework\LSystem\LTree.cs" />
-    <Compile Include="Framework\ExtensionMethods.cs" />
+    <Compile Include="Framework\Utility\ExtensionMethods.cs" />
     <Compile Include="Framework\Utility\MatrixHelper.cs" />
     <Compile Include="Framework\Network\Handshake.cs" />
     <Compile Include="Framework\Network\NetID.cs" />
@@ -368,6 +368,8 @@
     <Compile Include="Framework\Network\MultiplayerService.cs" />
     <Compile Include="Framework\Entities\GameObject.cs" />
     <Compile Include="Framework\Entities\EntityManager.cs" />
+    <Compile Include="Framework\Utility\SpriteBatchExtensions.cs" />
+    <Compile Include="Framework\Utility\VectorExtensions.cs" />
     <Compile Include="Framework\VR\SpecVR.cs" />
     <Compile Include="Framework\VR\VRMenu.cs" />
     <Compile Include="openvr_api.cs" />

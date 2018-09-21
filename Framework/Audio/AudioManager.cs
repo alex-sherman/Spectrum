@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using SharpDX.Mathematics.Interop;
 using SharpDX.X3DAudio;
 using SharpDX.XAudio2;
 using System;
@@ -10,11 +11,11 @@ namespace Spectrum.Framework.Audio
 {
     public class AudioManager
     {
-        internal static SharpDX.Vector3 V3ToV3(Vector3 vector)
+        internal static RawVector3 V3ToV3(Vector3 vector)
         {
-            return new SharpDX.Vector3(vector.X, vector.Y, vector.Z);
+            return new RawVector3(vector.X, vector.Y, vector.Z);
         }
-        internal static Vector3 V3ToV3(SharpDX.Vector3 vector)
+        internal static Vector3 V3ToV3(RawVector3 vector)
         {
             return new Vector3(vector.X, vector.Y, vector.Z);
         }
@@ -44,10 +45,10 @@ namespace Spectrum.Framework.Audio
         {
             Listener = new Listener()
             {
-                Position = new SharpDX.Vector3(0, 0, 0),
-                OrientFront = new SharpDX.Vector3(0, 0, 1),
-                OrientTop = new SharpDX.Vector3(0, 1, 0),
-                Velocity = new SharpDX.Vector3(0, 0, 0)
+                Position = new RawVector3(0, 0, 0),
+                OrientFront = new RawVector3(0, 0, 1),
+                OrientTop = new RawVector3(0, 1, 0),
+                Velocity = new RawVector3(0, 0, 0)
             };
         }
 

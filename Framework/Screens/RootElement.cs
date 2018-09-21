@@ -37,11 +37,25 @@ namespace Spectrum.Framework.Screens
             base.Update(dt);
         }
 
+        private IEnumerable<Element> OrderChildren(Element element, List<Element> roots)
+        {
+            // TODO: Do a where on children for detached elements
+            roots.AddRange(element.Children.Where(c => c.ZDetach));
+            return Enumerable.Empty<Element>().Union(element).Union(element.Children.Where(c => !c.ZDetach).OrderByDescending(c => c.Z).SelectMany(c => OrderChildren(c, roots)));
+        }
         public void Draw(float gameTime)
         {
+            //SpriteBatch.GraphicsDevice.RasterizerState.ScissorTestEnable = true;
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
-            var children = RecursiveChildren.ToList();
+            List<Element> roots = new List<Element>() { this };
+            List<List<Element>> trees = new List<List<Element>>() { };
+            while(roots.Any())
+            {
+                var current = roots.Pop();
+                trees.Add(OrderChildren(current, roots).ToList());
+            }
+            var children = trees.OrderByDescending(t => t[0].Z).SelectMany(t => t).ToList();
             children.Reverse();
 
             for (int i = 0; i < children.Count; i++)

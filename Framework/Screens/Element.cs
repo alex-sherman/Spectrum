@@ -83,7 +83,6 @@ namespace Spectrum.Framework.Screens
         private List<Element> _children = new List<Element>();
         //TODO: Maybe cache this and update during Update(), can't be modified during a frame though
         public List<Element> Children { get { return _children.ToList(); } }
-        public IEnumerable<Element> RecursiveChildren => new List<Element>() { this }.Union(_children.SelectMany(child => child.RecursiveChildren));
         private bool _display = true;
         public bool Display
         {
@@ -212,7 +211,7 @@ namespace Spectrum.Framework.Screens
             {
                 otherTookInput |= child.HandleInput(otherTookInput, input);
             }
-            if(!(input.IsConsumed(new KeyBind(-1)) || input.IsConsumed(new KeyBind(-2))) && MouseInside(input) && input.MouseScrollY != 0 && AllowScrollY)
+            if (!(input.IsConsumed(new KeyBind(-1)) || input.IsConsumed(new KeyBind(-2))) && MouseInside(input) && input.MouseScrollY != 0 && AllowScrollY)
             {
                 input.ConsumeInput(new KeyBind(-1), false);
                 input.ConsumeInput(new KeyBind(-2), false);
@@ -259,25 +258,30 @@ namespace Spectrum.Framework.Screens
 
         public int X;
         public int Y;
-        public int AbsoluteX { get; private set; }
-        public int AbsoluteY { get; private set; }
         public int ScrollX;
         public int ScrollY;
         public bool AllowScrollX;
         public bool AllowScrollY;
-        public bool HideOverflow = false;
+        public bool ZDetach;
+        public int Z;
+        const float DZ = 1e-6f;
+        public float Layer(float layer, int z) => layer - z * DZ;
         /// <summary>
         /// A bounding rectangle with a relative offset that accounts for padding from the parent but is not necessarily relative to the parent
         /// </summary>
-        public Rectangle Bounds { get; private set; }
+        public Rectangle Bounds { get; protected set; }
         /// <summary>
         /// The absolute rectangle in terms of screen coordinates for the element
         /// </summary>
-        public Rectangle Rect { get; private set; }
+        public Rectangle Rect { get; protected set; }
+        /// <summary>
+        /// The element's Rect clipped by the parent's Clipped
+        /// </summary>
+        public Rectangle Clipped { get; protected set; }
 
         public bool MouseInside(InputState input)
         {
-            return Rect.Contains(input.MousePosition.X, input.MousePosition.Y);
+            return Clipped.Contains(input.MousePosition.X, input.MousePosition.Y);
         }
 
         public virtual void Update(float gameTime)
@@ -353,6 +357,10 @@ namespace Spectrum.Framework.Screens
                 Width = Math.Max(0, Bounds.Width - Padding.WidthTotal(Parent?.Rect.Width ?? 0)),
                 Height = Math.Max(0, Bounds.Height - Padding.HeightTotal(Parent?.Rect.Height ?? 0)),
             };
+            if (ZDetach || Parent == null)
+                Clipped = Rect;
+            else
+                Clipped = Rect.Clip(Parent.Clipped);
             if (LayoutManager != null)
                 LayoutManager.OnLayout(this, Rect);
             else
@@ -392,14 +400,14 @@ namespace Spectrum.Framework.Screens
         public virtual void Draw(float gameTime, SpriteBatch spritebatch, float layer)
         {
             if (Background != null)
-                Background.Draw(spritebatch, Bounds, BackgroundColor ?? Color.White, layer);
+                spritebatch.Draw(Background, Bounds, BackgroundColor ?? Color.White, Layer(layer, -2), clip: Parent?.Rect);
             else if (BackgroundColor != null)
-                ImageAsset.Blank.Draw(spritebatch, Bounds, BackgroundColor.Value, layer);
+                spritebatch.Draw(ImageAsset.Blank, Bounds, BackgroundColor.Value, Layer(layer, -2), clip: Parent?.Rect);
 
             if (Texture != null)
-                Texture.Draw(spritebatch, Rect, TextureColor, layer);
+                spritebatch.Draw(Texture, Rect, TextureColor, Layer(layer, -1), clip: Parent?.Rect);
             else if (FillColor != null)
-                ImageAsset.Blank.Draw(spritebatch, Rect, FillColor.Value, layer);
+                spritebatch.Draw(ImageAsset.Blank, Rect, FillColor.Value, Layer(layer, -1), clip: Parent?.Rect);
         }
         public void MoveElement(Element child, int newIndex)
         {

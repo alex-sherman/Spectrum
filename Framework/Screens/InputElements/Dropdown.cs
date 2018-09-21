@@ -17,7 +17,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public DropdownOptionSource<T> OptionSource = null;
         private ListOption<T> selected = null;
         private ListOption<T> childOption = new ListOption<T>();
-        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true };
+        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true, ZDetach = true };
         public int MaxHeight
         {
             get => optionContainer.Width.WrapContent ? 0 : optionContainer.Width.Flat;

@@ -24,6 +24,7 @@ namespace Spectrum.Framework.Graphics
     }
     public class GraphicsEngine
     {
+        public static RasterizerState Clip;
         private static GraphicsDevice device;
         public static float darkness = 1f;
         public static bool wireFrame = false;
@@ -59,6 +60,14 @@ namespace Spectrum.Framework.Graphics
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", BindingFlags.Instance | BindingFlags.NonPublic);
             device = SpectrumGame.Game.GraphicsDevice;
+
+            Clip = new RasterizerState()
+            {
+                ScissorTestEnable = true,
+                FillMode = wireFrame ? FillMode.WireFrame : FillMode.Solid,
+                MultiSampleAntiAlias = false,
+                CullMode = CullMode.None,
+            };
             lineEffect = new SpectrumEffect();
             lineVBuffer = VertexHelper.MakeVertexBuffer(new List<CommonTex>() { new CommonTex(Vector3.Zero), new CommonTex(Vector3.Forward) });
             lineIBuffer = VertexHelper.MakeIndexBuffer(new ushort[] { 0, 1 });
@@ -340,7 +349,7 @@ namespace Spectrum.Framework.Graphics
             {
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, null, PostProcessEffect.effect);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, device.RasterizerState, PostProcessEffect.effect);
                 spriteBatch.Draw(AATarget, new Rectangle(0, 0, target.Width, target.Height), Color.White);
                 spriteBatch.End();
             }

@@ -12,7 +12,10 @@ namespace Spectrum.Framework.Content
     public class ImageAsset
     {
         public static readonly ImageAsset Blank;
-        static ImageAsset() => Blank = new ImageAsset(ContentHelper.Blank);
+        static ImageAsset()
+        {
+            Blank = new ImageAsset(ContentHelper.Blank);
+        }
         public SvgDocument svg = null;
         private Texture2D texture = null;
         private Texture2D rasterized = null;
@@ -26,19 +29,21 @@ namespace Spectrum.Framework.Content
             System.Drawing.Bitmap bitmap = svg.Draw(width, height);
             rasterized = bitmap.GetTexture2DFromBitmap(SpectrumGame.Game.GraphicsDevice);
         }
-        public void Draw(SpriteBatch spriteBatch, Rectangle rect, Color color, float layer)
+        public Texture2D GetTexture(Rectangle rect)
         {
-            if (svg != null) {
+            if (svg != null)
+            {
                 if (rasterized == null || rasterized.Bounds.Width != rect.Width || rasterized.Bounds.Height != rect.Height)
                 {
                     Rasterize(rect.Width, rect.Height);
                 }
-                spriteBatch.Draw(rasterized, rect, color, layer);
+                return rasterized;
             }
-            else if(texture != null)
+            else if (texture != null)
             {
-                spriteBatch.Draw(texture, rect, color, layer);
+                return texture;
             }
+            return null;
         }
         public ImageAsset Clone()
         {

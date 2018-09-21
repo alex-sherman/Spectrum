@@ -55,7 +55,7 @@ namespace Spectrum.Framework.Screens.InputElements
         {
             base.Draw(time, spritebatch, layer);
             if (Text != null)
-                spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, layer);
+                spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, layer, Parent?.Clipped);
         }
     }
 }
