@@ -22,14 +22,39 @@ namespace Spectrum.Framework.Screens
     public class LinearLayoutManager : LayoutManager
     {
         public LinearLayoutType LayoutType;
+
+        public int ContentWidth(Element element)
+        {
+            switch (LayoutType)
+            {
+                case LinearLayoutType.Vertical:
+                    return layoutChildren(element).Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
+                case LinearLayoutType.Horizontal:
+                    return layoutChildren(element).Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
+            }
+            return 0;
+        }
+
+        public int ContentHeight(Element element)
+        {
+            switch (LayoutType)
+            {
+                case LinearLayoutType.Vertical:
+                    return layoutChildren(element).Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
+                case LinearLayoutType.Horizontal:
+                    return layoutChildren(element).Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
+            }
+            return 0;
+        }
+
         public LinearLayoutManager(LinearLayoutType type = LinearLayoutType.Vertical)
         {
             LayoutType = type;
         }
         public void OnLayout(Element element, Rectangle bounds)
         {
-            int currentX = element.ScrollX;
-            int currentY = element.ScrollY;
+            int currentX = -element.ScrollX;
+            int currentY = -element.ScrollY;
             Rectangle relativeBounds = bounds;
             relativeBounds.X = relativeBounds.Y = 0;
             foreach (var item in element.Children)
@@ -46,31 +71,14 @@ namespace Spectrum.Framework.Screens
                     item.Layout(new Rectangle(item.X, item.Y, item.MeasuredWidth, item.MeasuredHeight));
             }
         }
-        private void getContentDims(IEnumerable<Element> children, ref int contentWidth, ref int contentHeight)
-        {
-            switch (LayoutType)
-            {
-                case LinearLayoutType.Vertical:
-                    contentHeight = children.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
-                    contentWidth = children.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
-                    break;
-                case LinearLayoutType.Horizontal:
-                    contentHeight = children.Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
-                    contentWidth = children.Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
-                    break;
-            }
-        }
+        IEnumerable<Element> layoutChildren(Element element) => element.Children.Where(c => c.IsInline);
         public void OnMeasure(Element element, int width, int height)
         {
-            int contentWidth = 0;
-            int contentHeight = 0;
-            var layoutChildren = element.Children.Where(c => c.Positioning != PositionType.Relative && c.Positioning != PositionType.Absolute);
-            getContentDims(layoutChildren, ref contentWidth, ref contentHeight);
+            var layoutChildren = this.layoutChildren(element);
             foreach (var child in layoutChildren)
-                child.Measure(element.PreChildWidth(width, contentWidth), element.PreChildHeight(height, contentHeight));
-            getContentDims(layoutChildren, ref contentWidth, ref contentHeight);
-            element.MeasuredWidth = element.MeasureWidth(width, contentWidth);
-            element.MeasuredHeight = element.MeasureHeight(height, contentHeight);
+                child.Measure(element.PreChildWidth(width, element.ContentWidth), element.PreChildHeight(height, element.ContentHeight));
+            element.MeasuredWidth = element.MeasureWidth(width, element.ContentWidth);
+            element.MeasuredHeight = element.MeasureHeight(height, element.ContentHeight);
         }
     }
 }

@@ -51,11 +51,11 @@ namespace Spectrum.Framework.Screens.InputElements
             MeasuredHeight = _measuredHeight;
         }
 
-        public override void Draw(float time, SpriteBatch spritebatch, float layer)
+        public override void Draw(float time, SpriteBatch spritebatch)
         {
-            base.Draw(time, spritebatch, layer);
+            base.Draw(time, spritebatch);
             if (Text != null)
-                spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, layer, Parent?.Clipped);
+                spritebatch.DrawString(Font, Text, new Vector2(Rect.X, Rect.Y), FontColor, LayerDepth, Parent?.Clipped);
         }
     }
 }

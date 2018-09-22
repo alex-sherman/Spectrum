@@ -215,7 +215,7 @@ namespace Spectrum.Framework.Screens
             {
                 input.ConsumeInput(new KeyBind(-1), false);
                 input.ConsumeInput(new KeyBind(-2), false);
-                ScrollY += input.MouseScrollY / 10;
+                ScrollY = Math.Max(0, Math.Min(ContentHeight - Rect.Height, ScrollY - input.MouseScrollY / 10));
             }
             foreach (var inputHandler in inputHandlers)
             {
@@ -265,7 +265,9 @@ namespace Spectrum.Framework.Screens
         public bool ZDetach;
         public int Z;
         const float DZ = 1e-6f;
-        public float Layer(float layer, int z) => layer - z * DZ;
+        public float LayerDepth = 0;
+        public float Layer(int z, float? layer = null) => Math.Max((layer ?? LayerDepth) - z * DZ, 0);
+        protected float MaxChildLayerDepth => Children.Select(c => c.MaxChildLayerDepth).DefaultIfEmpty(LayerDepth).Min();
         /// <summary>
         /// A bounding rectangle with a relative offset that accounts for padding from the parent but is not necessarily relative to the parent
         /// </summary>
@@ -281,7 +283,7 @@ namespace Spectrum.Framework.Screens
 
         public bool MouseInside(InputState input)
         {
-            return Clipped.Contains(input.MousePosition.X, input.MousePosition.Y);
+            return Rect.Clip(Clipped).Contains(input.MousePosition.X, input.MousePosition.Y);
         }
 
         public virtual void Update(float gameTime)
@@ -294,14 +296,18 @@ namespace Spectrum.Framework.Screens
             Width.Measure(parentWidth, contentWidth + Padding.WidthTotal(parentWidth)) + Margin.WidthTotal(parentWidth);
         public int MeasureHeight(int parentHeight, int contentHeight) =>
             Height.Measure(parentHeight, contentHeight + Padding.HeightTotal(parentHeight)) + Margin.HeightTotal(parentHeight);
-        private int MaxChildWidth => Children.Where(c => c.IsInline).Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max();
-        private int MaxChildHeight => Children.Where(c => c.IsInline).Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max();
 
         // Calculate the dims to pass to a child before considering margin
         public int PreChildWidth(int parentWidth, int contentWidth = 0) =>
             Math.Max(0, Width.Measure(parentWidth, contentWidth + Padding.WidthTotal(parentWidth)) - Padding.WidthTotal(parentWidth));
         public int PreChildHeight(int parentHeight, int contentHeight = 0) =>
             Math.Max(0, Height.Measure(parentHeight, contentHeight + Padding.HeightTotal(parentHeight)) - Padding.HeightTotal(parentHeight));
+
+        public virtual int ContentWidth =>
+            LayoutManager == null ? Children.Where(c => c.IsInline).Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Sum() : LayoutManager.ContentWidth(this);
+
+        public virtual int ContentHeight =>
+            LayoutManager == null ? Children.Where(c => c.IsInline).Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max() : LayoutManager.ContentHeight(this);
 
         public void ClearMeasure()
         {
@@ -314,8 +320,8 @@ namespace Spectrum.Framework.Screens
         }
         public virtual void OnMeasure(int width, int height)
         {
-            MeasuredWidth = MeasureWidth(width, MaxChildWidth);
-            MeasuredHeight = MeasureHeight(height, MaxChildHeight);
+            MeasuredWidth = MeasureWidth(width, ContentWidth);
+            MeasuredHeight = MeasureHeight(height, ContentHeight);
         }
         public virtual void Measure(int parentWidth, int parentHeight)
         {
@@ -331,14 +337,15 @@ namespace Spectrum.Framework.Screens
             {
                 foreach (var child in Children)
                 {
-                    child.Measure(PreChildWidth(parentWidth, Children.Select(c => c.MeasuredWidth).DefaultIfEmpty(0).Max()),
-                        PreChildHeight(parentHeight, Children.Select(c => c.MeasuredHeight).DefaultIfEmpty(0).Max()));
+                    child.Measure(PreChildWidth(parentWidth, ContentWidth),
+                        PreChildHeight(parentHeight, ContentHeight));
                 }
                 OnMeasure(parentWidth, parentHeight);
             }
         }
         public virtual void Layout(Rectangle bounds)
         {
+            LayerDepth = 0;
             if (!Display)
                 return;
             // Accounts for Margin
@@ -358,9 +365,9 @@ namespace Spectrum.Framework.Screens
                 Height = Math.Max(0, Bounds.Height - Padding.HeightTotal(Parent?.Rect.Height ?? 0)),
             };
             if (ZDetach || Parent == null)
-                Clipped = Rect;
+                Clipped = Bounds;
             else
-                Clipped = Rect.Clip(Parent.Clipped);
+                Clipped = Bounds.Clip(Parent.Clipped);
             if (LayoutManager != null)
                 LayoutManager.OnLayout(this, Rect);
             else
@@ -397,17 +404,23 @@ namespace Spectrum.Framework.Screens
             }
         }
 
-        public virtual void Draw(float gameTime, SpriteBatch spritebatch, float layer)
+        public virtual void Draw(float gameTime, SpriteBatch spritebatch)
         {
             if (Background != null)
-                spritebatch.Draw(Background, Bounds, BackgroundColor ?? Color.White, Layer(layer, -2), clip: Parent?.Rect);
+                spritebatch.Draw(Background, Bounds, BackgroundColor ?? Color.White, Layer(-2), clip: Clipped);
             else if (BackgroundColor != null)
-                spritebatch.Draw(ImageAsset.Blank, Bounds, BackgroundColor.Value, Layer(layer, -2), clip: Parent?.Rect);
+                spritebatch.Draw(ImageAsset.Blank, Bounds, BackgroundColor.Value, Layer(-2), clip: Clipped);
 
             if (Texture != null)
-                spritebatch.Draw(Texture, Rect, TextureColor, Layer(layer, -1), clip: Parent?.Rect);
+                spritebatch.Draw(Texture, Rect, TextureColor, Layer(-1), clip: Parent?.Rect);
             else if (FillColor != null)
-                spritebatch.Draw(ImageAsset.Blank, Rect, FillColor.Value, Layer(layer, -1), clip: Parent?.Rect);
+                spritebatch.Draw(ImageAsset.Blank, Rect, FillColor.Value, Layer(-1), clip: Clipped);
+            if(AllowScrollY && ContentHeight > Rect.Height)
+            {
+                var sbX = Rect.Top + (float)ScrollY * Rect.Height / ContentHeight;
+                var sbH = (float)Rect.Height * Rect.Height / ContentHeight;
+                spritebatch.Draw(ImageAsset.Blank, new Rectangle(Rect.Right - 3, (int)sbX, 3, (int)sbH), Color.Black, Layer(10, MaxChildLayerDepth), clip: Clipped);
+            }
         }
         public void MoveElement(Element child, int newIndex)
         {

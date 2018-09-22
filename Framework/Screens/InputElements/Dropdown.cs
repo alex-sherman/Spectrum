@@ -8,20 +8,17 @@ using System.Text;
 
 namespace Spectrum.Framework.Screens.InputElements
 {
-
-    public delegate IEnumerable<ListOption<T>> DropdownOptionSource<T>();
-
     public class Dropdown<T> : InputElement
     {
         public event Action<ListOption<T>> OnSelectedChanged;
-        public DropdownOptionSource<T> OptionSource = null;
+        public Func<IEnumerable<ListOption<T>>> OptionSource = null;
         private ListOption<T> selected = null;
         private ListOption<T> childOption = new ListOption<T>();
-        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true, ZDetach = true };
+        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true, ZDetach = true, Display = false };
         public int MaxHeight
         {
-            get => optionContainer.Width.WrapContent ? 0 : optionContainer.Width.Flat;
-            set => optionContainer.Width = new ElementSize(value, wrapContent: value == 0);
+            get => optionContainer.Height.WrapContent ? 0 : optionContainer.Height.Flat;
+            set => optionContainer.Height = new ElementSize(value, wrapContent: value == 0);
         }
         public T Selected
         {
@@ -40,24 +37,30 @@ namespace Spectrum.Framework.Screens.InputElements
                 }
             }
         }
+        public override void Layout(Rectangle bounds)
+        {
+            optionContainer.Y = Rect.Height;
+            base.Layout(bounds);
+        }
+        public override void Draw(float gameTime, SpriteBatch spritebatch)
+        {
+            base.Draw(gameTime, spritebatch);
+        }
         public Dropdown(params ListOption<T>[] options)
         {
-            AddElement(new TextElement("+") { Positioning = PositionType.Relative });
+            AddElement(new TextElement("+"));
             AddElement(optionContainer);
             AddElement(childOption);
             SetOptions(options.ToList());
             OnClick += Dropdown_OnClick;
             Width = new ElementSize { Flat = 100, WrapContent = true };
         }
+        public override int ContentWidth => Math.Max(optionContainer.ContentWidth, base.ContentWidth);
 
-        void Dropdown_OnClick(InputElement clicked)
-        {
-            if (OptionSource != null)
-            {
-                SetOptions(OptionSource());
-            }
-            Expanded = !Expanded;
-        }
+        void Dropdown_OnClick(InputElement clicked) => Expanded ^= true;
+
+        public void RefreshOptions() => SetOptions(OptionSource?.Invoke());
+
         public void ClearOptions()
         {
             foreach (var option in optionContainer.Children.ToList())
@@ -68,10 +71,9 @@ namespace Spectrum.Framework.Screens.InputElements
         public void SetOptions(IEnumerable<ListOption<T>> options)
         {
             ClearOptions();
-            foreach (var option in options)
-            {
-                AddOption(option);
-            }
+            if (options != null)
+                foreach (var option in options)
+                    AddOption(option);
         }
         public void AddOption(ListOption<T> option)
         {

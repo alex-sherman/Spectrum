@@ -22,6 +22,34 @@ namespace Spectrum.Framework.Input
             return currentValue >= Enter || (lastPressed && currentValue > Exit);
         }
     }
+    public struct VRAxisSet
+    {
+        public Vector2 Axis0;
+        public Vector2 Axis1;
+        public Vector2 Axis2;
+        public Vector2 this[int i]
+        {
+            get
+            {
+                switch (i)
+                {
+                    case 0: return Axis0;
+                    case 1: return Axis1;
+                    case 2: return Axis2;
+                    default: return Vector2.Zero;
+                }
+            }
+        }
+        public void From(VRControllerState_t state)
+        {
+            Axis0.X = state.rAxis0.x;
+            Axis0.Y = state.rAxis0.y;
+            Axis1.X = state.rAxis1.x;
+            Axis1.Y = state.rAxis1.y;
+            Axis2.X = state.rAxis2.x;
+            Axis2.Y = state.rAxis2.y;
+        }
+    }
     public struct VRController
     {
         public static Dictionary<VRButton, Hysteresis> ButtonHysteresis = new Dictionary<VRButton, Hysteresis>();
@@ -29,7 +57,7 @@ namespace Spectrum.Framework.Input
         public ulong PressedButtons;
         public ulong TouchedButtons;
         public VRControllerState_t State;
-        public Vector2[] Axis;
+        public VRAxisSet Axis;
         public Vector2 Axis0Direction;
         public double AxisAngle(int axis) { return Math.Atan2(Axis[axis].Y, Axis[axis].X); }
         public Vector3 Direction { get => Vector3.Transform(Vector3.Forward, Rotation); }
@@ -44,7 +72,7 @@ namespace Spectrum.Framework.Input
             PressedButtons = 0;
             TouchedButtons = 0;
             State = new VRControllerState_t();
-            Axis = new Vector2[5];
+            Axis = new VRAxisSet();
             Axis0Direction = Vector2.Zero;
             Position = PositionDelta = Vector3.Zero;
             Rotation = RotationDelta = Quaternion.Identity;
@@ -60,12 +88,7 @@ namespace Spectrum.Framework.Input
             foreach (var hysteresis in ButtonHysteresis)
                 SetFlagRaw(ref PressedButtons, hysteresis.Key, hysteresis.Value.IsPressed(this, CheckFlagRaw(lastPressed, hysteresis.Key)));
             TouchedButtons = State.ulButtonTouched;
-            Axis[0].X = State.rAxis0.x;
-            Axis[0].Y = State.rAxis0.y;
-            Axis[1].X = State.rAxis1.x;
-            Axis[1].Y = State.rAxis1.y;
-            Axis[2].X = State.rAxis2.x;
-            Axis[2].Y = State.rAxis2.y;
+            Axis.From(State);
             Axis0Direction = Axis[0];
             Axis0Direction.Normalize();
             var rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();

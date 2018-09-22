@@ -11,5 +11,7 @@ namespace Spectrum.Framework.Screens
     {
         void OnMeasure(Element element, int width, int height);
         void OnLayout(Element element, Rectangle bounds);
+        int ContentWidth(Element element);
+        int ContentHeight(Element element);
     }
 }

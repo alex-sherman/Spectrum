@@ -76,10 +76,10 @@ namespace Spectrum.Framework.Screens.InputElements
             MeasuredWidth = MeasureWidth(width, (int)Font.MeasureString(text).X);
             MeasuredHeight = MeasureHeight(height, (int)Math.Max(Font.MeasureString("a").Y, Font.MeasureString(text).Y));
         }
-        public override void Draw(float time, SpriteBatch spritebatch, float layer)
+        public override void Draw(float time, SpriteBatch spritebatch)
         {
-            base.Draw(time, spritebatch, layer);
-            spritebatch.DrawString(Font, text, new Vector2(Rect.X, Rect.Y), FontColor, layer);
+            base.Draw(time, spritebatch);
+            spritebatch.DrawString(Font, text, new Vector2(Rect.X, Rect.Y), FontColor, LayerDepth);
         }
     }
 }

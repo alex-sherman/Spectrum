@@ -203,8 +203,8 @@ namespace Spectrum.Framework
         static Vector2 _texCoordTL, _texCoordBR;
         static bool Clip(ref Rectangle rect, Rectangle clip, ref Vector2 texTL, ref Vector2 texBR)
         {
-            if (clip.X > rect.Right || clip.Right < rect.X ||
-                clip.Y > rect.Bottom || clip.Bottom < rect.Y)
+            if (clip.X >= rect.Right || clip.Right <= rect.X ||
+                clip.Y >= rect.Bottom || clip.Bottom <= rect.Y)
                 return false;
             var minX = Math.Max(clip.X, rect.X);
             var minY = Math.Max(clip.Y, rect.Y);

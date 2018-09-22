@@ -90,12 +90,15 @@ namespace Spectrum.Framework.VR
             var camera = GraphicsEngine.Camera;
             int X = -1;
             int Y = -1;
+            int ScrollY = 0;
             if (camera != null)
             {
                 var _position = Cursor.Position;
                 var direction = Vector3.Transform(Vector3.Forward, Cursor.Orientation);
                 if (Manager.Physics.CollisionSystem.Raycast(this, _position, direction, out Vector3 normal, out float fraction))
                 {
+                    var controller = input.VRFromHand(Hand);
+                    var lastController = input.Last.VRFromHand(Hand);
                     buttons[0] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Trigger, Hand));
                     buttons[1] = input.IsKeyDown(new VRBinding(VRButton.SteamVR_Touchpad, Hand));
                     HitPosition = _position + direction * fraction;
@@ -103,6 +106,19 @@ namespace Spectrum.Framework.VR
                     Vector2 cursorPos = new Vector2(localPos.X / Size.X, -localPos.Y / Size.Y) + Vector2.One / 2;
                     X = (int)(cursorPos.X * RenderTargetSize.X);
                     Y = (int)(cursorPos.Y * RenderTargetSize.Y);
+                    var touched = new VRBinding(VRButton.SteamVR_Touchpad, Hand, VRPressType.Touched);
+                    if (controller.IsButtonPressed(touched) && lastController.IsButtonPressed(touched))
+                    {
+                        switch (SpecVR.HardwareType)
+                        {
+                            case VRHardwareType.Vive:
+                                ScrollY = (int)((controller.Axis[0].Y - lastController.Axis[0].Y) * 1200);
+                                break;
+                            default:
+                                ScrollY = (int)(controller.Axis[0].Y * 120);
+                                break;
+                        }
+                    }
                 }
                 else
                     HitPosition = null;
@@ -112,7 +128,7 @@ namespace Spectrum.Framework.VR
                 DX = 0,
                 DY = 0,
                 buttons = buttons,
-                ScrollY = 0,
+                ScrollY = -ScrollY,
                 X = X,
                 Y = Y,
             };

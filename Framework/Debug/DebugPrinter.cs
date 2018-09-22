@@ -122,9 +122,9 @@ namespace Spectrum.Framework
                 }
             }
         }
-        public override void Draw(float gameTime, SpriteBatch spritebatch, float layer)
+        public override void Draw(float gameTime, SpriteBatch spritebatch)
         {
-            base.Draw(gameTime, spritebatch, layer);
+            base.Draw(gameTime, spritebatch);
 
             if (SpectrumGame.Game.Debug)
             {
@@ -136,7 +136,7 @@ namespace Spectrum.Framework
                         strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            spritebatch.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, layer);
+                            spritebatch.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, LayerDepth);
                         }
                     }
                 }
@@ -144,10 +144,10 @@ namespace Spectrum.Framework
                 for (int i = 0; i < objects.Count; i++)
                 {
                     string toPrint = objects[i].Debug();
-                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, layer);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, LayerDepth);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
-                DrawTimes(2, spritebatch, gameTime, layer);
+                DrawTimes(2, spritebatch, gameTime, LayerDepth);
 
             }
         }

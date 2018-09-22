@@ -62,7 +62,11 @@ namespace Spectrum.Framework.Screens
             {
                 var child = children[i];
                 if (child.Display)
-                    child.Draw(gameTime, SpriteBatch, i * 1.0f / children.Count);
+                {
+                    // Reserve 0
+                    child.LayerDepth = (i + 1.0f) / (children.Count + 1);
+                    child.Draw(gameTime, SpriteBatch);
+                }
             }
             SpectrumGame.Game.GraphicsDevice.SetRenderTarget(Target);
             if (Target != null)

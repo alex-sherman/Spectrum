@@ -61,5 +61,15 @@ namespace Spectrum.Framework.Screens
             element.MeasuredHeight = element.MeasureHeight(height, rowHeights.DefaultIfEmpty(0).Sum());
             element.MeasuredWidth = element.MeasureWidth(width, colWidths.DefaultIfEmpty(0).Sum());
         }
+
+        public int ContentWidth(Element element)
+        {
+            return 0;
+        }
+
+        public int ContentHeight(Element element)
+        {
+            return 0;
+        }
     }
 }
