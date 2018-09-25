@@ -245,6 +245,7 @@
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
     <Compile Include="Framework\Graphics\Animation\Keyframe.cs" />
     <Compile Include="Framework\Graphics\Animation\SkinningData.cs" />
+    <Compile Include="Framework\Graphics\Batch3D.cs" />
     <Compile Include="Framework\Graphics\Billboard.cs" />
     <Compile Include="Framework\Graphics\Effects\SkinnedEffect.cs" />
     <Compile Include="Framework\Graphics\RenderTask.cs" />

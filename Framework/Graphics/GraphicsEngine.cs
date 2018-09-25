@@ -76,6 +76,7 @@ namespace Spectrum.Framework.Graphics
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
             if (SpecVR.Running)
                 GenerateVRTargets();
+            UpdateRasterizer();
         }
         static void GenerateVRTargets()
         {
@@ -178,15 +179,15 @@ namespace Spectrum.Framework.Graphics
             wireFrame = !wireFrame;
             UpdateRasterizer();
         }
+        static RasterizerState rasterizerState;
         public static void UpdateRasterizer()
         {
-            device.RasterizerState = new RasterizerState()
+            rasterizerState = new RasterizerState()
             {
                 FillMode = wireFrame ? FillMode.WireFrame : FillMode.Solid,
                 MultiSampleAntiAlias = false,
                 CullMode = CullMode.None,
             };
-            device.BlendState = BlendState.AlphaBlend;
         }
         public static void Render(PrimitiveType primType, VertexBuffer VBuffer, IndexBuffer IBuffer, DynamicVertexBuffer instanceBuffer)
         {
@@ -304,7 +305,8 @@ namespace Spectrum.Framework.Graphics
             device.DepthStencilState = DepthStencilState.Default;
             // Disables frame rate limiting
             device.PresentationParameters.PresentationInterval = PresentInterval.Immediate;
-            UpdateRasterizer();
+            device.RasterizerState = rasterizerState;
+            device.BlendState = BlendState.AlphaBlend;
             SpectrumEffect.CameraPos = camera.Position;
         }
 
@@ -349,7 +351,7 @@ namespace Spectrum.Framework.Graphics
             {
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, device.RasterizerState, PostProcessEffect.effect);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, RasterizerState.CullNone, PostProcessEffect.effect);
                 spriteBatch.Draw(AATarget, new Rectangle(0, 0, target.Width, target.Height), Color.White);
                 spriteBatch.End();
             }

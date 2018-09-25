@@ -187,14 +187,14 @@ namespace Spectrum.Framework.Entities
             // TODO: Support disable instance here
             if (FixedRenderKeys != null)
                 UnregisterDraws();
-            FixedRenderKeys = Model?.MeshParts.Values.Select(part => Manager.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
+            FixedRenderKeys = Model?.MeshParts.Values.Select(part => Manager.Batch.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
             /*, disableInstancing: DisableInstancing);*/).ToList();
         }
         public virtual void UnregisterDraws()
         {
             if (FixedRenderKeys != null)
                 foreach (var renderKey in FixedRenderKeys)
-                    Manager.UnregisterDraw(renderKey);
+                    Manager.Batch.UnregisterDraw(renderKey);
             FixedRenderKeys = null;
         }
         public List<RenderCallKey> FixedRenderKeys = null;
@@ -333,7 +333,7 @@ namespace Spectrum.Framework.Entities
             {
                 foreach (var part in Model)
                 {
-                    Manager.DrawPart(part, World, Material, disableDepthBuffer: DisableDepthBuffer, disableInstancing: DisableInstancing);
+                    Manager.Batch.DrawPart(part, World, Material, disableDepthBuffer: DisableDepthBuffer, disableInstancing: DisableInstancing);
                 }
             }
         }
@@ -353,11 +353,11 @@ namespace Spectrum.Framework.Entities
                 Shape.GetBoundingBox(ref orientationMat, out boundingBox);
                 Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
                 Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
-                Manager.DrawJBBox(boundingBox, Color.Black);
+                Manager.Batch.DrawJBBox(boundingBox, Color.Black);
                 //GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
                 if (!IsStatic)
                 {
-                    Manager.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
+                    Manager.Batch.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
                     foreach (var arbiter in arbiters.Where(arb => !arb.Body1.NoCollide && !arb.Body2.NoCollide))
                     {
                         foreach (var contact in arbiter.ContactList)
@@ -366,10 +366,10 @@ namespace Spectrum.Framework.Entities
                             var otherPosition = contact.body1 == this ? contact.Position2 : contact.Position1;
                             //GraphicsEngine.DrawCircle(myPosition, 3, Color.Yellow, SpectrumGame.Game.Root.SpriteBatch);
                             //GraphicsEngine.DrawCircle(otherPosition, 3, Color.HotPink, SpectrumGame.Game.Root.SpriteBatch);
-                            Manager.DrawLine(myPosition, myPosition - contact.normal, Color.Orange);
-                            Manager.DrawLine(myPosition, myPosition - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
-                            Manager.DrawLine(myPosition, myPosition + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
-                            Manager.DrawLine(myPosition, myPosition + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);
+                            Manager.Batch.DrawLine(myPosition, myPosition - contact.normal, Color.Orange);
+                            Manager.Batch.DrawLine(myPosition, myPosition - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
+                            Manager.Batch.DrawLine(myPosition, myPosition + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
+                            Manager.Batch.DrawLine(myPosition, myPosition + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);
                         }
                     }
                 }

@@ -67,13 +67,13 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))
                 {
-                    var renderGroups = Manager.GetRenderTasks(gameTime);
+                    var renderGroups = Manager.Batch.GetRenderTasks(gameTime);
                     if (SpecVR.Running)
                         GraphicsEngine.RenderVRScene(Camera, renderGroups, RenderTarget);
                     else
                         GraphicsEngine.RenderScene(Camera, renderGroups, RenderTarget);
                     spriteBatch.Draw(RenderTarget, Rect, Color.White, LayerDepth);
-                    Manager.ClearRenderTasks();
+                    Manager.Batch.ClearRenderTasks();
                 }
             }
         }

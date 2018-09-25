@@ -81,7 +81,7 @@ namespace Spectrum.Framework.VR
             if (Cursor != null && HitPosition.HasValue)
             {
                 var basePosition = Vector3.Transform(Cursor.Position, CameraTransform);
-                Manager.DrawLine(basePosition, Vector3.Transform(HitPosition.Value, CameraTransform), Color.Black);
+                Manager.Batch.DrawLine(basePosition, Vector3.Transform(HitPosition.Value, CameraTransform), Color.Black);
             }
         }
         public CursorState GetCursorState(InputState input)

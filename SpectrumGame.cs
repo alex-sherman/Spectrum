@@ -63,7 +63,6 @@ namespace Spectrum
         #endregion
 
         public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
-        GraphicsDeviceManager graphics;
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }
         public RootElement Root { get; private set; }
@@ -86,14 +85,9 @@ namespace Spectrum
             ID = new NetID(guid ?? Guid.NewGuid());
 #endif
             Game = this;
-            InputLayout.Init();
+            Graphics = new GraphicsDeviceManager(this);
             MP = new MultiplayerService(ID, nick);
-            EntityManager = new EntityManager(MP);
-            graphics = new GraphicsDeviceManager(this);
-            AudioManager.Init();
-            Window.AllowUserResizing = true;
             WindowForm = (Form)Form.FromHandle(Window.Handle);
-            //WindowForm.FormBorderStyle = FormBorderStyle.None;
             IsFixedTimeStep = false;
         }
 
@@ -101,9 +95,9 @@ namespace Spectrum
         {
             byte[] buffer = new byte[32];
             stream.Read(buffer, 0, 4);
-            graphics.PreferredBackBufferWidth = BitConverter.ToInt32(buffer, 0);
+            Graphics.PreferredBackBufferWidth = BitConverter.ToInt32(buffer, 0);
             stream.Read(buffer, 0, 4);
-            graphics.PreferredBackBufferHeight = BitConverter.ToInt32(buffer, 0);
+            Graphics.PreferredBackBufferHeight = BitConverter.ToInt32(buffer, 0);
 
             stream.Read(buffer, 0, 4);
             Point newP;
@@ -118,18 +112,18 @@ namespace Spectrum
             stream.Read(buffer, 0, 1);
             if (BitConverter.ToBoolean(buffer, 0))
             {
-                graphics.IsFullScreen = true;
+                Graphics.IsFullScreen = true;
             }
 
-            graphics.ApplyChanges();
+            Graphics.ApplyChanges();
             stream.Close();
         }
         private void SaveSettings(FileStream stream)
         {
             byte[] buffer;
-            buffer = BitConverter.GetBytes(graphics.PreferredBackBufferWidth);
+            buffer = BitConverter.GetBytes(Graphics.PreferredBackBufferWidth);
             stream.Write(buffer, 0, 4);
-            buffer = BitConverter.GetBytes(graphics.PreferredBackBufferHeight);
+            buffer = BitConverter.GetBytes(Graphics.PreferredBackBufferHeight);
             stream.Write(buffer, 0, 4);
             buffer = BitConverter.GetBytes(WindowLocation.X);
             stream.Write(buffer, 0, 4);
@@ -137,7 +131,7 @@ namespace Spectrum
             stream.Write(buffer, 0, 4);
             buffer = BitConverter.GetBytes(WindowMaximized);
             stream.Write(buffer, 0, 1);
-            buffer = BitConverter.GetBytes(graphics.IsFullScreen);
+            buffer = BitConverter.GetBytes(Graphics.IsFullScreen);
             stream.Write(buffer, 0, 1);
             stream.Close();
         }
@@ -163,10 +157,18 @@ namespace Spectrum
             }
         }
 
+        protected override void Initialize()
+        {
+            base.Initialize();
+            InputLayout.Init();
+            EntityManager = new EntityManager(MP);
+            AudioManager.Init();
+            Window.AllowUserResizing = true;
+        }
         protected override void LoadContent()
         {
             base.LoadContent();
-            GraphicsDeviceManager.GraphicsProfile = GraphicsProfile.HiDef;
+            Graphics.GraphicsProfile = GraphicsProfile.HiDef;
             string path = "save.dat";
             if (!File.Exists(path))
             {
@@ -209,12 +211,12 @@ namespace Spectrum
                 SteamAPI.RunCallbacks();
                 SteamUtils.RunFrame();
             }
-            if (graphics.PreferredBackBufferHeight != WindowForm.ClientRectangle.Height || graphics.PreferredBackBufferWidth != WindowForm.ClientRectangle.Width)
+            if (Graphics.PreferredBackBufferHeight != WindowForm.ClientRectangle.Height || Graphics.PreferredBackBufferWidth != WindowForm.ClientRectangle.Width)
             {
-                graphics.PreferredBackBufferHeight = WindowForm.ClientRectangle.Height;
-                graphics.PreferredBackBufferWidth = WindowForm.ClientRectangle.Width;
-                graphics.ApplyChanges();
-                if (OnScreenResize != null && graphics.GraphicsDevice.Viewport.Height > 0 && graphics.GraphicsDevice.Viewport.Width > 0)
+                Graphics.PreferredBackBufferHeight = WindowForm.ClientRectangle.Height;
+                Graphics.PreferredBackBufferWidth = WindowForm.ClientRectangle.Width;
+                Graphics.ApplyChanges();
+                if (OnScreenResize != null && Graphics.GraphicsDevice.Viewport.Height > 0 && Graphics.GraphicsDevice.Viewport.Width > 0)
                 {
                     OnScreenResize(this, EventArgs.Empty);
                 }
@@ -240,10 +242,9 @@ namespace Spectrum
                     SpecVR.Update();
             }
         }
-        public GraphicsDeviceManager GraphicsDeviceManager
-        {
-            get { return graphics; }
-        }
+
+        public GraphicsDeviceManager Graphics { get; private set; }
+
         public void ShowMouse(bool resetPosition = true)
         {
             IsMouseVisible = true;

@@ -40,7 +40,7 @@ namespace Spectrum.Framework.Graphics
         }
         public void Draw(Matrix world)
         {
-            Manager.DrawPart(
+            Manager.Batch.DrawPart(
                 BillboardPart,
                 Matrix.CreateScale(Size.X, Size.Y, 0) * world,
                 Material,
