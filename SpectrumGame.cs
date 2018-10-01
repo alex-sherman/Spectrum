@@ -98,7 +98,7 @@ namespace Spectrum
             Graphics.PreferredBackBufferWidth = BitConverter.ToInt32(buffer, 0);
             stream.Read(buffer, 0, 4);
             Graphics.PreferredBackBufferHeight = BitConverter.ToInt32(buffer, 0);
-
+            WindowForm.ClientSize = new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight);
             stream.Read(buffer, 0, 4);
             Point newP;
             newP.X = BitConverter.ToInt32(buffer, 0);

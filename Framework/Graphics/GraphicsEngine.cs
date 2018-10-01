@@ -52,9 +52,6 @@ namespace Spectrum.Framework.Graphics
             get { return _msFactor; }
             set { _msFactor = value; if (Width != 0 && Height != 0) ResetOnResize(Width, Height); }
         }
-        public static VertexBuffer lineVBuffer;
-        public static IndexBuffer lineIBuffer;
-        public static SpectrumEffect lineEffect;
 
         public static void Initialize()
         {
@@ -68,9 +65,6 @@ namespace Spectrum.Framework.Graphics
                 MultiSampleAntiAlias = false,
                 CullMode = CullMode.None,
             };
-            lineEffect = new SpectrumEffect();
-            lineVBuffer = VertexHelper.MakeVertexBuffer(new List<CommonTex>() { new CommonTex(Vector3.Zero), new CommonTex(Vector3.Forward) });
-            lineIBuffer = VertexHelper.MakeIndexBuffer(new ushort[] { 0, 1 });
             Settings.Init(device);
             PostProcessEffect.Initialize();
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
@@ -357,7 +351,7 @@ namespace Spectrum.Framework.Graphics
             }
             mainRenderTimer?.Stop();
         }
-        static float vrRenderFraction = 0.25f;
+        static float vrRenderFraction = 0f;
         public static void RenderVRScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
         {
             BeginRender(camera);

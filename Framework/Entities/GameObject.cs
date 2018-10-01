@@ -182,13 +182,17 @@ namespace Spectrum.Framework.Entities
                 _useFixedRender = value;
             }
         }
+        public virtual IEnumerable<RenderCallKey> GetFixedRenderCalls()
+        {
+            return Model?.MeshParts.Values.Select(part => Manager.Batch.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
+               /*, disableInstancing: DisableInstancing);*/);
+        }
         public virtual void RegisterDraws()
         {
             // TODO: Support disable instance here
             if (FixedRenderKeys != null)
                 UnregisterDraws();
-            FixedRenderKeys = Model?.MeshParts.Values.Select(part => Manager.Batch.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
-            /*, disableInstancing: DisableInstancing);*/).ToList();
+            FixedRenderKeys = GetFixedRenderCalls().ToList();
         }
         public virtual void UnregisterDraws()
         {
@@ -197,7 +201,7 @@ namespace Spectrum.Framework.Entities
                     Manager.Batch.UnregisterDraw(renderKey);
             FixedRenderKeys = null;
         }
-        public List<RenderCallKey> FixedRenderKeys = null;
+        private List<RenderCallKey> FixedRenderKeys = null;
 
         /// <summary>
         /// The world matrix for the purposes of drawing the game object

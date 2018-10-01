@@ -91,12 +91,6 @@ namespace Spectrum.Framework.Graphics
         }
         public void DrawLine(Vector3 start, Vector3 end, Color color, float width = 0.1f)
         {
-            //var properties = new RenderProperties(PrimitiveType.LineStrip, GraphicsEngine.lineVBuffer, GraphicsEngine.lineIBuffer, GraphicsEngine.lineEffect);
-            //properties.Material = new MaterialData() { DiffuseColor = color };
-            //var diff = end - start;
-            //var World = Matrix.CreateScale(diff.Length()) * MatrixHelper.RotationFromDirection(diff) * Matrix.CreateTranslation(start);
-            ////dynamicNonBatched.Add(new RenderCall(properties, World, new MaterialData() { DiffuseColor = color }));
-            //UpdateRenderDict(properties, World, properties.Material, dynamicBatched);
             DrawPart(linePart, Matrix.CreateScale(width, width,
                 (end - start).Length()) * MatrixHelper.RotationFromDirection(end - start) * Matrix.CreateTranslation(start),
                 new MaterialData() { DiffuseColor = color });
