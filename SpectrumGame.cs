@@ -19,6 +19,7 @@ using Spectrum.Framework.Input;
 using Valve.VR;
 using Spectrum.Framework.VR;
 using Steamworks;
+using System.Threading.Tasks;
 
 namespace Spectrum
 {
@@ -223,9 +224,23 @@ namespace Spectrum
             }
             if (SpecVR.Running)
                 SpecVR.PollEvents();
+            GameTime += gameTime.DT();
+            while(timers.Any() && timers.First().Key <= GameTime)
+            {
+                timers.First().Value.SetResult(gameTime.DT());
+                timers.RemoveAt(0);
+            }
             InputState.Current.Update(gameTime.DT());
             Root.Update(gameTime.DT(), InputState.Current);
             base.Update(gameTime);
+        }
+        public double GameTime = 0;
+        SortedList<double, TaskCompletionSource<float>> timers = new SortedList<double, TaskCompletionSource<float>>();
+        public Task<float> Wait(float dt)
+        {
+            var tcs = new TaskCompletionSource<float>();
+            timers.Add(GameTime + dt, tcs);
+            return tcs.Task;
         }
         protected override void Draw(GameTime gameTime)
         {

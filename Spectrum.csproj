@@ -454,13 +454,6 @@
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
-  <ItemDefinitionGroup>
-    <CustomBuildStep>
-      <Command>makecab.exe $(MGFXCompile) $(TargetName).cab</Command>
-      <Outputs>$(TargetName).cab</Outputs>
-      <Inputs>$(TargetFileName)</Inputs>
-    </CustomBuildStep>
-  </ItemDefinitionGroup>
   <PropertyGroup>
     <CustomBuildAfterTargets>Compile</CustomBuildAfterTargets>
     <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
