@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="InitDataTests.cs" />
     <Compile Include="JSONTests.cs" />
+    <Compile Include="MathExtensionTests.cs" />
     <Compile Include="PhysicsTests.cs" />
     <Compile Include="SerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

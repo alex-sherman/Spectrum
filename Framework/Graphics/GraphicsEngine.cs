@@ -11,6 +11,7 @@ using System.Reflection;
 using Spectrum.Framework.VR;
 using Spectrum.Framework.Screens;
 using System.Threading.Tasks;
+using Spectrum.Framework.Utility;
 
 namespace Spectrum.Framework.Graphics
 {
@@ -351,7 +352,6 @@ namespace Spectrum.Framework.Graphics
             }
             mainRenderTimer?.Stop();
         }
-        static float vrRenderFraction = 0f;
         public static void RenderVRScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
         {
             BeginRender(camera);
@@ -365,11 +365,8 @@ namespace Spectrum.Framework.Graphics
             {
                 device.SetRenderTarget(target);
                 device.Clear(clearColor);
-                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, PostProcessEffect.effect);
-                var widthCut = (int)(VRTargetR.Width * vrRenderFraction);
-                var heightCut = (int)(VRTargetR.Height * vrRenderFraction);
-                spriteBatch.Draw(VRTargetR, new Rectangle(0, 0, target.Width, target.Height),
-                    new Rectangle(widthCut / 2, heightCut / 2, VRTargetR.Width - widthCut, VRTargetR.Height - heightCut), Color.White);
+                spriteBatch.Begin(0, BlendState.Opaque, SamplerState.LinearClamp, null, null, null);
+                spriteBatch.Draw(VRTargetR, VRTargetR.Bounds.FitTo(target.Bounds), Color.White, 0);
                 spriteBatch.End();
             }
             vrRenderTimer?.Stop();

@@ -369,6 +369,7 @@
     <Compile Include="Framework\Network\MultiplayerService.cs" />
     <Compile Include="Framework\Entities\GameObject.cs" />
     <Compile Include="Framework\Entities\EntityManager.cs" />
+    <Compile Include="Framework\Utility\RectangleExtensions.cs" />
     <Compile Include="Framework\Utility\SpriteBatchExtensions.cs" />
     <Compile Include="Framework\Utility\VectorExtensions.cs" />
     <Compile Include="Framework\VR\SpecVR.cs" />
