@@ -96,7 +96,7 @@ namespace Spectrum.Framework.Audio
                 {
                     voice.Stop();
                     State = AudioState.Stopped;
-                    SpectrumGame.Game.Wait(0).ContinueWith(dt =>
+                    SpecTime.Wait(0).ContinueWith(dt =>
                     {
                         OnTrackEnd?.Invoke();
                         if (Loop)

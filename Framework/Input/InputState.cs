@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Input
     public class InputState
     {
         public static float MouseSensitivity = 0.003f;
-        private static SpectrumMouse SpecMouse = new SpectrumMouse();
+        public static SpectrumMouse SpecMouse = new SpectrumMouse();
         public static InputState Current { get; private set; } = new InputState();
 
         public float DT;

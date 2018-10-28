@@ -17,6 +17,7 @@ namespace Spectrum.Framework.Input
         public float DY;
         public int ScrollX;
         public int ScrollY;
+        public CursorState() { X = Y = -1; buttons = new bool[16]; }
     }
 
     public class SpectrumMouse
