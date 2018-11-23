@@ -68,6 +68,7 @@ namespace Spectrum
         public MultiplayerService MP { get; set; }
         public RootElement Root { get; private set; }
         private Point mousePosition;
+        protected uint SteamAppID = 0;
         public static readonly bool UsingSteam =
 #if STEAM
             true;
@@ -165,6 +166,8 @@ namespace Spectrum
             EntityManager = new EntityManager(MP);
             AudioManager.Init();
             Window.AllowUserResizing = true;
+            if (UsingSteam)
+                SteamAPI.RestartAppIfNecessary((AppId_t)SteamAppID);
         }
         protected override void LoadContent()
         {

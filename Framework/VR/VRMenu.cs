@@ -122,7 +122,7 @@ namespace Spectrum.Framework.VR
                     Vector2 cursorPos = new Vector2(localPos.X / Size.X, -localPos.Y / Size.Y) + Vector2.One / 2;
                     cursorState.X = (int)(cursorPos.X * RenderTargetSize.X);
                     cursorState.Y = (int)(cursorPos.Y * RenderTargetSize.Y);
-                    FillCursorState(cursorState, input);
+                    (FillCursorState ?? fillCursorState)(cursorState, input);
                 }
                 else
                     HitPosition = null;
