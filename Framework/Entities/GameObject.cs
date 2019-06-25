@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spectrum.Framework;
-using Spectrum.Framework.Physics;
 using System.IO;
 using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Graphics;

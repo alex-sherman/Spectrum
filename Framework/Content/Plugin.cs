@@ -70,7 +70,7 @@ namespace Spectrum.Framework.Content
                 throw new FileNotFoundException("Invalid plugin, does not contain a DLL of the same name as the plugin directory");
             Assembly assembly = Assembly.LoadFile(Path.GetFullPath(dlls[0]));
 
-            ContentHelper content = new ContentHelper(new ContentManager(SpectrumGame.Game.Services, Path.Combine(pluginPath, "Content")));
+            ContentHelper content = new ContentHelper(new ContentManager(SpectrumGame.Game.Services, pluginPath));
 
             return CreatePlugin(plugin, content, assembly);
         }

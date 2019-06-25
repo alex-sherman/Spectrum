@@ -22,9 +22,9 @@ namespace Spectrum.Framework.Content
         public List<string> Directories = new List<string>() { "Content" };
         public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game.Content); } return single; } }
         static Texture2D blank;
-        public static Texture2D Blank { get { if(blank == null) blank = Load<Texture2D>("blank"); return blank; } }
+        public static Texture2D Blank { get { if (blank == null) blank = Load<Texture2D>("blank"); return blank; } }
         static Texture2D missing;
-        public static Texture2D Missing { get { if(missing == null) missing = Load<Texture2D>("missing"); return missing; } }
+        public static Texture2D Missing { get { if (missing == null) missing = Load<Texture2D>("missing"); return missing; } }
         public static Dictionary<Type, IContentParser> ContentParsers = new Dictionary<Type, IContentParser>()
             {
                 {typeof(Effect), new EffectParser()},
@@ -105,13 +105,14 @@ namespace Spectrum.Framework.Content
         {
             Type t = typeof(T);
             var path = name.Replace('/', '\\');
+            var root = Content.RootDirectory;
             if (ContentParsers.TryGetValue(t, out var parser))
             {
                 if (!usePrefix)
                     return (T)parser.Load(path, name, refreshCache);
                 foreach (var directory in Directories)
                 {
-                    T output = (T)parser.Load(Path.Combine(directory, parser.Prefix, path), name, refreshCache);
+                    T output = (T)parser.Load(Path.Combine(root, directory, parser.Prefix, path), name, refreshCache);
                     if (output != null)
                         return output;
                 }

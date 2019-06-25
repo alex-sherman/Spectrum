@@ -10,8 +10,7 @@ namespace Spectrum.Framework.Graphics
     public class Camera : ITransform
     {
         public Matrix Projection = Matrix.Identity;
-        public Vector3 Position;
-        Vector3 ITransform.Position => Position;
+        public virtual Vector3 Position { get; set; }
         public Quaternion Orientation;
         Quaternion ITransform.Orientation => Orientation;
         public Matrix Transform = Matrix.Identity;
