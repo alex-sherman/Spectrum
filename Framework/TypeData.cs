@@ -38,17 +38,8 @@ namespace Spectrum.Framework
         public List<string> ReplicatedMemebers = new List<string>();
         public List<string> ReplicatedMethods = new List<string>();
         public Type Type { get; private set; }
-        private IronPythonTypeWrapper pythonWrapper;
-        public TypeData(IronPythonTypeWrapper type)
-            : this(type.Type)
-        {
-            pythonWrapper = type;
-        }
         public object Instantiate(params object[] args)
         {
-            if (pythonWrapper != null)
-                return pythonWrapper.Activator();
-
             if (args == null) args = new object[0];
             Type[] types = new Type[args.Length];
             for (int i = 0; i < args.Length; i++)
