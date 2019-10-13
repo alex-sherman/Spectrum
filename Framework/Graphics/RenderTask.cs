@@ -79,17 +79,15 @@ namespace Spectrum.Framework.Graphics
         public HashSet<InstanceData> InstanceData = new HashSet<InstanceData>();
 
         public DynamicVertexBuffer InstanceBuffer;
-        public MaterialData Material;
 
         public RenderCall(RenderProperties key)
         {
             Properties = key;
         }
-        public RenderCall(RenderProperties key, Matrix world, MaterialData material)
+        public RenderCall(RenderProperties key, Matrix world)
             : this(key)
         {
-            Material = material;
-            InstanceData.Add(new InstanceData() { Material = material, World = world });
+            InstanceData.Add(new InstanceData() { Material = key.Material, World = world });
         }
         public void Squash()
         {

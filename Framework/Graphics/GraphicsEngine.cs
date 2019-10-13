@@ -243,7 +243,7 @@ namespace Spectrum.Framework.Graphics
                     effect.Projection = phase.Projection;
                     // TODO: Fix shadow map
                     effect.ShadowMap = null;
-                    MaterialData material = group.Material ?? MaterialData.Missing;
+                    MaterialData material = group.Properties.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
                     effect.Texture = material.DiffuseTexture;
                     effect.TextureMagFilter = material.DiffuseSampler.HasFlag(SamplerMode.Linear);

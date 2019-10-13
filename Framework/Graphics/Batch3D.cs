@@ -13,8 +13,8 @@ namespace Spectrum.Framework.Graphics
     using RenderDict = DefaultDict<RenderProperties, RenderCall>;
     public class Batch3D
     {
-        EntityManager Manger;
         static DrawablePart linePart;
+        public static Batch3D Current { get; set; }
         static Batch3D()
         {
             linePart = DrawablePart.From(new List<CommonTex>()
@@ -37,10 +37,6 @@ namespace Spectrum.Framework.Graphics
             });
             linePart.primType = PrimitiveType.TriangleList;
         }
-        public Batch3D(EntityManager manager)
-        {
-            Manger = manager;
-        }
         private RenderDict fixedBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private RenderDict dynamicBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private List<RenderCall> dynamicNonBatched = new List<RenderCall>();
@@ -49,7 +45,7 @@ namespace Spectrum.Framework.Graphics
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
             RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
-            var value = UpdateRenderDict(properties, world, material ?? part.material, fixedBatched);
+            var value = UpdateRenderDict(properties, world, fixedBatched);
             return new RenderCallKey(properties, value);
         }
         public bool UnregisterDraw(RenderCallKey key)
@@ -107,18 +103,16 @@ namespace Spectrum.Framework.Graphics
             bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)
         {
             RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
-            material = material ?? part.material;
             world = part.permanentTransform * part.transform * world;
             if (disableInstancing)
-                dynamicNonBatched.Add(new RenderCall(properties, world, material));
+                dynamicNonBatched.Add(new RenderCall(properties, world));
             else
-                UpdateRenderDict(properties, world, material, dynamicBatched);
+                UpdateRenderDict(properties, world, dynamicBatched);
         }
-        private InstanceData UpdateRenderDict(RenderProperties properties, Matrix world, MaterialData material, RenderDict dict)
+        private InstanceData UpdateRenderDict(RenderProperties properties, Matrix world, RenderDict dict)
         {
             var call = dict[properties];
             // TODO: This should get partially instanced?
-            call.Material = material;
             var output = new InstanceData() { World = world };
             call.InstanceData.Add(output);
             call.InstanceBuffer?.Dispose();
@@ -130,27 +124,10 @@ namespace Spectrum.Framework.Graphics
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
             RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
-            dynamicNonBatched.Add(new RenderCall(properties) { InstanceBuffer = instanceBuffer, Material = material ?? part.material });
+            dynamicNonBatched.Add(new RenderCall(properties) { InstanceBuffer = instanceBuffer });
         }
         public IEnumerable<RenderCall> GetRenderTasks(float gameTime)
         {
-            var drawables = Manger.Entities.DrawSorted.Where(e => e.DrawEnabled).ToList();
-            foreach (Entity drawable in drawables)
-            {
-                using (DebugTiming.Render.Time(drawable.GetType().Name))
-                {
-                    using (DebugTiming.Render.Time("Get Tasks"))
-                    {
-                        drawable.Draw(gameTime);
-                    }
-
-                    if (SpectrumGame.Game.DebugDraw)
-                    {
-                        if (drawable is GameObject gameObject)
-                            gameObject.DebugDraw(gameTime);
-                    }
-                }
-            }
             foreach (var group in dynamicBatched.Values)
                 group.Squash();
             foreach (var group in fixedBatched.Values.Where(group => group.InstanceBuffer == null))

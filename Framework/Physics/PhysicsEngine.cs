@@ -121,7 +121,6 @@ namespace Spectrum.Framework.Physics
         private int contactIterations = 10;
         private int smallIterations = 4;
         private float timestep = 0.0f;
-        public float Timestep { get; set; }
 
         private IslandManager islands = new IslandManager();
 
@@ -396,7 +395,7 @@ namespace Spectrum.Framework.Physics
         public enum DebugType
         {
             CollisionDetect, BuildIslands, HandleArbiter, UpdateContacts,
-            PreStep, DeactivateBodies, IntegrateForces, Integrate, PostStep, ClothUpdate, Num
+            DeactivateBodies, IntegrateForces, Integrate, ClothUpdate, Num
         }
 
         /// <summary>
@@ -435,10 +434,6 @@ namespace Spectrum.Framework.Physics
             currentLinearDampFactor = (float)Math.Pow(linearDamping, timestep);
 
             sw.Reset(); sw.Start();
-            foreach (GameObject body in Collidables) body.PreStep(timestep);
-            sw.Stop(); debugTimes[(int)DebugType.PreStep] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
             IntegrateForces();
             sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
 
@@ -461,17 +456,13 @@ namespace Spectrum.Framework.Physics
             sw.Reset(); sw.Start();
             CheckDeactivation();
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
-            foreach (GameObject body in Collidables) body.PostStep(timestep);
-            sw.Stop(); debugTimes[(int)DebugType.PostStep] = sw.Elapsed.TotalMilliseconds;
         }
 
         public void Update(float gameTime)
         {
             if (!Paused)
             {
-                timestep = Math.Min(1 / 30.0f, Timestep == 0 ? gameTime : Timestep);
+                timestep = Math.Min(1 / 30.0f, gameTime);
                 Step(timestep, true);
             }
         }

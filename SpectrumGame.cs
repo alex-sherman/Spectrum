@@ -163,7 +163,7 @@ namespace Spectrum
         {
             base.Initialize();
             InputLayout.Init();
-            EntityManager = new EntityManager(MP);
+            EntityManager = new EntityManager();
             AudioManager.Init();
             Window.AllowUserResizing = true;
             if (UsingSteam)

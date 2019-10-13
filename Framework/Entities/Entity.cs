@@ -18,8 +18,6 @@ namespace Spectrum.Framework.Entities
     public class Entity : IReplicatable
     {
         #region Replication
-        const int StateReplicationMessage = 0;
-        const int FunctionReplicationMessage = 1;
         private float replicateCounter = 0;
         public InitData InitData { get; set; }
         public ReplicationData ReplicationData { get; set; }
@@ -30,6 +28,7 @@ namespace Spectrum.Framework.Entities
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         #endregion
         public DefaultDict<string, object> Data = new DefaultDict<string, object>();
+        public List<Component> Components = new List<Component>();
         public T Get<T>(string key)
         {
             if (Data.TryGetValue(key, out object output) && output is T tOutput)
@@ -68,7 +67,9 @@ namespace Spectrum.Framework.Entities
 
         public virtual void Initialize()
         {
-            IsLocal = OwnerGuid == SpectrumGame.Game.MP.ID;
+            IsLocal = true;
+            // TODO: Fix
+            //IsLocal = OwnerGuid == SpectrumGame.Game.MP.ID;
             IsInitialized = true;
         }
 
@@ -113,8 +114,6 @@ namespace Spectrum.Framework.Entities
             }
         }
         public virtual void DisabledUpdate(float time) { }
-        [Obsolete]
-        public virtual void Draw(GameTime gameTime, SpriteBatch spriteBatch) { }
         public virtual void Draw(float gameTime) { }
         public virtual void TickTenth() { }
         public virtual void TickOne() { }

@@ -18,6 +18,7 @@ namespace Spectrum.Framework.Screens
     public class SceneScreen : Element
     {
         public EntityManager Manager = SpectrumGame.Game.EntityManager;
+        public Batch3D Batch = new Batch3D();
         public RenderTarget2D RenderTarget;
         public Camera Camera;
         private bool _captureMouse = false;
@@ -59,6 +60,13 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.ResetOnResize(bounds.Width, bounds.Height);
             }
         }
+        public override void Initialize()
+        {
+            Batch3D.Current = Batch;
+            base.Initialize();
+            // TODO: Remove batch3d calls from entity intialize
+            //Batch3D.Current = null;
+        }
         public override void Draw(float gameTime, SpriteBatch spriteBatch)
         {
             base.Draw(gameTime, spriteBatch);
@@ -67,13 +75,16 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))
                 {
-                    var renderGroups = Manager.Batch.GetRenderTasks(gameTime);
+                    Batch3D.Current = Batch;
+                    Manager.Draw(gameTime);
+                    var renderGroups = Batch3D.Current.GetRenderTasks(gameTime);
                     if (SpecVR.Running)
                         GraphicsEngine.RenderVRScene(Camera, renderGroups, RenderTarget);
                     else
                         GraphicsEngine.RenderScene(Camera, renderGroups, RenderTarget);
                     spriteBatch.Draw(RenderTarget, Rect, Color.White, LayerDepth);
-                    Manager.Batch.ClearRenderTasks();
+                    Batch3D.Current.ClearRenderTasks();
+                    Batch3D.Current = null;
                 }
             }
         }
@@ -85,8 +96,10 @@ namespace Spectrum.Framework.Screens
                 //TODO: Fix multiplayer update
                 //using (DebugTiming.Main.Time("MPCallback"))
                 //    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
+                Batch3D.Current = Batch;
                 Manager.Update(dt);
                 base.Update(dt);
+                Batch3D.Current = null;
             }
         }
 

@@ -315,7 +315,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <returns>Returns true if both are static or inactive.</returns>
         public bool CheckBothStaticOrInactive(GameObject entity1, GameObject entity2)
         {
-            return ((entity1.IsStatic && entity2.IsStatic) || (entity1.Shape ?? entity2.Shape) == null);
+            return entity1.IsStatic && entity2.IsStatic;
         }
 
         /// <summary>
@@ -326,6 +326,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <returns>Returns true if an intersection occours.</returns>
         public bool CheckBoundingBoxes(ICollidable entity1, ICollidable entity2)
         {
+            if (entity1.Shape == null || entity2.Shape == null) return false;
             JBBox box1 = entity1.BoundingBox;
             JBBox box2 = entity2.BoundingBox;
 

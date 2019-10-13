@@ -19,27 +19,22 @@ namespace Spectrum.Framework.Entities
     {
         public event Action<Entity> OnEntityAdded;
         public event Action<Entity> OnEntityRemoved;
-        public readonly Batch3D Batch;
         private DefaultDict<string, HashSet<Entity>> initDataLookup = new DefaultDict<string, HashSet<Entity>>(() => new HashSet<Entity>(), true);
         private float tickTenthTimer = 100;
         private float tickOneTimer = 1000;
         public EntityCollection Entities;
-        private MultiplayerService mpService;
         public readonly PhysicsEngine Physics;
         public bool Paused = false;
-        public EntityManager(MultiplayerService mpService)
+        public EntityManager()
         {
             Entities = new EntityCollection();
             Physics = new PhysicsEngine(new CollisionSystemPersistentSAP());
-            Batch = new Batch3D(this);
             OnEntityAdded += (entity) => { if (entity is GameObject go) Physics.AddBody(go); };
             OnEntityRemoved += (entity) =>
             {
                 if (entity is GameObject go)
                     Physics.RemoveBody(go);
             };
-            this.mpService = mpService;
-            RegisterCallbacks();
         }
         private void RegisterCallbacks()
         {
@@ -73,9 +68,9 @@ namespace Spectrum.Framework.Entities
                 );
             Handshake.RegisterHandshakeHandler(HandshakeStage.PartialResponse, entitySender);
             Handshake.RegisterHandshakeHandler(HandshakeStage.Completed, entitySender);
-            mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, (peer, message) => HandleEntityCreation(peer, message));
-            mpService.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
-            mpService.RegisterMessageCallback(FrameworkMessages.EntityReplication, HandleEntityReplication);
+            //mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, (peer, message) => HandleEntityCreation(peer, message));
+            //mpService.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
+            //mpService.RegisterMessageCallback(FrameworkMessages.EntityReplication, HandleEntityReplication);
         }
 
         #region Network Functions
@@ -86,7 +81,7 @@ namespace Spectrum.Framework.Entities
 
             NetMessage eData = new NetMessage();
             eData.Write(entity.InitData);
-            mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
+            //mpService.SendMessage(FrameworkMessages.EntityCreation, eData);
 
             SendEntityReplication(entity, peerDestination);
         }
@@ -104,7 +99,7 @@ namespace Spectrum.Framework.Entities
         {
             NetMessage message = new NetMessage();
             message.Write(entityID);
-            mpService.SendMessage(FrameworkMessages.ShowCreate, message, peerDestination);
+            //mpService.SendMessage(FrameworkMessages.ShowCreate, message, peerDestination);
         }
         public void HandleShowCreate(NetID peerGuid, NetMessage message)
         {
@@ -120,7 +115,7 @@ namespace Spectrum.Framework.Entities
             replicationMessage.Write(0);
             replicationMessage.Write(method);
             replicationMessage.Write(args.Select(obj => new Primitive(obj)).ToArray());
-            mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
+            //mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
         }
         public void SendEntityReplication(Entity entity, NetID peer)
         {
@@ -128,7 +123,7 @@ namespace Spectrum.Framework.Entities
             replicationMessage.Write(entity.ID);
             replicationMessage.Write(1);
             entity.ReplicationData?.WriteReplicationData(replicationMessage);
-            mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
+            //mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
         }
         public void HandleEntityReplication(NetID peerGuid, NetMessage message)
         {
@@ -157,6 +152,8 @@ namespace Spectrum.Framework.Entities
 
         public void Update(float gameTime)
         {
+            var fullUpdateables = Entities.UpdateSorted.Where(e => e.Enabled && e is IFullUpdateable).Cast<IFullUpdateable>().ToList();
+            var updateables = Entities.UpdateSorted.Where(e => e.Enabled).ToList();
             if (Paused) { return; }
             using (DebugTiming.Main.Time("Physics"))
                 Physics.Update(gameTime);
@@ -166,6 +163,7 @@ namespace Spectrum.Framework.Entities
 
             using (DebugTiming.Main.Time("Entity Update"))
             {
+                fullUpdateables.ForEach(e => e.PreStep(gameTime));
                 foreach (var updateable in Entities.UpdateSorted.ToList())
                 {
                     using (DebugTiming.Update.Time(updateable.GetType().Name))
@@ -173,15 +171,23 @@ namespace Spectrum.Framework.Entities
                         if (updateable.Enabled)
                         {
                             updateable.Update(gameTime);
-                            if (tickOneTimer >= 1)
+                            foreach (var comp in updateable.Components)
+                            {
+                                if(comp is IUpdateable compUpdateable)
+                                {
+                                    compUpdateable.Update(gameTime);
+                                }
+                            }
+                            if (tickOneTimer >= 1000)
                                 updateable.TickOne();
-                            if (tickTenthTimer >= 0.1)
+                            if (tickTenthTimer >= 100)
                                 updateable.TickTenth();
                         }
                         else
                             updateable.DisabledUpdate(gameTime);
                     }
                 }
+                fullUpdateables.ForEach(e => e.PostStep(gameTime));
                 foreach (var destroy in Entities.Destroying.ToList())
                 {
                     destroy.CallOnDestroy();
@@ -190,6 +196,26 @@ namespace Spectrum.Framework.Entities
             }
             if (tickOneTimer >= 1000) tickOneTimer = 0;
             if (tickTenthTimer >= 100) tickTenthTimer = 0;
+        }
+        public void Draw(float gameTime)
+        {
+            var drawables = Entities.DrawSorted.Where(e => e.DrawEnabled).ToList();
+            foreach (Entity drawable in drawables)
+            {
+                using (DebugTiming.Render.Time(drawable.GetType().Name))
+                {
+                    using (DebugTiming.Render.Time("Get Tasks"))
+                    {
+                        drawable.Draw(gameTime);
+                    }
+
+                    if (SpectrumGame.Game.DebugDraw)
+                    {
+                        if (drawable is GameObject gameObject)
+                            gameObject.DebugDraw(gameTime);
+                    }
+                }
+            }
         }
         public T Create<T>(params object[] args) where T : Entity
         {
@@ -221,11 +247,9 @@ namespace Spectrum.Framework.Entities
         /// <returns>An initialized</returns>
         public Entity Construct(InitData entityData)
         {
-            if (entityData.TypeData == null) { throw new ArgumentException(String.Format("Replication occured for a class {0} not found as a loadable type.", entityData.TypeName)); }
+            if (entityData.TypeData == null) { throw new ArgumentException(string.Format("Replication occured for a class {0} not found as a loadable type.", entityData.TypeName)); }
 
             entityData = entityData.Clone();
-            if (!entityData.Fields.ContainsKey("OwnerGuid"))
-                entityData.Set("OwnerGuid", mpService.ID);
             if (!entityData.Fields.ContainsKey("ID"))
                 entityData.Set("ID", Guid.NewGuid());
 
@@ -237,10 +261,8 @@ namespace Spectrum.Framework.Entities
             entity.Manager = this;
             Entities.Add(entity);
             entity.Initialize();
-            if (mpService.ID == entity.OwnerGuid)
-                SendEntityCreation(entity);
             OnEntityAdded?.Invoke(entity);
-            if (entity.InitData.Name != null)
+            if (entity.InitData?.Name != null)
                 initDataLookup[entity.InitData.Name].Add(entity);
             return entity;
         }
@@ -249,7 +271,7 @@ namespace Spectrum.Framework.Entities
             Entity removed = Entities.Remove(ID);
             if (removed == null) return null;
             OnEntityRemoved?.Invoke(removed);
-            if (removed.InitData.Name != null)
+            if (removed.InitData?.Name != null)
                 initDataLookup[removed.InitData.Name].Remove(removed);
             return removed;
         }
