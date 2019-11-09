@@ -105,12 +105,14 @@ namespace Spectrum.Framework.Screens
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
+            Batch3D.Current = Batch;
             bool output = base.HandleInput(otherTookInput, input);
             if (CaptureMouse)
             {
                 Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
                               SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
             }
+            Batch3D.Current = null;
             return output;
         }
     }
