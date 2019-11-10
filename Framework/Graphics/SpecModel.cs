@@ -22,6 +22,10 @@ namespace Spectrum.Framework.Graphics
 
         public Dictionary<string, DrawablePart> MeshParts { get; private set; }
         public Dictionary<string, MaterialData> Materials { get; private set; }
+        public static implicit operator SpecModel(string path)
+        {
+            return ContentHelper.Load<SpecModel>(path);
+        }
         public SpecModel()
         {
             Path = null;

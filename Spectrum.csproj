@@ -242,6 +242,7 @@
     <Compile Include="Framework\Entities\InitData.cs" />
     <Compile Include="Framework\Entities\Interpolator.cs" />
     <Compile Include="Framework\Entities\ReplicateAttribute.cs" />
+    <Compile Include="Framework\FunctionalExtensions.cs" />
     <Compile Include="Framework\SpecTime.cs" />
     <Compile Include="Framework\Graphics\Animation\AnimationClip.cs" />
     <Compile Include="Framework\Graphics\Animation\Bone.cs" />
