@@ -58,14 +58,11 @@ namespace Spectrum.Framework
             {
                 foreach (var entity in manager.FindByPrefab(prefab.Key))
                 {
-                    // Clear render properties so removing fields like Texture will work
-                    if (entity is GameObject gameObject)
-                    {
-                        gameObject.Material = null;
-                    }
-                    prefab.Value.Apply(entity);
+                    entity.InitData = prefab.Value;
                 }
             }
+            foreach (var entity in manager)
+                entity.Reload();
         }
 
         public static Assembly SpectrumAssembly => Assembly.GetExecutingAssembly();

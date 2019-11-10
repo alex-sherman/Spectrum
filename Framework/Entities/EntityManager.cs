@@ -171,13 +171,6 @@ namespace Spectrum.Framework.Entities
                         if (updateable.Enabled)
                         {
                             updateable.Update(gameTime);
-                            foreach (var comp in updateable.Components)
-                            {
-                                if(comp is IUpdateable compUpdateable)
-                                {
-                                    compUpdateable.Update(gameTime);
-                                }
-                            }
                             if (tickOneTimer >= 1000)
                                 updateable.TickOne();
                             if (tickTenthTimer >= 100)

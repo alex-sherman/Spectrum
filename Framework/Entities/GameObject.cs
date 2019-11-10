@@ -185,12 +185,21 @@ namespace Spectrum.Framework.Entities
             return Model?.MeshParts.Values.Select(part => Batch3D.Current.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
                /*, disableInstancing: DisableInstancing);*/);
         }
+        public override void Reload()
+        {
+            base.Reload();
+            if (UseFixedRender)
+            {
+                UnregisterDraws();
+                RegisterDraws();
+            }
+        }
         public virtual void RegisterDraws()
         {
             // TODO: Support disable instance here
             if (FixedRenderKeys != null)
                 UnregisterDraws();
-            FixedRenderKeys = GetFixedRenderCalls().ToList();
+            FixedRenderKeys = GetFixedRenderCalls()?.ToList();
         }
         public virtual void UnregisterDraws()
         {

@@ -73,6 +73,11 @@ namespace Spectrum.Framework.Entities
             IsInitialized = true;
         }
 
+        public virtual void Reload()
+        {
+            InitData.Apply(this);
+        }
+
         [Replicate]
         public virtual void Destroy()
         {
@@ -98,6 +103,13 @@ namespace Spectrum.Framework.Entities
 
         public virtual void Update(float dt)
         {
+            foreach (var comp in Components)
+            {
+                if (comp is IUpdateable compUpdateable)
+                {
+                    compUpdateable.Update(dt);
+                }
+            }
             if (AllowReplicate)
                 ReplicationData?.Interpolate(dt);
             if (CanReplicate)

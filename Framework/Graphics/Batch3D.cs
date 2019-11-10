@@ -13,8 +13,22 @@ namespace Spectrum.Framework.Graphics
     using RenderDict = DefaultDict<RenderProperties, RenderCall>;
     public class Batch3D
     {
+        private struct BatchTracker : IDisposable
+        {
+            public Batch3D Previous;
+            public void Dispose()
+            {
+                Current = Previous;
+            }
+        }
         static DrawablePart linePart;
-        public static Batch3D Current { get; set; }
+        public static Batch3D Current { get; private set; }
+        public IDisposable Apply()
+        {
+            var result = new BatchTracker() { Previous = Current };
+            Current = this;
+            return result;
+        }
         static Batch3D()
         {
             linePart = DrawablePart.From(new List<CommonTex>()

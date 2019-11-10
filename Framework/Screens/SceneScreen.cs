@@ -62,7 +62,6 @@ namespace Spectrum.Framework.Screens
         }
         public override void Initialize()
         {
-            Batch3D.Current = Batch;
             base.Initialize();
             // TODO: Remove batch3d calls from entity intialize
             //Batch3D.Current = null;
@@ -75,16 +74,17 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))
                 {
-                    Batch3D.Current = Batch;
-                    Manager.Draw(gameTime);
-                    var renderGroups = Batch3D.Current.GetRenderTasks(gameTime);
-                    if (SpecVR.Running)
-                        GraphicsEngine.RenderVRScene(Camera, renderGroups, RenderTarget);
-                    else
-                        GraphicsEngine.RenderScene(Camera, renderGroups, RenderTarget);
-                    spriteBatch.Draw(RenderTarget, Rect, Color.White, LayerDepth);
-                    Batch3D.Current.ClearRenderTasks();
-                    Batch3D.Current = null;
+                    using (Batch.Apply())
+                    {
+                        Manager.Draw(gameTime);
+                        var renderGroups = Batch3D.Current.GetRenderTasks(gameTime);
+                        if (SpecVR.Running)
+                            GraphicsEngine.RenderVRScene(Camera, renderGroups, RenderTarget);
+                        else
+                            GraphicsEngine.RenderScene(Camera, renderGroups, RenderTarget);
+                        spriteBatch.Draw(RenderTarget, Rect, Color.White, LayerDepth);
+                        Batch3D.Current.ClearRenderTasks();
+                    }
                 }
             }
         }
@@ -96,24 +96,26 @@ namespace Spectrum.Framework.Screens
                 //TODO: Fix multiplayer update
                 //using (DebugTiming.Main.Time("MPCallback"))
                 //    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
-                Batch3D.Current = Batch;
-                Manager.Update(dt);
-                base.Update(dt);
-                Batch3D.Current = null;
+                using (Batch.Apply())
+                {
+                    Manager.Update(dt);
+                    base.Update(dt);
+                }
             }
         }
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            Batch3D.Current = Batch;
-            bool output = base.HandleInput(otherTookInput, input);
-            if (CaptureMouse)
+            using (Batch.Apply())
             {
-                Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
-                              SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
+                bool output = base.HandleInput(otherTookInput, input);
+                if (CaptureMouse)
+                {
+                    Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
+                                  SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
+                }
+                return output;
             }
-            Batch3D.Current = null;
-            return output;
         }
     }
 }

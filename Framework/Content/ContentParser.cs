@@ -61,7 +61,7 @@ namespace Spectrum.Framework.Content
         }
         public void Clear()
         {
-            cachedData = new Dictionary<string, T>();
+            cachedData.Clear();
         }
 
         public IEnumerable<string> FindAll(string directory, string glob, bool recursive)
