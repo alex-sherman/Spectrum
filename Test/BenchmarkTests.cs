@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace SpectrumTest
             return $"{T * 1e6} us";
         }
     }
-    [TestClass]
+    [TestFixture]
     public class BenchmarkTests
     {
         public TimingResult Time(Action del, int n = 1_000, double t = 2)
@@ -37,7 +37,7 @@ namespace SpectrumTest
             s.Stop();
             return new TimingResult() { T = s.ElapsedTicks * 1.0 / Stopwatch.Frequency / n, N = n };
         }
-        [TestMethod]
+        [Test]
         public void LargeUpdateBatch()
         {
             var manager = new EntityManager();

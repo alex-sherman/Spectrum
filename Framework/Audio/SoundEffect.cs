@@ -21,8 +21,8 @@ namespace Spectrum.Framework.Audio
             WaveFormat = audioDecoder.WaveFormat;
             Samples = audioDecoder.GetSamples().Select(sample =>
             {
-                var output = new DataPointer(Utilities.AllocateMemory(sample.Size), sample.Size);
-                Utilities.CopyMemory(output.Pointer, sample.Pointer, sample.Size);
+                var output = new DataPointer(SharpDX.Utilities.AllocateMemory(sample.Size), sample.Size);
+                SharpDX.Utilities.CopyMemory(output.Pointer, sample.Pointer, sample.Size);
                 return output;
             }).ToList();
         }
@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Audio
         {
             if (Samples != null)
                 foreach (var sample in Samples)
-                    Utilities.FreeMemory(sample.Pointer);
+                    SharpDX.Utilities.FreeMemory(sample.Pointer);
 
         }
     }

@@ -89,7 +89,6 @@ namespace Spectrum.Framework.JSON
                 default:
                     throw new InvalidDataException(string.Format("Unexpected field type in prefab JSON {0}", token.Type.ToString()));
             }
-            return null;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

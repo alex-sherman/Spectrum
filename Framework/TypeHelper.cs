@@ -7,7 +7,6 @@ using System.Reflection;
 using System.IO;
 using Spectrum.Framework.Network;
 using Spectrum.Framework.Content;
-using IronPython.Runtime.Types;
 
 namespace Spectrum.Framework
 {

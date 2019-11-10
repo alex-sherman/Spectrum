@@ -1,5 +1,4 @@
-﻿using IronPython.Runtime.Types;
-using Spectrum.Framework.Content;
+﻿using Spectrum.Framework.Content;
 using Spectrum.Framework.Entities;
 using System;
 using System.Collections.Generic;

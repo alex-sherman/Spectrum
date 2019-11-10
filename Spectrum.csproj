@@ -1,152 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Spectrum</RootNamespace>
-    <AssemblyName>Spectrum</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>net46</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\x86\Debug</OutputPath>
-    <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\x86\Release</OutputPath>
-    <DefineConstants>TRACE;WINDOWS</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <NoStdLib>true</NoStdLib>
-    <UseVSHostingProcess>false</UseVSHostingProcess>
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestCertificateThumbprint>F60950CB6273709E4B4DC7354D68A68C1C362F80</ManifestCertificateThumbprint>
-  </PropertyGroup>
-  <PropertyGroup>
-    <ManifestKeyFile>Spectrum_TemporaryKey.pfx</ManifestKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignManifests>false</SignManifests>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
-  </PropertyGroup>
-  <PropertyGroup />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Steam-Debug|x86'">
-    <OutputPath>bin\x86\Steam-Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;STEAM;STEAMWORKS_WIN</DefineConstants>
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>full</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\Release\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Steam-Debug|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\Steam-Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Steam-Release|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x86\Steam-Release\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;STEAM;STEAMWORKS_WIN</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Steam-Release|AnyCPU'">
-    <OutputPath>bin\Steam-Release\</OutputPath>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Optimize>true</Optimize>
-    <DefineConstants>STEAM</DefineConstants>
-  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Test\**" />
+    <EmbeddedResource Remove="Test\**" />
+    <None Remove="Test\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Spectrum.v11.suo" />
+    <None Remove="SpectrumTest.v12.suo" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="BouncyCastle.Crypto">
       <HintPath>Dependencies\BouncyCastle.Crypto.dll</HintPath>
-    </Reference>
-    <Reference Include="IronPython, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="IronPython.Modules, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.Modules.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="IronPython.SQLite, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.SQLite.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="IronPython.Wpf, Version=2.7.7.0, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <HintPath>..\packages\IronPython.2.7.7\lib\Net45\IronPython.Wpf.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.Dynamic">
-      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Dynamic.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Scripting">
-      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Scripting.AspNet">
-      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.AspNet.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.Scripting.Metadata">
-      <HintPath>..\packages\DynamicLanguageRuntime.1.1.2\lib\Net45\Microsoft.Scripting.Metadata.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Nat">
       <HintPath>Dependencies\Mono.Nat.dll</HintPath>
@@ -154,11 +21,14 @@
     <Reference Include="MonoGame.Framework">
       <HintPath>Dependencies\MonoGame.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="mscorlib">
-      <Private>False</Private>
+    <Reference Include="MonoGame.Framework.Content.Pipeline">
+      <HintPath>Dependencies\MonoGame.Framework.Content.Pipeline.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Dependencies\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="MonoGame.Framework.Net">
+      <HintPath>Dependencies\MonoGame.Framework.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="Pngcs">
+      <HintPath>Dependencies\Pngcs.dll</HintPath>
     </Reference>
     <Reference Include="protobuf-net">
       <HintPath>Dependencies\protobuf-net.dll</HintPath>
@@ -166,309 +36,60 @@
     <Reference Include="SharpDX">
       <HintPath>Dependencies\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.Direct3D11, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>Dependencies\SharpDX.D3DCompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct2D1">
+      <HintPath>Dependencies\SharpDX.Direct2D1.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D10">
+      <HintPath>Dependencies\SharpDX.Direct3D10.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11">
       <HintPath>Dependencies\SharpDX.Direct3D11.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11.Effects">
+      <HintPath>Dependencies\SharpDX.Direct3D11.Effects.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D9">
+      <HintPath>Dependencies\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.DirectInput">
       <HintPath>Dependencies\SharpDX.DirectInput.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.MediaFoundation, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SharpDX.DirectSound">
+      <HintPath>Dependencies\SharpDX.DirectSound.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI">
+      <HintPath>Dependencies\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.MediaFoundation">
       <HintPath>Dependencies\SharpDX.MediaFoundation.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.XAudio2, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SharpDX.RawInput">
+      <HintPath>Dependencies\SharpDX.RawInput.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XACT3">
+      <HintPath>Dependencies\SharpDX.XACT3.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.XAudio2">
       <HintPath>Dependencies\SharpDX.XAudio2.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.XInput, Version=2.5.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="SharpDX.XInput">
       <HintPath>Dependencies\SharpDX.XInput.dll</HintPath>
     </Reference>
-    <Reference Include="Steamworks.NET, Version=6.0.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Steamworks.NET">
       <HintPath>Dependencies\Steamworks\Steamworks.NET.dll</HintPath>
     </Reference>
-    <Reference Include="Svg, Version=2.2.1.39233, Culture=neutral, PublicKeyToken=12a0bac221edeae2, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Svg">
       <HintPath>Dependencies\Svg.dll</HintPath>
     </Reference>
-    <Reference Include="System">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Core">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net">
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Framework\Audio\AudioPlayer.cs" />
-    <Compile Include="Framework\Audio\Emitter.cs" />
-    <Compile Include="Framework\Audio\AudioManager.cs" />
-    <Compile Include="Framework\Audio\MusicPlayer.cs" />
-    <Compile Include="Framework\Audio\SoundEffect.cs" />
-    <Compile Include="Framework\Content\AnimationParser.cs" />
-    <Compile Include="Framework\Content\ContentParser.cs" />
-    <Compile Include="Framework\Content\EffectParser.cs" />
-    <Compile Include="Framework\Content\HeightmapParser.cs" />
-    <Compile Include="Framework\Content\ImageAsset.cs" />
-    <Compile Include="Framework\Content\ImageAssetParser.cs" />
-    <Compile Include="Framework\Content\MGCParser.cs" />
-    <Compile Include="Framework\Content\ModelParsing\G3DJReader.cs" />
-    <Compile Include="Framework\Content\ModelParsing\OBJReader.cs" />
-    <Compile Include="Framework\Content\InitDataParser.cs" />
-    <Compile Include="Framework\Content\ScriptAsset.cs" />
-    <Compile Include="Framework\Content\ScriptParser.cs" />
-    <Compile Include="Framework\Content\SoundParser.cs" />
-    <Compile Include="Framework\Content\SVGParser.cs" />
-    <Compile Include="Framework\Content\Texture2DParser.cs" />
-    <Compile Include="Framework\Content\ModelParser.cs" />
-    <Compile Include="Framework\Content\PreloadedContentAttribute.cs" />
-    <Compile Include="Framework\Content\ScreenParser.cs" />
-    <Compile Include="Framework\Debug\DebugPrinter.cs" />
-    <Compile Include="Framework\Debug\DebugTiming.cs" />
-    <Compile Include="Framework\Entities\Component.cs" />
-    <Compile Include="Framework\Entities\InitData.cs" />
-    <Compile Include="Framework\Entities\Interpolator.cs" />
-    <Compile Include="Framework\Entities\ReplicateAttribute.cs" />
-    <Compile Include="Framework\FunctionalExtensions.cs" />
-    <Compile Include="Framework\SpecTime.cs" />
-    <Compile Include="Framework\Graphics\Animation\AnimationClip.cs" />
-    <Compile Include="Framework\Graphics\Animation\Bone.cs" />
-    <Compile Include="Framework\Graphics\Animation\Keyframe.cs" />
-    <Compile Include="Framework\Graphics\Animation\SkinningData.cs" />
-    <Compile Include="Framework\Graphics\Batch3D.cs" />
-    <Compile Include="Framework\Graphics\Billboard.cs" />
-    <Compile Include="Framework\Graphics\Effects\SkinnedEffect.cs" />
-    <Compile Include="Framework\Graphics\RenderTask.cs" />
-    <Compile Include="Framework\Graphics\VertexTypes.cs" />
-    <Compile Include="Framework\Input\VR\VRBinding.cs" />
-    <Compile Include="Framework\Input\VR\VRController.cs" />
-    <Compile Include="Framework\Input\VR\VRHmd.cs" />
-    <Compile Include="Framework\Screens\ElementSelector.cs" />
-    <Compile Include="Framework\Screens\ElementStyle.cs" />
-    <Compile Include="Framework\Transform.cs" />
-    <Compile Include="Framework\JSON\JPointConverter.cs" />
-    <Compile Include="Framework\Screens\DialogScreen.cs" />
-    <Compile Include="Framework\Utility\ArgParseHelper.cs" />
-    <Compile Include="Framework\Utility\Point3.cs" />
-    <Compile Include="Framework\IDebug.cs" />
-    <Compile Include="Framework\Graphics\Camera.cs" />
-    <Compile Include="Framework\Input\Axis.cs" />
-    <Compile Include="Framework\Input\Gamepad.cs" />
-    <Compile Include="Framework\Input\KeyBinding.cs" />
-    <Compile Include="Framework\Input\InputLayout.cs" />
-    <Compile Include="Framework\Input\PlayerInformation.cs" />
-    <Compile Include="Framework\Input\RawMouse.cs" />
-    <Compile Include="Framework\Input\SpectrumMouse.cs" />
-    <Compile Include="Framework\JSON\JInitDataConverter.cs" />
-    <Compile Include="Framework\JSON\JMatrixConverter.cs" />
-    <Compile Include="Framework\JSON\JVectorConverter.cs" />
-    <Compile Include="Framework\JSON\JShapeConverter.cs" />
-    <Compile Include="Framework\JSON\SimpleConverter.cs" />
-    <Compile Include="Framework\Network\Surrogates\ModelSurrogate.cs" />
-    <Compile Include="Framework\Screens\InputElements\TextInput.cs" />
-    <Compile Include="Framework\Screens\RootElement.cs" />
-    <Compile Include="Framework\Screens\SceneScreen.cs" />
-    <Compile Include="Framework\LSystem\LNode.cs" />
-    <Compile Include="Framework\LSystem\LTree.cs" />
-    <Compile Include="Framework\Utility\ExtensionMethods.cs" />
-    <Compile Include="Framework\Utility\MatrixHelper.cs" />
-    <Compile Include="Framework\Network\Handshake.cs" />
-    <Compile Include="Framework\Network\NetID.cs" />
-    <Compile Include="Framework\Network\NetMessage.cs" />
-    <Compile Include="Framework\Network\ReplicationData.cs" />
-    <Compile Include="Framework\Network\Serialization.cs" />
-    <Compile Include="Framework\Network\SteamP2PReceiver.cs" />
-    <Compile Include="Framework\Network\Surrogates\EntitySurrogate.cs" />
-    <Compile Include="Framework\Network\Surrogates\FloatArraySurrogate.cs" />
-    <Compile Include="Framework\Network\Surrogates\JSONSurrogate.cs" />
-    <Compile Include="Framework\Network\Surrogates\PrimitiveSurrogate.cs" />
-    <Compile Include="Framework\Network\Surrogates\StreamSurrogate.cs" />
-    <Compile Include="Framework\Physics\Collision\CollisionIsland.cs" />
-    <Compile Include="Framework\Physics\Collision\CollisionSystem.cs" />
-    <Compile Include="Framework\Physics\Collision\CollisionSystemPersistentSAP.cs" />
-    <Compile Include="Framework\Physics\Collision\DynamicTree.cs" />
-    <Compile Include="Framework\Physics\Collision\EPACollide.cs" />
-    <Compile Include="Framework\Physics\Collision\GJKCollide.cs" />
-    <Compile Include="Framework\Physics\Collision\GroundInfo.cs" />
-    <Compile Include="Framework\Physics\Collision\ICollidable.cs" />
-    <Compile Include="Framework\Physics\Collision\IslandManager.cs" />
-    <Compile Include="Framework\Physics\Collision\Octree.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\BoxShape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\ConeShape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\ConvexHullShape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\CylinderShape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\ISupportMappable.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\ListMultishape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\Multishape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\Shape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\SphereShape.cs" />
-    <Compile Include="Framework\Physics\Collision\Shapes\TerrainShape.cs" />
-    <Compile Include="Framework\Physics\Dynamics\Arbiter.cs" />
-    <Compile Include="Framework\Physics\Dynamics\ArbiterMap.cs" />
-    <Compile Include="Framework\Physics\Dynamics\Constraint.cs" />
-    <Compile Include="Framework\Physics\Dynamics\Contact.cs" />
-    <Compile Include="Framework\Physics\Dynamics\Material.cs" />
-    <Compile Include="Framework\Physics\LinearMath\JBBox.cs" />
-    <Compile Include="Framework\Physics\LinearMath\JMath.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Framework\ResourcePool.cs" />
-    <Compile Include="Framework\Physics\ThreadManager.cs" />
-    <Compile Include="Framework\Physics\PhysicsEngine.cs" />
-    <Compile Include="Framework\Screens\Element.cs" />
-    <Compile Include="Framework\Screens\GridLayout.cs" />
-    <Compile Include="Framework\Screens\InGameScreen.cs" />
-    <Compile Include="Framework\Input\InputState.cs" />
-    <Compile Include="Framework\Screens\InputElements\Button.cs" />
-    <Compile Include="Framework\Screens\InputElements\Dropdown.cs" />
-    <Compile Include="Framework\Screens\InputElements\InputElement.cs" />
-    <Compile Include="Framework\Screens\InputElements\ListOption.cs" />
-    <Compile Include="Framework\Screens\InputElements\ListSelector.cs" />
-    <Compile Include="Framework\Screens\InputElements\Slider.cs" />
-    <Compile Include="Framework\Screens\InputElements\TextElement.cs" />
-    <Compile Include="Framework\Screens\InputElements\Checkbox.cs" />
-    <Compile Include="Framework\Screens\LayoutManager.cs" />
-    <Compile Include="Framework\Screens\LinearLayout.cs" />
-    <Compile Include="Framework\Screens\MenuScreen.cs" />
-    <Compile Include="Framework\Screens\RectOffset.cs" />
-    <Compile Include="Framework\Content\ContentHelper.cs" />
-    <Compile Include="Framework\Graphics\Animation\AnimationPlayer.cs" />
-    <Compile Include="Framework\Graphics\SpecModel.cs" />
-    <Compile Include="Framework\Graphics\Effects\SpectrumEffect.cs" />
-    <Compile Include="Framework\Graphics\Effects\TerrainEffect.cs" />
-    <Compile Include="Framework\Graphics\VertexHelper.cs" />
-    <Compile Include="Framework\Graphics\Effects\WaterEffect.cs" />
-    <Compile Include="Framework\Network\MultiplayerReceiver.cs" />
-    <Compile Include="Framework\Network\NetworkMutex.cs" />
-    <Compile Include="Framework\Network\ReplyWaiter.cs" />
-    <Compile Include="Framework\Network\Connection.cs" />
-    <Compile Include="Framework\Network\UDPReceiver.cs" />
-    <Compile Include="Framework\Network\UDPSender.cs" />
-    <Compile Include="Framework\Content\Plugin.cs" />
-    <Compile Include="Framework\DefaultDict.cs" />
-    <Compile Include="Framework\LoadHelper.cs" />
-    <Compile Include="Framework\JConvert.cs" />
-    <Compile Include="Framework\Screens\ElementSize.cs" />
-    <Compile Include="Framework\TypeData.cs" />
-    <Compile Include="Framework\TypeHelper.cs" />
-    <Compile Include="Framework\Graphics\DrawablePart.cs" />
-    <Compile Include="Framework\Graphics\Effects\PostProcessEffect.cs" />
-    <Compile Include="Framework\Graphics\GraphicsEngine.cs" />
-    <Compile Include="Framework\Graphics\Settings.cs" />
-    <Compile Include="Framework\Network\MultiplayerSender.cs" />
-    <Compile Include="Framework\Network\MultiplayerService.cs" />
-    <Compile Include="Framework\Entities\GameObject.cs" />
-    <Compile Include="Framework\Entities\EntityManager.cs" />
-    <Compile Include="Framework\Utility\RectangleExtensions.cs" />
-    <Compile Include="Framework\Utility\SpriteBatchExtensions.cs" />
-    <Compile Include="Framework\Utility\VectorExtensions.cs" />
-    <Compile Include="Framework\VR\SpecVR.cs" />
-    <Compile Include="Framework\VR\VRMenu.cs" />
-    <Compile Include="openvr_api.cs" />
-    <Compile Include="SpectrumGame.cs" />
-    <Compile Include="Framework\Entities\Entity.cs" />
-    <Compile Include="Framework\Entities\EntityCollection.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Framework\Graphics\Water.cs" />
+    <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <MGFXCompile Include="Content\HLSL\SkinnedEffect.fx" />
-    <Content Include="Content\Textures\missing.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Dependencies\Steamworks\CSteamworks.dll">
-      <Link>CSteamworks.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Dependencies\Steamworks\steam_api.dll">
-      <Link>steam_api.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <MGFXCompile Include="Content\HLSL\PostProcessEffect.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </MGFXCompile>
-    <MGFXCompile Include="Content\HLSL\SpectrumEffect.fx" />
-    <MGFXCompile Include="Content\HLSL\TerrainEffect.fx" />
-    <MGFXCompile Include="Content\HLSL\WaterEffect.fx" />
-    <Content Include="Content\Textures\blank.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="openvr_api.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Xna.Framework.4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft XNA Framework Redistributable 4.0</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Content\HLSL\Common.fxh" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Content\HLSL\Header.fxh" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <CustomBuildAfterTargets>ClCompile</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
-  </PropertyGroup>
-  <PropertyGroup>
-    <PreBuildEvent>
-    </PreBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup>
-    <CustomBuildAfterTargets>Compile</CustomBuildAfterTargets>
-    <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
-  </PropertyGroup>
-  <Import Project="mgfx.targets.xml" />
-  <!--
-      To modify your build process, add your task inside one of the targets below and uncomment it. 
-      Other similar extension points exist, see Microsoft.Common.targets.
-      <Target Name="BeforeBuild">
-      </Target>
-      <Target Name="AfterBuild">
-      </Target>
-    -->
 </Project>

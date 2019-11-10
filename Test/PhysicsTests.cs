@@ -1,5 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using NUnit.Framework;
 using Spectrum.Framework;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Physics.Collision;
@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace SpectrumTest
 {
-    [TestClass]
+    [TestFixture]
     public class PhysicsTests
     {
-        [TestMethod]
+        [Test]
         public void RayCastBugFix1()
         {
             var cs = new CollisionSystemPersistentSAP();
@@ -26,7 +26,7 @@ namespace SpectrumTest
             var result = cs.Raycast(test, ray.Position, ray.Direction, out Vector3 normal, out float fraction);
             Assert.IsTrue(result);
         }
-        [TestMethod]
+        [Test]
         public void RayCastBugFix2()
         {
             var cs = new CollisionSystemPersistentSAP();
@@ -37,7 +37,7 @@ namespace SpectrumTest
             var result = cs.Raycast(test, ray.Position, ray.Direction, out Vector3 normal, out float fraction);
             Assert.IsTrue(result);
         }
-        [TestMethod]
+        [Test]
         public void TerrainCollision()
         {
             //new SpectrumGame(null);
@@ -52,7 +52,7 @@ namespace SpectrumTest
             system.GetContact(go1, go2, out point, out normal, out penetration);
             Assert.IsTrue(Vector3.Dot(normal, new Vector3(0, -0.7f, 0.7f)) > 0.8f);
         }
-        [TestMethod]
+        [Test]
         public void BoxBug1()
         {
             GameObject go1 = new GameObject()
