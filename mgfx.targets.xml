@@ -1,4 +1,5 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <MGFXPath Condition="$(MGFXPath) == ''">Dependencies\Utils\2MGFX</MGFXPath>
   </PropertyGroup>
@@ -6,12 +7,11 @@
     <AvailableItemName Include="MGFXCompile" />
   </ItemGroup>
 
-  <Target Name="BuildMGFX" BeforeTargets="Compile" Inputs="%(MGFXCompile.Identity)" Outputs="@(MGFXCompile->'%(RelativeDir)%(Filename).mgfx')">
+  <Target Name="BuildMGFX" AfterTargets="Build" Inputs="%(MGFXCompile.Identity)" Outputs="'%(RelativeDir)%(Filename).mgfx')">
     <Exec Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"/>
   </Target>
-  <Target Name="ReBuildMGFX" AfterTargets="Rebuild">
-    <Exec Condition="%(MGFXCompile.Identity)!=''" Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"
-          Outputs="@(MGFXCompile.Identity -> %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx)"/>
+  <Target Name="ReBuildMGFX" AfterTargets="Rebuild" Outputs="%(MGFXCompile.TargetDir)%(MGFXCompile.Filename).mgfx)">
+    <Exec Condition="%(MGFXCompile.Identity)!=''" Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"/>
   </Target>
   <Target Name="BuildMGFXContent">
     <ItemGroup>
