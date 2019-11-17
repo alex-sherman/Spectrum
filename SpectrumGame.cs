@@ -43,18 +43,8 @@ namespace Spectrum
         public Form WindowForm { get; private set; }
         public bool WindowMaximized
         {
-            get { return WindowForm.WindowState == FormWindowState.Maximized; }
-            set
-            {
-                if (value)
-                {
-                    WindowForm.WindowState = FormWindowState.Maximized;
-                }
-                else
-                {
-                    WindowForm.WindowState = FormWindowState.Normal;
-                }
-            }
+            get => WindowForm.WindowState == FormWindowState.Maximized;
+            set => WindowForm.WindowState = value ? FormWindowState.Maximized : FormWindowState.Normal;
         }
         public Point WindowLocation
         {
