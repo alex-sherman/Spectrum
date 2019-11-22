@@ -6,11 +6,10 @@
   <ItemGroup>
     <AvailableItemName Include="MGFXCompile" />
   </ItemGroup>
-
-  <Target Name="BuildMGFX" AfterTargets="Build" Inputs="%(MGFXCompile.Identity)" Outputs="@(MGFXCompile->'%(RelativeDir)%(Filename).mgfx')">
+  <Target Name="BuildMGFX" BeforeTargets="BeforeBuild" Inputs="%(MGFXCompile.Identity)" Outputs="@(MGFXCompile->'%(RelativeDir)%(Filename).mgfx')">
     <Exec Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"/>
   </Target>
-  <Target Name="ReBuildMGFX" AfterTargets="Rebuild" Outputs="%(MGFXCompile.TargetDir)%(MGFXCompile.Filename).mgfx)">
+  <Target Name="ReBuildMGFX" BeforeTargets="BeforeRebuild" Outputs="%(MGFXCompile.TargetDir)%(MGFXCompile.Filename).mgfx)">
     <Exec Condition="%(MGFXCompile.Identity)!=''" Command="$(MGFXPath) %(MGFXCompile.Identity) %(MGFXCompile.RelativeDir)%(MGFXCompile.Filename).mgfx /Profile:DirectX_11"/>
   </Target>
   <Target Name="BuildMGFXContent">
