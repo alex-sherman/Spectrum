@@ -85,7 +85,7 @@ namespace Spectrum.Framework
                     }
                     catch { }
                     strings.Add(line);
-                    Console.WriteLine(line);
+                    Debug.Print(line);
                 }
             }
         }

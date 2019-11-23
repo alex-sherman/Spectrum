@@ -25,31 +25,6 @@ namespace Spectrum.Framework.Graphics
                 1,
                 100, 1100f);
         }
-
-        public static void Init(GraphicsDevice device)
-        {
-            ResetProjection(SpectrumGame.Game, EventArgs.Empty);
-            SpectrumGame.Game.OnScreenResize += ResetProjection;
-        }
-        public static Matrix GetProjection(int width, int height)
-        {
-            return Matrix.CreatePerspectiveFieldOfView(
-                (float)Math.PI / 3.0f,
-                (float)width / height,
-                0.1f, 10000);
-        }
-        public static void ResetProjection(object sender, EventArgs args)
-        {
-            GraphicsDevice device = (sender as SpectrumGame).GraphicsDevice;
-            //The reflection view has a slightly larger field of view
-            //so that water doesn't get messed up at the edges when
-            //waves cause the texture coordinates to go off the edge
-            reflectionProjection = Matrix.CreatePerspectiveFieldOfView(
-                (float)Math.PI / 3.5f,
-                (float)device.Viewport.Width /
-                (float)device.Viewport.Height,
-                1f, 10000);
-        }
         public static float WaterPerturbation
         {
             get

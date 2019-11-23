@@ -7,9 +7,24 @@ using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework.Graphics
 {
-    public class Camera : ITransform
+    public interface ICamera
     {
-        public Matrix Projection = Matrix.Identity;
+        Matrix View { get; }
+        Matrix Projection { get; }
+        Vector3 Position { get; }
+        void UpdateProjection(int width, int height);
+    }
+    public class Camera : ICamera, ITransform
+    {
+        public Matrix Projection { get; private set; } = Matrix.Identity;
+
+        public void UpdateProjection(int width, int height)
+        {
+            Projection = Matrix.CreatePerspectiveFieldOfView(
+                (float)Math.PI / 3.0f,
+                (float)width / height,
+                0.1f, 10000);
+        }
         public virtual Vector3 Position { get; set; }
         public Quaternion Orientation;
         Quaternion ITransform.Orientation => Orientation;
@@ -30,14 +45,6 @@ namespace Spectrum.Framework.Graphics
             }
         }
         public float Roll => Orientation.Roll();
-
-        public virtual Matrix ReflectionProjection
-        {
-            get
-            {
-                return Settings.reflectionProjection;
-            }
-        }
 
         public virtual Matrix View
         {
@@ -88,5 +95,20 @@ namespace Spectrum.Framework.Graphics
         }
 
         public Vector3 Forward => Vector3.Transform(Vector3.Forward, Orientation);
+    }
+    public class Camera2D : ICamera
+    {
+        public Vector2 Position;
+
+        public Matrix View => Matrix.CreateTranslation(-1 * ((ICamera)this).Position);
+
+        public Matrix Projection { get; private set; } = Matrix.Identity;
+
+        Vector3 ICamera.Position => new Vector3(Position, -1);
+
+        public void UpdateProjection(int width, int height)
+        {
+            Projection = Matrix.CreateScale(2f / width, 2f / height, 1);
+        }
     }
 }

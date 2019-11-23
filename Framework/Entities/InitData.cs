@@ -54,7 +54,8 @@ namespace Spectrum.Framework.Entities
         public string Name;
         public string Path { get; set; }
         public string FullPath { get; set; }
-        public string TypeName {
+        public string TypeName
+        {
             get => TypeData.Type.Name;
             set => TypeData = TypeHelper.Types.GetData(value);
         }
@@ -98,7 +99,7 @@ namespace Spectrum.Framework.Entities
                 {
                     TypeData.Set(target, field.Key, field.Value.Object);
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     DebugPrinter.Print($"Failed to set field {field.Key} in {TypeName}\n{e}");
                 }
@@ -200,12 +201,19 @@ namespace Spectrum.Framework.Entities
 
             Fields = init.Bindings.ToDictionary(b => b.Member.Name, b =>
             {
-                if (!(b is MemberAssignment assign)) throw new ArgumentException("All member bindings must be assignments");
-                try
+                if (b is MemberAssignment assign)
                 {
-                    return new Primitive(assign.Expression.GetConstantValue());
+                    try
+                    {
+                        return new Primitive(assign.Expression.GetConstantValue());
+                    }
+                    catch (ArgumentException e) { throw new ArgumentException($"Invalid member assignment for {b.Member.Name}", e); }
                 }
-                catch (ArgumentException e ) { throw new ArgumentException($"Invalid member assignment for {b.Member.Name}", e); }
+                else if (b is MemberListBinding bind)
+                {
+                    // TODO
+                }
+                throw new ArgumentException("All member bindings must be assignments");
             });
             Args = init.NewExpression.Arguments.Select(e => new Primitive(e.GetConstantValue())).ToArray();
         }

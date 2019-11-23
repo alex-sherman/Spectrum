@@ -11,6 +11,7 @@ using System.Collections;
 using Spectrum.Framework.Network.Surrogates;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Physics.LinearMath;
+using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.Entities
 {
@@ -149,10 +150,9 @@ namespace Spectrum.Framework.Entities
             }
         }
         #endregion
-
         public void Update(float gameTime)
         {
-            var fullUpdateables = Entities.UpdateSorted.Where(e => e.Enabled && e is IFullUpdateable).Cast<IFullUpdateable>().ToList();
+            var fullUpdateables = Entities.UpdateSorted.Where(e => e.Enabled && e is IFullUpdate).Cast<IFullUpdate>().ToList();
             var updateables = Entities.UpdateSorted.Where(e => e.Enabled).ToList();
             if (Paused) { return; }
             using (DebugTiming.Main.Time("Physics"))

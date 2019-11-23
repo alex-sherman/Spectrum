@@ -21,7 +21,6 @@ namespace Spectrum.Framework.Graphics
                 Current = Previous;
             }
         }
-        static DrawablePart linePart;
         public static Batch3D Current { get; private set; }
         public IDisposable Apply()
         {
@@ -29,6 +28,7 @@ namespace Spectrum.Framework.Graphics
             Current = this;
             return result;
         }
+        static DrawablePart linePart;
         static Batch3D()
         {
             linePart = DrawablePart.From(new List<CommonTex>()

@@ -29,6 +29,7 @@ namespace Spectrum.Framework.Entities
         #endregion
         public DefaultDict<string, object> Data = new DefaultDict<string, object>();
         public List<Component> Components = new List<Component>();
+        public void AddComponent(Component component) => Components.Add(component);
         public T Get<T>(string key)
         {
             if (Data.TryGetValue(key, out object output) && output is T tOutput)
@@ -70,6 +71,8 @@ namespace Spectrum.Framework.Entities
             IsLocal = true;
             // TODO: Fix
             //IsLocal = OwnerGuid == SpectrumGame.Game.MP.ID;
+            foreach (var comp in Components)
+                comp.Initialize(this);
             IsInitialized = true;
         }
 
@@ -105,7 +108,7 @@ namespace Spectrum.Framework.Entities
         {
             foreach (var comp in Components)
             {
-                if (comp is IUpdateable compUpdateable)
+                if (comp is IUpdate compUpdateable)
                 {
                     compUpdateable.Update(dt);
                 }

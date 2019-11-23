@@ -31,8 +31,8 @@ namespace Spectrum.Framework.Graphics
         public static bool wireFrame = false;
         public static SpriteBatch spriteBatch;
         public static Color clearColor = Color.CornflowerBlue;
-        public static Camera Camera { get; set; }
-        public static Camera ShadowCamera { get; set; }
+        public static ICamera Camera { get; set; }
+        public static ICamera ShadowCamera { get; set; }
         public static RenderTarget2D shadowMap;
 
         static RenderTarget2D AATarget;
@@ -66,7 +66,6 @@ namespace Spectrum.Framework.Graphics
                 MultiSampleAntiAlias = false,
                 CullMode = CullMode.None,
             };
-            Settings.Init(device);
             PostProcessEffect.Initialize();
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
             if (SpecVR.Running)
@@ -295,7 +294,7 @@ namespace Spectrum.Framework.Graphics
             RenderQueue(vrPhase, groups);
         }
 
-        public static void BeginRender(Camera camera)
+        public static void BeginRender(ICamera camera)
         {
             device.DepthStencilState = DepthStencilState.Default;
             // Disables frame rate limiting
@@ -308,7 +307,7 @@ namespace Spectrum.Framework.Graphics
         /// <summary>
         /// Renders the provided groups to the render target with no post processing
         /// </summary>
-        public static void RenderSimple(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        public static void RenderSimple(ICamera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
         {
             BeginRender(camera);
             device.SetRenderTarget(target);
@@ -325,7 +324,7 @@ namespace Spectrum.Framework.Graphics
         /// Renders the provided groups to the render target with post processing requiring
         /// that the post process targets be configured accordingly.
         /// </summary>
-        public static void RenderScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        public static void RenderScene(ICamera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
         {
             BeginRender(camera);
 
@@ -341,9 +340,9 @@ namespace Spectrum.Framework.Graphics
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
             RenderQueue(sceneRenderPhase, renderGroups);
             //Clear the screen and perform anti aliasing
-            device.SetRenderTarget(target);
             using (DebugTiming.Render.Time("Post Process"))
             {
+                device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, RasterizerState.CullNone, PostProcessEffect.effect);
@@ -352,7 +351,7 @@ namespace Spectrum.Framework.Graphics
             }
             mainRenderTimer?.Stop();
         }
-        public static void RenderVRScene(Camera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        public static void RenderVRScene(ICamera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
         {
             BeginRender(camera);
 

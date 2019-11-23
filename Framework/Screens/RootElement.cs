@@ -19,6 +19,7 @@ namespace Spectrum.Framework.Screens
         public override bool HasFocus => SpectrumGame.Game.IsActive && SpectrumGame.Game.WindowForm.Focused;
         public RootElement()
         {
+            Font = DefaultFont;
             Width = 1.0;
             Height = 1.0;
             SpriteBatch = new SpriteBatch(SpectrumGame.Game.GraphicsDevice);
@@ -41,13 +42,13 @@ namespace Spectrum.Framework.Screens
         {
             // TODO: Do a where on children for detached elements
             roots.AddRange(element.Children.Where(c => c.ZDetach));
-            return Enumerable.Empty<Element>().Union(element).Union(element.Children.Where(c => !c.ZDetach).OrderByDescending(c => c.Z).SelectMany(c => OrderChildren(c, roots)));
+            return Enumerable.Empty<Element>().Union(element).Union(element.Children.Where(c => !c.ZDetach).OrderBy(c => c.Z).SelectMany(c => OrderChildren(c, roots)));
         }
         public void Draw(float gameTime)
         {
             //SpriteBatch.GraphicsDevice.RasterizerState.ScissorTestEnable = true;
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
-                SamplerState.LinearClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
+                SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
             List<Element> roots = new List<Element>() { this };
             List<List<Element>> trees = new List<List<Element>>() { };
             while(roots.Any())
@@ -55,7 +56,7 @@ namespace Spectrum.Framework.Screens
                 var current = roots.Pop();
                 trees.Add(OrderChildren(current, roots).ToList());
             }
-            var children = trees.OrderByDescending(t => t[0].Z).SelectMany(t => t).ToList();
+            var children = trees.OrderBy(t => t[0].Z).SelectMany(t => t).ToList();
             children.Reverse();
 
             for (int i = 0; i < children.Count; i++)

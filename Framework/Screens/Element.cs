@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Screens
 
     public class Element
     {
-        public static SpriteFont DefaultFont;
+        public static SpriteFont DefaultFont = ContentHelper.Load<SpriteFont>("default");
         #region Style
         private ElementStyle inheritedStyle;
         private ElementStyle style;
@@ -39,19 +39,19 @@ namespace Spectrum.Framework.Screens
             get => style.Texture ?? inheritedStyle.Texture;
             set => style.Texture = value;
         }
-        public Color TextureColor { get => style.TextureColor ?? inheritedStyle.TextureColor ?? Color.White; }
+        public ElementColor TextureColor { get => style.TextureColor ?? inheritedStyle.TextureColor ?? Color.White; }
         public ImageAsset Background
         {
             get => style.Background ?? inheritedStyle.Background;
             set => style.Background = value;
         }
-        public Color FontColor { get => style.FontColor ?? inheritedStyle.FontColor ?? Color.Black; }
-        public Color? FillColor
+        public ElementColor FontColor { get => style.FontColor ?? inheritedStyle.FontColor ?? Color.Black; }
+        public ElementColor? FillColor
         {
             get => style.FillColor ?? inheritedStyle.FillColor;
             set => style.FillColor = value;
         }
-        public Color? BackgroundColor
+        public ElementColor? BackgroundColor
         {
             get => style.BackgroundColor ?? inheritedStyle.BackgroundColor;
             set => style.BackgroundColor = value;

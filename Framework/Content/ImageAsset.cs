@@ -23,6 +23,7 @@ namespace Spectrum.Framework.Content
         public ImageAsset(SvgDocument svg) { SVG = svg; }
         public ImageAsset(Texture2D texture) { Texture = texture; }
         public static implicit operator ImageAsset(Texture2D texture) => new ImageAsset(texture);
+        public static implicit operator ImageAsset(string path) => ContentHelper.Load<ImageAsset>(path);
         public ImageAsset() { }
         public void Rasterize(int width, int height)
         {

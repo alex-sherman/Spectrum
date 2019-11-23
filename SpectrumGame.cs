@@ -152,6 +152,7 @@ namespace Spectrum
         protected override void Initialize()
         {
             base.Initialize();
+            ElementStyle.OverrideTag(new ElementStyle() { Font = ContentHelper.Load<SpriteFont>("default") });
             InputLayout.Init();
             EntityManager = new EntityManager();
             AudioManager.Init();

@@ -8,6 +8,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
     <OutputPath>bin\Debug</OutputPath>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <DefineConstants></DefineConstants>
@@ -16,6 +18,8 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam-Debug|x86'">
     <DefineConstants>DEBUG;TRACE;STEAM;STEAMWORKS_WIN</DefineConstants>
     <OutputPath>bin\SteamDebug</OutputPath>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Steam-Release|x86'">
     <DefineConstants>STEAM;STEAMWORKS_WIN</DefineConstants>
@@ -110,10 +114,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <MGFXCompile Include="Content\HLSL\SkinnedEffect.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </MGFXCompile>
-    <Content Include="Content\Textures\missing.png">
+    <Content Include="Content\**" Exclude="Content\**\*.fx;Content\**\*.fxh">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Dependencies\Steamworks\CSteamworks.dll">
@@ -124,12 +125,7 @@
       <Link>steam_api.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <MGFXCompile Include="Content\HLSL\PostProcessEffect.fx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </MGFXCompile>
-    <MGFXCompile Include="Content\HLSL\SpectrumEffect.fx" />
-    <MGFXCompile Include="Content\HLSL\TerrainEffect.fx" />
-    <MGFXCompile Include="Content\HLSL\WaterEffect.fx" />
+    <MGFXCompile Include="Content\HLSL\*.fx" />
     <Content Include="Content\Textures\blank.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

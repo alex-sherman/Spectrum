@@ -20,7 +20,7 @@ namespace Spectrum.Framework.Screens
         public EntityManager Manager = SpectrumGame.Game.EntityManager;
         public Batch3D Batch = new Batch3D();
         public RenderTarget2D RenderTarget;
-        public Camera Camera;
+        public ICamera Camera;
         private bool _captureMouse = false;
         public bool CaptureMouse
         {
@@ -37,10 +37,10 @@ namespace Spectrum.Framework.Screens
                 }
             }
         }
-        public static Matrix Projection;
         public static bool Dirty;
-        public SceneScreen()
+        public SceneScreen(ICamera camera)
         {
+            Camera = camera;
             ZDetach = true;
             Z = 100;
             Width = ElementSize.WrapFill;
@@ -53,7 +53,7 @@ namespace Spectrum.Framework.Screens
                 && (bounds.Width > 0 && bounds.Height > 0))
             {
                 Dirty = false;
-                Camera.Projection = Settings.GetProjection(bounds.Width, bounds.Height);
+                Camera.UpdateProjection(bounds.Width, bounds.Height);
                 RenderTarget?.Dispose();
                 RenderTarget = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, bounds.Width, bounds.Height,
                     false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
@@ -62,9 +62,9 @@ namespace Spectrum.Framework.Screens
         }
         public override void Initialize()
         {
-            base.Initialize();
             // TODO: Remove batch3d calls from entity intialize
-            //Batch3D.Current = null;
+            using (Batch.Apply())
+                base.Initialize();
         }
         public override void Draw(float gameTime, SpriteBatch spriteBatch)
         {
