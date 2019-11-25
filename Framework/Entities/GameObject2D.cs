@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Replicate;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics;
 using System;

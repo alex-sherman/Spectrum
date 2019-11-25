@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Replicate.MetaData;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Graphics;
@@ -38,9 +39,9 @@ namespace Spectrum.Framework
                 model => model.Name,
                 token => ContentHelper.Load<SpecModel>((string)token)));
             Converters.Add(new JInitDataConverter());
-            Converters.Add(new SimpleConverter<TypeData>(
-                typeData => typeData.Type.Name,
-                token => TypeHelper.Types.GetData((string)token)));
+            //Converters.Add(new SimpleConverter<TypeAccessor>(
+            //    typeData => typeData.TypeData.Name,
+            //    token => TypeHelper.Model.Types[(string)token]);
         }
         public static object Deserialize(JToken token, Type targetType)
         {

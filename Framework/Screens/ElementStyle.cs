@@ -1,5 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Replicate;
+using Replicate.MetaData;
 using Spectrum.Framework.Content;
 using System;
 using System.Collections.Generic;
@@ -28,6 +30,7 @@ namespace Spectrum.Framework.Screens
         public static implicit operator ElementColor(Color color) => new ElementColor() { Color = color };
         public static implicit operator ElementColor(string color) => new ElementColor() { Color = ColorSetter(color) };
     }
+    [ReplicateType]
     public struct ElementStyle
     {
         struct TagOverride
@@ -41,10 +44,10 @@ namespace Spectrum.Framework.Screens
                 Style = style;
             }
         }
-        static TypeData typeData;
+        static TypeAccessor typeData;
         static ElementStyle()
         {
-            typeData = new TypeData(typeof(ElementStyle));
+            typeData = TypeHelper.Model.GetTypeAccessor(typeof(ElementStyle));
         }
         private static List<TagOverride> TagOverrides = new List<TagOverride>();
         public static void OverrideTag(ElementStyle style)
@@ -84,12 +87,7 @@ namespace Spectrum.Framework.Screens
         }
         public void Apply(ElementStyle newStyle)
         {
-            foreach (var field in typeData.members.Where(f => !f.Value.IsStatic))
-            {
-                object value = field.Value.GetValue(newStyle);
-                if (value != null)
-                    this = (ElementStyle)field.Value.SetValue(this, value);
-            }
+            this = TypeUtil.CopyTo(newStyle, this);
         }
     }
 }
