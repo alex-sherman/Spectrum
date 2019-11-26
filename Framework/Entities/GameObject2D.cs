@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics;
+using Spectrum.Framework.Screens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,6 +25,7 @@ namespace Spectrum.Framework.Entities
             GameObject2DPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
         public ImageAsset Texture;
+        public ElementColor Color = Microsoft.Xna.Framework.Color.White;
         public Rectangle Bounds;
         public Vector2 Position;
         public float Layer;
@@ -34,7 +36,7 @@ namespace Spectrum.Framework.Entities
             base.Draw(gameTime);
             if (Texture != null)
             {
-                Batch3D.Current.DrawPart(GameObject2DPart, CreateTexTransform(Bounds) * World, new MaterialData() { DiffuseTexture = Texture.GetTexture(Bounds) });
+                Batch3D.Current.DrawPart(GameObject2DPart, CreateTexTransform(Bounds) * World, new MaterialData() { DiffuseTexture = Texture.GetTexture(Bounds), DiffuseColor = Color });
             }
         }
 
