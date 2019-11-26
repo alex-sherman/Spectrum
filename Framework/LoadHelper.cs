@@ -29,14 +29,12 @@ namespace Spectrum.Framework
                 Serialization.RegisterType(type);
                 var typeData = TypeHelper.RegisterType(type, plugin);
                 var accessor = TypeHelper.Model.GetTypeAccessor(type);
-
-                foreach (var member in accessor.Members.Values)
+                foreach (var member in accessor.Members.Values.Where(m => m.Info.IsStatic))
                 {
                     var preload = member.Info.GetAttribute<PreloadedContentAttribute>();
                     if (preload == null) continue;
                     object content = ContentHelper.LoadType(preload.Type ?? member.Type, preload.Path);
-                    if (member.Info.IsStatic)
-                        member.SetValue(null, content);
+                    member.SetValue(null, content);
                 }
             }
         }

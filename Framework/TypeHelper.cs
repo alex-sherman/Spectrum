@@ -14,14 +14,14 @@ namespace Spectrum.Framework
 {
     public class TypeHelper
     {
-        public static ReplicationModel Model = new ReplicationModel(false);
+        public static ReplicationModel Model = TypeUtil.Model;
         private static DefaultDict<string, TypeData> types = new DefaultDict<string, TypeData>();
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
 
         public static TypeData RegisterType(Type type, Plugin plugin)
         {
             // Laziness to avoid marking up every type with ReplicateType
-            var typeData = Model.Add(type, type.GetCustomAttribute<ReplicateTypeAttribute>() ?? new ReplicateTypeAttribute());
+            var typeData = Model.Add(type, type.GetCustomAttribute<ReplicateTypeAttribute>(false) ?? new ReplicateTypeAttribute());
             // Reinitialize if it was added by another call and has no ReplicateType
             if (typeData.TypeAttribute == null)
             {

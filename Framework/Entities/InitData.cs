@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using ProtoBuf;
+using Replicate;
 using Replicate.MetaData;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Network;
@@ -12,7 +13,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Reflection;
 using System.Text;
 
 namespace Spectrum.Framework.Entities
@@ -86,6 +87,10 @@ namespace Spectrum.Framework.Entities
                 return null;
             }
             object output = TypeData.Construct(Args.Select(prim => prim.Object).ToArray());
+            foreach (var member in TypeData.Members.Values.Where(member => !member.Info.IsStatic && member.Info.GetAttribute<PreloadedContentAttribute>() != null))
+            {
+                member.SetValue(output, ContentHelper.LoadType(member.Type, member.Info.GetAttribute<PreloadedContentAttribute>().Path));
+            }
             Apply(output, true);
             return output;
         }
@@ -108,7 +113,7 @@ namespace Spectrum.Framework.Entities
             }
             foreach (var dict in Data)
             {
-                if (!(TypeData[dict.Key].GetValue(target) is IDictionary<string, object> targetDict))
+                if (!(TypeData[dict.Key]?.GetValue(target) is IDictionary<string, object> targetDict))
                 {
                     DebugPrinter.PrintOnce($"Failed to find data dictionary {dict.Key} in {TypeName}");
                     continue;
@@ -151,6 +156,26 @@ namespace Spectrum.Framework.Entities
             }
             return null;
         }
+        static Dictionary<Tuple<Type, Type>, MethodInfo> castMethodCache = new Dictionary<Tuple<Type, Type>, MethodInfo>();
+        public static bool TryCast(Type to, object value, out object output)
+        {
+            output = value;
+            Type from = value.GetType();
+            var key = new Tuple<Type, Type>(from, to);
+            if (!castMethodCache.TryGetValue(key, out MethodInfo method))
+            {
+                method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Union(to.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == to).FirstOrDefault();
+                castMethodCache[key] = method;
+            }
+            if (method != null)
+            {
+                output = method.Invoke(null, new object[] { value });
+                return true;
+            }
+            return false;
+        }
         public static bool Coerce(Type type, object value, out object output)
         {
             output = value;
@@ -169,8 +194,8 @@ namespace Spectrum.Framework.Entities
                     output = Convert.ChangeType(value, type);
                 return true;
             }
-            //if (TryCast(type, value, out output))
-            //    return true;
+            if (TryCast(type, value, out output))
+                return true;
             else if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)
             {
                 output = ContentHelper.LoadType(type, value as string);
