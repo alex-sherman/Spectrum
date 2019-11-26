@@ -101,15 +101,13 @@ namespace Spectrum.Framework.Graphics
         public Vector2 Position;
 
         public Matrix View => Transform * Matrix.CreateTranslation(-1 * ((ICamera)this).Position);
-
         public Matrix Projection { get; set; } = Matrix.Identity;
         public Matrix Transform { get; set; } = Matrix.Identity;
-        Vector3 ITransform.Position => new Vector3(Position, -1);
+        Vector3 ITransform.Position => new Vector3(Position, 1);
         Quaternion ITransform.Orientation => Quaternion.Identity;
-
         public void UpdateProjection(int width, int height)
         {
-            Projection = Matrix.CreateScale(2f / width, 2f / height, 1);
+            Projection = Matrix.CreateScale(2f / width, 2f / height, -1);
         }
     }
 }

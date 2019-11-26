@@ -20,22 +20,27 @@ namespace Spectrum.Framework.Entities
                 new CommonTex(new Vector3(1, 1, 0), Vector3.UnitZ, new Vector2(1, 0)),
                 new CommonTex(new Vector3(0, 0, 0), Vector3.UnitZ, new Vector2(0, 1)),
                 new CommonTex(new Vector3(1, 0, 0), Vector3.UnitZ, new Vector2(1, 1))
-            });
+            }, new List<uint>() { 0, 1, 2, 1, 2, 3 });
             GameObject2DPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
         public ImageAsset Texture;
         public Rectangle Bounds;
         public Vector2 Position;
-        public Matrix World => Matrix.CreateScale(Bounds.Width, Bounds.Height, 0) * Matrix.CreateTranslation(Bounds.X, Bounds.Y, 0)
-            * Matrix.CreateRotationZ(Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, 0);
+        public float Layer;
+        public Matrix World => Matrix.CreateRotationZ(Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, Layer);
         public float Rotation = 0;
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);
             if (Texture != null)
             {
-                Batch3D.Current.DrawPart(GameObject2DPart, World, new MaterialData() { DiffuseTexture = Texture.GetTexture(Bounds) });
+                Batch3D.Current.DrawPart(GameObject2DPart, CreateTexTransform(Bounds) * World, new MaterialData() { DiffuseTexture = Texture.GetTexture(Bounds) });
             }
+        }
+
+        public static Matrix CreateTexTransform(Rectangle rect)
+        {
+            return Matrix.CreateScale(rect.Width, rect.Height, 0) * Matrix.CreateTranslation(rect.X, rect.Y, 0);
         }
     }
 }
