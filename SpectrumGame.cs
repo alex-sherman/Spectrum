@@ -172,11 +172,11 @@ namespace Spectrum
             }
             LoadSettings(File.OpenRead(path));
             IsMouseVisible = true;
-            Root = new RootElement();
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
             Serialization.Model.CompileInPlace();
             GraphicsEngine.Initialize();
+            Root = new RootElement();
         }
 
         /// <summary>

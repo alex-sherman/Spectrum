@@ -15,6 +15,7 @@ using Spectrum.Framework.Physics.Dynamics.Constraints;
 using Spectrum.Framework.Audio;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics.Animation;
+using Replicate;
 
 namespace Spectrum.Framework.Entities
 {

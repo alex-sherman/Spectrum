@@ -12,6 +12,7 @@ using Spectrum.Framework.Network;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Entities;
+using Spectrum.Framework.Screens;
 
 namespace Spectrum.Framework
 {
@@ -22,17 +23,18 @@ namespace Spectrum.Framework
     {
         public static void RegisterTypes(Plugin plugin)
         {
+            TypeHelper.RegisterType(typeof(ElementStyle), null);
             foreach (Type type in plugin.GetLoadableTypes())
             {
                 Serialization.RegisterType(type);
                 var typeData = TypeHelper.RegisterType(type, plugin);
-
-                foreach (var member in typeData.members.Values.Where(mem => mem.PreloadedContent != null))
+                var accessor = TypeHelper.Model.GetTypeAccessor(type);
+                foreach (var member in accessor.Members.Values.Where(m => m.Info.IsStatic))
                 {
-                    var preload = member.PreloadedContent;
-                    object content = ContentHelper.LoadType(preload.Type ?? member.MemberType, preload.Path);
-                    if (member.IsStatic)
-                        member.SetValue(null, content);
+                    var preload = member.Info.GetAttribute<PreloadedContentAttribute>();
+                    if (preload == null) continue;
+                    object content = ContentHelper.LoadType(preload.Type ?? member.Type, preload.Path);
+                    member.SetValue(null, content);
                 }
             }
         }

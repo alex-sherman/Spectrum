@@ -125,15 +125,15 @@ namespace Spectrum.Framework.JSON
 
             foreach (var kvp in jobj)
             {
-                if (output.TypeData.members.TryGetValue(kvp.Key, out MemberInfo memberInfo))
+                if (output.TypeData.Members.TryGetValue(kvp.Key, out var member))
                 {
                     try
                     {
-                        output.Set(kvp.Key, ParseValue(kvp.Value, memberInfo.MemberType));
+                        output.Set(kvp.Key, ParseValue(kvp.Value, member.Type));
                     }
                     catch (Exception)
                     {
-                        DebugPrinter.PrintOnce($"Failed to parse init data value for {output.Name}.{kvp.Key}: {kvp.Value.ToString()} -> {memberInfo.MemberType}".Replace("\n", "").Replace("\r", ""));
+                        DebugPrinter.PrintOnce($"Failed to parse init data value for {output.Name}.{kvp.Key}: {kvp.Value.ToString()} -> {member.Type}".Replace("\n", "").Replace("\r", ""));
                     }
                 }
                 else

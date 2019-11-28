@@ -2,30 +2,35 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Spectrum.Framework;
 using System.Reflection;
 using System.IO;
 using Spectrum.Framework.Network;
 using Spectrum.Framework.Content;
+using Replicate.MetaData;
+using Replicate;
+using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework
 {
     public class TypeHelper
     {
-        public static TypeHelper Types = new TypeHelper();
+        public static ReplicationModel Model = TypeUtil.Model;
         private static DefaultDict<string, TypeData> types = new DefaultDict<string, TypeData>();
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
-        public List<String> GetTypes() { return types.Keys.ToList(); }
 
         public static TypeData RegisterType(Type type, Plugin plugin)
         {
-            var typeData = types[type.Name] = new TypeData(type);
+            // Laziness to avoid marking up every type with ReplicateType
+            var typeData = Model.Add(type, type.GetCustomAttribute<ReplicateTypeAttribute>(false) ?? new ReplicateTypeAttribute());
+            // Reinitialize if it was added by another call and has no ReplicateType
+            if (typeData.TypeAttribute == null)
+            {
+                typeData.TypeAttribute = new ReplicateTypeAttribute();
+                typeData.InitializeMembers();
+                Model.ClearTypeAccessorCache();
+            }
             plugins[type] = plugin;
             return typeData;
-        }
-        public static T Instantiate<T>(string type, params object[] args) where T : class
-        {
-            return types[type].Instantiate(args) as T;
         }
         public List<string> GetNames(Type t)
         {

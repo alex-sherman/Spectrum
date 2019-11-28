@@ -11,6 +11,7 @@ using System.Reflection;
 using Spectrum.Framework.Network.Surrogates;
 using ProtoBuf;
 using Spectrum.Framework.Graphics;
+using Replicate;
 
 namespace Spectrum.Framework.Entities
 {
@@ -81,7 +82,7 @@ namespace Spectrum.Framework.Entities
             InitData.Apply(this);
         }
 
-        [Replicate]
+        [ReplicateRPC]
         public virtual void Destroy()
         {
             RPC("Destroy");
