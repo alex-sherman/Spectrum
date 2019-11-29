@@ -157,26 +157,7 @@ namespace Spectrum.Framework.Entities
             return null;
         }
         static Dictionary<Tuple<Type, Type>, MethodInfo> castMethodCache = new Dictionary<Tuple<Type, Type>, MethodInfo>();
-        public static bool TryCast(Type to, object value, out object output)
-        {
-            output = value;
-            Type from = value.GetType();
-            var key = new Tuple<Type, Type>(from, to);
-            if (!castMethodCache.TryGetValue(key, out MethodInfo method))
-            {
-                method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .Union(to.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                    .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == to).FirstOrDefault();
-                castMethodCache[key] = method;
-            }
-            if (method != null)
-            {
-                output = method.Invoke(null, new object[] { value });
-                return true;
-            }
-            return false;
-        }
-        public static bool Coerce(Type type, object value, out object output)
+        public static bool TryCast(Type type, object value, out object output)
         {
             output = value;
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
@@ -194,6 +175,24 @@ namespace Spectrum.Framework.Entities
                     output = Convert.ChangeType(value, type);
                 return true;
             }
+            Type from = value.GetType();
+            var key = new Tuple<Type, Type>(from, type);
+            if (!castMethodCache.TryGetValue(key, out MethodInfo method))
+            {
+                method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
+                    .Union(type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                    .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == type).FirstOrDefault();
+                castMethodCache[key] = method;
+            }
+            if (method != null)
+            {
+                output = method.Invoke(null, new object[] { value });
+                return true;
+            }
+            return false;
+        }
+        public static bool Coerce(Type type, object value, out object output)
+        {
             if (TryCast(type, value, out output))
                 return true;
             else if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)

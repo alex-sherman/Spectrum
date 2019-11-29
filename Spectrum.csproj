@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <Platforms>x86</Platforms>
     <Configurations>Debug;Release;Steam-Debug;Steam-Release</Configurations>
   </PropertyGroup>
@@ -137,6 +137,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="IronPython" Version="2.7.9" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   <ItemGroup>
