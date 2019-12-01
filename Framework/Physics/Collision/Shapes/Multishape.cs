@@ -138,7 +138,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             // TODO: calc this right
             inertia = Matrix.Identity;
 
-            Vector3 size; Vector3.Subtract(ref boundingBox.Max, ref boundingBox.Min, out size);
+            Vector3 size = boundingBox.Max - boundingBox.Min;
 
             mass = size.X * size.Y * size.Z;
 

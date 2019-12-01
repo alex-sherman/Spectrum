@@ -144,15 +144,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 points[2] = new Vector3((minX + quadIndexX + 0) * scaleXZ + boundings.Min.X, heights[minX + quadIndexX + 0, minZ + quadIndexZ + 1], (minZ + quadIndexZ + 1) * scaleXZ + boundings.Min.Z);
             }
 
-            Vector3 sum = points[0];
-            Vector3.Add(ref sum, ref points[1], out sum);
-            Vector3.Add(ref sum, ref points[2], out sum);
-            Vector3.Multiply(ref sum, 1.0f / 3.0f, out sum);
-            geomCen = sum;
-
-            Vector3.Subtract(ref points[1], ref points[0], out sum);
-            Vector3.Subtract(ref points[2], ref points[0], out normal);
-            Vector3.Cross(ref sum, ref normal, out normal);
+            geomCen = (points[0] + points[1] + points[2])/ 3;
+            normal = (points[1] - points[0]).Cross(points[2] - points[0]);
         }
 
         public void CollisionNormal(out Vector3 normal)
@@ -254,9 +247,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         }
         public override void SupportMapping(ref Vector3 direction, out Vector3 result, bool retrievingInformation)
         {
-            Vector3 expandVector;
-            Vector3.Normalize(ref direction, out expandVector);
-            Vector3.Multiply(ref expandVector, sphericalExpansion, out expandVector);
+            Vector3 expandVector = direction.Normal() * sphericalExpansion;
 
             int minIndex = 0;
             float min = Vector3.Dot(points[0], direction);
@@ -272,12 +263,11 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 min = dot;
                 minIndex = 2;
             }
-
-            Vector3.Add(ref points[minIndex], ref expandVector, out result);
+            result = points[minIndex] + expandVector;
 
             if(retrievingInformation)
             {
-                Vector3 sectionNormal = Vector3.Cross(points[0] - points[1], points[0] - points[2]);
+                Vector3 sectionNormal = (points[0] - points[1]).Cross(points[0] - points[2]);
                 sectionNormal.Normalize();
                 dot = Vector3.Dot(direction, sectionNormal);
                 //This is necessary to avoid floating point rounding errors when the direction
@@ -288,7 +278,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                     Vector3 planarExpansionDirection = direction - normalD;
                     planarExpansionDirection.Normalize();
                     planarExpansionDirection *= scaleXZ * planarExpansion;
-                    Vector3.Add(ref result, ref planarExpansionDirection, out result);
+                    result += planarExpansionDirection;
                 }
             }
 
@@ -298,16 +288,12 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         {
             JBBox box = JBBox.SmallBox;
 
-            #region RayEnd + Expand Spherical
-            Vector3 rayEnd;
-            Vector3.Normalize(ref rayDelta, out rayEnd);
-            rayEnd = rayOrigin + rayDelta + rayEnd * sphericalExpansion;
-            #endregion
+            var rayEnd = rayOrigin + rayDelta + rayDelta.Normal() * sphericalExpansion;
 
             box.AddPoint(ref rayOrigin);
             box.AddPoint(ref rayEnd);
 
-            return this.Prepare(ref box);
+            return Prepare(ref box);
         }
 
         public override void UpdateShape()

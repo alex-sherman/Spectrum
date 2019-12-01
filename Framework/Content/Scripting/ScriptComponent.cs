@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework.Input;
+using Replicate.MetaData;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Input;
 using System;
@@ -20,6 +21,7 @@ namespace Spectrum.Framework.Content.Scripting
         {
             base.Initialize(e);
             Script.AddObject("P", e);
+            Script.AddObject("E", new RepBackedNode(e, model: TypeHelper.Model));
             Script.GetFunction("Initialize")?.Invoke();
         }
 

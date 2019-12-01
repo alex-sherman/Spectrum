@@ -2,6 +2,7 @@
 using IronPython.Runtime;
 using Microsoft.Scripting.Hosting;
 using Microsoft.Xna.Framework;
+using Replicate.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +22,7 @@ namespace Spectrum.Framework.Content.Scripting
             engine = Python.CreateEngine();
             engine.Runtime.LoadAssembly(typeof(Vector2).Assembly);
             engine.Runtime.LoadAssembly(typeof(PyScript).Assembly);
+            engine.Runtime.LoadAssembly(typeof(ReplicationModel).Assembly);
             scope = engine.CreateScope();
             var source = engine.CreateScriptSourceFromString(script);
             engine.Execute(script, scope);

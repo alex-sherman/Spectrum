@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
 using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework.Graphics
@@ -20,7 +19,7 @@ namespace Spectrum.Framework.Graphics
 
         public void UpdateProjection(int width, int height)
         {
-            Projection = Matrix.CreatePerspectiveFieldOfView(
+            Projection = Matrix.CreatePerspectiveFOV(
                 (float)Math.PI / 3.0f,
                 (float)width / height,
                 0.1f, 10000);
@@ -52,8 +51,8 @@ namespace Spectrum.Framework.Graphics
             {
                 return Transform * Matrix.CreateLookAt(
                     Position,
-                    Vector3.Transform(Vector3.Forward, Orientation) + Position,
-                    Vector3.Transform(Vector3.Up, Orientation));
+                    Orientation * Vector3.Forward + Position,
+                    Orientation * Vector3.Up);
             }
         }
 
@@ -64,11 +63,11 @@ namespace Spectrum.Framework.Graphics
                 Vector3 refCP = Position;
                 refCP.Y = -refCP.Y + 2 * Water.waterHeight;
 
-                Vector3 refTP = Vector3.Transform(Vector3.Forward, Orientation) + Position;
+                Vector3 refTP = Orientation * Vector3.Forward + Position;
                 refTP.Y = -refTP.Y + 2 * Water.waterHeight;
 
-                Vector3 cameraRight = Vector3.Transform(new Vector3(1, 0, 0), Orientation);
-                Vector3 invUpVector = Vector3.Cross(cameraRight, refTP - refCP);
+                Vector3 cameraRight = Orientation * Vector3.Right;
+                Vector3 invUpVector = cameraRight.Cross(refTP - refCP);
 
                 return Matrix.CreateLookAt(refCP, refTP, invUpVector);
             }
@@ -94,16 +93,16 @@ namespace Spectrum.Framework.Graphics
             return new Ray(nearPoint, direction);
         }
 
-        public Vector3 Forward => Vector3.Transform(Vector3.Forward, Orientation);
+        public Vector3 Forward => Orientation * Vector3.Forward;
     }
     public class Camera2D : ICamera
     {
         public Vector2 Position;
 
-        public Matrix View => Transform * Matrix.CreateTranslation(-1 * ((ICamera)this).Position);
+        public Matrix View => Transform * Matrix.CreateTranslation(-((ICamera)this).Position);
         public Matrix Projection { get; set; } = Matrix.Identity;
         public Matrix Transform { get; set; } = Matrix.Identity;
-        Vector3 ITransform.Position => new Vector3(Position, 1);
+        Vector3 ITransform.Position => new Vector3(Position.X, Position.Y, 1);
         Quaternion ITransform.Orientation => Quaternion.Identity;
         public void UpdateProjection(int width, int height)
         {

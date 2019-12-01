@@ -565,19 +565,11 @@ namespace Spectrum.Framework.Physics
             {
                 if (!body.IsStatic && body.IsActive)// && !(body as Character != null && (body as Character).IsOnGround))
                 {
-                    Vector3 temp;
-                    Vector3.Multiply(ref body.force, body.inverseMass * timestep, out temp);
-                    Vector3.Add(ref temp, ref body.linearVelocity, out body.linearVelocity);
-
-                    Vector3.Multiply(ref body.torque, timestep, out temp);
-                    Vector3.Transform(ref temp, ref body.invInertiaWorld, out temp);
-                    Vector3.Add(ref temp, ref body.angularVelocity, out body.angularVelocity);
+                    body.linearVelocity += body.force * body.inverseMass * timestep;
+                    body.angularVelocity += body.invInertiaWorld * (body.torque * timestep);
 
                     if (body.affectedByGravity)
-                    {
-                        Vector3.Multiply(ref gravity, timestep, out temp);
-                        Vector3.Add(ref body.linearVelocity, ref temp, out body.linearVelocity);
-                    }
+                        body.linearVelocity += gravity * timestep;
                 }
 
                 body.force = new Vector3();
@@ -593,33 +585,21 @@ namespace Spectrum.Framework.Physics
         {
             GameObject body = obj as GameObject;
 
-            Vector3 temp;
-            Vector3.Multiply(ref body.linearVelocity, timestep, out temp);
-            Vector3.Add(ref temp, ref body.position, out body.position);
-
+            body.position += body.linearVelocity * timestep;
 
             //exponential map
             Vector3 axis;
-            float angle = body.angularVelocity.Length();
+            float angle = body.angularVelocity.Length;
 
+            // use Taylor's expansions of sync function
             if (angle < 0.001f)
-            {
-                // use Taylor's expansions of sync function
-                // axis = body.angularVelocity * (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle);
-                Vector3.Multiply(ref body.angularVelocity, (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle), out axis);
-            }
+                axis = body.angularVelocity * (0.5f * timestep - (timestep * timestep * timestep) * (0.020833333333f) * angle * angle);
+            // sync(fAngle) = sin(c*fAngle)/t
             else
-            {
-                // sync(fAngle) = sin(c*fAngle)/t
-                Vector3.Multiply(ref body.angularVelocity, ((float)Math.Sin(0.5f * angle * timestep) / angle), out axis);
-            }
+                axis = body.angularVelocity * ((float)Math.Sin(0.5f * angle * timestep) / angle);
 
             Quaternion dorn = new Quaternion(axis.X, axis.Y, axis.Z, (float)Math.Cos(angle * timestep * 0.5f));
-
-            Quaternion.Multiply(ref dorn, ref body.orientation, out body.orientation);
-
-            body.orientation.Normalize();
-
+            body.orientation = (dorn * body.orientation).Normal();
 
             if ((body.Damping & GameObject.DampingType.Linear) != 0)
                 Vector3.Multiply(ref body.linearVelocity, currentLinearDampFactor, out body.linearVelocity);
@@ -678,7 +658,7 @@ namespace Spectrum.Framework.Physics
 
             if (arbiter.Body1 == body1)
             {
-                Vector3.Negate(ref normal, out normal);
+                normal = -normal;
                 contact = arbiter.AddContact(point, normal, penetration, contactSettings);
             }
             else

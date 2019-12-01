@@ -281,25 +281,24 @@ namespace Spectrum.Framework.Entities
                 //TODO: This might be useful to cache on the object if its needed elsewhere
                 // or it should just get removed and figure out how to do everything with quaternions
                 Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
-                Quaternion.Inverse(ref orientation, out invOrientation);
+                invOrientation = orientation.Inverse();
                 Matrix invOrientationMat = Matrix.CreateFromQuaternion(invOrientation);
 
                 if (Shape != null)
                 {
                     //Set mass properties
                     inertia = Shape.inertia;
-                    Matrix.Invert(ref inertia, out invInertia);
+                    invInertia = inertia.Invert();
                     inverseMass = 1.0f / Shape.mass;
 
                     // Given: Orientation, Inertia
                     Shape.GetBoundingBox(ref orientationMat, out boundingBox);
-                    Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
+                    boundingBox.Min += position;
                     boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
-                    Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
+                    boundingBox.Max += position;
                     boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
                 }
-                Matrix.Multiply(ref invOrientationMat, ref invInertia, out invInertiaWorld);
-                Matrix.Multiply(ref invInertiaWorld, ref orientationMat, out invInertiaWorld);
+                invInertiaWorld = invOrientationMat * invInertia * orientationMat;
             }
         }
         #endregion
@@ -361,8 +360,8 @@ namespace Spectrum.Framework.Entities
                 JBBox boundingBox;
                 Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
                 Shape.GetBoundingBox(ref orientationMat, out boundingBox);
-                Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
-                Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
+                boundingBox.Min += position;
+                boundingBox.Max += position;
                 Batch3D.Current.DrawJBBox(boundingBox, Color.Black);
                 //GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
                 if (!IsStatic)

@@ -60,10 +60,8 @@ namespace Spectrum.Framework
             Vector3 vUp = Vector3.Up;
             if (vDirection.X == 0 && vDirection.Z == 0)
                 vUp = Vector3.Left;
-            Vector3 vRight = Vector3.Cross(vUp, vDirection);
-            vRight.Normalize();
-            vUp = Vector3.Cross(vDirection, vRight);
-            vUp.Normalize();
+            Vector3 vRight = vUp.Cross(vDirection).Normal();
+            vUp = vDirection.Cross(vRight).Normal();
             Matrix mBasis = new Matrix(vRight.X, vRight.Y, vRight.Z, 0.0f,
                                         vUp.X, vUp.Y, vUp.Z, 0.0f,
                                         vDirection.X, vDirection.Y, vDirection.Z, 0.0f,

@@ -77,7 +77,7 @@ namespace Spectrum.Framework.Graphics
             {
                 JBBox output = JBBox.SmallBox;
                 foreach (var vert in vertices)
-                    output.AddPoint(Vector3.Transform(vert.Position, permanentTransform * transform));
+                    output.AddPoint(permanentTransform * transform * vert.Position);
 
                 return output;
             }

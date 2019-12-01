@@ -60,7 +60,7 @@ namespace Spectrum.Framework.Input
         public VRAxisSet Axis;
         public Vector2 Axis0Direction;
         public double AxisAngle(int axis) { return Math.Atan2(Axis[axis].Y, Axis[axis].X); }
-        public Vector3 Direction { get => Vector3.Transform(Vector3.Forward, Rotation); }
+        public Vector3 Direction { get => Rotation * Vector3.Forward; }
         public Vector3 Position;
         public Vector3 PositionDelta;
         public Quaternion Rotation;
@@ -92,7 +92,7 @@ namespace Spectrum.Framework.Input
             Axis0Direction = Axis[0];
             Axis0Direction.Normalize();
             var rotation = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).ToQuaternion();
-            RotationDelta = Quaternion.Inverse(Rotation) * rotation;
+            RotationDelta = Rotation.Inverse() * rotation;
             Rotation = rotation;
             Pointing = Quaternion.CreateFromAxisAngle(Vector3.Right, -(float)Math.PI / 3f).Concat(Rotation);
             var position = (Hand == VRHand.Left ? SpecVR.LeftHand : SpecVR.RightHand).Translation;

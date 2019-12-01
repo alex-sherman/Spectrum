@@ -212,7 +212,7 @@ namespace Spectrum.Framework.Content.ModelParsing
 
             foreach (Bone bone in output.Bones.Values)
             {
-                bone.inverseBindPose = Matrix.Invert(bone.withParentTransform);
+                bone.inverseBindPose = bone.withParentTransform.Invert();
             }
             return output;
         }

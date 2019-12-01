@@ -141,7 +141,7 @@ namespace Spectrum.Framework.Input
         public Vector2 GetAxis2D(string horizontal, string vertical, bool limitToOne = false, PlayerInformation playerInfo = null)
         {
             Vector2 output = new Vector2(GetAxis1D(horizontal, playerInfo), GetAxis1D(vertical, playerInfo));
-            if (limitToOne && output.LengthSquared() > 1)
+            if (limitToOne && output.LengthSquared > 1)
                 output.Normalize();
             return output;
         }

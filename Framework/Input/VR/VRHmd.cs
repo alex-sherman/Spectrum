@@ -21,7 +21,7 @@ namespace Spectrum.Framework.Input
             PositionDelta = position - Position;
             Position = position;
             var rotation = SpecVR.HeadPose.ToQuaternion();
-            RotationDelta = rotation * Quaternion.Inverse(Rotation);
+            RotationDelta = rotation * Rotation.Inverse();
             Rotation = rotation;
         }
     }

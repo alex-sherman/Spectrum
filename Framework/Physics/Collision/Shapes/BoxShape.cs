@@ -44,7 +44,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// The sidelength of the box.
         /// </summary>
         [ProtoMember(1)]
-        public Vector3 Size { 
+        public Vector3 Size
+        {
             get { return size; }
             set { size = value; UpdateShape(); }
         }
@@ -53,7 +54,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         public Vector3 Position
         {
             get { return position; }
-            set { position = value;  UpdateShape(); }
+            set { position = value; UpdateShape(); }
         }
 
         public BoxShape() { }
@@ -105,12 +106,10 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         public override void GetBoundingBox(ref Matrix orientation, out JBBox box)
         {
             Matrix abs; JMath.Absolute(ref orientation, out abs);
-            Vector3 temp = halfSize + position;
-            Vector3.Transform(ref temp, ref abs, out temp);
+            Vector3 temp = abs * (halfSize + position);
             box.Max = temp;
 
-            temp = -halfSize + position;
-            Vector3.Transform(ref temp, ref abs, out temp);
+            temp = abs * (-halfSize + position);
             box.Min = temp;
 
         }
@@ -142,9 +141,12 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="result">The result.</param>
         public override void SupportMapping(ref Vector3 direction, out Vector3 result)
         {
-            result.X = (float)Math.Sign(direction.X) * halfSize.X + position.X;
-            result.Y = (float)Math.Sign(direction.Y) * halfSize.Y + position.Y;
-            result.Z = (float)Math.Sign(direction.Z) * halfSize.Z + position.Z;
+            result = new Vector3
+            {
+                X = Math.Sign(direction.X) * halfSize.X + position.X,
+                Y = Math.Sign(direction.Y) * halfSize.Y + position.Y,
+                Z = Math.Sign(direction.Z) * halfSize.Z + position.Z
+            };
         }
 
         public override void SetScale(float scale)

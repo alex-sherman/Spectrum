@@ -97,8 +97,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         public override void SupportMapping(ref Vector3 direction, out Vector3 result)
         {
             float sigma = (float)Math.Sqrt((float)(direction.X * direction.X + direction.Z * direction.Z));
-
-            if (direction.Y > direction.Length() * sina)
+            result = new Vector3();
+            if (direction.Y > direction.Length * sina)
             {
                 result.X = 0.0f;
                 result.Y = (.5f) * height;

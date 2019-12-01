@@ -138,8 +138,7 @@ namespace Spectrum.Framework
                 //if (flippedVert)
                 //    p.Y += pCurrentGlyph->BoundsInTexture.Height - spriteFont.LineSpacing;
                 p.Y += pCurrentGlyph.Cropping.Y;
-
-                Vector2.Transform(ref p, ref transformation, out p);
+                p = p.Transform(transformation);
 
                 _texCoordTL.X = pCurrentGlyph.BoundsInTexture.X * spriteFont.Texture.TexelWidth;
                 _texCoordTL.Y = pCurrentGlyph.BoundsInTexture.Y * spriteFont.Texture.TexelHeight;

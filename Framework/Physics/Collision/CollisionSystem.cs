@@ -283,9 +283,9 @@ namespace Spectrum.Framework.Physics.Collision
 
         private void SupportMapping(GameObject body, Shape workingShape, ref Vector3 direction, out Vector3 result)
         {
-            result = Vector3.Transform(direction, body.InvOrientation);
+            result = body.InvOrientation * direction;
             workingShape.SupportMapping(ref result, out result);
-            result = Vector3.Transform(direction, body.Orientation);
+            result = body.Orientation * direction;
             result += body.Position;
         }
 

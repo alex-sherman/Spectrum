@@ -104,23 +104,6 @@ namespace Spectrum.Framework.Graphics
                     GenerateVRTargets();
             }
         }
-        public static Vector3 ViewToScreenPosition(Vector3 ViewPosition)
-        {
-            return device.Viewport.Project(ViewPosition, Camera.Projection, Matrix.Identity, Matrix.Identity);
-        }
-        public static Vector3 FullScreenPos(Vector3 WorldPos)
-        {
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = device.Viewport.Project(WorldPos, Camera.Projection, Camera.View, world);
-            return screenPos;
-        }
-        public static Vector2 ScreenPos(Vector3 WorldPos)
-        {
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = device.Viewport.Project(WorldPos, Camera.Projection, Camera.View, world);
-            return new Vector2(screenPos.X, screenPos.Y);
-        }
-
         private static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
         {
             if (instanceBuffer != null)
@@ -356,8 +339,8 @@ namespace Spectrum.Framework.Graphics
             BeginRender(camera);
 
             var vrRenderTimer = DebugTiming.Render.Time("VR Render");
-            Matrix left_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
-            Matrix right_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
+            var left_offset = ((Matrix)OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left)).Invert();
+            var right_offset = ((Matrix)OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right)).Invert();
             VRRender(camera.View, renderGroups, EVREye.Eye_Right, right_offset, VRTargetR);
             VRRender(camera.View, renderGroups, EVREye.Eye_Left, left_offset, VRTargetL);
             if (target != null)

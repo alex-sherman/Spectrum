@@ -404,9 +404,8 @@ namespace Spectrum.Framework.Physics.Collision
                 Vector3 tempNormal; float tempFraction;
                 bool multiShapeCollides = false;
 
-                Vector3 transformedOrigin = Vector3.Subtract(rayOrigin, body.Position);
-                transformedOrigin = Vector3.Transform(transformedOrigin, body.InvOrientation);
-                Vector3 transformedDirection = Vector3.Transform(rayDirection, body.InvOrientation);
+                Vector3 transformedOrigin = body.InvOrientation * (rayOrigin - body.Position);
+                Vector3 transformedDirection = body.InvOrientation * rayDirection;
 
                 int msLength = ms.Prepare(ref transformedOrigin, ref transformedDirection);
 

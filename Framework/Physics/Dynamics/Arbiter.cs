@@ -193,8 +193,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             int nearestPoint = -1;
             for (int i = 0; i < size; i++)
             {
-                Vector3 diffA; Vector3.Subtract(ref ContactList[i].relativePos1,ref realRelPos1,out diffA);
-                float distToManiPoint = diffA.LengthSquared();
+                float distToManiPoint = (ContactList[i].relativePos1 - realRelPos1).LengthSquared;
                 if (distToManiPoint < shortestDist)
                 {
                     shortestDist = distToManiPoint;

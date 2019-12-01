@@ -4,6 +4,9 @@
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <Platforms>x86</Platforms>
     <Configurations>Debug;Release;Steam-Debug;Steam-Release</Configurations>
+    <RestoreSources>
+      http://vector57.net:5000/v3/index.json
+    </RestoreSources>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <DefineConstants>DEBUG;TRACE;</DefineConstants>
@@ -140,9 +143,7 @@
     <PackageReference Include="IronPython" Version="2.7.9" />
     <PackageReference Include="Microsoft.CSharp" Version="4.6.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="Replicate\Replicate\Replicate.csproj" />
+    <PackageReference Include="Replicate" Version="0.1.6" />
   </ItemGroup>
 
   <PropertyGroup>
