@@ -34,7 +34,7 @@ namespace Spectrum.Framework
     public static class TransformExtension
     {
         public static Matrix World(this ITransform transform)
-            => Matrix.CreateFromQuaternion(transform.Orientation) * Matrix.CreateTranslation(transform.Position);
+            => transform.Orientation.ToMatrix() * Matrix.CreateTranslation(transform.Position);
         public static Vector3 Apply(this ITransform transform, Vector3 point)
             => transform.World() * point;
     }

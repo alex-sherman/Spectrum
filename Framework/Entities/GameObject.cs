@@ -214,7 +214,7 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// The world matrix for the purposes of drawing the game object
         /// </summary>
-        public Matrix World => ModelTransform * Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position);
+        public Matrix World => ModelTransform * orientation.ToMatrix() * Matrix.CreateTranslation(position);
         public MaterialData Material;
         public Texture2D Texture { get => Material?.DiffuseTexture; set => (Material ?? (Material = new MaterialData())).DiffuseTexture = value; }
         public bool DisableInstancing;
@@ -264,7 +264,7 @@ namespace Spectrum.Framework.Entities
             if (!IsStatic && ReplicationData != null)
             {
                 ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
-                ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
+                //ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
             }
             if (UseFixedRender)
                 RegisterDraws();
@@ -280,9 +280,9 @@ namespace Spectrum.Framework.Entities
                 dirtyPhysics = false;
                 //TODO: This might be useful to cache on the object if its needed elsewhere
                 // or it should just get removed and figure out how to do everything with quaternions
-                Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
+                Matrix orientationMat = orientation.ToMatrix();
                 invOrientation = orientation.Inverse();
-                Matrix invOrientationMat = Matrix.CreateFromQuaternion(invOrientation);
+                Matrix invOrientationMat = invOrientation.ToMatrix();
 
                 if (Shape != null)
                 {
@@ -358,7 +358,7 @@ namespace Spectrum.Framework.Entities
             if (Shape != null)
             {
                 JBBox boundingBox;
-                Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
+                Matrix orientationMat = orientation.ToMatrix();
                 Shape.GetBoundingBox(ref orientationMat, out boundingBox);
                 boundingBox.Min += position;
                 boundingBox.Max += position;

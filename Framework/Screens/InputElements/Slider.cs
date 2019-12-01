@@ -75,7 +75,7 @@ namespace Spectrum.Framework.Screens.InputElements
             if (dragging)
             {
                 otherTookInput = true;
-                Value = (input.CursorState.X - sliderTrack.Rect.Left) * 1.0f / sliderTrack.MeasuredWidth;
+                Value = (input.MousePosition.X - sliderTrack.Rect.Left) * 1.0f / sliderTrack.MeasuredWidth;
                 OnValueChanged?.Invoke(Value);
             }
             return otherTookInput;

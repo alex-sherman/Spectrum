@@ -75,7 +75,7 @@ namespace Spectrum.Framework.VR
             if (Cursor != null)
                 InputState.CursorState = GetCursorState(InputState);
             else
-                InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
+                InputState.CursorState = new CursorState() { P = new Point(-1, -1), buttons = new bool[16] };
             Root.Update(dt, InputState);
             Root.Draw(dt);
             Draw(World * CameraTransform);
@@ -120,8 +120,8 @@ namespace Spectrum.Framework.VR
                     HitPosition = _position + direction * fraction;
                     Vector3 localPos = World.Invert() * HitPosition.Value;
                     Vector2 cursorPos = new Vector2(localPos.X / Size.X, -localPos.Y / Size.Y) + Vector2.One / 2;
-                    cursorState.X = (int)(cursorPos.X * RenderTargetSize.X);
-                    cursorState.Y = (int)(cursorPos.Y * RenderTargetSize.Y);
+                    cursorState.P.X = (int)(cursorPos.X * RenderTargetSize.X);
+                    cursorState.P.Y = (int)(cursorPos.Y * RenderTargetSize.Y);
                     (FillCursorState ?? fillCursorState)(cursorState, input);
                 }
                 else

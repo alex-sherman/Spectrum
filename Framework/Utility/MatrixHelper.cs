@@ -7,6 +7,7 @@ using System.Text;
 
 namespace Spectrum.Framework
 {
+    // TODO: Probably remove this
     public static class MatrixHelper
     {
         public static float[] ToArray(this Matrix matrix)
@@ -46,12 +47,11 @@ namespace Spectrum.Framework
         }
         public static Matrix CreateRotation(JToken jobj)
         {
-            return Matrix.CreateFromQuaternion(
-                    new Quaternion(
-                        (float)jobj[0],
-                        (float)jobj[1],
-                        (float)jobj[2],
-                        (float)jobj[3]));
+            return new Quaternion(
+                (float)jobj[0],
+                (float)jobj[1],
+                (float)jobj[2],
+                (float)jobj[3]).ToMatrix();
         }
         public static Matrix RotationFromDirection(Vector3 vDirection)
         {
@@ -72,20 +72,12 @@ namespace Spectrum.Framework
         {
             return RotationFromDirection(vDirection).ToQuaternion();
         }
-        public static Quaternion ToQuaternion(this Matrix matrix)
-        {
-            var r0 = new Vector3(matrix.M11, matrix.M12, matrix.M13); r0.Normalize();
-            var r1 = new Vector3(matrix.M21, matrix.M22, matrix.M23); r1.Normalize();
-            var r2 = new Vector3(matrix.M31, matrix.M32, matrix.M33); r2.Normalize();
-            return Quaternion.CreateFromRotationMatrix(new Matrix(new Vector4(r0, 0), new Vector4(r1, 0), new Vector4(r2, 0), new Vector4(0, 0, 0, 1)));
-        }
-        public static Matrix ToMatrix(this Quaternion quaternion)
-        {
-            return Matrix.CreateFromQuaternion(quaternion);
-        }
-        public static Quaternion Concat(this Quaternion quata, Quaternion quatb)
-        {
-            return Quaternion.Concatenate(quata, quatb);
-        }
+        //public static Quaternion ToQuaternion(this Matrix matrix)
+        //{
+        //    var r0 = new Vector3(matrix.M11, matrix.M12, matrix.M13); r0.Normalize();
+        //    var r1 = new Vector3(matrix.M21, matrix.M22, matrix.M23); r1.Normalize();
+        //    var r2 = new Vector3(matrix.M31, matrix.M32, matrix.M33); r2.Normalize();
+        //    return Quaternion.CreateFromRotationMatrix(new Matrix(new Vector4(r0, 0), new Vector4(r1, 0), new Vector4(r2, 0), new Vector4(0, 0, 0, 1)));
+        //}
     }
 }

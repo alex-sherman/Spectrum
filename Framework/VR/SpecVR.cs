@@ -135,7 +135,7 @@ namespace Spectrum.Framework.VR
         }
         public static Vector3 HeadPosition(Vector3? basis = null, Vector3? orientedOffset = null)
         {
-            var derp = Vector3.Transform((orientedOffset ?? Vector3.Zero), HeadPose.ToQuaternion());
+            var derp = HeadPose.ToQuaternion() * (orientedOffset ?? Vector3.Zero);
             return (basis ?? Vector3.Zero) + HeadPose.Translation + derp;
         }
         static StringBuilder textBuilder = new StringBuilder(1024);

@@ -72,20 +72,19 @@ namespace Spectrum.Framework.Screens
                 }
                 if (input.IsNewMousePress(0))
                 {
-                    if (Rect.Contains(input.CursorState.X, input.CursorState.Y))
+                    if (Rect.Contains(input.CursorState.P))
                     {
                         otherTookInput = true;
                         Parent.MoveElement(this, 0);
                     }
-                    if (CloseButtonRect.Contains(input.CursorState.X, input.CursorState.Y))
+                    if (CloseButtonRect.Contains(input.CursorState.P))
                     {
                         Close();
                     }
-                    if (TitleContainer.Rect.Contains(input.CursorState.X, input.CursorState.Y))
+                    if (TitleContainer.Rect.Contains(input.CursorState.P))
                     {
                         dragging = true;
-                        dragMouseBegin.X = input.CursorState.X;
-                        dragMouseBegin.Y = input.CursorState.Y;
+                        dragMouseBegin = (Vector2)input.CursorState.P;
                         dragBegin.X = Rect.X;
                         dragBegin.Y = Rect.Y;
                         otherTookInput = true;
@@ -98,7 +97,7 @@ namespace Spectrum.Framework.Screens
                 if (dragging)
                 {
                     otherTookInput = true;
-                    Vector2 newPos = new Vector2(input.CursorState.X, input.CursorState.Y) - dragMouseBegin + dragBegin;
+                    Vector2 newPos = (Vector2)input.CursorState.P - dragMouseBegin + dragBegin;
 
                     X = (int)newPos.X;
                     Y = (int)newPos.Y;

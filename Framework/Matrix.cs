@@ -35,10 +35,6 @@ namespace Spectrum.Framework
             M31 = m31; M32 = m32; M33 = m33; M34 = m34;
             M41 = m41; M42 = m42; M43 = m43; M44 = m44;
         }
-        public Matrix(Quaternion q)
-        {
-            this = Identity;
-        }
 
         public static Matrix Identity { get; } = new Matrix(
             1, 0, 0, 0,
@@ -74,31 +70,6 @@ namespace Spectrum.Framework
                 M43 = (near * far) / (near - far)
             };
         }
-        public static Matrix CreateFromQuaternion(Quaternion q)
-        {
-            float x2 = q.X * q.X;
-            float y2 = q.Y * q.Y;
-            float z2 = q.Z * q.Z;
-            float xy = q.X * q.Y;
-            float zw = q.Z * q.W;
-            float zx = q.Z * q.X;
-            float yw = q.Y * q.W;
-            float yz = q.Y * q.Z;
-            float xw = q.X * q.W;
-            return new Matrix
-            {
-                M11 = 1f - (2f * (y2 + z2)),
-                M12 = 2f * (xy + zw),
-                M13 = 2f * (zx - yw),
-                M21 = 2f * (xy - zw),
-                M22 = 1f - (2f * (z2 + x2)),
-                M23 = 2f * (yz + xw),
-                M31 = 2f * (zx + yw),
-                M32 = 2f * (yz - xw),
-                M33 = 1f - (2f * (y2 + x2)),
-                M44 = 1f
-            };
-        }
         public static implicit operator Microsoft.Xna.Framework.Matrix(Matrix m)
         {
             return new Microsoft.Xna.Framework.Matrix(
@@ -114,6 +85,20 @@ namespace Spectrum.Framework
                 M12, M22, M32, M42,
                 M13, M23, M33, M43,
                 M14, M24, M34, M44);
+        }
+        public float Determinant()
+        {
+            float num18 = (M33 * M44) - (M34 * M43);
+            float num17 = (M32 * M44) - (M34 * M42);
+            float num16 = (M32 * M43) - (M33 * M42);
+            float num15 = (M31 * M44) - (M34 * M41);
+            float num14 = (M31 * M43) - (M33 * M41);
+            float num13 = (M31 * M42) - (M32 * M41);
+            return
+                + (M11 * ((M22 * num18) - (M23 * num17) + (M24 * num16)))
+                - (M12 * ((M21 * num18) - (M23 * num15) + (M24 * num14)))
+                + (M13 * ((M21 * num17) - (M22 * num15) + (M24 * num13)))
+                - (M14 * ((M21 * num16) - (M22 * num14) + (M23 * num13)));
         }
         public static Matrix operator *(Matrix a, Matrix b)
         {
@@ -209,6 +194,12 @@ namespace Spectrum.Framework
                 v.X * m.M11 + v.Y * m.M21 + v.Z * m.M31 + m.M41,
                 v.X * m.M12 + v.Y * m.M22 + v.Z * m.M32 + m.M42,
                 v.X * m.M13 + v.Y * m.M23 + v.Z * m.M33 + m.M43);
+        }
+        public static Vector2 operator *(Matrix m, Vector2 v)
+        {
+            return new Vector2(
+                v.X * m.M11 + v.Y * m.M21 + m.M41,
+                v.X * m.M12 + v.Y * m.M22 + m.M42);
         }
         public Matrix Invert()
         {
@@ -409,7 +400,150 @@ namespace Spectrum.Framework
             m.Translation = v;
             return m;
         }
-        public static Matrix CreateScale(float x, float y, float z) => new Matrix() { M11 = x, M22 = y, M33 = z };
+        public static Matrix CreateScale(float x, float y, float z) => new Matrix() { M11 = x, M22 = y, M33 = z, M44 = 1 };
+        public static Matrix CreateScale(Vector3 v) => new Matrix() { M11 = v.X, M22 = v.Y, M33 = v.Z, M44 = 1 };
         public static Matrix CreateScale(float s) => CreateScale(s, s, s);
+        public static Matrix CreateLookAt(Vector3 cameraPosition, Vector3 cameraTarget, Vector3 cameraUpVector)
+        {
+            var backward = (cameraPosition - cameraTarget).Normal();
+            var right = cameraUpVector.Cross(backward).Normal();
+            var up = backward.Cross(right);
+            return new Matrix
+            {
+                M11 = right.X,
+                M12 = up.X,
+                M13 = backward.X,
+                M21 = right.Y,
+                M22 = up.Y,
+                M23 = backward.Y,
+                M31 = right.Z,
+                M32 = up.Z,
+                M33 = backward.Z,
+                M41 = -Vector3.Dot(right, cameraPosition),
+                M42 = -Vector3.Dot(up, cameraPosition),
+                M43 = -Vector3.Dot(backward, cameraPosition),
+                M44 = 1f
+            };
+        }
+        public static Matrix CreateFromYawPitchRoll(float yaw, float pitch, float roll) => Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll).ToMatrix();
+        public static Matrix CreateRotationX(float radians)
+        {
+            var cos = (float)Math.Cos(radians);
+            var sin = (float)Math.Sin(radians);
+            var result = Identity;
+            result.M22 = cos;
+            result.M23 = sin;
+            result.M32 = -sin;
+            result.M33 = cos;
+            return result;
+        }
+        public static Matrix CreateRotationY(float radians)
+        {
+            var cos = (float)Math.Cos(radians);
+            var sin = (float)Math.Sin(radians);
+            var result = Identity;
+            result.M11 = cos;
+            result.M13 = -sin;
+            result.M31 = sin;
+            result.M33 = cos;
+            return result;
+        }
+        public static Matrix CreateRotationZ(float radians)
+        {
+            var cos = (float)Math.Cos(radians);
+            var sin = (float)Math.Sin(radians);
+            var result = Identity;
+            result.M11 = cos;
+            result.M12 = sin;
+            result.M21 = -sin;
+            result.M22 = cos;
+            return result;
+        }
+        public static Matrix CreateFromAxisAngle(Vector3 axis, float angle)
+        {
+            float x = axis.X;
+            float y = axis.Y;
+            float z = axis.Z;
+            float sin = (float)Math.Sin(angle);
+            float cos = (float)Math.Cos(angle);
+            float x2 = x * x;
+            float y2 = y * y;
+            float z2 = z * z;
+            float xy = x * y;
+            float xz = x * z;
+            float yz = y * z;
+            return new Matrix
+            {
+                M11 = x2 + (cos * (1f - x2)),
+                M12 = (xy - (cos * xy)) + (sin * z),
+                M13 = (xz - (cos * xz)) - (sin * y),
+                M14 = 0,
+                M21 = (xy - (cos * xy)) - (sin * z),
+                M22 = y2 + (cos * (1f - y2)),
+                M23 = (yz - (cos * yz)) + (sin * x),
+                M24 = 0,
+                M31 = (xz - (cos * xz)) + (sin * y),
+                M32 = (yz - (cos * yz)) - (sin * x),
+                M33 = z2 + (cos * (1f - z2)),
+                M34 = 0,
+                M41 = 0,
+                M42 = 0,
+                M43 = 0,
+                M44 = 1
+            };
+        }
+        public Quaternion ToQuaternion()
+        {
+            Quaternion quaternion = new Quaternion();
+            float sqrt;
+            float half;
+            float scale = M11 + M22 + M33;
+
+            if (scale > 0.0f)
+            {
+                sqrt = (float)Math.Sqrt(scale + 1.0f);
+                quaternion.W = sqrt * 0.5f;
+                sqrt = 0.5f / sqrt;
+
+                quaternion.X = (M23 - M32) * sqrt;
+                quaternion.Y = (M31 - M13) * sqrt;
+                quaternion.Z = (M12 - M21) * sqrt;
+
+                return quaternion;
+            }
+            if ((M11 >= M22) && (M11 >= M33))
+            {
+                sqrt = (float)Math.Sqrt(1.0f + M11 - M22 - M33);
+                half = 0.5f / sqrt;
+
+                quaternion.X = 0.5f * sqrt;
+                quaternion.Y = (M12 + M21) * half;
+                quaternion.Z = (M13 + M31) * half;
+                quaternion.W = (M23 - M32) * half;
+
+                return quaternion;
+            }
+            if (M22 > M33)
+            {
+                sqrt = (float)Math.Sqrt(1.0f + M22 - M11 - M33);
+                half = 0.5f / sqrt;
+
+                quaternion.X = (M21 + M12) * half;
+                quaternion.Y = 0.5f * sqrt;
+                quaternion.Z = (M32 + M23) * half;
+                quaternion.W = (M31 - M13) * half;
+
+                return quaternion;
+            }
+            sqrt = (float)Math.Sqrt(1.0f + M33 - M11 - M22);
+            half = 0.5f / sqrt;
+
+            quaternion.X = (M31 + M13) * half;
+            quaternion.Y = (M32 + M23) * half;
+            quaternion.Z = 0.5f * sqrt;
+            quaternion.W = (M12 - M21) * half;
+
+            return quaternion;
+        }
     }
 }

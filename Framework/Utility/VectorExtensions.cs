@@ -60,12 +60,5 @@ namespace Spectrum.Framework
                 return (float)(Math.Sign(sinp) * Math.PI / 2); // use 90 degrees if out of range
             return (float)Math.Asin(sinp);
         }
-        public static Rectangle Clip(this Rectangle rect, Rectangle other)
-        {
-            var X = Math.Max(rect.X, other.X);
-            var Y = Math.Max(rect.Y, other.Y);
-            return new Rectangle(X, Y,
-                Math.Min(rect.Right, other.Right) - X, Math.Min(rect.Bottom, other.Bottom) - Y);
-        }
     }
 }

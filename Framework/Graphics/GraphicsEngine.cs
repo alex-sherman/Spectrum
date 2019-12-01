@@ -329,7 +329,7 @@ namespace Spectrum.Framework.Graphics
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, RasterizerState.CullNone, PostProcessEffect.effect);
-                spriteBatch.Draw(AATarget, new Rectangle(0, 0, target.Width, target.Height), Color.White);
+                spriteBatch.Draw(AATarget, new Microsoft.Xna.Framework.Rectangle(0, 0, target.Width, target.Height), Color.White);
                 spriteBatch.End();
             }
             mainRenderTimer?.Stop();

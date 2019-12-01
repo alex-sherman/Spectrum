@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Utility
 {
+    using Rectangle = Microsoft.Xna.Framework.Rectangle;
     public static class RectangleExtensions
     {
         /// <summary>

@@ -30,7 +30,6 @@ namespace Spectrum.Framework
             X /= length; Y /= length; Z /= length;
         }
         public Vector3 Normal() => new Vector3(X / Length, Y / Length, Z / Length);
-        //public Vector3 Transform(Matrix matrix) => new Vector3((X * matrix.M11) + (Y * matrix.M21) + matrix.M41, (X * matrix.M12) + (Y * matrix.M22) + matrix.M42);
         public static float Dot(Vector3 a, Vector3 b) => a.Dot(b);
         public float Dot(Vector3 b) => X * b.X + Y * b.Y + Z * b.Z;
         public Vector3 Cross(Vector3 b) => new Vector3(
@@ -74,16 +73,12 @@ namespace Spectrum.Framework
             return hashCode;
         }
         #endregion
-        /// <summary>
-        /// Returns the element-wise minimum of two vectors
-        /// </summary>
+        /// <summary>Returns the element-wise minimum of two vectors</summary>
         public static Vector3 Min(Vector3 a, Vector3 b)
         {
             return new Vector3(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y), Math.Min(a.Z, b.Z));
         }
-        /// <summary>
-        /// Returns the element-wise maximum of two vectors
-        /// </summary>
+        /// <summary>Returns the element-wise maximum of two vectors</summary>
         public static Vector3 Max(Vector3 a, Vector3 b)
         {
             return new Vector3(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z));

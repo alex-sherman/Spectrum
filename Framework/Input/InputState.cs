@@ -145,7 +145,7 @@ namespace Spectrum.Framework.Input
                 output.Normalize();
             return output;
         }
-        public Point MousePosition { get { return new Point(CursorState.X, CursorState.Y); } }
+        public Point MousePosition => CursorState.P;
         public bool IsMouseDown(int button)
         {
             if (button >= (CursorState?.buttons?.Length ?? 0))

@@ -32,6 +32,7 @@ namespace Spectrum.Framework.Entities
         public float Layer;
         public Matrix World => Matrix.CreateRotationZ(Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, Layer);
         public float Rotation = 0;
+        public Quaternion Orientation => Quaternion.CreateFromAxisAngle(Vector3.Up, Rotation);
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);

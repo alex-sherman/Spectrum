@@ -21,7 +21,6 @@ namespace Spectrum.Framework.Content.Scripting
         {
             engine = Python.CreateEngine();
             engine.Runtime.LoadAssembly(typeof(Vector2).Assembly);
-            engine.Runtime.LoadAssembly(typeof(PyScript).Assembly);
             engine.Runtime.LoadAssembly(typeof(ReplicationModel).Assembly);
             scope = engine.CreateScope();
             var source = engine.CreateScriptSourceFromString(script);

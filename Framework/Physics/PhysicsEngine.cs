@@ -601,11 +601,12 @@ namespace Spectrum.Framework.Physics
             Quaternion dorn = new Quaternion(axis.X, axis.Y, axis.Z, (float)Math.Cos(angle * timestep * 0.5f));
             body.orientation = (dorn * body.orientation).Normal();
 
+            // TODO: Don't think this damping takes into acount a non-fixed timestep?
             if ((body.Damping & GameObject.DampingType.Linear) != 0)
-                Vector3.Multiply(ref body.linearVelocity, currentLinearDampFactor, out body.linearVelocity);
+                body.linearVelocity *= currentLinearDampFactor;
 
             if ((body.Damping & GameObject.DampingType.Angular) != 0)
-                Vector3.Multiply(ref body.angularVelocity, currentAngularDampFactor, out body.angularVelocity);
+                body.angularVelocity *= currentAngularDampFactor;
 
             body.PhysicsUpdate(timestep);
 
@@ -688,8 +689,8 @@ namespace Spectrum.Framework.Physics
                     foreach (GameObject body in island.bodies)
                     {
                         // body allowdeactivation
-                        if (body.AllowDeactivation && (body.angularVelocity.LengthSquared() < inactiveAngularThresholdSq &&
-                        (body.linearVelocity.LengthSquared() < inactiveLinearThresholdSq)))
+                        if (body.AllowDeactivation && (body.angularVelocity.LengthSquared < inactiveAngularThresholdSq &&
+                        (body.linearVelocity.LengthSquared < inactiveLinearThresholdSq)))
                         {
                             body.inactiveTime += timestep;
                             if (body.inactiveTime < deactivationTime)

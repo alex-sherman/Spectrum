@@ -137,8 +137,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         public Contact AddContact(Vector3 point, Vector3 normal, float penetration, 
             ContactSettings contactSettings)
         {
-            Vector3 relPos1;
-            Vector3.Subtract(ref point, ref Body1.position, out relPos1);
+            Vector3 relPos1 = point - Body1.position;
 
             Contact remove;
 

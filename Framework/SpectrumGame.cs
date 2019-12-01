@@ -246,7 +246,7 @@ namespace Spectrum.Framework
         }
         public void HideMouse()
         {
-            mousePosition = Mouse.GetState().Position;
+            mousePosition = InputState.Current.MousePosition;
             IsMouseVisible = false;
         }
     }

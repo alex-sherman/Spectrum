@@ -283,7 +283,7 @@ namespace Spectrum.Framework.Screens
 
         public bool MouseInside(InputState input)
         {
-            return Rect.Clip(Clipped).Contains(input.MousePosition.X, input.MousePosition.Y);
+            return Rect.Clip(Clipped).Contains(input.MousePosition);
         }
 
         public virtual void Update(float gameTime)
