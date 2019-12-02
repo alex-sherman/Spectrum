@@ -45,7 +45,7 @@ namespace Spectrum.Framework
         }
         public Quaternion Inverse()
         {
-            float invLengthSquared = 1f / X * X + Y * Y + Z * Z + W * W;
+            float invLengthSquared = 1f / (X * X + Y * Y + Z * Z + W * W);
             return new Quaternion
             {
                 X = -X * invLengthSquared,
@@ -60,7 +60,7 @@ namespace Spectrum.Framework
             return new Quaternion
             {
                 X = X * invLength,
-                Y = W * invLength,
+                Y = Y * invLength,
                 Z = Z * invLength,
                 W = W * invLength,
             };
@@ -115,6 +115,8 @@ namespace Spectrum.Framework
                 M44 = 1f
             };
         }
+        [Obsolete]
+        public static Quaternion Concatenate(Quaternion a, Quaternion b) => a.Concat(b);
         public Quaternion Concat(Quaternion other)
         {
             float x2 = other.X;

@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Graphics
     }
     public class MaterialData : IEquatable<MaterialData>
     {
-        public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = Color.HotPink };
+        public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = "hotpink" };
         public string Id;
         public Color DiffuseColor = Color.White;
         public Texture2D DiffuseTexture;

@@ -70,6 +70,17 @@ namespace Spectrum.Framework
                 M43 = (near * far) / (near - far)
             };
         }
+        public static Matrix CreateOrthographic(float width, float height, float near, float far)
+        {
+            return new Matrix
+            {
+                M11 = 2f / width,
+                M22 = 2f / height,
+                M33 = 1f / (near - far),
+                M43 = near / (near - far),
+                M44 = 1f
+            };
+        }
         public static implicit operator Microsoft.Xna.Framework.Matrix(Matrix m)
         {
             return new Microsoft.Xna.Framework.Matrix(
@@ -95,7 +106,7 @@ namespace Spectrum.Framework
             float num14 = (M31 * M43) - (M33 * M41);
             float num13 = (M31 * M42) - (M32 * M41);
             return
-                + (M11 * ((M22 * num18) - (M23 * num17) + (M24 * num16)))
+                +(M11 * ((M22 * num18) - (M23 * num17) + (M24 * num16)))
                 - (M12 * ((M21 * num18) - (M23 * num15) + (M24 * num14)))
                 + (M13 * ((M21 * num17) - (M22 * num15) + (M24 * num13)))
                 - (M14 * ((M21 * num16) - (M22 * num14) + (M23 * num13)));
@@ -200,6 +211,21 @@ namespace Spectrum.Framework
             return new Vector2(
                 v.X * m.M11 + v.Y * m.M21 + m.M41,
                 v.X * m.M12 + v.Y * m.M22 + m.M42);
+        }
+        public Matrix NoTranslate()
+        {
+            return new Matrix()
+            {
+                M11 = M11,
+                M12 = M12,
+                M13 = M13,
+                M21 = M21,
+                M22 = M22,
+                M23 = M23,
+                M31 = M31,
+                M32 = M32,
+                M33 = M33
+            };
         }
         public Matrix Invert()
         {
@@ -321,7 +347,7 @@ namespace Spectrum.Framework
             double det = m[0] * inv[0] + m[1] * inv[4] + m[2] * inv[8] + m[3] * inv[12];
 
             if (det == 0)
-                throw new InvalidOperationException();
+                return new Matrix();
 
             det = 1.0 / det;
 
@@ -374,8 +400,8 @@ namespace Spectrum.Framework
                     case 13: M42 = value; break;
                     case 14: M43 = value; break;
                     case 15: M44 = value; break;
+                    default: throw new IndexOutOfRangeException();
                 }
-                throw new IndexOutOfRangeException();
             }
         }
         public float this[int row, int column]
@@ -543,7 +569,7 @@ namespace Spectrum.Framework
             quaternion.Z = 0.5f * sqrt;
             quaternion.W = (M12 - M21) * half;
 
-            return quaternion;
+            return quaternion.Normal();
         }
     }
 }

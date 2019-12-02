@@ -14,6 +14,7 @@ namespace Spectrum.Framework
         public static Vector2 UnitY => new Vector2(0, 1);
         public static Vector2 One => new Vector2(1, 1);
         public Vector2(float x, float y) { X = x; Y = y; }
+        public Vector2(float d) { X = d; Y = d; }
         public float X { get; set; }
         public float Y { get; set; }
         public void Normalize()

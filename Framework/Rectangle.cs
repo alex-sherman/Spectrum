@@ -13,9 +13,9 @@ namespace Spectrum.Framework
         public int Y { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }
-        public int Top => Height + Y;
-        public int Right => Width + X;
-        public int Bottom => Y;
+        public int Top => Y;
+        public int Right => X + Width;
+        public int Bottom => Y + Height;
         public int Left => X;
         public Rectangle Clip(Rectangle other)
         {
@@ -24,7 +24,7 @@ namespace Spectrum.Framework
             return new Rectangle(x, y,
                 Math.Min(Right, other.Right) - x, Math.Min(Bottom, other.Bottom) - y);
         }
-        public bool Contains(Point p) => Left <= p.X && p.X <= Right && Bottom <= p.Y && p.Y <= Top;
+        public bool Contains(Point p) => Left <= p.X && p.X <= Right && Top <= p.Y && p.Y <= Bottom;
         /// <summary>
         /// Scales the source rectangle (and optionally centers it) to the destination rectangle while maintaining the original aspect ratio.
         /// The crop paremeter determines whether to scale up (overflowing and requiring a crop) or down (requiring no crop).

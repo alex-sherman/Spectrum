@@ -24,12 +24,15 @@ namespace Spectrum.Framework
         public float X { get; set; }
         public float Y { get; set; }
         public float Z { get; set; }
+        [Obsolete]
         public void Normalize()
         {
-            var length = Length;
-            X /= length; Y /= length; Z /= length;
+            this /= Length;
         }
-        public Vector3 Normal() => new Vector3(X / Length, Y / Length, Z / Length);
+        public Vector3 Normal() => this / Length;
+        [Obsolete]
+        public static Vector3 Normalize(Vector3 v) => v.Normal();
+        [Obsolete]
         public static float Dot(Vector3 a, Vector3 b) => a.Dot(b);
         public float Dot(Vector3 b) => X * b.X + Y * b.Y + Z * b.Z;
         public Vector3 Cross(Vector3 b) => new Vector3(
@@ -45,6 +48,10 @@ namespace Spectrum.Framework
         public static Vector3 operator *(Vector3 a, float d) => new Vector3(a.X * d, a.Y * d, a.Z * d);
         public static Vector3 operator *(int d, Vector3 a) => new Vector3(a.X * d, a.Y * d, a.Z * d);
         public static Vector3 operator *(float d, Vector3 a) => new Vector3(a.X * d, a.Y * d, a.Z * d);
+        [Obsolete]
+        public static Vector3 Transform(Vector3 a, Matrix b) => b * a;
+        [Obsolete]
+        public static Vector3 Transform(Vector3 a, Quaternion b) => b * a;
         #region Equality
         public override bool Equals(object obj)
         {
@@ -86,13 +93,7 @@ namespace Spectrum.Framework
         public static Vector3 Lerp(Vector3 a, Vector3 b, float w) => a * (1 - w) + b * w;
         public float Length => (float)Math.Pow(LengthSquared, 0.5);
         public float LengthSquared => (float)(Math.Pow(X, 2) + Math.Pow(Y, 2) + Math.Pow(Z, 2));
-        public static implicit operator Microsoft.Xna.Framework.Vector3(Vector3 vector)
-        {
-            return new Microsoft.Xna.Framework.Vector3(vector.X, vector.Y, vector.Z);
-        }
-        public static implicit operator Vector3(Microsoft.Xna.Framework.Vector3 vector)
-        {
-            return new Vector3(vector.X, vector.Y, vector.Z);
-        }
+        public static implicit operator Microsoft.Xna.Framework.Vector3(Vector3 vector) => new Microsoft.Xna.Framework.Vector3(vector.X, vector.Y, vector.Z);
+        public static implicit operator Vector3(Microsoft.Xna.Framework.Vector3 vector) => new Vector3(vector.X, vector.Y, vector.Z);
     }
 }

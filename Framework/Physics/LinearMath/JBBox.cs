@@ -117,7 +117,7 @@ namespace Spectrum.Framework.Physics.LinearMath
             Matrix abs; JMath.Absolute(ref orientation, out abs);
             halfExtents = abs.Transpose() * halfExtents;
             Max = center + halfExtents;
-            Min = center + halfExtents;
+            Min = center - halfExtents;
         }
 
         public void Transform(ref Matrix orientation)

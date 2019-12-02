@@ -26,7 +26,7 @@ namespace Spectrum.Framework.Entities
             GameObject2DPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
         public ImageAsset Texture;
-        public ElementColor Color = Microsoft.Xna.Framework.Color.White;
+        public Color Color = Color.White;
         public Rectangle Bounds;
         public Vector2 Position;
         public float Layer;

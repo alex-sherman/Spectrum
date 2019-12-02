@@ -375,7 +375,7 @@ namespace Spectrum.Framework.Entities
                             var otherPosition = contact.body1 == this ? contact.Position2 : contact.Position1;
                             //GraphicsEngine.DrawCircle(myPosition, 3, Color.Yellow, SpectrumGame.Game.Root.SpriteBatch);
                             //GraphicsEngine.DrawCircle(otherPosition, 3, Color.HotPink, SpectrumGame.Game.Root.SpriteBatch);
-                            Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal, Color.Orange);
+                            Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal, "orange");
                             Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
                             Batch3D.Current.DrawLine(myPosition, myPosition + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
                             Batch3D.Current.DrawLine(myPosition, myPosition + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);

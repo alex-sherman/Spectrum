@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Graphics
         public static float darkness = 1f;
         public static bool wireFrame = false;
         public static SpriteBatch spriteBatch;
-        public static Color clearColor = Color.CornflowerBlue;
+        public static Color clearColor = "cornflowerblue";
         public static ICamera Camera { get; set; }
         public static ICamera ShadowCamera { get; set; }
         public static RenderTarget2D shadowMap;

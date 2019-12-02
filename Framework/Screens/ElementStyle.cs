@@ -11,25 +11,6 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Screens
 {
-    public struct ElementColor
-    {
-        public static Color ColorSetter(string value)
-        {
-            try
-            {
-                System.Drawing.Color color = System.Drawing.ColorTranslator.FromHtml(value);
-                return Color.FromNonPremultiplied(color.R, color.G, color.B, color.A);
-            }
-            catch (Exception)
-            {
-                return Color.Black;
-            }
-        }
-        Color Color;
-        public static implicit operator Color(ElementColor color) => color.Color;
-        public static implicit operator ElementColor(Color color) => new ElementColor() { Color = color };
-        public static implicit operator ElementColor(string color) => new ElementColor() { Color = ColorSetter(color) };
-    }
     [ReplicateType]
     public struct ElementStyle
     {
@@ -69,9 +50,9 @@ namespace Spectrum.Framework.Screens
         public ImageAsset Texture;
         public Color? TextureColor;
         public ImageAsset Background;
-        public ElementColor? FontColor;
-        public ElementColor? BackgroundColor;
-        public ElementColor? FillColor;
+        public Color? FontColor;
+        public Color? BackgroundColor;
+        public Color? FillColor;
         public SpriteFont Font;
         public ElementSize? Width;
         public ElementSize? Height;

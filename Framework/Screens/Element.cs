@@ -39,19 +39,19 @@ namespace Spectrum.Framework.Screens
             get => style.Texture ?? inheritedStyle.Texture;
             set => style.Texture = value;
         }
-        public ElementColor TextureColor { get => style.TextureColor ?? inheritedStyle.TextureColor ?? Color.White; }
+        public Color TextureColor { get => style.TextureColor ?? inheritedStyle.TextureColor ?? Color.White; }
         public ImageAsset Background
         {
             get => style.Background ?? inheritedStyle.Background;
             set => style.Background = value;
         }
-        public ElementColor FontColor { get => style.FontColor ?? inheritedStyle.FontColor ?? Color.Black; }
-        public ElementColor? FillColor
+        public Color FontColor { get => style.FontColor ?? inheritedStyle.FontColor ?? Color.Black; }
+        public Color? FillColor
         {
             get => style.FillColor ?? inheritedStyle.FillColor;
             set => style.FillColor = value;
         }
-        public ElementColor? BackgroundColor
+        public Color? BackgroundColor
         {
             get => style.BackgroundColor ?? inheritedStyle.BackgroundColor;
             set => style.BackgroundColor = value;

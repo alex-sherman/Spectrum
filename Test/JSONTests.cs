@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.Xna.Framework;
 using NUnit.Framework;
 using Spectrum.Framework;
 using Spectrum.Framework.Content;
