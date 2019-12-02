@@ -214,7 +214,7 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// The world matrix for the purposes of drawing the game object
         /// </summary>
-        public Matrix World => ModelTransform * Matrix.CreateFromQuaternion(orientation) * Matrix.CreateTranslation(position);
+        public Matrix World => ModelTransform * orientation.ToMatrix() * Matrix.CreateTranslation(position);
         public MaterialData Material;
         public Texture2D Texture { get => Material?.DiffuseTexture; set => (Material ?? (Material = new MaterialData())).DiffuseTexture = value; }
         public bool DisableInstancing;
@@ -264,7 +264,7 @@ namespace Spectrum.Framework.Entities
             if (!IsStatic && ReplicationData != null)
             {
                 ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
-                ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
+                //ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
             }
             if (UseFixedRender)
                 RegisterDraws();
@@ -280,26 +280,25 @@ namespace Spectrum.Framework.Entities
                 dirtyPhysics = false;
                 //TODO: This might be useful to cache on the object if its needed elsewhere
                 // or it should just get removed and figure out how to do everything with quaternions
-                Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
-                Quaternion.Inverse(ref orientation, out invOrientation);
-                Matrix invOrientationMat = Matrix.CreateFromQuaternion(invOrientation);
+                Matrix orientationMat = orientation.ToMatrix();
+                invOrientation = orientation.Inverse();
+                Matrix invOrientationMat = invOrientation.ToMatrix();
 
                 if (Shape != null)
                 {
                     //Set mass properties
                     inertia = Shape.inertia;
-                    Matrix.Invert(ref inertia, out invInertia);
+                    invInertia = inertia.Invert();
                     inverseMass = 1.0f / Shape.mass;
 
                     // Given: Orientation, Inertia
                     Shape.GetBoundingBox(ref orientationMat, out boundingBox);
-                    Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
+                    boundingBox.Min += position;
                     boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
-                    Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
+                    boundingBox.Max += position;
                     boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
                 }
-                Matrix.Multiply(ref invOrientationMat, ref invInertia, out invInertiaWorld);
-                Matrix.Multiply(ref invInertiaWorld, ref orientationMat, out invInertiaWorld);
+                invInertiaWorld = invOrientationMat * invInertia * orientationMat;
             }
         }
         #endregion
@@ -359,10 +358,10 @@ namespace Spectrum.Framework.Entities
             if (Shape != null)
             {
                 JBBox boundingBox;
-                Matrix orientationMat = Matrix.CreateFromQuaternion(orientation);
+                Matrix orientationMat = orientation.ToMatrix();
                 Shape.GetBoundingBox(ref orientationMat, out boundingBox);
-                Vector3.Add(ref boundingBox.Min, ref position, out boundingBox.Min);
-                Vector3.Add(ref boundingBox.Max, ref position, out boundingBox.Max);
+                boundingBox.Min += position;
+                boundingBox.Max += position;
                 Batch3D.Current.DrawJBBox(boundingBox, Color.Black);
                 //GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
                 if (!IsStatic)
@@ -376,7 +375,7 @@ namespace Spectrum.Framework.Entities
                             var otherPosition = contact.body1 == this ? contact.Position2 : contact.Position1;
                             //GraphicsEngine.DrawCircle(myPosition, 3, Color.Yellow, SpectrumGame.Game.Root.SpriteBatch);
                             //GraphicsEngine.DrawCircle(otherPosition, 3, Color.HotPink, SpectrumGame.Game.Root.SpriteBatch);
-                            Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal, Color.Orange);
+                            Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal, "orange");
                             Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
                             Batch3D.Current.DrawLine(myPosition, myPosition + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
                             Batch3D.Current.DrawLine(myPosition, myPosition + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);

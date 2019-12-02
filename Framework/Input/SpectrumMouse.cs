@@ -11,13 +11,16 @@ namespace Spectrum.Framework.Input
     public class CursorState
     {
         public bool[] buttons;
-        public int X;
-        public int Y;
+        public Point P;
         public float DX;
         public float DY;
         public int ScrollX;
         public int ScrollY;
-        public CursorState() { X = Y = -1; buttons = new bool[16]; }
+        public CursorState()
+        {
+            P = new Point { X = -1, Y = -1 };
+            buttons = new bool[16];
+        }
     }
 
     public class SpectrumMouse
@@ -42,8 +45,7 @@ namespace Spectrum.Framework.Input
             return new CursorState()
             {
                 buttons = buttons,
-                X = mousePosition.X,
-                Y = mousePosition.Y,
+                P = mousePosition,
                 DX = RawMouse.lastX / 2.0f,
                 DY = RawMouse.lastY / 2.0f,
                 ScrollY = RawMouse.lastZ,

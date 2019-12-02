@@ -176,15 +176,12 @@ namespace Spectrum.Framework.Physics.Collision
 
             for (int i = 0; i < tris.Length; i++)
             {
-                Vector3.Min(ref positions[tris[i].I1], ref positions[tris[i].I2], out triBoxes[i].Min);
-                Vector3.Min(ref positions[tris[i].I0], ref triBoxes[i].Min, out triBoxes[i].Min);
-
-                Vector3.Max(ref positions[tris[i].I1], ref positions[tris[i].I2], out triBoxes[i].Max);
-                Vector3.Max(ref positions[tris[i].I0], ref triBoxes[i].Max, out triBoxes[i].Max);
+                triBoxes[i].Min = Vector3.Min(Vector3.Min(positions[tris[i].I1], positions[tris[i].I2]), positions[tris[i].I0]);
+                triBoxes[i].Max = Vector3.Max(Vector3.Max(positions[tris[i].I1], positions[tris[i].I2]), positions[tris[i].I0]);
 
                 // get size of the root box
-                Vector3.Min(ref rootNodeBox.Min, ref triBoxes[i].Min, out rootNodeBox.Min);
-                Vector3.Max(ref rootNodeBox.Max, ref triBoxes[i].Max, out rootNodeBox.Max);
+                rootNodeBox.Min = Vector3.Min(rootNodeBox.Min, triBoxes[i].Min);
+                rootNodeBox.Max = Vector3.Max(rootNodeBox.Max, triBoxes[i].Max);
             }
 
             List<BuildNode> buildNodes = new List<BuildNode>();
@@ -294,9 +291,7 @@ namespace Spectrum.Framework.Physics.Collision
         #region  private void CreateAABox(ref JBBox aabb, EChild child,out JBBox result)
         private void CreateAABox(ref JBBox aabb, EChild child,out JBBox result)
         {
-            Vector3 dims;
-            Vector3.Subtract(ref aabb.Max, ref aabb.Min, out dims);
-            Vector3.Multiply(ref dims, 0.5f, out dims);
+            Vector3 dims = (aabb.Max - aabb.Min) / 2;
 
             Vector3 offset = Vector3.Zero;
 
@@ -318,16 +313,15 @@ namespace Spectrum.Framework.Physics.Collision
 
             result = new JBBox();
             result.Min = new Vector3(offset.X * dims.X, offset.Y * dims.Y, offset.Z * dims.Z);
-            Vector3.Add(ref result.Min, ref aabb.Min, out result.Min);
-
-            Vector3.Add(ref result.Min, ref dims, out result.Max);
+            result.Min += aabb.Min;
+            result.Max = result.Min + dims;
 
             // expand it just a tiny bit just to be safe!
             float extra = 0.00001f;
 
-            Vector3 temp; Vector3.Multiply(ref dims, extra, out temp);
-            Vector3.Subtract(ref result.Min, ref temp, out result.Min);
-            Vector3.Add(ref result.Max, ref temp, out result.Max);
+            Vector3 expand = dims * extra;
+            result.Min -= expand;
+            result.Max += expand;
         }
         #endregion
 

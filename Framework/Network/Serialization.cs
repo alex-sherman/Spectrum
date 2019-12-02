@@ -43,6 +43,9 @@ namespace Spectrum.Framework.Network
             //RegisterType(typeof(Dictionary<>));
             if (Model.IsDefined(typeof(Primitive)))
                 return;
+            TypeHelper.Model.Add(typeof(Vector2)).AddMember("X").AddMember("Y");
+            TypeHelper.Model.Add(typeof(Vector3)).AddMember("X").AddMember("Y").AddMember("Z");
+            TypeHelper.Model.Add(typeof(Rectangle)).AddMember("X").AddMember("Y").AddMember("Width").AddMember("Height");
             Model.Add(typeof(Vector3), true);
             Model[typeof(Vector3)].Add("X").Add("Y").Add("Z");
             Model.Add(typeof(Point3), true);

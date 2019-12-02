@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,8 +34,8 @@ namespace Spectrum.Framework
     public static class TransformExtension
     {
         public static Matrix World(this ITransform transform)
-            => Matrix.CreateFromQuaternion(transform.Orientation) * Matrix.CreateTranslation(transform.Position);
+            => transform.Orientation.ToMatrix() * Matrix.CreateTranslation(transform.Position);
         public static Vector3 Apply(this ITransform transform, Vector3 point)
-            => Vector3.Transform(point, transform.World());
+            => transform.World() * point;
     }
 }

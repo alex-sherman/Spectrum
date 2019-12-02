@@ -164,9 +164,9 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 Vector3 p2; SupportMapping(ref tri.n2, out p2);
                 Vector3 p3; SupportMapping(ref tri.n3, out p3);
 
-                float d1 = (p2 - p1).LengthSquared();
-                float d2 = (p3 - p2).LengthSquared();
-                float d3 = (p1 - p3).LengthSquared();
+                float d1 = (p2 - p1).LengthSquared;
+                float d2 = (p3 - p2).LengthSquared;
+                float d3 = (p1 - p3).LengthSquared;
 
                 if (Math.Max(Math.Max(d1, d2), d3) > distanceThreshold && tri.generation < generationThreshold)
                 {
@@ -212,7 +212,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 }
                 else
                 {
-                    if ((Vector3.Cross((p3 - p1), (p2 - p1))).LengthSquared() > JMath.Epsilon)
+                    if ((p3 - p1).Cross(p2 - p1).LengthSquared > JMath.Epsilon)
                     {
                         triangleList.Add(p1);
                         triangleList.Add(p2);
@@ -237,6 +237,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             Vector3 vec = Vector3.Zero;
             vec = new Vector3(orientation.M11, orientation.M21, orientation.M31);
             SupportMapping(ref vec, out vec);
+            box.Max = new Vector3();
             box.Max.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31 * vec.Z;
 
             vec = new Vector3(orientation.M12, orientation.M22, orientation.M32);
@@ -249,6 +250,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
             vec = new Vector3(-orientation.M11, -orientation.M21, -orientation.M31);
             SupportMapping(ref vec, out vec);
+            box.Min = new Vector3();
             box.Min.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31 * vec.Z;
 
             vec = new Vector3(-orientation.M12, -orientation.M22, -orientation.M32);
@@ -315,7 +317,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
                 // now transform this canonical tetrahedron to the target tetrahedron
                 // inertia by a linear transformation A
-                Matrix tetrahedronInertia = Matrix.Multiply(A * C * Matrix.Transpose(A), detA);
+                Matrix tetrahedronInertia = A * C * A.Transpose() * detA;
 
                 Vector3 tetrahedronCOM = (1.0f / 4.0f) * (hullTriangles[i + 0] + hullTriangles[i + 1] + hullTriangles[i + 2]);
                 float tetrahedronMass = (1.0f / 6.0f) * detA;
@@ -325,7 +327,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 mass += tetrahedronMass;
             }
 
-            inertia = Matrix.Multiply(Matrix.Identity, (inertia.M11 + inertia.M22 + inertia.M33)) - inertia;
+            inertia = Matrix.Identity * (inertia.M11 + inertia.M22 + inertia.M33) - inertia;
             centerOfMass = centerOfMass * (1.0f / mass);
 
             float x = centerOfMass.X;
@@ -339,7 +341,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                 mass * z * x, mass * z * y, -mass * (x * x + y * y), 0,
                 0, 0, 0, 1);
 
-            Matrix.Add(ref inertia, ref t, out inertia);
+            inertia += t;
 
             return mass;
         }

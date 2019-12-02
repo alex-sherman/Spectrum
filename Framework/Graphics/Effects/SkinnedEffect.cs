@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework.Graphics;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics.Animation;
 using System;
@@ -13,7 +12,7 @@ namespace Spectrum.Framework.Graphics
     public class SpectrumSkinnedEffect : SpectrumEffect
     {
         private string[] BoneNames;
-        public Matrix[] BoneTransforms { get; protected set; }
+        private Microsoft.Xna.Framework.Matrix[] BoneTransforms;
         public SpectrumSkinnedEffect() : base(ContentHelper.Load<Effect>("SkinnedEffect")) { }
         public override bool CanInstance
         {
@@ -30,7 +29,7 @@ namespace Spectrum.Framework.Graphics
         }
         public void SetBoneNames(params string[] boneNames)
         {
-            BoneTransforms = new Matrix[boneNames.Count()];
+            BoneTransforms = new Microsoft.Xna.Framework.Matrix[boneNames.Count()];
             for (int i = 0; i < boneNames.Count(); i++)
             {
                 BoneTransforms[i] = Matrix.Identity;

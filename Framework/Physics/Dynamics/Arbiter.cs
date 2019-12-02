@@ -137,8 +137,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         public Contact AddContact(Vector3 point, Vector3 normal, float penetration, 
             ContactSettings contactSettings)
         {
-            Vector3 relPos1;
-            Vector3.Subtract(ref point, ref Body1.position, out relPos1);
+            Vector3 relPos1 = point - Body1.position;
 
             Contact remove;
 
@@ -193,8 +192,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             int nearestPoint = -1;
             for (int i = 0; i < size; i++)
             {
-                Vector3 diffA; Vector3.Subtract(ref ContactList[i].relativePos1,ref realRelPos1,out diffA);
-                float distToManiPoint = diffA.LengthSquared();
+                float distToManiPoint = (ContactList[i].relativePos1 - realRelPos1).LengthSquared;
                 if (distToManiPoint < shortestDist)
                 {
                     shortestDist = distToManiPoint;

@@ -5,7 +5,7 @@
 //
 //=============================================================================
 
-using Microsoft.Xna.Framework;
+using Spectrum.Framework;
 using System;
 using System.Runtime.InteropServices;
 using Valve.VR;
@@ -3968,10 +3968,10 @@ public enum EVRScreenshotError
 	public float m11;
         public static implicit operator Matrix(HmdMatrix34_t self)
         {
-            return Matrix.Transpose(new Matrix(self.m0, self.m1, self.m2, self.m3,
+            return new Matrix(self.m0, self.m1, self.m2, self.m3,
                 self.m4, self.m5, self.m6, self.m7,
                 self.m8, self.m9, self.m10, self.m11,
-                0, 0, 0, 1));
+                0, 0, 0, 1).Transpose();
         }
     }
 [StructLayout(LayoutKind.Sequential)] public struct HmdMatrix44_t
@@ -3992,14 +3992,21 @@ public enum EVRScreenshotError
 	public float m13;
 	public float m14;
 	public float m15;
-    public static implicit operator Matrix(HmdMatrix44_t self)
-    {
-        return Matrix.Transpose(new Matrix(self.m0, self.m1, self.m2, self.m3,
-            self.m4, self.m5, self.m6, self.m7,
-            self.m8, self.m9, self.m10, self.m11,
-            self.m12, self.m13, self.m14, self.m15));
+        public static implicit operator Microsoft.Xna.Framework.Matrix(HmdMatrix44_t self)
+        {
+            return Microsoft.Xna.Framework.Matrix.Transpose(new Microsoft.Xna.Framework.Matrix(self.m0, self.m1, self.m2, self.m3,
+                self.m4, self.m5, self.m6, self.m7,
+                self.m8, self.m9, self.m10, self.m11,
+                self.m12, self.m13, self.m14, self.m15));
+        }
+        public static implicit operator Spectrum.Framework.Matrix(HmdMatrix44_t self)
+        {
+            return new Spectrum.Framework.Matrix(self.m0, self.m1, self.m2, self.m3,
+                self.m4, self.m5, self.m6, self.m7,
+                self.m8, self.m9, self.m10, self.m11,
+                self.m12, self.m13, self.m14, self.m15).Transpose();
+        }
     }
-}
 [StructLayout(LayoutKind.Sequential)] public struct HmdVector3_t
 {
 	public float v0; //float[3]

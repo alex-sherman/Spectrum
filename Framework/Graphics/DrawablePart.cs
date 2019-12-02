@@ -22,7 +22,7 @@ namespace Spectrum.Framework.Graphics
     }
     public class MaterialData : IEquatable<MaterialData>
     {
-        public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = Color.HotPink };
+        public static MaterialData Missing { get; } = new MaterialData() { DiffuseColor = "hotpink" };
         public string Id;
         public Color DiffuseColor = Color.White;
         public Texture2D DiffuseTexture;
@@ -77,7 +77,7 @@ namespace Spectrum.Framework.Graphics
             {
                 JBBox output = JBBox.SmallBox;
                 foreach (var vert in vertices)
-                    output.AddPoint(Vector3.Transform(vert.Position, permanentTransform * transform));
+                    output.AddPoint(permanentTransform * transform * vert.Position);
 
                 return output;
             }

@@ -169,13 +169,13 @@ namespace Spectrum.Framework.Physics.Dynamics
             accumulatedTangentImpulse = -dynamicFriction;
             if (noCollide) return;
             float e = Restitution;
-            Vector3 dv = Vector3.Cross(body2.angularVelocity, relativePos2) + body2.linearVelocity;
-            dv -= Vector3.Cross(body1.angularVelocity, relativePos1) + body1.linearVelocity;
+            Vector3 dv = body2.angularVelocity.Cross(relativePos2) + body2.linearVelocity;
+            dv -= body1.angularVelocity.Cross(relativePos1) + body1.linearVelocity;
             float dvNormalScalar = Vector3.Dot(dv, normal);
             Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
             tangent = dvTangent;
-            if (tangent.LengthSquared() > 0)
+            if (tangent.LengthSquared > 0)
                 tangent.Normalize();
 
             massNormal = InertiaInDirection(normal);
@@ -196,15 +196,13 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// </summary>
         public void UpdatePosition()
         {
-            Vector3.Transform(ref realRelPos1, ref body1.orientation, out p1);
-            Vector3.Add(ref p1, ref body1.position, out p1);
+            p1 = body1.orientation * realRelPos1 + body1.position;
 
-            Vector3.Transform(ref realRelPos2, ref body2.orientation, out p2);
-            Vector3.Add(ref p2, ref body2.position, out p2);
+            p2 = body2.orientation * realRelPos2 + body2.position;
 
-            Vector3 dist; Vector3.Subtract(ref p1, ref p2, out dist);
-            Penetration = Vector3.Dot(dist, normal);
-            slip = (p1 - p2 - Penetration * normal).LengthSquared();
+            Vector3 dist = p1 - p2;
+            Penetration = dist.Dot(normal);
+            slip = (p1 - p2 - Penetration * normal).LengthSquared;
         }
 
         public void ApplyImpulse(Vector3 impulse)
@@ -289,7 +287,7 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void ApplyPush(Vector3 push)
         {
-            if (push.LengthSquared() == 0)
+            if (push.LengthSquared == 0)
                 return;
             if (!treatBody1AsStatic && !treatBody2AsStatic)
                 push /= 2;
@@ -336,9 +334,9 @@ namespace Spectrum.Framework.Physics.Dynamics
                 kNormal += body1.inverseMass;
                 if (!body1.IgnoreRotation)
                 {
-                    Vector3.Cross(ref relativePos1, ref direction, out rantra);
-                    Vector3.Transform(ref rantra, ref body1.invInertiaWorld, out rantra);
-                    Vector3.Cross(ref rantra, ref relativePos1, out rantra);
+                    rantra = relativePos1.Cross(direction);
+                    rantra = body1.invInertiaWorld * rantra;
+                    rantra = rantra.Cross(relativePos1);
                     kNormal += rantra.X * direction.X + rantra.Y * direction.Y + rantra.Z * direction.Z;
                 }
 
@@ -351,9 +349,9 @@ namespace Spectrum.Framework.Physics.Dynamics
 
                 if (!body2.IgnoreRotation)
                 {
-                    Vector3.Cross(ref relativePos2, ref direction, out rbntrb);
-                    Vector3.Transform(ref rbntrb, ref body2.invInertiaWorld, out rbntrb);
-                    Vector3.Cross(ref rbntrb, ref relativePos2, out rbntrb);
+                    rbntrb = relativePos2.Cross(direction);
+                    rbntrb = body2.invInertiaWorld * rbntrb;
+                    rbntrb = rbntrb.Cross(relativePos2);
                     kNormal += rbntrb.X * direction.X + rbntrb.Y * direction.Y + rbntrb.Z * direction.Z;
                 }
             }
@@ -382,14 +380,14 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             this.newContact = newContact;
 
-            Vector3.Subtract(ref p1, ref body1.position, out relativePos1);
-            Vector3.Subtract(ref p2, ref body2.position, out relativePos2);
+            relativePos1 = p1 - body1.position;
+            relativePos2 = p2 - body2.position;
 
-            Vector3.Transform(ref relativePos1, ref body1.invOrientation, out realRelPos1);
-            Vector3.Transform(ref relativePos2, ref body2.invOrientation, out realRelPos2);
+            realRelPos1 = body1.invOrientation * relativePos1;
+            realRelPos2 = body2.invOrientation * relativePos2;
 
-            this.initialPen = penetration;
-            this.Penetration = penetration;
+            initialPen = penetration;
+            Penetration = penetration;
 
             // Material Properties
             if (newContact)

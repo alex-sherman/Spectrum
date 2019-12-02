@@ -26,12 +26,13 @@ namespace Spectrum.Framework.Entities
             GameObject2DPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
         public ImageAsset Texture;
-        public ElementColor Color = Microsoft.Xna.Framework.Color.White;
+        public Color Color = Color.White;
         public Rectangle Bounds;
         public Vector2 Position;
         public float Layer;
         public Matrix World => Matrix.CreateRotationZ(Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, Layer);
         public float Rotation = 0;
+        public Quaternion Orientation => Quaternion.CreateFromAxisAngle(Vector3.Up, Rotation);
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);

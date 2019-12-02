@@ -91,7 +91,8 @@ namespace Spectrum.Framework.Graphics.Animation
                     Bone currentBone = SkinningData.Bones[kvp.Key];
 
                     Matrix translation = currentBone.defaultTranslation;
-                    if (translations.ContainsKey(kvp.Key)) {
+                    if (translations.ContainsKey(kvp.Key))
+                    {
                         var translation1 = translations[kvp.Key];
                         while (translation1.NextTranslation != null && currentTimeValue > translation1.NextTranslation.Time)
                         {
@@ -102,7 +103,7 @@ namespace Spectrum.Framework.Graphics.Animation
                         if (translation1 != null && translation2 != null)
                         {
                             float w = (currentTimeValue - translation1.Time) / (translation2.Time - translation1.Time);
-                            translation = Matrix.Add(Matrix.Multiply(translation1.Translation.Value, 1 - w), Matrix.Multiply(translation2.Translation.Value, w));
+                            translation = translation1.Translation.Value * (1 - w) + translation2.Translation.Value * w;
                         }
                     }
                     Matrix rotation = currentBone.defaultRotation;
@@ -118,7 +119,7 @@ namespace Spectrum.Framework.Graphics.Animation
                         if (rotation1 != null && rotation2 != null)
                         {
                             float w = (currentTimeValue - rotation1.Time) / (rotation2.Time - rotation1.Time);
-                            rotation = Matrix.Add(Matrix.Multiply(rotation1.Rotation.Value, 1 - w), Matrix.Multiply(rotation2.Rotation.Value, w));
+                            rotation = rotation1.Rotation.Value * (1 - w) + rotation2.Rotation.Value * w;
                         }
                     }
                     currentBone.transform = rotation * translation;

@@ -188,7 +188,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 ms1 = ms1.RequestWorkingClone();
                 JBBox transformedBoundingBox = body2.BoundingBox;
-                transformedBoundingBox.InverseTransform(body1.Position, Matrix.CreateFromQuaternion(body1.Orientation));
+                transformedBoundingBox.InverseTransform(body1.Position, body1.Orientation.ToMatrix());
 
                 shape1count = ms1.Prepare(ref transformedBoundingBox);
             }
@@ -197,7 +197,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 ms2 = ms2.RequestWorkingClone();
                 JBBox transformedBoundingBox = body1.BoundingBox;
-                transformedBoundingBox.InverseTransform(body2.Position, Matrix.CreateFromQuaternion(body2.Orientation));
+                transformedBoundingBox.InverseTransform(body2.Position, body2.Orientation.ToMatrix());
 
                 shape2count = ms2.Prepare(ref transformedBoundingBox);
             }
@@ -283,9 +283,9 @@ namespace Spectrum.Framework.Physics.Collision
 
         private void SupportMapping(GameObject body, Shape workingShape, ref Vector3 direction, out Vector3 result)
         {
-            result = Vector3.Transform(direction, body.InvOrientation);
+            result = body.InvOrientation * direction;
             workingShape.SupportMapping(ref result, out result);
-            result = Vector3.Transform(direction, body.Orientation);
+            result = body.Orientation * direction;
             result += body.Position;
         }
 

@@ -75,16 +75,16 @@ namespace Spectrum.Framework.VR
             if (Cursor != null)
                 InputState.CursorState = GetCursorState(InputState);
             else
-                InputState.CursorState = new CursorState() { X = -1, Y = -1, buttons = new bool[16] };
+                InputState.CursorState = new CursorState() { P = new Point(-1, -1), buttons = new bool[16] };
             Root.Update(dt, InputState);
             Root.Draw(dt);
             Draw(World * CameraTransform);
             if (Cursor != null && HitPosition.HasValue)
             {
-                var basePosition = Vector3.Transform(Cursor.Position, CameraTransform);
-                Batch3D.Current.DrawLine(basePosition, Vector3.Transform(HitPosition.Value, CameraTransform), Color.Black,
+                var basePosition = CameraTransform * Cursor.Position;
+                Batch3D.Current.DrawLine(basePosition, CameraTransform * HitPosition.Value, Color.Black,
                     // Scale invariant
-                    0.005f * CameraTransform.Forward.Length());
+                    0.005f * CameraTransform.Forward.Length);
             }
         }
         private void fillCursorState(CursorState cursorState, InputState input)
@@ -114,14 +114,14 @@ namespace Spectrum.Framework.VR
             if (camera != null)
             {
                 var _position = Cursor.Position;
-                var direction = Vector3.Transform(Vector3.Forward, Cursor.Orientation);
+                var direction = Cursor.Orientation * Vector3.Forward;
                 if (Manager.Physics.CollisionSystem.Raycast(this, _position, direction, out Vector3 normal, out float fraction))
                 {
                     HitPosition = _position + direction * fraction;
-                    Vector3 localPos = Vector3.Transform(HitPosition.Value, Matrix.Invert(World));
+                    Vector3 localPos = World.Invert() * HitPosition.Value;
                     Vector2 cursorPos = new Vector2(localPos.X / Size.X, -localPos.Y / Size.Y) + Vector2.One / 2;
-                    cursorState.X = (int)(cursorPos.X * RenderTargetSize.X);
-                    cursorState.Y = (int)(cursorPos.Y * RenderTargetSize.Y);
+                    cursorState.P.X = (int)(cursorPos.X * RenderTargetSize.X);
+                    cursorState.P.Y = (int)(cursorPos.Y * RenderTargetSize.Y);
                     (FillCursorState ?? fillCursorState)(cursorState, input);
                 }
                 else

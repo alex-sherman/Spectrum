@@ -19,7 +19,7 @@ namespace Spectrum.Framework.Physics.Collision
             Points[1] = p2;
             Points[2] = p3;
 
-            Normal = Vector3.Cross(Points[2].Position - Points[1].Position, Points[0].Position - Points[1].Position);
+            Normal = (Points[2].Position - Points[1].Position).Cross(Points[0].Position - Points[1].Position);
             Normal.Normalize();
             Distance = Vector3.Dot(Normal, Points[0].Position);
 
@@ -28,7 +28,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 Points[0] = p2;
                 Points[1] = p1;
-                Normal = Vector3.Cross(Points[2].Position - Points[1].Position, Points[0].Position - Points[1].Position);
+                Normal = (Points[2].Position - Points[1].Position).Cross(Points[0].Position - Points[1].Position);
                 Normal.Normalize();
                 Distance = Vector3.Dot(Normal, Points[0].Position);
             }

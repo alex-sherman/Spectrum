@@ -8,20 +8,17 @@ using Microsoft.Xna.Framework.Input;
 using System.IO;
 using Spectrum.Framework.Graphics;
 using System.Windows.Forms;
-using Spectrum.Framework;
 using Spectrum.Framework.Network;
-using Spectrum.Framework.Physics;
 using Spectrum.Framework.Screens;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Audio;
 using Spectrum.Framework.Input;
-using Valve.VR;
 using Spectrum.Framework.VR;
 using Steamworks;
 using System.Threading.Tasks;
 
-namespace Spectrum
+namespace Spectrum.Framework
 {
     public class SpectrumGame : Game
     {
@@ -92,7 +89,7 @@ namespace Spectrum
             Graphics.PreferredBackBufferHeight = BitConverter.ToInt32(buffer, 0);
             WindowForm.ClientSize = new System.Drawing.Size(Graphics.PreferredBackBufferWidth, Graphics.PreferredBackBufferHeight);
             stream.Read(buffer, 0, 4);
-            Point newP;
+            Point newP = new Point();
             newP.X = BitConverter.ToInt32(buffer, 0);
             stream.Read(buffer, 0, 4);
             newP.Y = BitConverter.ToInt32(buffer, 0);
@@ -249,7 +246,7 @@ namespace Spectrum
         }
         public void HideMouse()
         {
-            mousePosition = Mouse.GetState().Position;
+            mousePosition = InputState.Current.MousePosition;
             IsMouseVisible = false;
         }
     }

@@ -61,10 +61,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="result">The result.</param>
         public override void SupportMapping(ref Vector3 direction, out Vector3 result)
         {
-            result = direction;
-            result.Normalize();
-
-            Vector3.Multiply(ref result, radius, out result);
+            result = direction.Normal() * radius;
         }
 
         /// <summary>
@@ -74,12 +71,8 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         /// <param name="box">The resulting axis aligned bounding box.</param>
         public override void GetBoundingBox(ref Matrix orientation, out JBBox box)
         {
-            box.Min.X = -radius;
-            box.Min.Y = -radius;
-            box.Min.Z = -radius;
-            box.Max.X = radius;
-            box.Max.Y = radius;
-            box.Max.Z = radius;
+            box.Min = new Vector3(-radius);
+            box.Max = new Vector3(radius);
         }
 
         /// <summary>

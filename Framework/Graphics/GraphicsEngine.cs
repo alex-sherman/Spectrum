@@ -30,7 +30,7 @@ namespace Spectrum.Framework.Graphics
         public static float darkness = 1f;
         public static bool wireFrame = false;
         public static SpriteBatch spriteBatch;
-        public static Color clearColor = Color.CornflowerBlue;
+        public static Color clearColor = "cornflowerblue";
         public static ICamera Camera { get; set; }
         public static ICamera ShadowCamera { get; set; }
         public static RenderTarget2D shadowMap;
@@ -104,23 +104,6 @@ namespace Spectrum.Framework.Graphics
                     GenerateVRTargets();
             }
         }
-        public static Vector3 ViewToScreenPosition(Vector3 ViewPosition)
-        {
-            return device.Viewport.Project(ViewPosition, Camera.Projection, Matrix.Identity, Matrix.Identity);
-        }
-        public static Vector3 FullScreenPos(Vector3 WorldPos)
-        {
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = device.Viewport.Project(WorldPos, Camera.Projection, Camera.View, world);
-            return screenPos;
-        }
-        public static Vector2 ScreenPos(Vector3 WorldPos)
-        {
-            Matrix world = Matrix.CreateTranslation(0, 0, 0);
-            Vector3 screenPos = device.Viewport.Project(WorldPos, Camera.Projection, Camera.View, world);
-            return new Vector2(screenPos.X, screenPos.Y);
-        }
-
         private static void SetBuffers(VertexBuffer vertexBuffer, IndexBuffer indexBuffer, DynamicVertexBuffer instanceBuffer)
         {
             if (instanceBuffer != null)
@@ -346,7 +329,7 @@ namespace Spectrum.Framework.Graphics
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, RasterizerState.CullNone, PostProcessEffect.effect);
-                spriteBatch.Draw(AATarget, new Rectangle(0, 0, target.Width, target.Height), Color.White);
+                spriteBatch.Draw(AATarget, new Microsoft.Xna.Framework.Rectangle(0, 0, target.Width, target.Height), Color.White);
                 spriteBatch.End();
             }
             mainRenderTimer?.Stop();
@@ -356,8 +339,8 @@ namespace Spectrum.Framework.Graphics
             BeginRender(camera);
 
             var vrRenderTimer = DebugTiming.Render.Time("VR Render");
-            Matrix left_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left));
-            Matrix right_offset = Matrix.Invert(OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right));
+            var left_offset = ((Matrix)OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Left)).Invert();
+            var right_offset = ((Matrix)OpenVR.System.GetEyeToHeadTransform(EVREye.Eye_Right)).Invert();
             VRRender(camera.View, renderGroups, EVREye.Eye_Right, right_offset, VRTargetR);
             VRRender(camera.View, renderGroups, EVREye.Eye_Left, left_offset, VRTargetL);
             if (target != null)

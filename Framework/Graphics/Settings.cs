@@ -9,33 +9,21 @@ using Spectrum.Framework.Content;
 
 namespace Spectrum.Framework.Graphics
 {
-    public class Settings
+    public static class Settings
     {
         public static Matrix reflectionProjection;
         public static Matrix lightProjection;
         public static bool enableWater = false;
         public static int waterQuality = 0;
-        public const String WaterBumpMapBase = "waterbump";
-        public const String WaterBumpMap = "waterbump1";
+        public const string WaterBumpMapBase = "waterbump";
+        public const string WaterBumpMap = "waterbump1";
         public static Vector2 ScreenSize;
-        public Settings()
+        static Settings()
         {
-            lightProjection = Matrix.CreatePerspectiveFieldOfView(
+            lightProjection = Matrix.CreatePerspectiveFOV(
                 (float)Math.PI / 20f,
                 1,
                 100, 1100f);
         }
-        public static float WaterPerturbation
-        {
-            get
-            {
-                return WaterEffect.WaterPerturbation;
-            }
-            set
-            {
-                WaterEffect.WaterPerturbation = value;
-            }
-        }
-
     }
 }

@@ -52,12 +52,12 @@ namespace Spectrum.Framework.Physics.Collision
             //support.SupportMapping(ref result, out result);
             //Vector3.Transform(ref result, ref orientation, out result);
             //Vector3.Add(ref result, ref position, out result);
-            Vector3 newDirection = Vector3.Transform(direction, Quaternion.Inverse(orientation));
+            Vector3 newDirection = orientation.Inverse() * direction;
 
             support.SupportMapping(ref newDirection, out result.Position, false);
-            result.Position = Vector3.Transform(result.Position, orientation);
+            result.Position = orientation * result.Position;
             result.Position += position;
-            result.ExtrudedPosition = Vector3.Transform(result.Position, orientation);
+            result.ExtrudedPosition = orientation * result.Position;
             result.ExtrudedPosition += position;
             if (Vector3.Dot(velocity, direction) > 0)
             {
@@ -76,7 +76,7 @@ namespace Spectrum.Framework.Physics.Collision
             newDirection.Z = ((direction.X * orientation.M31) + (direction.Y * orientation.M32)) + (direction.Z * orientation.M33);
 
             support.SupportMapping(ref newDirection, out result, false);
-            result = Vector3.Transform(result, orientation);
+            result = orientation * result;
             result += position;
         }
 
@@ -95,7 +95,7 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 supVertexA;
             Vector3 rn, vn;
 
-            rn = Vector3.Negate(r);
+            rn = -r;
 
             SupportMapTransformed(support1, ref orientation1, ref position1, ref rn, out supVertexA);
 
@@ -108,12 +108,12 @@ namespace Spectrum.Framework.Physics.Collision
 
             int maxIter = 15;
 
-            float distSq = v.LengthSquared();
+            float distSq = v.LengthSquared;
             float epsilon = 0.0001f;
 
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
-                vn = Vector3.Negate(v);
+                vn = -v;
                 SupportMapTransformed(support1, ref orientation1, ref position1, ref vn, out supVertexA);
                 SupportMapTransformed(support2, ref orientation2, ref position2, ref v, out supVertexB);
                 w = supVertexA - supVertexB;
@@ -121,7 +121,7 @@ namespace Spectrum.Framework.Physics.Collision
                 if (!simplexSolver.InSimplex(w)) simplexSolver.AddVertex(w, supVertexA, supVertexB);
                 if (simplexSolver.Closest(out v))
                 {
-                    distSq = v.LengthSquared();
+                    distSq = v.LengthSquared;
                     normal = v;
                 }
                 else distSq = 0.0f;
@@ -130,7 +130,7 @@ namespace Spectrum.Framework.Physics.Collision
 
             simplexSolver.ComputePoints(out p1, out p2);
 
-            if (normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon)
+            if (normal.LengthSquared > JMath.Epsilon * JMath.Epsilon)
                 normal.Normalize();
 
             simplexSolverPool.GiveBack(simplexSolver);
@@ -184,7 +184,7 @@ namespace Spectrum.Framework.Physics.Collision
             for (int i = 0; i < maxIterations; i++)
             {
                 //Get our next simplex point toward the origin.
-                if (direction.LengthSquared() > 0)
+                if (direction.LengthSquared > 0)
                     direction.Normalize();
                 negativeDirection = -direction;
                 SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out g1);
@@ -243,7 +243,7 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 ab = b - a;
             Vector3 aO = -a;
 
-            direction = Vector3.Cross(Vector3.Cross(ab, aO), ab);
+            direction = ab.Cross(aO).Cross(ab);
             return false;
         }
 
@@ -254,12 +254,12 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 c = simplex[0].Position;
             Vector3 ab = b - a;
             Vector3 ac = c - a;
-            Vector3 abc = Vector3.Cross(ab, ac);
+            Vector3 abc = ab.Cross(ac);
             Vector3 aO = -a;
 
             if (!abc.IsInSameDirection(aO))
             {
-                Vector3.Negate(ref abc, out abc);
+                abc = -abc;
             }
             else
             {
@@ -278,12 +278,10 @@ namespace Spectrum.Framework.Physics.Collision
             Vector3 ac = c - a;
             Vector3 ad = d - a;
             Vector3 ab = b - a;
-            Vector3 bc = c - b;
-            Vector3 bd = d - b;
 
-            Vector3 adc = Vector3.Cross(ad, ac);
-            Vector3 abd = Vector3.Cross(ab, ad);
-            Vector3 abc = Vector3.Cross(ac, ab);
+            Vector3 adc = ad.Cross(ac);
+            Vector3 abd = ab.Cross(ad);
+            Vector3 abc = ac.Cross(ab);
             //No need to check BCD since A was the last added point, it certainly must be in
             //the direction of the origin from BCD
             Vector3 aO = -a;
@@ -334,11 +332,11 @@ namespace Spectrum.Framework.Physics.Collision
             GJKResult result;
             SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref r, out result);
             arbitraryPoint = result.Position;
-            Vector3.Subtract(ref x, ref arbitraryPoint, out v);
+            v = x - arbitraryPoint;
 
             int maxIter = MaxIterations;
 
-            float distSq = v.LengthSquared();
+            float distSq = v.LengthSquared;
             float epsilon = 0.0001f;
 
             float VdotR;
@@ -347,7 +345,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 SupportMapTransformed(support, ref orientation, ref position, ref velocity, ref v, out result);
                 p = result.Position;
-                Vector3.Subtract(ref x, ref p, out w);
+                w = x - p;
 
                 float VdotW = Vector3.Dot(v, w);
 
@@ -363,9 +361,9 @@ namespace Spectrum.Framework.Physics.Collision
                     else
                     {
                         lambda = lambda - VdotW / VdotR;
-                        Vector3.Multiply(ref r, lambda, out x);
-                        Vector3.Add(ref origin, ref x, out x);
-                        Vector3.Subtract(ref x, ref p, out w);
+                        x = r * lambda;
+                        x += origin;
+                        w = x - p;
                     }
                 }
                 // Importantly, the simplexSolver should be computing Closest(conv({x} - Y))
@@ -383,7 +381,7 @@ namespace Spectrum.Framework.Physics.Collision
                 // If we get the same point out twice in a row the iteration is stuck!
                 // Some paper suggests this is due to affine dependency or something and says to just return success
                 if (simplexSolver.Closest(out v) && oldV != v)
-                    distSq = v.LengthSquared();
+                    distSq = v.LengthSquared;
                 else
                     distSq = 0.0f;
             }
@@ -396,19 +394,18 @@ namespace Spectrum.Framework.Physics.Collision
             // but is inaccurate against large objects:
             // fraction = lambda;
 
-            Vector3 p1, p2;
-            simplexSolver.ComputePoints(out p1, out p2);
+            simplexSolver.ComputePoints(out _, out Vector3 p2);
 
             p2 = p2 - origin;
-            fraction = p2.Length() / direction.Length();
+            fraction = p2.Length / direction.Length;
 
             #endregion
             normal = v;
             //if (!(normal.LengthSquared() > JMath.Epsilon * JMath.Epsilon))
             {
-                if(simplexSolver.NumVertices == 3)
+                if (simplexSolver.NumVertices == 3)
                 {
-                    normal = Vector3.Cross(simplexSolver.PointsW[1] - simplexSolver.PointsW[0], simplexSolver.PointsW[2] - simplexSolver.PointsW[0]);
+                    normal = (simplexSolver.PointsW[1] - simplexSolver.PointsW[0]).Cross(simplexSolver.PointsW[2] - simplexSolver.PointsW[0]);
                     if (Vector3.Dot(normal, direction) > 0)
                         normal *= -1;
                 }
@@ -576,7 +573,7 @@ namespace Spectrum.Framework.Physics.Collision
                     float maxV = 0f, curLen2;
                     for (int i = 0; i < numverts; i++)
                     {
-                        curLen2 = PointsW[i].LengthSquared();
+                        curLen2 = PointsW[i].LengthSquared;
                         if (maxV < curLen2) maxV = curLen2;
                     }
                     return maxV;
@@ -684,7 +681,7 @@ namespace Spectrum.Framework.Physics.Collision
 
                             if (t > 0)
                             {
-                                float dotVV = v.LengthSquared();
+                                float dotVV = v.LengthSquared;
                                 if (t < dotVV)
                                 {
                                     t /= dotVV;
@@ -888,7 +885,7 @@ namespace Spectrum.Framework.Physics.Collision
             /// Test if point p and d lie on opposite sides of plane through abc
             public bool PointOutsideOfPlane(Vector3 p, Vector3 a, Vector3 b, Vector3 c, Vector3 d)
             {
-                Vector3 normal = Vector3.Cross(b - a, c - a);
+                Vector3 normal = (b - a).Cross(c - a);
 
                 float signp = Vector3.Dot(p - a, normal); // [AP AB AC]
                 float signd = Vector3.Dot(d - a, normal); // [AD AB AC]
@@ -924,7 +921,7 @@ namespace Spectrum.Framework.Physics.Collision
                     ClosestPtPointTriangle(p, a, b, c, ref tempResult);
                     Vector3 q = tempResult.ClosestPointOnSimplex;
 
-                    float sqDist = ((Vector3)(q - p)).LengthSquared();
+                    float sqDist = ((Vector3)(q - p)).LengthSquared;
                     // Update best closest point if (squared) distance is less than current best
                     if (sqDist < bestSqDist)
                     {
@@ -950,7 +947,7 @@ namespace Spectrum.Framework.Physics.Collision
                     Vector3 q = tempResult.ClosestPointOnSimplex;
                     //convert result bitmask!
 
-                    float sqDist = ((Vector3)(q - p)).LengthSquared();
+                    float sqDist = ((Vector3)(q - p)).LengthSquared;
                     if (sqDist < bestSqDist)
                     {
                         bestSqDist = sqDist;
@@ -974,7 +971,7 @@ namespace Spectrum.Framework.Physics.Collision
                     Vector3 q = tempResult.ClosestPointOnSimplex;
                     //convert result bitmask!
 
-                    float sqDist = ((Vector3)(q - p)).LengthSquared();
+                    float sqDist = ((Vector3)(q - p)).LengthSquared;
                     if (sqDist < bestSqDist)
                     {
                         bestSqDist = sqDist;
@@ -998,7 +995,7 @@ namespace Spectrum.Framework.Physics.Collision
                     ClosestPtPointTriangle(p, b, d, c, ref tempResult);
                     Vector3 q = tempResult.ClosestPointOnSimplex;
                     //convert result bitmask!
-                    float sqDist = ((Vector3)(q - p)).LengthSquared();
+                    float sqDist = ((Vector3)(q - p)).LengthSquared;
                     if (sqDist < bestSqDist)
                     {
                         bestSqDist = sqDist;

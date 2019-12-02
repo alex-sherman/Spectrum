@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Spectrum.Framework;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Physics.Collision;

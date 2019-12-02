@@ -81,10 +81,10 @@ namespace Spectrum.Framework.Physics.LinearMath
 
         static JBBox()
         {
-            LargeBox.Min = new Vector3(float.MinValue);
-            LargeBox.Max = new Vector3(float.MaxValue);
-            SmallBox.Min = new Vector3(float.MaxValue);
-            SmallBox.Max = new Vector3(float.MinValue);
+            LargeBox.Min = Vector3.One * float.MinValue;
+            LargeBox.Max = Vector3.One * float.MaxValue;
+            SmallBox.Min = Vector3.One * float.MaxValue;
+            SmallBox.Max = Vector3.One * float.MinValue;
         }
         
         /// <summary>
@@ -106,36 +106,27 @@ namespace Spectrum.Framework.Physics.LinearMath
         /// <param name="result"></param>
         internal void InverseTransform(Vector3 position, Matrix orientation)
         {
-            Vector3.Subtract(ref Max, ref position, out Max);
-            Vector3.Subtract(ref Min, ref position, out Min);
+            Max -= position;
+            Min -= position;
 
-            Vector3 center;
-            Vector3.Add(ref Max, ref Min, out center);
-            center.X *= 0.5f; center.Y *= 0.5f; center.Z *= 0.5f;
+            Vector3 center = (Max + Min) / 2;
 
-            Vector3 halfExtents;
-            Vector3.Subtract(ref Max, ref Min, out halfExtents);
-            halfExtents.X *= 0.5f; halfExtents.Y *= 0.5f; halfExtents.Z *= 0.5f;
-            Matrix transposedOrientation = Matrix.Transpose(orientation);
-            Vector3.Transform(ref center, ref transposedOrientation, out center);
+            Vector3 halfExtents = (Max - Min) / 2;
+            center = orientation.Transpose() * center;
 
             Matrix abs; JMath.Absolute(ref orientation, out abs);
-            Matrix transposedabs = Matrix.Transpose(abs);
-            Vector3.Transform(ref halfExtents, ref transposedabs, out halfExtents);
-
-            Vector3.Add(ref center, ref halfExtents, out Max);
-            Vector3.Subtract(ref center, ref halfExtents, out Min);
+            halfExtents = abs.Transpose() * halfExtents;
+            Max = center + halfExtents;
+            Min = center - halfExtents;
         }
 
         public void Transform(ref Matrix orientation)
         {
             Vector3 halfExtents = 0.5f * (Max - Min);
-            Vector3 center = 0.5f * (Max + Min);
-
-            Vector3.Transform(ref center, ref orientation, out center);
+            Vector3 center = orientation * (0.5f * (Max + Min));
 
             Matrix abs; JMath.Absolute(ref orientation, out abs);
-            Vector3.Transform(ref halfExtents, ref abs, out halfExtents);
+            halfExtents = abs * halfExtents;
 
             Max = center + halfExtents;
             Min = center - halfExtents;
@@ -261,8 +252,8 @@ namespace Spectrum.Framework.Physics.LinearMath
 
         public void AddPoint(ref Vector3 point)
         {
-            Vector3.Max(ref this.Max, ref point, out this.Max);
-            Vector3.Min(ref this.Min, ref point, out this.Min);
+            Max = Vector3.Max(point, Max);
+            Min = Vector3.Min(point, Min);
         }
 
         /// <summary>
@@ -275,13 +266,13 @@ namespace Spectrum.Framework.Physics.LinearMath
 
         public static JBBox CreateFromPoints(Vector3[] points)
         {
-            Vector3 vector3 = new Vector3(float.MaxValue);
-            Vector3 vector2 = new Vector3(float.MinValue);
+            Vector3 vector3 = Vector3.One * float.MaxValue;
+            Vector3 vector2 = Vector3.One * float.MinValue;
 
             for (int i = 0; i < points.Length; i++)
             {
-                Vector3.Min(ref vector3, ref points[i], out vector3);
-                Vector3.Max(ref vector2, ref points[i], out vector2);
+                vector3 = Vector3.Min(points[i], vector3);
+                vector2 = Vector3.Max(points[i], vector2);
             }
             return new JBBox(vector3, vector2);
         }
@@ -343,12 +334,8 @@ namespace Spectrum.Framework.Physics.LinearMath
         /// <param name="result">A JBBox containing the two given boxes.</param>
         public static void CreateMerged(ref JBBox original, ref JBBox additional, out JBBox result)
         {
-            Vector3 vector;
-            Vector3 vector2;
-            Vector3.Min(ref original.Min, ref additional.Min, out vector2);
-            Vector3.Max(ref original.Max, ref additional.Max, out vector);
-            result.Min = vector2;
-            result.Max = vector;
+            result.Min = Vector3.Min(original.Min, additional.Min);
+            result.Max = Vector3.Max(original.Max, additional.Max);
         }
 
         #endregion

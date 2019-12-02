@@ -124,7 +124,7 @@ namespace Spectrum.Framework.Graphics
             float height = heights[x, y];
             int size = heights.GetUpperBound(0);
             float deriv = 0;
-            Vector3 normal;
+            Vector3 normal = new Vector3();
             normal.Y = 2 * scale;
             if (x > 0)
             {
