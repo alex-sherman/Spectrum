@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Replicate;
 using Spectrum.Framework.Entities;
 
 namespace Spectrum.Framework.JSON
@@ -144,7 +145,7 @@ namespace Spectrum.Framework.JSON
 
         public override bool CanConvert(Type objectType)
         {
-            return objectType == typeof(InitData) || TypeHelper.FixGeneric(objectType) == typeof(InitData<>);
+            return objectType == typeof(InitData) || objectType.IsSameGeneric(typeof(InitData<>));
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Spectrum.Framework.Entities
         public string Name;
         public string Path { get; set; }
         public string FullPath { get; set; }
-        public string TypeName => TypeData.Name;
+        public string TypeName => TypeData.Type.Name;
         public Primitive[] Args = new Primitive[0];
         /// <summary>
         /// Once stored, all fields are set via reference. This may lead

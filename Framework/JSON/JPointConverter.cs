@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Replicate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,14 +19,14 @@ namespace Spectrum.Framework.JSON
 
         public override bool CanConvert(Type objectType)
         {
-            objectType = TypeHelper.FixGeneric(objectType);
+            objectType = objectType.DeNullable();
             return objectType == typeof(Point3) || objectType == typeof(Point);
         }
 
         public override object ReadJson(JsonReader reader, Type targetType, object existingValue, JsonSerializer serializer)
         {
             var token = JToken.ReadFrom(reader);
-            targetType = TypeHelper.FixGeneric(targetType);
+            targetType = targetType.DeNullable();
             if (token is JArray array)
             {
                 if (targetType == typeof(Point3) && array.Count == 3 && array.All(IsNumeric))

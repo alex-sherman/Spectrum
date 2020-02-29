@@ -32,43 +32,9 @@ namespace Spectrum.Framework
             plugins[type] = plugin;
             return typeData;
         }
-        public List<string> GetNames(Type t)
-        {
-            List<string> output = new List<string>();
-            foreach (string type in types.Keys)
-            {
-                if (types[type].Type.IsSubclassOf(t))
-                {
-                    output.Add(type);
-                }
-            }
-            return output;
-        }
-        public TypeData GetData(string name)
-        {
-            return types[name];
-        }
-        public Type this[string name]
-        {
-            get
-            {
-                return types[name]?.Type;
-            }
-        }
         public static Plugin GetPlugin(Type type)
         {
             return plugins[type];
-        }
-        public static Type FixGeneric(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                if (type.GetGenericTypeDefinition() == typeof(Nullable<>))
-                    type = type.GetGenericArguments()[0];
-                else
-                    type = type.GetGenericTypeDefinition();
-            }
-            return type;
         }
     }
 }
