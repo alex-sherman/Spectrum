@@ -83,7 +83,7 @@ namespace Spectrum.Framework.Entities
         {
             if (TypeData == null)
             {
-                DebugPrinter.Print($"Failed to construct {TypeName}");
+                DebugPrinter.Print($"Failed to find type {TypeName}");
                 return null;
             }
             object output = TypeData.Construct(Args.Select(prim => prim.Object).ToArray());
@@ -137,7 +137,7 @@ namespace Spectrum.Framework.Entities
                     rep.InitData = Clone();
             }
         }
-        public object Call(object obj, string name, params object[] args)
+        private object Call(object obj, string name, params object[] args)
         {
             var method = TypeData.Methods[name];
             if (method != null)
@@ -195,10 +195,11 @@ namespace Spectrum.Framework.Entities
         {
             if (TryCast(type, value, out output))
                 return true;
-            else if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)
+            if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)
             {
                 output = ContentHelper.LoadType(type, value as string);
-                return true;
+                if (output != null)
+                    return true;
             }
             // Try assigning a prefab or InitData
             if (value is string && Prefabs.ContainsKey(value as string))

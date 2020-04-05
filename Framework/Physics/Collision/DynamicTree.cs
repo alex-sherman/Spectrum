@@ -268,13 +268,13 @@ namespace Spectrum.Framework.Physics.Collision
                 int nodeId = stack.Pop();
                 DynamicTreeNode<T> node = _nodes[nodeId];
 
-                if (node.AABB.RayIntersect(ref origin, ref direction))
+                if (node.AABB.RayIntersect(ref origin, ref direction) != null)
                 {
                     if (node.IsLeaf()) collisions.Add(nodeId);
                     else
                     {
-                        if (_nodes[node.Child1].AABB.RayIntersect(ref origin, ref direction)) stack.Push(node.Child1);
-                        if (_nodes[node.Child2].AABB.RayIntersect(ref origin, ref direction)) stack.Push(node.Child2);
+                        if (_nodes[node.Child1].AABB.RayIntersect(ref origin, ref direction) != null) stack.Push(node.Child1);
+                        if (_nodes[node.Child2].AABB.RayIntersect(ref origin, ref direction) != null) stack.Push(node.Child2);
                     }
                 }
             }

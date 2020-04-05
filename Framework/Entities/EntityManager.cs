@@ -120,10 +120,10 @@ namespace Spectrum.Framework.Entities
         }
         public void SendEntityReplication(Entity entity, NetID peer)
         {
-            NetMessage replicationMessage = new NetMessage();
-            replicationMessage.Write(entity.ID);
-            replicationMessage.Write(1);
-            entity.ReplicationData?.WriteReplicationData(replicationMessage);
+            //NetMessage replicationMessage = new NetMessage();
+            //replicationMessage.Write(entity.ID);
+            //replicationMessage.Write(1);
+            //entity.ReplicationData?.WriteReplicationData(replicationMessage);
             //mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
         }
         public void HandleEntityReplication(NetID peerGuid, NetMessage message)

@@ -63,6 +63,7 @@ namespace Spectrum.Framework.Content
                 Plugin plugin;
                 if (SpectrumGame.Game.Plugins.TryGetValue(split[0], out plugin))
                     return plugin.Content.LoadRelative<T>(split[1], true);
+                else throw new FileNotFoundException(@"No plugin found named {split[0]}");
             }
             return (T)Single.LoadRelative<T>(name, usePrefix);
         }
@@ -114,7 +115,8 @@ namespace Spectrum.Framework.Content
                 foreach (var directory in Directories)
                 {
                     var loaded = parser.Load(Path.Combine(root, directory, parser.Prefix, path), name, refreshCache);
-                    if (loaded != null) {
+                    if (loaded != null)
+                    {
                         if (InitData.TryCast(typeof(T), loaded, out var output))
                             return (T)output;
                         DebugPrinter.Print($"Failed to cast {path} to {typeof(T).Name}");

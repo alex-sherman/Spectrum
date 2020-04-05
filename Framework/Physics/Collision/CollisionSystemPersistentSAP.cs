@@ -395,7 +395,7 @@ namespace Spectrum.Framework.Physics.Collision
         {
             fraction = float.MaxValue; normal = Vector3.Zero;
 
-            if (!body.BoundingBox.RayIntersect(ref rayOrigin, ref rayDirection) || body.Shape == null) return false;
+            if (body.BoundingBox.RayIntersect(ref rayOrigin, ref rayDirection) == null || body.Shape == null) return false;
 
             if (body.Shape is Multishape)
             {

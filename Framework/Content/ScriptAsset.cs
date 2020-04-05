@@ -57,6 +57,10 @@ namespace Spectrum.Framework.Content
         {
             return new ScriptComponent(script.Script);
         }
+        public bool HasFunction(string function)
+        {
+            return Script.GetFunction(function) != null;
+        }
         public object TryCall(string function, params object[] args)
         {
             try

@@ -15,7 +15,6 @@ namespace Spectrum.Framework
     public class TypeHelper
     {
         public static ReplicationModel Model = TypeUtil.Model;
-        private static DefaultDict<string, TypeData> types = new DefaultDict<string, TypeData>();
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
 
         public static TypeData RegisterType(Type type, Plugin plugin)

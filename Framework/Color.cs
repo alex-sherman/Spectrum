@@ -16,6 +16,8 @@ namespace Spectrum.Framework
         // 0xAA BB GG RR
         private uint storage;
         public Color(byte r, byte g, byte b, byte a) { storage = 0; R = r; G = g; B = b; A = a; }
+        public Color(Color c, byte a) { storage = 0; R = c.R; G = c.G; B = c.B; A = a; }
+        public Color(Color c, float a) { storage = 0; R = c.R; G = c.G; B = c.B; A = (byte)(a * 255); }
         public Color(Vector4 v) : this((byte)(v.X * 255), (byte)(v.Y * 255), (byte)(v.Z * 255), (byte)(v.W * 255)) { }
         public Color(Vector3 v) : this((byte)(v.X * 255), (byte)(v.Y * 255), (byte)(v.Z * 255), 255) { }
         public Color(float r, float g, float b) : this((byte)(r * 255), (byte)(g * 255), (byte)(b * 255), 255) { }

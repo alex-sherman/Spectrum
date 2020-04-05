@@ -86,7 +86,7 @@ namespace Spectrum.Framework.Physics.LinearMath
             SmallBox.Min = Vector3.One * float.MaxValue;
             SmallBox.Max = Vector3.One * float.MinValue;
         }
-        
+
         /// <summary>
         /// Constructor
         /// </summary>
@@ -140,7 +140,7 @@ namespace Spectrum.Framework.Physics.LinearMath
         #region public Ray/Segment Intersection
 
         private bool Intersect1D(float start, float dir, float min, float max,
-            ref float enter,ref float exit)
+            ref float enter, ref float exit)
         {
             if (dir * dir < JMath.Epsilon * JMath.Epsilon) return (start >= min && start <= max);
 
@@ -157,25 +157,9 @@ namespace Spectrum.Framework.Physics.LinearMath
         }
 
 
-        public bool SegmentIntersect(ref Vector3 origin,ref Vector3 direction)
+        public bool SegmentIntersect(ref Vector3 origin, ref Vector3 direction)
         {
             float enter = 0.0f, exit = 1.0f;
-
-            if (!Intersect1D(origin.X, direction.X, Min.X, Max.X,ref enter,ref exit))
-                return false;
-
-            if (!Intersect1D(origin.Y, direction.Y, Min.Y, Max.Y, ref enter, ref exit))
-                return false;
-
-            if (!Intersect1D(origin.Z, direction.Z, Min.Z, Max.Z,ref enter,ref exit))
-                return false;
-
-            return true;
-        }
-
-        public bool RayIntersect(ref Vector3 origin, ref Vector3 direction)
-        {
-            float enter = 0.0f, exit = float.MaxValue;
 
             if (!Intersect1D(origin.X, direction.X, Min.X, Max.X, ref enter, ref exit))
                 return false;
@@ -189,12 +173,28 @@ namespace Spectrum.Framework.Physics.LinearMath
             return true;
         }
 
+        public float? RayIntersect(ref Vector3 origin, ref Vector3 direction)
+        {
+            float enter = 0.0f, exit = float.MaxValue;
+
+            if (!Intersect1D(origin.X, direction.X, Min.X, Max.X, ref enter, ref exit))
+                return null;
+
+            if (!Intersect1D(origin.Y, direction.Y, Min.Y, Max.Y, ref enter, ref exit))
+                return null;
+
+            if (!Intersect1D(origin.Z, direction.Z, Min.Z, Max.Z, ref enter, ref exit))
+                return null;
+
+            return exit;
+        }
+
         public bool SegmentIntersect(Vector3 origin, Vector3 direction)
         {
             return SegmentIntersect(ref origin, ref direction);
         }
 
-        public bool RayIntersect(Vector3 origin, Vector3 direction)
+        public float? RayIntersect(Vector3 origin, Vector3 direction)
         {
             return RayIntersect(ref origin, ref direction);
         }
@@ -340,7 +340,7 @@ namespace Spectrum.Framework.Physics.LinearMath
 
         #endregion
 
-        public Vector3 Center { get { return (Min + Max)* (1.0f /2.0f); } }
+        public Vector3 Center { get { return (Min + Max) * (1.0f / 2.0f); } }
 
         internal float Perimeter
         {
