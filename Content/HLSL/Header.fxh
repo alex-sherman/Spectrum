@@ -82,7 +82,7 @@ CommonVSOut Transform(CommonVSInput input)
 CommonVSOut InstanceTransform(CommonVSInput input, float4x4 instanceWorld : POSITION1)
 {
 	CommonVSOut Out = (CommonVSOut) 0;
-    float4 worldPosition = CommonVS(input, mul(transpose(instanceWorld), world), Out);
+    float4 worldPosition = CommonVS(input, mul(world, transpose(instanceWorld)), Out);
 	Out.clipDistance = length(worldPosition.xyz - cameraPosition) < 120 ? 1 : -1;
 	return Out;
 }

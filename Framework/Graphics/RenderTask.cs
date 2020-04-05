@@ -13,6 +13,7 @@ namespace Spectrum.Framework.Graphics
         public RenderProperties(PrimitiveType primitiveType, VertexBuffer vertexBuffer, IndexBuffer indexBuffer, SpectrumEffect effect)
         {
             PartID = -1;
+            World = null;
             PrimitiveType = primitiveType;
             VertexBuffer = vertexBuffer;
             IndexBuffer = indexBuffer;
@@ -21,10 +22,11 @@ namespace Spectrum.Framework.Graphics
             DisableDepthBuffer = false;
             DisableShadow = true;
         }
-        public RenderProperties(DrawablePart part, MaterialData material = null, SpectrumEffect effect = null,
+        public RenderProperties(DrawablePart part, Matrix? world = null, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
             PartID = part.ReferenceID;
+            World = world;
             PrimitiveType = part.primType;
             VertexBuffer = part.VBuffer;
             IndexBuffer = part.IBuffer;
@@ -34,6 +36,7 @@ namespace Spectrum.Framework.Graphics
             DisableShadow = disableShadow;
         }
         public int PartID;
+        public Matrix? World;
         public PrimitiveType PrimitiveType;
         public VertexBuffer VertexBuffer;
         public IndexBuffer IndexBuffer;
@@ -53,6 +56,7 @@ namespace Spectrum.Framework.Graphics
 
             var properties = (RenderProperties)obj;
             return PartID == properties.PartID &&
+                   EqualityComparer<Matrix?>.Default.Equals(World, properties.World) &&
                    EqualityComparer<MaterialData>.Default.Equals(Material, properties.Material) &&
                    EqualityComparer<SpectrumEffect>.Default.Equals(Effect, properties.Effect) &&
                    DisableDepthBuffer == properties.DisableDepthBuffer &&
@@ -63,6 +67,7 @@ namespace Spectrum.Framework.Graphics
         {
             var hashCode = 656074006;
             hashCode = hashCode * -1521134295 + PartID.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<Matrix?>.Default.GetHashCode(World);
             hashCode = hashCode * -1521134295 + EqualityComparer<SpectrumEffect>.Default.GetHashCode(Effect);
             hashCode = hashCode * -1521134295 + EqualityComparer<MaterialData>.Default.GetHashCode(Material);
             hashCode = hashCode * -1521134295 + DisableDepthBuffer.GetHashCode();

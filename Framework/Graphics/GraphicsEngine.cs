@@ -237,14 +237,14 @@ namespace Spectrum.Framework.Graphics
                             {
                                 foreach (var instance in group.InstanceData)
                                 {
-                                    effect.World = instance.World;
+                                    effect.World = props.World.HasValue ? props.World.Value * instance.World : instance.World;
                                     pass.Apply();
                                     Render(props.PrimitiveType, props.VertexBuffer, props.IndexBuffer, null);
                                 }
                             }
                             else
                             {
-                                effect.World = Matrix.Identity;
+                                effect.World = props.World ?? Matrix.Identity;
                                 // TODO (MAYBE): pass.Apply() is kind of expensive here, before doing fixed render tasks there was some batching over effect
                                 // consider maybe doing that again? Could sort render tasks and only pass.Apply() when changing properties
                                 pass.Apply();

@@ -58,7 +58,7 @@ namespace Spectrum.Framework.Graphics
             DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
-            RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
+            RenderProperties properties = new RenderProperties(part, null, material, effect, disableDepthBuffer, disableShadow);
             var value = UpdateRenderDict(properties, world, fixedBatched);
             return new RenderCallKey(properties, value);
         }
@@ -116,8 +116,8 @@ namespace Spectrum.Framework.Graphics
         public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false, bool disableInstancing = false)
         {
-            RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
-            world = part.permanentTransform * part.transform * world;
+            RenderProperties properties = new RenderProperties(part, part.permanentTransform, material, effect, disableDepthBuffer, disableShadow);
+            world = part.transform * world;
             if (disableInstancing)
                 dynamicNonBatched.Add(new RenderCall(properties, world));
             else
@@ -134,10 +134,10 @@ namespace Spectrum.Framework.Graphics
             return output;
         }
         public void DrawPart(DrawablePart part, DynamicVertexBuffer instanceBuffer,
-            MaterialData material = null, SpectrumEffect effect = null,
+            Matrix? world = null, MaterialData material = null, SpectrumEffect effect = null,
             bool disableDepthBuffer = false, bool disableShadow = false)
         {
-            RenderProperties properties = new RenderProperties(part, material, effect, disableDepthBuffer, disableShadow);
+            RenderProperties properties = new RenderProperties(part, world, material, effect, disableDepthBuffer, disableShadow);
             dynamicNonBatched.Add(new RenderCall(properties) { InstanceBuffer = instanceBuffer });
         }
         public IEnumerable<RenderCall> GetRenderTasks(float gameTime)
