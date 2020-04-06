@@ -518,6 +518,24 @@ namespace Spectrum.Framework
                 M44 = 1
             };
         }
+        public static Matrix Create(Vector3? translation = null, Vector3? scale = null, Quaternion? rotation = null)
+        {
+            var output = rotation?.ToMatrix() ?? Identity;
+            if (scale.HasValue)
+            {
+                output.M11 *= scale.Value.X;
+                output.M21 *= scale.Value.X;
+                output.M31 *= scale.Value.X;
+                output.M12 *= scale.Value.Y;
+                output.M22 *= scale.Value.Y;
+                output.M32 *= scale.Value.Y;
+                output.M13 *= scale.Value.Z;
+                output.M23 *= scale.Value.Z;
+                output.M33 *= scale.Value.Z;
+            }
+            if (translation.HasValue) output.Translation = translation.Value;
+            return output;
+        }
         public Quaternion ToQuaternion()
         {
             Quaternion quaternion = new Quaternion();
