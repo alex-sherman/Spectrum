@@ -195,12 +195,6 @@ namespace Spectrum.Framework.Entities
         {
             if (TryCast(type, value, out output))
                 return true;
-            if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)
-            {
-                output = ContentHelper.LoadType(type, value as string);
-                if (output != null)
-                    return true;
-            }
             // Try assigning a prefab or InitData
             if (value is string && Prefabs.ContainsKey(value as string))
                 output = Prefabs[value as string];
@@ -209,12 +203,18 @@ namespace Spectrum.Framework.Entities
             // Maybe the target field is type InitData
             if (type.IsAssignableFrom(output.GetType()))
                 return true;
-
             // Construct an object to fill the field if we can
             if (output is InitData initData && type.IsAssignableFrom(initData.TypeData.Type))
             {
                 output = initData.Construct();
                 return true;
+            }
+            // Try content last
+            if (ContentHelper.ContentParsers.ContainsKey(type) && value is string)
+            {
+                output = ContentHelper.LoadType(type, value as string);
+                if (output != null)
+                    return true;
             }
             return false;
         }
@@ -227,9 +227,14 @@ namespace Spectrum.Framework.Entities
         }
         public virtual InitData Set(string name, object value)
         {
-            if (Immutable)
-                return Clone().Set(name, value);
-            Fields[name] = new Primitive(value);
+            if (TypeData[name] == null)
+                DebugPrinter.PrintOnce($"No such field {TypeData.Name}.{name}");
+            else
+            {
+                if (Immutable)
+                    return Clone().Set(name, value);
+                Fields[name] = new Primitive(value);
+            }
             return this;
         }
         public virtual InitData Unset(string name)

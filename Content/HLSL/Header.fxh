@@ -58,8 +58,8 @@ float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
 	vsout = (CommonVSOut)0;
 	float4 HworldPosition = mul(vin.Position, world);
 	HworldPosition.w = 1;
-	vsout.worldPosition = HworldPosition.xyz / HworldPosition.w;
-	vsout.position =mul(mul(HworldPosition, view), proj);
+	vsout.worldPosition = HworldPosition.xyz;
+	vsout.position = mul(mul(HworldPosition, view), proj);
 	vsout.depth = length(vsout.worldPosition-cameraPosition);
 	vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
 	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
