@@ -39,7 +39,7 @@ namespace Spectrum.Framework.Screens.InputElements
             int optionHeight = stringHeight;
             ListOption<T> option = new ListOption<T>(id, text, tag);
             option.OnClick += optionClicked;
-            this.options.Add(option);
+            options.Add(option);
             AddElement(option);
         }
         private void optionClicked(InputElement clicked)

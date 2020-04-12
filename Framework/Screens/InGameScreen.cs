@@ -36,14 +36,16 @@ namespace Spectrum.Framework.Screens
             TitleContainer.Height = new ElementSize(Font.LineSpacing, wrapContent: true);
             TitleContainer.AddTag("ingame-window-title-container");
             AddElement(TitleContainer);
+            TitleContainer.AddElement(new Button("")
+            {
+                Positioning = PositionType.Relative,
+                Margin = new RectOffset() { Left = new ElementSize(-30, 1.0), Top = new ElementSize(-10, 0.5) },
+                Width = 20,
+                Height = 20
+            }).OnClick += (_) => Close();
             Title.AddTag("ingame-window-title");
             TitleContainer.AddElement(Title);
             Title.Center();
-        }
-
-        public Rectangle CloseButtonRect
-        {
-            get { return new Rectangle(Rect.X + Rect.Width - TitleContainer.Rect.Height, Rect.Y + TitleContainer.Rect.Height / 2 - 18, 38, 36); }
         }
 
         public override bool HandleInput(bool otherTookInput, InputState input)
@@ -76,10 +78,6 @@ namespace Spectrum.Framework.Screens
                     {
                         otherTookInput = true;
                         Parent.MoveElement(this, Parent.Children.Count);
-                    }
-                    if (CloseButtonRect.Contains(input.CursorState.P))
-                    {
-                        Close();
                     }
                     if (TitleContainer.Rect.Contains(input.CursorState.P))
                     {

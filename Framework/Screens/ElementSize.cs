@@ -17,6 +17,7 @@ namespace Spectrum.Framework.Screens
         public bool WrapContent;
         public static ElementSize Zero = new ElementSize(0);
         public static ElementSize WrapFill = new ElementSize(0, 1, true);
+        public static ElementSize Wrap = new ElementSize(0, 0, true);
         public double Relative;
         public int Flat;
         public ElementSize(int flat = 0, double relative = 0, bool wrapContent = false)

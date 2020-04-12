@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public Func<IEnumerable<ListOption<T>>> OptionSource = null;
         private ListOption<T> selected = null;
         private ListOption<T> childOption = new ListOption<T>();
-        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true, ZDetach = true, Display = false };
+        private LinearLayout optionContainer = new LinearLayout() { Positioning = PositionType.Relative, AllowScrollY = true, ZDetach = true, Z = 100, Display = false };
         public int MaxHeight
         {
             get => optionContainer.Height.WrapContent ? 0 : optionContainer.Height.Flat;
@@ -34,6 +34,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 {
                     _expanded = value;
                     optionContainer.Display = value;
+                    if (value) RefreshOptions();
                 }
             }
         }

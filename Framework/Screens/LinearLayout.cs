@@ -28,9 +28,9 @@ namespace Spectrum.Framework.Screens
             switch (LayoutType)
             {
                 case LinearLayoutType.Vertical:
-                    return layoutChildren(element).Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
+                    return LayoutChildren(element).Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Max();
                 case LinearLayoutType.Horizontal:
-                    return layoutChildren(element).Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
+                    return LayoutChildren(element).Select(child => child.MeasuredWidth).DefaultIfEmpty(0).Sum();
             }
             return 0;
         }
@@ -40,9 +40,9 @@ namespace Spectrum.Framework.Screens
             switch (LayoutType)
             {
                 case LinearLayoutType.Vertical:
-                    return layoutChildren(element).Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
+                    return LayoutChildren(element).Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Sum();
                 case LinearLayoutType.Horizontal:
-                    return layoutChildren(element).Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
+                    return LayoutChildren(element).Select(child => child.MeasuredHeight).DefaultIfEmpty(0).Max();
             }
             return 0;
         }
@@ -71,12 +71,15 @@ namespace Spectrum.Framework.Screens
                     item.Layout(new Rectangle(item.X, item.Y, item.MeasuredWidth, item.MeasuredHeight));
             }
         }
-        IEnumerable<Element> layoutChildren(Element element) => element.Children.Where(c => c.IsInline);
+        bool IsLayoutChild(Element element) => element.IsInline;
+        IEnumerable<Element> LayoutChildren(Element element) => element.Children.Where(IsLayoutChild);
         public void OnMeasure(Element element, int width, int height)
         {
-            var layoutChildren = this.layoutChildren(element);
-            foreach (var child in layoutChildren)
+            var layoutChildren = LayoutChildren(element);
+            foreach (var child in element.Children)
+            {
                 child.Measure(element.PreChildWidth(width, element.ContentWidth), element.PreChildHeight(height, element.ContentHeight));
+            }
             element.MeasuredWidth = element.MeasureWidth(width, element.ContentWidth);
             element.MeasuredHeight = element.MeasureHeight(height, element.ContentHeight);
         }

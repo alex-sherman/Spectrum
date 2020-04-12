@@ -207,9 +207,9 @@ namespace Spectrum.Framework.Screens
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
-            foreach (Element child in Children)
+            for (int i = Children.Count - 1; i >= 0; i--)
             {
-                otherTookInput |= child.HandleInput(otherTookInput, input);
+                otherTookInput |= Children[i].HandleInput(otherTookInput, input);
             }
             if (!(input.IsConsumed(new KeyBind(-1)) || input.IsConsumed(new KeyBind(-2))) && MouseInside(input) && input.MouseScrollY != 0 && AllowScrollY)
             {
