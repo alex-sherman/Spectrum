@@ -28,20 +28,19 @@ namespace Spectrum.Framework.Entities
         public bool IsInitialized;
         public bool CanReplicate { get { return AllowReplicate && IsLocal; } }
         #endregion
-        public DefaultDict<string, object> Data = new DefaultDict<string, object>();
         public List<Component> Components = new List<Component>();
         public void AddComponent(Component component) => Components.Add(component);
-        public T Get<T>(string key)
+        public T Data<T>(string key)
         {
-            if (Data.TryGetValue(key, out object output) && output is T tOutput)
+            if (InitData.Data.TryGetValue(key, out Primitive output) && output.Object is T tOutput)
                 return tOutput;
             return default(T);
         }
-        public T Get<T>(string key, T ifMissing)
+        public T Data<T>(string key, T ifMissing)
         {
-            if(!Data.ContainsKey(key) || !(Data[key] is T))
-                Data[key] = ifMissing;
-            return (T)Data[key];
+            if(!InitData.Data.ContainsKey(key) || !(InitData.Data[key].Object is T))
+                InitData.Data[key] = new Primitive(ifMissing);
+            return (T)InitData.Data[key].Object;
         }
         public Guid ID;
         /// <summary>

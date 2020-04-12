@@ -20,7 +20,7 @@ namespace Spectrum.Framework.Content
     {
         private static ContentHelper single;
         public List<string> Directories = new List<string>() { "Content" };
-        public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game.Content); } return single; } }
+        public static ContentHelper Single { get { if (single == null) { single = new ContentHelper(SpectrumGame.Game?.Content); } return single; } }
         static Texture2D blank;
         public static Texture2D Blank { get { if (blank == null) blank = Load<Texture2D>("blank"); return blank; } }
         static Texture2D missing;
@@ -105,6 +105,7 @@ namespace Spectrum.Framework.Content
 
         public T LoadRelative<T>(string name, bool usePrefix, bool refreshCache = false) where T : class
         {
+            if (Content == null) return null;
             Type t = typeof(T);
             var path = name.Replace('/', '\\');
             var root = Content.RootDirectory;

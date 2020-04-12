@@ -65,8 +65,8 @@ namespace Spectrum.Framework.Entities
         /// set via InitData. Instead be sure to copy any values that must be mutated.
         /// </summary>
         public Dictionary<string, Primitive> Fields = new Dictionary<string, Primitive>();
-        public DefaultDict<string, Dictionary<string, Primitive>> Data
-            = new DefaultDict<string, Dictionary<string, Primitive>>(() => new Dictionary<string, Primitive>(), true);
+        // TODO: This should be readonly
+        public Dictionary<string, Primitive> Data = new Dictionary<string, Primitive>();
         public List<FunctionCall> FunctionCalls = new List<FunctionCall>();
         internal InitData(TypeAccessor typeData) { TypeData = typeData; }
         public InitData(string type, params object[] args)
@@ -109,18 +109,6 @@ namespace Spectrum.Framework.Entities
                 catch (Exception e)
                 {
                     DebugPrinter.Print($"Failed to set field {field.Key} in {TypeName}\n{e}");
-                }
-            }
-            foreach (var dict in Data)
-            {
-                if (!(TypeData[dict.Key]?.GetValue(target) is IDictionary<string, object> targetDict))
-                {
-                    DebugPrinter.PrintOnce($"Failed to find data dictionary {dict.Key} in {TypeName}");
-                    continue;
-                }
-                foreach (var kvp in dict.Value)
-                {
-                    targetDict[kvp.Key] = kvp.Value.Object;
                 }
             }
             TypeData["TypeName"]?.SetValue(target, TypeName);
@@ -218,11 +206,11 @@ namespace Spectrum.Framework.Entities
             }
             return false;
         }
-        public virtual InitData SetDict(string key, object value, string dictField = "Data")
+        public virtual InitData SetData(string key, object value)
         {
             if (Immutable)
-                return Clone().SetDict(key, value, dictField);
-            Data[dictField][key] = new Primitive(value);
+                return Clone().SetData(key, value);
+            Data[key] = new Primitive(value);
             return this;
         }
         public virtual InitData Set(string name, object value)
@@ -269,7 +257,7 @@ namespace Spectrum.Framework.Entities
             other.FullPath = FullPath;
             other.Args = Args.Select(prim => new Primitive(prim.Object)).ToArray();
             other.Fields = Fields.ToDictionary(kvp => kvp.Key, kvp => new Primitive(kvp.Value.Object));
-            other.Data = Data.Copy();
+            other.Data = Data.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             other.FunctionCalls = FunctionCalls.ToList();
         }
         public InitData Clone()
@@ -316,32 +304,32 @@ namespace Spectrum.Framework.Entities
             CopyFieldsTo(output);
             return output;
         }
-        new public InitData<T> SetDict(string key, object value, string dictField = "Data")
+        new public InitData<T> SetData(string key, object value)
         {
-            base.SetDict(key, value, dictField);
+            base.SetData(key, value);
             return this;
         }
-        new public virtual InitData<T> Set(string name, object value)
+        new public InitData<T> Set(string name, object value)
         {
             base.Set(name, value);
             return this;
         }
-        new public virtual InitData<T> Unset(string name)
+        new public InitData<T> Unset(string name)
         {
             base.Unset(name);
             return this;
         }
-        new public virtual InitData<T> Call(string name, params object[] args)
+        new public InitData<T> Call(string name, params object[] args)
         {
             base.Call(name, args);
             return this;
         }
-        new public virtual InitData<T> CallOnce(string name, params object[] args)
+        new public InitData<T> CallOnce(string name, params object[] args)
         {
             base.CallOnce(name, args);
             return this;
         }
-        new public virtual InitData<T> ToImmutable()
+        new public InitData<T> ToImmutable()
         {
             base.ToImmutable();
             return this;

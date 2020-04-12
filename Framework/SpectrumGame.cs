@@ -17,6 +17,7 @@ using Spectrum.Framework.Input;
 using Spectrum.Framework.VR;
 using Steamworks;
 using System.Threading.Tasks;
+using Spectrum.Framework.Utility;
 
 namespace Spectrum.Framework
 {
@@ -77,6 +78,8 @@ namespace Spectrum.Framework
             Graphics = new GraphicsDeviceManager(this);
             MP = new MultiplayerService(ID, nick);
             WindowForm = (Form)Form.FromHandle(Window.Handle);
+            WindowForm.AutoScaleMode = AutoScaleMode.None;
+            WinUtil.SetProcessDpiAwareness(WinUtil.ProcessDPIAwareness.Per_Monitor_DPI_Aware);
             IsFixedTimeStep = false;
         }
 

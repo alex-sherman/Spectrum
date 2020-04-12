@@ -41,14 +41,14 @@ namespace SpectrumTest
         public void InitDataCopyOnSet()
         {
             InitData idata = new InitData<Entity>().ToImmutable();
-            Assert.AreNotEqual(idata, idata.Set("Position", null));
+            Assert.AreNotEqual(idata, idata.Set("ID", null));
         }
         [Test]
         public void SetEntityDataValid()
         {
-            Entity entity = new InitData<Entity>().SetDict("Test", "herp").Construct();
+            Entity entity = new InitData<Entity>().SetData("Test", "herp").Construct();
             Assert.IsNotNull(entity);
-            Assert.AreEqual(entity.Data["Test"], "herp");
+            Assert.AreEqual(entity.Data<string>("Test"), "herp");
         }
         [Test]
         public void FunctionalInspection()

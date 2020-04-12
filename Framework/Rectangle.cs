@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Spectrum.Framework
 {
+    [DebuggerDisplay("[X:{X} Y:{Y} Width:{Width} Height:{Height}]")]
     public struct Rectangle
     {
         public Rectangle(int x, int y, int width, int height) { X = x; Y = y; Width = width; Height = height; }

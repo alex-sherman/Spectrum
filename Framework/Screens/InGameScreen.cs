@@ -51,7 +51,7 @@ namespace Spectrum.Framework.Screens
             bool childTookInput = base.HandleInput(otherTookInput, input);
             if (childTookInput && !otherTookInput)
             {
-                Parent.MoveElement(this, 0);
+                Parent.MoveElement(this, Parent.Children.Count);
             }
             otherTookInput |= childTookInput;
             if (!otherTookInput && ToggleButton.HasValue && input.IsNewKeyPress(ToggleButton.Value))
@@ -75,7 +75,7 @@ namespace Spectrum.Framework.Screens
                     if (Rect.Contains(input.CursorState.P))
                     {
                         otherTookInput = true;
-                        Parent.MoveElement(this, 0);
+                        Parent.MoveElement(this, Parent.Children.Count);
                     }
                     if (CloseButtonRect.Contains(input.CursorState.P))
                     {

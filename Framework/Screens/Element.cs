@@ -353,16 +353,16 @@ namespace Spectrum.Framework.Screens
             {
                 X = bounds.X + Margin.Left.Measure(bounds.Width) + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)),
                 Y = bounds.Y + Margin.Top.Measure(bounds.Height) + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)),
-                Width = Math.Max(0, bounds.Width - Margin.WidthTotal(Parent?.Rect.Width ?? 0)),
-                Height = Math.Max(0, bounds.Height - Margin.HeightTotal(Parent?.Rect.Height ?? 0)),
+                Width = Math.Max(0, Width.Measure(bounds.Width, ContentWidth) + Padding.WidthTotal(bounds.Width)),
+                Height = Math.Max(0, Height.Measure(bounds.Height, ContentHeight) + Padding.HeightTotal(bounds.Height)),
             };
             // Accounts for Padding
             Rect = new Rectangle()
             {
                 X = Bounds.X + Padding.Left.Measure(bounds.Width),
                 Y = Bounds.Y + Padding.Top.Measure(bounds.Height),
-                Width = Math.Max(0, Bounds.Width - Padding.WidthTotal(Parent?.Rect.Width ?? 0)),
-                Height = Math.Max(0, Bounds.Height - Padding.HeightTotal(Parent?.Rect.Height ?? 0)),
+                Width = Math.Max(0, Width.Measure(bounds.Width, ContentWidth)),
+                Height = Math.Max(0, Height.Measure(bounds.Height, ContentHeight)),
             };
             if (ZDetach || Parent == null)
                 Clipped = Bounds;
@@ -386,16 +386,16 @@ namespace Spectrum.Framework.Screens
                                 YOffset += MaxRowHeight;
                                 MaxRowHeight = 0;
                             }
-                            child.Layout(new Rectangle(XOffset, YOffset, child.MeasuredWidth, child.MeasuredHeight));
+                            child.Layout(new Rectangle(XOffset, YOffset, MeasuredWidth, MeasuredHeight));
                             MaxRowHeight = Math.Max(MaxRowHeight, child.MeasuredHeight);
                             XOffset += child.MeasuredWidth;
                             break;
                         case PositionType.Center:
-                            child.Layout(new Rectangle(Rect.Width / 2 - child.MeasuredWidth / 2, Rect.Height / 2 - child.MeasuredHeight / 2, child.MeasuredWidth, child.MeasuredHeight));
+                            child.Layout(new Rectangle(Rect.Width / 2 - child.MeasuredWidth / 2, Rect.Height / 2 - child.MeasuredHeight / 2, MeasuredWidth, MeasuredHeight));
                             break;
                         case PositionType.Absolute:
                         case PositionType.Relative:
-                            child.Layout(new Rectangle(child.X, child.Y, child.MeasuredWidth, child.MeasuredHeight));
+                            child.Layout(new Rectangle(child.X, child.Y, MeasuredWidth, MeasuredHeight));
                             break;
                         default:
                             break;
@@ -415,7 +415,7 @@ namespace Spectrum.Framework.Screens
                 spritebatch.Draw(Texture, Rect, TextureColor, Layer(-1), clip: Parent?.Rect);
             else if (FillColor != null)
                 spritebatch.Draw(ImageAsset.Blank, Rect, FillColor.Value, Layer(-1), clip: Clipped);
-            if(AllowScrollY && ContentHeight > Rect.Height)
+            if (AllowScrollY && ContentHeight > Rect.Height)
             {
                 var sbX = Rect.Top + (float)ScrollY * Rect.Height / ContentHeight;
                 var sbH = (float)Rect.Height * Rect.Height / ContentHeight;
@@ -424,8 +424,9 @@ namespace Spectrum.Framework.Screens
         }
         public void MoveElement(Element child, int newIndex)
         {
-            _children.Remove(child);
-            _children.Insert(newIndex, child);
+            var oldIndex = _children.IndexOf(child);
+            _children.RemoveAt(oldIndex);
+            _children.Insert(oldIndex < newIndex ? newIndex - 1 : newIndex, child);
         }
         public T AddElement<T>(T element, int? index = null) where T : Element
         {

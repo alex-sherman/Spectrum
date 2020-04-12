@@ -13,7 +13,7 @@ namespace Spectrum.Framework.Screens
     }
     public class GridLayoutManager : LayoutManager
     {
-        int Cols;
+        private int Cols;
         public GridLayoutManager(int cols) { Cols = cols; }
         public void OnLayout(Element element, Rectangle bounds)
         {
@@ -39,13 +39,14 @@ namespace Spectrum.Framework.Screens
             colWidths.AddRange(Enumerable.Repeat(0, Cols));
             int curRow = 0;
             int curCol = 0;
+            int cellSize = element.PreChildWidth(width) / Cols;
             int curRowHeight = 0;
             int childHeight = height;
             foreach (var child in element.Children)
             {
                 // Without passing in content dimensions children cannot have a parent percentage
                 // that is affected by other childrens' dimensions. Might be fine for grids?
-                child.Measure(element.PreChildWidth(width), element.PreChildHeight(height));
+                child.Measure(cellSize, cellSize);
                 curRowHeight = Math.Max(child.MeasuredHeight, curRowHeight);
                 colWidths[curCol] = Math.Max(colWidths[curCol], child.MeasuredWidth);
                 curCol += 1;

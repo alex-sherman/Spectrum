@@ -21,12 +21,12 @@ namespace Spectrum.Framework.Screens.InputElements
             Positioning = PositionType.Absolute;
             X = x;
             Y = y;
-            Width = width;
+            Width = new ElementSize() { Flat = width, WrapContent = true };
+            LayoutManager = new LinearLayoutManager();
         }
         public override void Initialize()
         {
             base.Initialize();
-            Parent.MoveElement(this, 0);
             stringHeight = (int)Font.LineSpacing;
         }
         public void AddOption(string text, T tag)

@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Replicate;
 using Spectrum.Framework.Entities;
+using Spectrum.Framework.Network.Surrogates;
 
 namespace Spectrum.Framework.JSON
 {
@@ -37,21 +38,11 @@ namespace Spectrum.Framework.JSON
 
         static void ParseData(Dictionary<string, JToken> jobj, InitData output)
         {
-            if (jobj.TryGetValue("@Dict", out var datas))
+            if (jobj.TryGetValue("@Data", out var datas))
             {
                 if (datas.Type != JTokenType.Object)
                     throw new InvalidDataException(string.Format("Expected field @Dict to be an object"));
-                JObject datasObj = (JObject)datas;
-                foreach (var data in datasObj)
-                {
-                    if (data.Value.Type != JTokenType.Object)
-                        throw new InvalidDataException($"Expected field @Dict[{data.Key}] to be an array");
-                    JObject dataObj = (JObject)data.Value;
-                    foreach (var kvp in dataObj)
-                    {
-                        output.SetDict(kvp.Key, ParseValue(kvp.Value, typeof(object)), data.Key);
-                    }
-                }
+                output.Data = JConvert.Deserialize<Dictionary<string, Primitive>>(datas);
             }
         }
 
@@ -99,6 +90,7 @@ namespace Spectrum.Framework.JSON
             {
                 { "@Name", init.Name },
                 { "@TypeName", init.TypeName },
+                { "@Data", init.Data },
             };
             foreach (var kvp in init.Fields)
             {
@@ -114,8 +106,12 @@ namespace Spectrum.Framework.JSON
                 return null;
             Dictionary<string, JToken> jobj =
                 ((IEnumerable<KeyValuePair<string, JToken>>)token).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-
-            InitData output = new InitData((string)jobj["@TypeName"]);
+            InitData output;
+            if (objectType == typeof(InitData))
+                output = new InitData((string)jobj["@TypeName"]);
+            else
+                output = (InitData)objectType.GetConstructor(new Type[] { typeof(object[]) })
+                    .Invoke(new object[] { new object[] { } });
             output.Name = (string)jobj["@Name"];
             ParseCalls(jobj, true, output);
             ParseCalls(jobj, false, output);
