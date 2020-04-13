@@ -46,6 +46,7 @@ namespace Spectrum.Framework.Screens
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }
+        protected IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics);
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
@@ -63,7 +64,7 @@ namespace Spectrum.Framework.Screens
         public override void Initialize()
         {
             // TODO: Remove batch3d calls from entity intialize
-            using (Batch.Apply())
+            using (Inject())
                 base.Initialize();
         }
         public override void Draw(float gameTime, SpriteBatch spriteBatch)
@@ -74,7 +75,7 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))
                 {
-                    using (Batch.Apply())
+                    using (Inject())
                     {
                         Manager.Draw(gameTime);
                         var renderGroups = Batch3D.Current.GetRenderTasks(gameTime);
@@ -96,7 +97,7 @@ namespace Spectrum.Framework.Screens
                 //TODO: Fix multiplayer update
                 //using (DebugTiming.Main.Time("MPCallback"))
                 //    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
-                using (Batch.Apply())
+                using (Inject())
                 {
                     Manager.Update(dt);
                     base.Update(dt);
@@ -106,7 +107,7 @@ namespace Spectrum.Framework.Screens
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            using (Batch.Apply())
+            using (Inject())
             {
                 bool output = base.HandleInput(otherTookInput, input);
                 if (CaptureMouse)

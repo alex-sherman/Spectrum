@@ -174,6 +174,8 @@ namespace Spectrum.Framework.Physics
         /// to detect collisions.
         /// </summary>
         public CollisionSystem CollisionSystem { get; private set; }
+        public static PhysicsEngine Current => Context<PhysicsEngine>.Current;
+        public static CollisionSystem CurrentSystem => Context<PhysicsEngine>.Current?.CollisionSystem;
 
         /// <summary>
         /// In Jitter many objects get added to stacks after they were used.

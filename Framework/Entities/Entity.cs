@@ -95,7 +95,7 @@ namespace Spectrum.Framework.Entities
         {
             if (CanReplicate)
             {
-                Manager?.SendFunctionReplication(this, method, args);
+                //Manager?.SendFunctionReplication(this, method, args);
             }
         }
 

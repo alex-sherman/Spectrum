@@ -48,6 +48,15 @@ namespace Spectrum.Framework.Graphics
                 disableInstancing: DisableInstancing
             );
         }
+        public static void DrawBillboard(Vector3 position, Vector2 size, MaterialData material)
+        {
+            Batch3D.Current.DrawPart(
+                BillboardPart,
+                Matrix.Create(position, new Vector3(size.X, size.Y, 0)),
+                material,
+                disableInstancing: true
+            );
+        }
         public override void Draw(float gameTime)
         {
             base.Draw(gameTime);

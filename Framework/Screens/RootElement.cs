@@ -17,6 +17,7 @@ namespace Spectrum.Framework.Screens
         public int PixelHeight { get { return Target?.Height ?? SpectrumGame.Game.GraphicsDevice.Viewport.Height; } }
         public SpriteBatch SpriteBatch;
         public override bool HasFocus => SpectrumGame.Game.IsActive && SpectrumGame.Game.WindowForm.Focused;
+        private List<Element> orderedChildren;
         public RootElement()
         {
             Font = DefaultFont;
@@ -28,9 +29,24 @@ namespace Spectrum.Framework.Screens
 
         public void Update(float dt, InputState input)
         {
+            List<Element> roots = new List<Element>() { this };
+            List<List<Element>> trees = new List<List<Element>>() { };
+            while (roots.Any())
+            {
+                var current = roots.Pop();
+                trees.Add(OrderChildren(current, roots).ToList());
+            }
+            orderedChildren = trees.OrderBy(t => t[0].Z).SelectMany(t => t).ToList();
             // Needs to happen first because DrawEnabled will be updated in these handlers
             if (HasFocus)
-                HandleInput(false, input);
+            {
+                bool otherTookInput = false;
+
+                for (int i = orderedChildren.Count - 1; i >= 0; i--)
+                {
+                    otherTookInput |= orderedChildren[i].HandleInput(otherTookInput, input);
+                }
+            }
             ClearMeasure();
             Measure(0, 0);
             Measure(PixelWidth, PixelHeight);
@@ -49,23 +65,15 @@ namespace Spectrum.Framework.Screens
             //SpriteBatch.GraphicsDevice.RasterizerState.ScissorTestEnable = true;
             SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend,
                 SamplerState.PointClamp, DepthStencilState.DepthRead, RasterizerState.CullCounterClockwise);
-            List<Element> roots = new List<Element>() { this };
-            List<List<Element>> trees = new List<List<Element>>() { };
-            while(roots.Any())
-            {
-                var current = roots.Pop();
-                trees.Add(OrderChildren(current, roots).ToList());
-            }
-            var children = trees.OrderBy(t => t[0].Z).SelectMany(t => t).ToList();
-            children.Reverse();
 
-            for (int i = 0; i < children.Count; i++)
+            for (int i = 0; i < orderedChildren.Count; i++)
             {
-                var child = children[i];
-                if (child.Display)
+                var child = orderedChildren[orderedChildren.Count - i - 1];
+                // Some children may have been removed during update
+                if (child.Parent != null && child.Display)
                 {
                     // Reserve 0
-                    child.LayerDepth = (i + 1.0f) / (children.Count + 1);
+                    child.LayerDepth = (i + 1.0f) / (orderedChildren.Count + 1);
                     child.Draw(gameTime, SpriteBatch);
                 }
             }

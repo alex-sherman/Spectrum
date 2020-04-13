@@ -64,7 +64,7 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public void Close()
         {
-            Parent.RemoveElement(this);
+            Parent?.RemoveElement(this);
         }
     }
 }

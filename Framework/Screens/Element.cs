@@ -207,10 +207,6 @@ namespace Spectrum.Framework.Screens
 
         public virtual bool HandleInput(bool otherTookInput, InputState input)
         {
-            for (int i = Children.Count - 1; i >= 0; i--)
-            {
-                otherTookInput |= Children[i].HandleInput(otherTookInput, input);
-            }
             if (!(input.IsConsumed(new KeyBind(-1)) || input.IsConsumed(new KeyBind(-2))) && MouseInside(input) && input.MouseScrollY != 0 && AllowScrollY)
             {
                 input.ConsumeInput(new KeyBind(-1), false);
@@ -440,7 +436,7 @@ namespace Spectrum.Framework.Screens
         }
         public void RemoveElement(Element element)
         {
-            _children.Remove(element);
+            if (_children.Remove(element)) { element.Parent = null; }
         }
 
         public virtual bool Toggle(bool? show = null)
