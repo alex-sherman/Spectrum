@@ -234,32 +234,32 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             // I don't think that this can be done faster.
             // 6 is the minimum number of SupportMap calls.
 
-            Vector3 vec = Vector3.Zero;
-            vec = new Vector3(orientation.M11, orientation.M21, orientation.M31);
-            SupportMapping(ref vec, out vec);
+            Vector3 vec = new Vector3(orientation.M11, orientation.M21, orientation.M31);
+            Vector3 vecOut;
+            SupportMapping(ref vec, out vecOut);
             box.Max = new Vector3();
-            box.Max.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31 * vec.Z;
+            box.Max.X = orientation.M11 * vecOut.X + orientation.M21 * vecOut.Y + orientation.M31 * vecOut.Z;
 
             vec = new Vector3(orientation.M12, orientation.M22, orientation.M32);
-            SupportMapping(ref vec, out vec);
-            box.Max.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y + orientation.M32 * vec.Z;
+            SupportMapping(ref vec, out vecOut);
+            box.Max.Y = orientation.M12 * vecOut.X + orientation.M22 * vecOut.Y + orientation.M32 * vecOut.Z;
 
             vec = new Vector3(orientation.M13, orientation.M23, orientation.M33);
-            SupportMapping(ref vec, out vec);
-            box.Max.Z = orientation.M13 * vec.X + orientation.M23 * vec.Y + orientation.M33 * vec.Z;
+            SupportMapping(ref vec, out vecOut);
+            box.Max.Z = orientation.M13 * vecOut.X + orientation.M23 * vecOut.Y + orientation.M33 * vecOut.Z;
 
             vec = new Vector3(-orientation.M11, -orientation.M21, -orientation.M31);
-            SupportMapping(ref vec, out vec);
+            SupportMapping(ref vec, out vecOut);
             box.Min = new Vector3();
-            box.Min.X = orientation.M11 * vec.X + orientation.M21 * vec.Y + orientation.M31 * vec.Z;
+            box.Min.X = orientation.M11 * vecOut.X + orientation.M21 * vecOut.Y + orientation.M31 * vecOut.Z;
 
             vec = new Vector3(-orientation.M12, -orientation.M22, -orientation.M32);
-            SupportMapping(ref vec, out vec);
-            box.Min.Y = orientation.M12 * vec.X + orientation.M22 * vec.Y + orientation.M32 * vec.Z;
+            SupportMapping(ref vec, out vecOut);
+            box.Min.Y = orientation.M12 * vecOut.X + orientation.M22 * vecOut.Y + orientation.M32 * vecOut.Z;
 
             vec = new Vector3(-orientation.M13, -orientation.M23, -orientation.M33);
-            SupportMapping(ref vec, out vec);
-            box.Min.Z = orientation.M13 * vec.X + orientation.M23 * vec.Y + orientation.M33 * vec.Z;
+            SupportMapping(ref vec, out vecOut);
+            box.Min.Z = orientation.M13 * vecOut.X + orientation.M23 * vecOut.Y + orientation.M33 * vecOut.Z;
         }
 
         /// <summary>

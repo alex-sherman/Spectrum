@@ -138,12 +138,7 @@ namespace Spectrum.Framework.Entities
         public Shape Shape { get => shape; set { dirtyPhysics = true; shape = value; } }
         public void ShapeFromModelBounds()
         {
-            if (Model != null)
-            {
-                JBBox box = ModelBounds;
-                box.Transform(ref ModelTransform);
-                Shape = new BoxShape((box.Max - box.Min), box.Center);
-            }
+            if (Model != null) Shape = new BoxShape(ModelBounds);
         }
         public virtual void Collide(GameObject other, Vector3 point, Vector3 normal, float penetration) => OnCollide?.Invoke(other, point, normal, penetration);
         public virtual void EndCollide(GameObject other) => OnEndCollide?.Invoke(other);

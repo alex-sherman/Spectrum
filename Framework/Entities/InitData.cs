@@ -42,6 +42,17 @@ namespace Spectrum.Framework.Entities
         {
             get { return prefabs; }
         }
+        public static InitData<T> Prefab<T>(string name) where T : class
+        {
+            if(prefabs.TryGetValue(name, out var initData))
+            {
+                if (typeof(T) != initData.TypeData.Type) throw new InvalidCastException($"{typeof(T).Name} != {initData.TypeName}");
+                var output = new InitData<T>(initData.TypeData);
+                initData.CopyFieldsTo(output);
+                return output;
+            }
+            throw new KeyNotFoundException($"No InitData found for \"{name}\"");
+        }
         public static void Register(string name, InitData data)
         {
             prefabs[name] = data.ToImmutable();

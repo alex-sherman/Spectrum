@@ -12,6 +12,7 @@ using Spectrum.Framework.Physics;
 using Spectrum.Framework.Input;
 using Microsoft.Xna.Framework.Input;
 using Spectrum.Framework.VR;
+using Spectrum.Framework.Physics.Collision;
 
 namespace Spectrum.Framework.Screens
 {
@@ -46,7 +47,7 @@ namespace Spectrum.Framework.Screens
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }
-        protected virtual IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics);
+        protected virtual IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics).Inject(Manager.Physics.CollisionSystem);
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
