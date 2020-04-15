@@ -117,7 +117,7 @@ namespace Spectrum.Framework.Graphics
         }
         public DrawablePart CreateReference()
         {
-            return new DrawablePart(VBuffer, IBuffer) { ReferenceID = ReferenceID, effect = effect, material = material, permanentTransform = permanentTransform, vertices = vertices };
+            return new DrawablePart(VBuffer, IBuffer) { ReferenceID = ReferenceID, effect = effect.Clone() as SpectrumEffect, material = material, permanentTransform = permanentTransform, vertices = vertices };
         }
         public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer)
             : this()

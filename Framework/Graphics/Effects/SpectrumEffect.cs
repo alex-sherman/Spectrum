@@ -107,5 +107,9 @@ namespace Spectrum.Framework.Graphics
         {
             CurrentTechnique = Techniques[technique];
         }
+        public override Effect Clone()
+        {
+            return new SpectrumEffect(this);
+        }
     }
 }

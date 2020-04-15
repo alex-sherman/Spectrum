@@ -14,6 +14,7 @@ namespace Spectrum.Framework.Graphics
         private string[] BoneNames;
         private Microsoft.Xna.Framework.Matrix[] BoneTransforms;
         public SpectrumSkinnedEffect() : base(ContentHelper.Load<Effect>("SkinnedEffect")) { }
+        private SpectrumSkinnedEffect(SpectrumSkinnedEffect clone) : base(clone) { }
         public override bool CanInstance
         {
             get
@@ -42,6 +43,12 @@ namespace Spectrum.Framework.Graphics
             {
                 BoneTransforms[i] = SkinningData.Bones[BoneNames[i]].absoluteTransform;
             }
+        }
+        public override Effect Clone()
+        {
+            var result = new SpectrumSkinnedEffect(this);
+            result.SetBoneNames(BoneNames);
+            return result;
         }
     }
 }

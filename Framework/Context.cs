@@ -23,6 +23,12 @@ namespace Spectrum.Framework
             result.next = this;
             return result;
         }
+        public IDisposable Include(IDisposable disposable)
+        {
+            if (next != null) throw new InvalidOperationException("Next is already set");
+            next = disposable;
+            return this;
+        }
         public static Context<T> Create(T value)
         {
             var result = new Context<T>() { Previous = Current };

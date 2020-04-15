@@ -46,7 +46,7 @@ namespace Spectrum.Framework.Screens
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }
-        protected IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics);
+        protected virtual IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics);
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
@@ -63,7 +63,6 @@ namespace Spectrum.Framework.Screens
         }
         public override void Initialize()
         {
-            // TODO: Remove batch3d calls from entity intialize
             using (Inject())
                 base.Initialize();
         }

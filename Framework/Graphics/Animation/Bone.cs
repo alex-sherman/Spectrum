@@ -61,6 +61,7 @@ namespace Spectrum.Framework.Graphics.Animation
             output.defaultRotation = defaultRotation;
             output.defaultTranslation = defaultTranslation;
             output.inverseBindPose = inverseBindPose;
+            output._transform = _transform;
             bones[id] = output;
             foreach (var child in children)
             {

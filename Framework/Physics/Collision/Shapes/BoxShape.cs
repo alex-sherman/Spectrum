@@ -58,6 +58,12 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
         }
 
         public BoxShape() { }
+        public BoxShape(JBBox box)
+        {
+            size = box.Max - box.Min;
+            position = box.Center;
+            UpdateShape();
+        }
 
         /// <summary>
         /// Creates a new instance of the BoxShape class.
