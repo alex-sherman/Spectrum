@@ -297,12 +297,15 @@ namespace Spectrum.Framework.Entities
                 {
                     try
                     {
+                        if (assign.Expression is UnaryExpression convert && convert.NodeType == ExpressionType.Convert)
+                            return new Primitive(convert.Operand.GetConstantValue());
                         return new Primitive(assign.Expression.GetConstantValue());
                     }
                     catch (ArgumentException e) { throw new ArgumentException($"Invalid member assignment for {b.Member.Name}", e); }
                 }
                 else if (b is MemberListBinding bind)
                 {
+                    throw new NotImplementedException();
                     // TODO
                 }
                 throw new ArgumentException("All member bindings must be assignments");
@@ -324,6 +327,12 @@ namespace Spectrum.Framework.Entities
         {
             base.Set(name, value);
             return this;
+        }
+        public InitData<T> Set<U>(Expression<Func<T,U>> lambda, U value)
+        {
+            if (!(lambda.Body is MemberExpression member))
+                throw new InvalidOperationException("Must be member expression");
+            return Set(member.Member.Name, value);
         }
         new public InitData<T> Unset(string name)
         {
