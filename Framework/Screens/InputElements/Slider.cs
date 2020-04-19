@@ -11,7 +11,7 @@ namespace Spectrum.Framework.Screens.InputElements
     public class Slider : InputElement
     {
         InputElement sliderPull;
-        Element sliderTrack;
+        InputElement sliderTrack;
         bool dragging = false;
         float sliderValue = 0;
         public event Action<float> OnValueChanged = null;
@@ -33,21 +33,19 @@ namespace Spectrum.Framework.Screens.InputElements
         public override void Initialize()
         {
             base.Initialize();
+            sliderTrack = new InputElement();
+            sliderTrack.AddTag("slider-track");
+            sliderTrack.Height = 2;
+            sliderTrack.Positioning = PositionType.Relative;
+            sliderTrack.OnClick += (_) => dragging = true;
+            AddElement(sliderTrack);
+
             sliderPull = new InputElement();
             sliderPull.AddTag("slider-pull");
             sliderPull.Height = 0.5f;
             sliderPull.Positioning = PositionType.Relative;
-            AddElement(sliderPull);
             sliderPull.OnClick += (_) => dragging = true;
-
-            sliderTrack = new Element();
-            sliderTrack.AddTag("slider-track");
-            sliderTrack.Height = 2;
-            sliderTrack.Positioning = PositionType.Relative;
-            AddElement(sliderTrack);
-
-            OnClick += (_) =>
-                dragging = true;
+            AddElement(sliderPull);
         }
         public override void OnMeasure(int width, int height)
         {
@@ -65,10 +63,9 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            if (!input.IsMouseDown(0) || otherTookInput)
+            if (dragging && !input.IsMouseDown(0))
             {
-                if (dragging && OnSliderFinished != null)
-                    OnSliderFinished(Value);
+                OnSliderFinished?.Invoke(Value);
                 dragging = false;
             }
             otherTookInput |= base.HandleInput(otherTookInput, input);

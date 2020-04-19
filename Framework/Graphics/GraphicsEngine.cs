@@ -224,7 +224,7 @@ namespace Spectrum.Framework.Graphics
                     effect.View = phase.View;
                     effect.Projection = phase.Projection;
                     // TODO: Fix shadow map
-                    effect.ShadowMap = null;
+                    effect.ShadowMap = shadowMap;
                     MaterialData material = group.Properties.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
                     effect.Texture = material.DiffuseTexture;

@@ -81,11 +81,11 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
 				float depth = vsout.Pos2DAsSeenByLight.z;
 				if (shadowDepth - depth < -ShadowThreshold)
 				{
-					diffuseMagnitude *= 0.5f;
+					diffuseMagnitude = 0;
 				}
 			}
 		}
-		output.rgb += color.rgb * min(1, (diffuseMagnitude * diffuseLightColor + ambientLightColor));
+		output.rgb += color.rgb * min(1, (diffuseMagnitude * diffuseLightColor * (1 - ambientLightColor) + ambientLightColor));
 	}
 	return output;
 }
