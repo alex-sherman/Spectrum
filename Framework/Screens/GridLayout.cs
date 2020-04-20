@@ -9,7 +9,10 @@ namespace Spectrum.Framework.Screens
 {
     public class GridLayout : Element
     {
-        public GridLayout(int cols) { LayoutManager = new GridLayoutManager(cols); }
+        public GridLayout(int cols)
+        {
+            LayoutManager = new GridLayoutManager(cols);
+        }
     }
     public class GridLayoutManager : LayoutManager
     {
@@ -65,12 +68,12 @@ namespace Spectrum.Framework.Screens
 
         public int ContentWidth(Element element)
         {
-            return 0;
+            return colWidths.DefaultIfEmpty(0).Sum();
         }
 
         public int ContentHeight(Element element)
         {
-            return 0;
+            return rowHeights.DefaultIfEmpty(0).Sum();
         }
     }
 }

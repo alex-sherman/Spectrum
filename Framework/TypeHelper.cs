@@ -31,6 +31,12 @@ namespace Spectrum.Framework
             plugins[type] = plugin;
             return typeData;
         }
+        public static IEnumerable<TypeAccessor> GetTypes(Type type)
+        {
+            return Model.Types.Values
+                .Where(t => t.GenericTypeParameters == null && type.IsAssignableFrom(t.Type))
+                .Select(t => Model.GetTypeAccessor(t.Type));
+        }
         public static Plugin GetPlugin(Type type)
         {
             return plugins[type];
