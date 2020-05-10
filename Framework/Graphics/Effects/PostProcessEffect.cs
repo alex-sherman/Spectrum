@@ -45,6 +45,16 @@ namespace Spectrum.Framework.Graphics
             get { return effect.Parameters["AAEnabled"].GetValueBoolean(); }
             set { effect.Parameters["AAEnabled"].SetValue(value); }
         }
+        public static float AAThreshold
+        {
+            get { return effect.Parameters["aaThreshold"].GetValueSingle(); }
+            set { effect.Parameters["aaThreshold"].SetValue(value); }
+        }
+        public static float AABlurFactor
+        {
+            get { return effect.Parameters["aaBlurFactor"].GetValueSingle(); }
+            set { effect.Parameters["aaBlurFactor"].SetValue(value); }
+        }
         public static float Darkness
         {
             get { return effect.Parameters["darkness"].GetValueSingle(); }

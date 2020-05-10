@@ -51,7 +51,7 @@ struct CommonVSOut
 struct CommonPSOut
 {
 	float4 color : COLOR0;
-	float4 depth : COLOR1;
+	float depth : COLOR1;
 };
 
 float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
