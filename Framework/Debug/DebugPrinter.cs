@@ -12,6 +12,12 @@ namespace Spectrum.Framework
 {
     public class DebugPrinter : Element
     {
+        public DebugPrinter()
+        {
+            Positioning = PositionType.Relative;
+            Width = 1.0;
+            Height = 1.0;
+        }
         private class DebugHolder : IDebug
         {
             readonly Func<string> text;
@@ -103,7 +109,7 @@ namespace Spectrum.Framework
         private float averageFPS = 0;
         private void DrawTimes(int startLine, SpriteBatch spritebatch, float dt, float layer)
         {
-            float curPos = (startLine) * Font.LineSpacing;
+            float curPos = (startLine) * Font.LineSpacing + Rect.Top;
             averageFPS = (float)(averageFPS * 0.95 + (1.0 / dt) * 0.05);
             string toPrint = averageFPS.ToString("0.00");
             spritebatch.DrawString(Font, toPrint, new Vector2(Parent.MeasuredWidth - Font.MeasureString(toPrint).X, curPos), Color.Black, layer);
@@ -128,6 +134,8 @@ namespace Spectrum.Framework
 
             if (SpectrumGame.Game.Debug)
             {
+                Vector2 offset = (Vector2)Rect.TopLeft;
+                spritebatch.DrawString(Font, "Debug:", Vector2.Zero + offset, FontColor, LayerDepth);
                 float strSize = Font.LineSpacing;
                 lock (strings)
                 {
@@ -136,7 +144,7 @@ namespace Spectrum.Framework
                         strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            spritebatch.DrawString(Font, strings[i], new Vector2(0, i * strSize), FontColor, LayerDepth);
+                            spritebatch.DrawString(Font, strings[i], new Vector2(0, (i + 1) * strSize) + offset, FontColor, LayerDepth);
                         }
                     }
                 }
@@ -144,7 +152,7 @@ namespace Spectrum.Framework
                 for (int i = 0; i < objects.Count; i++)
                 {
                     string toPrint = objects[i].Debug();
-                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize), Color.Black, LayerDepth);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize) + offset, Color.Black, LayerDepth);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
                 DrawTimes(2, spritebatch, gameTime, LayerDepth);

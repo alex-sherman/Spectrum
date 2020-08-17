@@ -19,6 +19,7 @@ namespace Spectrum.Framework
         public int Right => X + Width;
         public int Bottom => Y + Height;
         public int Left => X;
+        public Point TopLeft => new Point(X, Y);
         public Rectangle Clip(Rectangle other)
         {
             var x = Math.Max(X, other.X);

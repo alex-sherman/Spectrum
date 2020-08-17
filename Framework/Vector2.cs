@@ -23,6 +23,11 @@ namespace Spectrum.Framework
             X /= length; Y /= length;
         }
         public Vector2 Transform(Matrix matrix) => new Vector2((X * matrix.M11) + (Y * matrix.M21) + matrix.M41, (X * matrix.M12) + (Y * matrix.M22) + matrix.M42);
+        public Vector2 Rotate(float r)
+        {
+            var sin = Math.Sin(r); var cos = Math.Cos(r);
+            return new Vector2((float)(X * cos - Y * sin), (float)(X * sin + Y * cos));
+        }
         public static float Dot(Vector2 a, Vector2 b) => a.X * b.X + a.Y * b.Y;
         public override bool Equals(object obj) => obj is Vector2 vector && Equals(vector);
         public bool Equals(Vector2 other) => X == other.X && Y == other.Y;

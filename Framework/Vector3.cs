@@ -42,6 +42,7 @@ namespace Spectrum.Framework
         public static Vector3 operator -(Vector3 a) => new Vector3(-a.X, -a.Y, -a.Z);
         public static Vector3 operator -(Vector3 a, Vector3 b) => new Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
         public static Vector3 operator +(Vector3 a, Vector3 b) => new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
+        public static Vector3 operator *(Vector3 a, Vector3 b) => new Vector3(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
         public static Vector3 operator /(Vector3 a, int d) => new Vector3(a.X / d, a.Y / d, a.Z / d);
         public static Vector3 operator /(Vector3 a, float d) => new Vector3(a.X / d, a.Y / d, a.Z / d);
         public static Vector3 operator *(Vector3 a, int d) => new Vector3(a.X * d, a.Y * d, a.Z * d);
