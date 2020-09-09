@@ -21,6 +21,12 @@ namespace Spectrum.Framework
 
     public class LoadHelper
     {
+        public static Assembly SpectrumAssembly => Assembly.GetExecutingAssembly();
+        public static Assembly MainAssembly { get; private set; }
+        internal static void SetMainAssembly<T>()
+        {
+            MainAssembly = typeof(T).Assembly;
+        }
         public static void RegisterTypes(Plugin plugin)
         {
             TypeHelper.RegisterType(typeof(ElementStyle), null);
@@ -67,11 +73,11 @@ namespace Spectrum.Framework
                 entity.Reload();
         }
 
-        public static Assembly SpectrumAssembly => Assembly.GetExecutingAssembly();
 
         public static void LoadTypes(string LocalDir = null)
         {
-            SpectrumGame.Game.Plugins["Main"] = Plugin.CreatePlugin("Main", ContentHelper.Single, Assembly.GetEntryAssembly());
+            if (MainAssembly == null) MainAssembly = Assembly.GetEntryAssembly();
+            SpectrumGame.Game.Plugins["Main"] = Plugin.CreatePlugin("Main", ContentHelper.Single, MainAssembly);
             SpectrumGame.Game.Plugins["Spectrum"] = Plugin.CreatePlugin("Spectrum", ContentHelper.Single, SpectrumAssembly);
 
             foreach (var pluginName in Plugin.GetPluginNames())

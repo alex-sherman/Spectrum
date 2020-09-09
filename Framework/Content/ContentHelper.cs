@@ -115,13 +115,21 @@ namespace Spectrum.Framework.Content
                     return (T)parser.Load(path, name, refreshCache);
                 foreach (var directory in Directories)
                 {
-                    var loaded = parser.Load(Path.Combine(root, directory, parser.Prefix, path), name, refreshCache);
-                    if (loaded != null)
+                    try
                     {
-                        if (InitData.TryCast(typeof(T), loaded, out var output))
-                            return (T)output;
-                        DebugPrinter.Print($"Failed to cast {path} to {typeof(T).Name}");
-                        break;
+                        var loaded = parser.Load(Path.Combine(root, directory, parser.Prefix, path), name, refreshCache);
+                        if (loaded != null)
+                        {
+                            if (InitData.TryCast(typeof(T), loaded, out var output))
+                                return (T)output;
+                            DebugPrinter.Print($"Failed to cast {path} to {typeof(T).Name}");
+                            break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        DebugPrinter.Print($"Failed to load {name}: {e.Message}");
+                        return null;
                     }
                 }
             }
