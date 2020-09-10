@@ -30,59 +30,60 @@ Texture2D<float> ShadowMapTexture;
 struct CommonVSInput
 {
     float4 Position : POSITION0;
-	float2 TextureCoordinate : TEXCOORD0;
-	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
+    float2 TextureCoordinate : TEXCOORD0;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
 };
 struct CommonVSOut
 {
-	float4 position  : SV_Position;
-	float3 normal : NORMAL0;
-	float3 tangent : TANGENT0;
-	float3 binormal : TANGENT1;
-	float3 worldPosition : POSITION1;
-	float2 textureCoordinate : TEXCOORD0;
-	float4 Pos2DAsSeenByLight : TEXCOORD1;
-	float clipDistance : TEXCOORD2;
-	float depth : TEXCOORD3;
-	float4 color : COLOR0;
-	float fog	: COLOR1;
+    float4 position  : SV_Position;
+    float3 normal : NORMAL0;
+    float3 tangent : TANGENT0;
+    float3 binormal : TANGENT1;
+    float3 worldPosition : POSITION1;
+    float2 textureCoordinate : TEXCOORD0;
+    float4 Pos2DAsSeenByLight : TEXCOORD1;
+    float clipDistance : TEXCOORD2;
+    float depth : TEXCOORD3;
+    float4 color : COLOR0;
+    float fog	: COLOR1;
 };
 struct CommonPSOut
 {
-	float4 color : COLOR0;
-	float depth : COLOR1;
+    float4 color : COLOR0;
+    float4 position : COLOR1;
+    float4 normal: COLOR2;
 };
 
 float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
-	vsout = (CommonVSOut)0;
-	float4 HworldPosition = mul(vin.Position, world);
-	HworldPosition.w = 1;
-	vsout.worldPosition = HworldPosition.xyz;
-	vsout.position = mul(mul(HworldPosition, view), proj);
-	vsout.depth = length(vsout.worldPosition-cameraPosition);
-	vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
-	vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
-	vsout.Pos2DAsSeenByLight = mul(HworldPosition, ShadowViewProjection);
-	vsout.textureCoordinate = vin.TextureCoordinate + DiffuseTextureOffset;
-	vsout.normal = normalize(mul(vin.normal, world));
-	vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));
-	vsout.binormal = cross(vsout.tangent, vsout.normal);
-	return HworldPosition;
+    vsout = (CommonVSOut)0;
+    float4 HworldPosition = mul(vin.Position, world);
+    HworldPosition.w = 1;
+    vsout.worldPosition = HworldPosition.xyz;
+    vsout.position = mul(mul(HworldPosition, view), proj);
+    vsout.depth = length(vsout.worldPosition-cameraPosition);
+    vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
+    vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
+    vsout.Pos2DAsSeenByLight = mul(HworldPosition, ShadowViewProjection);
+    vsout.textureCoordinate = vin.TextureCoordinate + DiffuseTextureOffset;
+    vsout.normal = normalize(mul(vin.normal, world));
+    vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));
+    vsout.binormal = cross(vsout.tangent, vsout.normal);
+    return HworldPosition;
 }
 float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout) {
-	return CommonVS(vin, world, vsout);
+    return CommonVS(vin, world, vsout);
 }
 CommonVSOut Transform(CommonVSInput input)
 {
-	CommonVSOut Out = (CommonVSOut) 0;
-	float4 worldPosition = CommonVS((CommonVSInput) input, (CommonVSOut) Out);
-	return Out;
+    CommonVSOut Out = (CommonVSOut) 0;
+    float4 worldPosition = CommonVS((CommonVSInput) input, (CommonVSOut) Out);
+    return Out;
 }
 CommonVSOut InstanceTransform(CommonVSInput input, float4x4 instanceWorld : POSITION1)
 {
-	CommonVSOut Out = (CommonVSOut) 0;
+    CommonVSOut Out = (CommonVSOut) 0;
     float4 worldPosition = CommonVS(input, mul(world, transpose(instanceWorld)), Out);
-	Out.clipDistance = length(worldPosition.xyz - cameraPosition) < 120 ? 1 : -1;
-	return Out;
+    Out.clipDistance = length(worldPosition.xyz - cameraPosition) < 120 ? 1 : -1;
+    return Out;
 }

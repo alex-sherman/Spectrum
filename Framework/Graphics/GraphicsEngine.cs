@@ -40,7 +40,8 @@ namespace Spectrum.Framework.Graphics
         static Texture_t textureL;
         static RenderTarget2D VRTargetR;
         static Texture_t textureR;
-        static RenderTarget2D DepthTarget;
+        public static RenderTarget2D PositionTarget;
+        public static RenderTarget2D NormalTarget;
         static RenderPhaseInfo sceneRenderPhase = new RenderPhaseInfo();
         static RenderPhaseInfo shadowRenderPhase = new RenderPhaseInfo() { GenerateShadowMap = true };
         //static RenderPhaseInfo reflectionRenderPhase = new RenderPhaseInfo();
@@ -94,10 +95,15 @@ namespace Spectrum.Framework.Graphics
             {
                 spriteBatch = new SpriteBatch(device);
                 AATarget?.Dispose();
-                AATarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-                DepthTarget?.Dispose();
-                DepthTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor), (int)(height * MultisampleFactor), false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
-                PostProcessEffect.DepthTarget = DepthTarget;
+                AATarget = new RenderTarget2D(device, (int)(width * MultisampleFactor),
+                    (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
+                PositionTarget?.Dispose();
+                PositionTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor),
+                    (int)(height * MultisampleFactor), false,SurfaceFormat.Vector4, DepthFormat.Depth24Stencil8);
+                NormalTarget?.Dispose();
+                NormalTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor),
+                    (int)(height * MultisampleFactor), false, SurfaceFormat.Vector4, DepthFormat.Depth24Stencil8);
+                PostProcessEffect.PositionTarget = PositionTarget;
                 Water.ResetRenderTargets();
                 PostProcessEffect.ResetViewPort(width, height);
                 if (SpecVR.Running)
@@ -318,7 +324,7 @@ namespace Spectrum.Framework.Graphics
             var mainRenderTimer = DebugTiming.Render.Time("Main Render");
             sceneRenderPhase.View = camera.View;
             sceneRenderPhase.Projection = camera.Projection;
-            device.SetRenderTargets(AATarget, DepthTarget);
+            device.SetRenderTargets(AATarget, PositionTarget, NormalTarget);
             device.Clear(clearColor);
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
             RenderQueue(sceneRenderPhase, renderGroups);
@@ -328,6 +334,7 @@ namespace Spectrum.Framework.Graphics
                 device.SetRenderTarget(target);
                 device.Clear(clearColor);
                 PostProcessEffect.Technique = "AAPP";
+                PostProcessEffect.CameraPosition = camera.Position;
                 spriteBatch.Begin(0, BlendState.Opaque, SamplerState.PointClamp, null, RasterizerState.CullNone, PostProcessEffect.effect);
                 spriteBatch.Draw(AATarget, new Microsoft.Xna.Framework.Rectangle(0, 0, target.Width, target.Height), Color.White);
                 spriteBatch.End();

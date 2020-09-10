@@ -36,5 +36,7 @@ namespace Spectrum.Framework
             list.RemoveAt(0);
             return ele;
         }
+        public static float NextFloat(this Random r, float start, float end)
+            => (float)(r.NextDouble() * (end - start) + start);
     }
 }
