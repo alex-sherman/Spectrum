@@ -19,19 +19,18 @@ namespace Spectrum.Framework.Physics.Collision
             Points[1] = p2;
             Points[2] = p3;
 
-            Normal = (Points[2].Position - Points[1].Position).Cross(Points[0].Position - Points[1].Position);
-            Normal.Normalize();
-            Distance = Vector3.Dot(Normal, Points[0].Position);
+            Normal = (Points[2].Position - Points[1].Position).Cross(Points[0].Position - Points[1].Position).Normal();
+            Distance = Normal.Dot(Points[0].Position);
 
             //Correct the order of the points if winding was backwards
             if (Distance < 0)
             {
                 Points[0] = p2;
                 Points[1] = p1;
-                Normal = (Points[2].Position - Points[1].Position).Cross(Points[0].Position - Points[1].Position);
-                Normal.Normalize();
-                Distance = Vector3.Dot(Normal, Points[0].Position);
+                Normal = (Points[2].Position - Points[1].Position).Cross(Points[0].Position - Points[1].Position).Normal();
+                Distance = Normal.Dot(Points[0].Position);
             }
+
             if (float.IsNaN(Distance))
                 Degenerate = true;
             Points[0].Faces.Add(this);

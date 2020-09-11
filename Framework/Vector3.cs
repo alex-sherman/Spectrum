@@ -47,8 +47,10 @@ namespace Spectrum.Framework
         public static Vector3 operator /(Vector3 a, float d) => new Vector3(a.X / d, a.Y / d, a.Z / d);
         public static Vector3 operator *(Vector3 a, int d) => new Vector3(a.X * d, a.Y * d, a.Z * d);
         public static Vector3 operator *(Vector3 a, float d) => new Vector3(a.X * d, a.Y * d, a.Z * d);
+        public static Vector3 operator *(Vector3 a, double d) => new Vector3((float)(a.X * d), (float)(a.Y * d), (float)(a.Z * d));
         public static Vector3 operator *(int d, Vector3 a) => new Vector3(a.X * d, a.Y * d, a.Z * d);
         public static Vector3 operator *(float d, Vector3 a) => new Vector3(a.X * d, a.Y * d, a.Z * d);
+        public static Vector3 operator *(double d, Vector3 a) => new Vector3((float)(a.X * d), (float)(a.Y * d), (float)(a.Z * d));
         [Obsolete]
         public static Vector3 Transform(Vector3 a, Matrix b) => b * a;
         [Obsolete]
@@ -96,5 +98,9 @@ namespace Spectrum.Framework
         public float LengthSquared => (float)(Math.Pow(X, 2) + Math.Pow(Y, 2) + Math.Pow(Z, 2));
         public static implicit operator Microsoft.Xna.Framework.Vector3(Vector3 vector) => new Microsoft.Xna.Framework.Vector3(vector.X, vector.Y, vector.Z);
         public static implicit operator Vector3(Microsoft.Xna.Framework.Vector3 vector) => new Vector3(vector.X, vector.Y, vector.Z);
+        public override string ToString()
+        {
+            return $"<{X:0.00},{Y:0.00},{Z:0.00}>";
+        }
     }
 }

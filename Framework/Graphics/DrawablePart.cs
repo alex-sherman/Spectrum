@@ -30,6 +30,7 @@ namespace Spectrum.Framework.Graphics
         public Color SpecularColor = Color.Black;
         public Texture2D NormalMap;
         public Texture2D TransparencyMap;
+        public bool DisableLighting;
 
         public override int GetHashCode()
         {
@@ -41,6 +42,7 @@ namespace Spectrum.Framework.Graphics
             hashCode = hashCode * -1521134295 + EqualityComparer<Color>.Default.GetHashCode(SpecularColor);
             hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(NormalMap);
             hashCode = hashCode * -1521134295 + EqualityComparer<Texture2D>.Default.GetHashCode(TransparencyMap);
+            hashCode = hashCode * -1521134295 + EqualityComparer<bool>.Default.GetHashCode(DisableLighting);
             return hashCode;
         }
         public bool Equals(MaterialData data)
@@ -52,7 +54,9 @@ namespace Spectrum.Framework.Graphics
                    EqualityComparer<SamplerMode>.Default.Equals(DiffuseSampler, data.DiffuseSampler) &&
                    SpecularColor.Equals(data.SpecularColor) &&
                    EqualityComparer<Texture2D>.Default.Equals(NormalMap, data.NormalMap) &&
-                   EqualityComparer<Texture2D>.Default.Equals(TransparencyMap, data.TransparencyMap);
+                   EqualityComparer<Texture2D>.Default.Equals(TransparencyMap, data.TransparencyMap) &&
+                   EqualityComparer<bool>.Default.Equals(DisableLighting, data.DisableLighting);
+
         }
         public override bool Equals(object obj)
         {

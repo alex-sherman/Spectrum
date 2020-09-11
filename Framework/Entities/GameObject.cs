@@ -135,7 +135,22 @@ namespace Spectrum.Framework.Entities
 
         public int marker = 0;
         private Shape shape;
-        public Shape Shape { get => shape; set { dirtyPhysics = true; shape = value; } }
+        public Shape Shape
+        {
+            get => shape;
+            set
+            {
+                shape = value;
+                if (shape != null)
+                {
+                    //Set mass properties
+                    inertia = Shape.inertia;
+                    invInertia = inertia.Invert();
+                    inverseMass = 1.0f / Shape.mass;
+                }
+                dirtyPhysics = true;
+            }
+        }
         public void ShapeFromModelBounds()
         {
             if (Model != null) Shape = new BoxShape(ModelBounds);
@@ -281,10 +296,6 @@ namespace Spectrum.Framework.Entities
 
                 if (Shape != null)
                 {
-                    //Set mass properties
-                    inertia = Shape.inertia;
-                    invInertia = inertia.Invert();
-                    inverseMass = 1.0f / Shape.mass;
 
                     // Given: Orientation, Inertia
                     Shape.GetBoundingBox(ref orientationMat, out boundingBox);

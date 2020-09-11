@@ -235,6 +235,7 @@ namespace Spectrum.Framework.Graphics
                     effect.MaterialDiffuse = material.DiffuseColor;
                     effect.Texture = material.DiffuseTexture;
                     effect.TextureMagFilter = material.DiffuseSampler.HasFlag(SamplerMode.Linear);
+                    effect.LightingEnabled = !material.DisableLighting;
                     using (DebugTiming.Render.Time("Draw Call Time"))
                     {
                         foreach (var pass in effect.CurrentTechnique.Passes)

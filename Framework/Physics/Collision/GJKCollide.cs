@@ -109,7 +109,7 @@ namespace Spectrum.Framework.Physics.Collision
             int maxIter = 15;
 
             float distSq = v.LengthSquared;
-            float epsilon = 0.0001f;
+            float epsilon = 0.000001f;
 
             while ((distSq > epsilon) && (maxIter-- != 0))
             {
@@ -337,7 +337,7 @@ namespace Spectrum.Framework.Physics.Collision
             int maxIter = MaxIterations;
 
             float distSq = v.LengthSquared;
-            float epsilon = 0.0001f;
+            float epsilon = 0.000001f;
 
             float VdotR;
 
@@ -394,10 +394,11 @@ namespace Spectrum.Framework.Physics.Collision
             // but is inaccurate against large objects:
             // fraction = lambda;
 
-            simplexSolver.ComputePoints(out _, out Vector3 p2);
+            simplexSolver.ComputePoints(out Vector3 p1, out Vector3 p2);
 
-            p2 = p2 - origin;
-            fraction = p2.Length / direction.Length;
+            p1 -= origin;
+            p2 -= origin;
+            fraction = Math.Min(p1.Length, p2.Length) / direction.Length;
 
             #endregion
             normal = v;
