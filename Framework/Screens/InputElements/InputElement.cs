@@ -37,9 +37,10 @@ namespace Spectrum.Framework.Screens.InputElements
                 return false;
             });
         }
+        private void ClearHoverText() { hoverElement?.Parent?.RemoveElement(hoverElement); hoverElement = null; }
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            if (MouseInside(input))
+            if (Display && MouseInside(input))
             {
                 if (HoverText != null && hoverElement == null)
                 {
@@ -52,7 +53,7 @@ namespace Spectrum.Framework.Screens.InputElements
                     });
                 }
             }
-            else if (hoverElement != null) { hoverElement.Parent?.RemoveElement(hoverElement); hoverElement = null; }
+            else if (hoverElement != null) { ClearHoverText(); }
             return base.HandleInput(otherTookInput, input);
         }
         public override void Draw(float gameTime, SpriteBatch spritebatch)
