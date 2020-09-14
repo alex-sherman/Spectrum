@@ -21,9 +21,10 @@ namespace Spectrum.Framework.Graphics
             Effect = effect;
             DisableDepthBuffer = false;
             DisableShadow = true;
+            DynamicDraw = null;
         }
         public RenderProperties(DrawablePart part, Matrix? world = null, MaterialData material = null, SpectrumEffect effect = null,
-            bool disableDepthBuffer = false, bool disableShadow = false)
+            bool disableDepthBuffer = false, bool disableShadow = false, Action<Batch3D.DynamicDrawArgs> dynamicDraw = null)
         {
             PartID = part.ReferenceID;
             World = world;
@@ -34,6 +35,7 @@ namespace Spectrum.Framework.Graphics
             Effect = effect ?? part.effect;
             DisableDepthBuffer = disableDepthBuffer;
             DisableShadow = disableShadow;
+            DynamicDraw = dynamicDraw;
         }
         public int PartID;
         public Matrix? World;
@@ -44,6 +46,7 @@ namespace Spectrum.Framework.Graphics
         public SpectrumEffect Effect;
         public bool DisableDepthBuffer;
         public bool DisableShadow;
+        public Action<Batch3D.DynamicDrawArgs> DynamicDraw;
         public static bool operator !=(RenderProperties a, RenderProperties b) => !a.Equals(b);
         public static bool operator ==(RenderProperties a, RenderProperties b) => a.Equals(b);
 

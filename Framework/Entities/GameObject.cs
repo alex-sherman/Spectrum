@@ -16,6 +16,7 @@ using Spectrum.Framework.Audio;
 using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics.Animation;
 using Replicate;
+using TwoMGFX;
 
 namespace Spectrum.Framework.Entities
 {
@@ -193,7 +194,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual IEnumerable<RenderCallKey> GetFixedRenderCalls()
         {
-            return Model?.MeshParts.Values.Select(part => Batch3D.Current.RegisterDraw(part, World, Material, disableDepthBuffer: DisableDepthBuffer)
+            return Model?.MeshParts.Values.Select(part => Batch3D.Current.RegisterDraw(part, World, Material, options: DrawOptions)
                /*, disableInstancing: DisableInstancing);*/);
         }
         public override void Reload()
@@ -227,8 +228,7 @@ namespace Spectrum.Framework.Entities
         public Matrix World => ModelTransform * orientation.ToMatrix() * Matrix.CreateTranslation(position);
         public MaterialData Material;
         public Texture2D Texture { get => Material?.DiffuseTexture; set => (Material ?? (Material = new MaterialData())).DiffuseTexture = value; }
-        public bool DisableInstancing;
-        public bool DisableDepthBuffer;
+        public Batch3D.DrawOptions DrawOptions;
         public SpecModel Model;
         public JBBox ModelBounds
         {
@@ -348,7 +348,7 @@ namespace Spectrum.Framework.Entities
             {
                 foreach (var part in Model)
                 {
-                    Batch3D.Current.DrawPart(part, World, Material, disableDepthBuffer: DisableDepthBuffer, disableInstancing: DisableInstancing);
+                    Batch3D.Current.DrawPart(part, World, Material, options: DrawOptions);
                 }
             }
         }

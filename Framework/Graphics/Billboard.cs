@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using SharpDX.Direct2D1.Effects;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Input;
 using Spectrum.Framework.Physics.Collision.Shapes;
@@ -29,7 +30,7 @@ namespace Spectrum.Framework.Graphics
         public Vector2 Size = Vector2.One;
         public Billboard()
         {
-            DisableInstancing = true;
+            DrawOptions.DisableInstancing = true;
             IsStatic = true;
             NoCollide = true;
         }
@@ -44,17 +45,27 @@ namespace Spectrum.Framework.Graphics
                 BillboardPart,
                 Matrix.CreateScale(Size.X, Size.Y, 0) * world,
                 Material,
-                disableDepthBuffer: DisableDepthBuffer,
-                disableInstancing: DisableInstancing
+                options: DrawOptions
             );
         }
-        public static void DrawBillboard(Vector3 position, Vector2 size, MaterialData material)
+        public static void DrawBillboard(Vector3 position, Vector2 size, MaterialData material, Vector3 offset = default)
         {
             Batch3D.Current.DrawPart(
                 BillboardPart,
-                Matrix.Create(position, new Vector3(size.X, size.Y, 0)),
+                Matrix.Create(offset, new Vector3(size.X, size.Y, 0)),
                 material,
-                disableInstancing: true
+                options: new Batch3D.DrawOptions()
+                {
+                    DisableInstancing = true,
+                    DynamicDraw = (args) =>
+                    {
+                        var view = args.Phase.View;
+                        args.Group.Properties.Effect.World = args.World *
+                            Matrix.CreateRotationY(-view.ToQuaternion().Yaw()) *
+                            Matrix.CreateTranslation(position);
+                    }
+
+                }
             );
         }
         public override void Draw(float gameTime)

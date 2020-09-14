@@ -80,6 +80,7 @@ namespace Spectrum.Framework.Screens
         #endregion
         public LayoutManager LayoutManager;
         public Element Parent { get; private set; }
+        public RootElement Root { get; private set; }
         private List<Element> _children = new List<Element>();
         //TODO: Maybe cache this and update during Update(), can't be modified during a frame though
         public List<Element> Children { get { return _children.ToList(); } }
@@ -429,6 +430,7 @@ namespace Spectrum.Framework.Screens
             if (element.Initialized)
                 throw new Exception("Element already initiliazed cannot be added to a new parent");
             element.Parent = this;
+            element.Root = this as RootElement ?? Root;
             _children.Insert(index ?? _children.Count, element);
             if (Initialized)
                 element.Initialize();
@@ -436,7 +438,11 @@ namespace Spectrum.Framework.Screens
         }
         public void RemoveElement(Element element)
         {
-            if (_children.Remove(element)) { element.Parent = null; }
+            if (_children.Remove(element))
+            {
+                element.Parent = null;
+                element.Root = null;
+            }
         }
 
         public virtual bool Toggle(bool? show = null)

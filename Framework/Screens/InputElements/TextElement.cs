@@ -9,8 +9,10 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class TextElement : Element
     {
-        private int _measuredWidth;
-        private int _measuredHeight;
+        private int measuredWidth;
+        private int measuredHeight;
+        private int contentWidth;
+        private int contentHeight;
         private bool _dirty = false;
         private string _text;
         public string Text
@@ -28,27 +30,33 @@ namespace Spectrum.Framework.Screens.InputElements
         public Func<string> TextSource;
 
         public TextElement(string text = null) { Text = text; }
-
-        public override void OnMeasure(int width, int height)
+        private void CacheDims()
         {
-            if (TextSource != null)
-                Text = TextSource();
             if (_dirty)
             {
                 _dirty = false;
                 if (Text == null)
                 {
-                    _measuredWidth = MeasureWidth(width, 0);
-                    _measuredHeight = MeasureHeight(height, (int)Font.MeasureString("a").Y);
+                    contentWidth = 0;
+                    contentHeight = (int)Font.MeasureString("a").Y;
                 }
                 else
                 {
-                    _measuredWidth = MeasureWidth(width, (int)Font.MeasureString(Text).X);
-                    _measuredHeight = MeasureHeight(height, (int)Math.Max(Font.MeasureString("a").Y, Font.MeasureString(Text).Y));
+                    contentWidth = (int)Font.MeasureString(Text).X;
+                    contentHeight = (int)Math.Max(Font.MeasureString("a").Y, Font.MeasureString(Text).Y);
                 }
             }
-            MeasuredWidth = _measuredWidth;
-            MeasuredHeight = _measuredHeight;
+        }
+        public override int ContentWidth { get { CacheDims(); return contentWidth; } }
+        public override int ContentHeight { get { CacheDims(); return contentHeight; } }
+
+        public override void OnMeasure(int width, int height)
+        {
+            if (TextSource != null)
+                Text = TextSource();
+            CacheDims();
+            MeasuredWidth = MeasureWidth(width, contentWidth);
+            MeasuredHeight = MeasureHeight(height, contentHeight);
         }
 
         public override void Draw(float time, SpriteBatch spritebatch)

@@ -99,7 +99,7 @@ namespace Spectrum.Framework.Graphics
                     (int)(height * MultisampleFactor), false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
                 PositionTarget?.Dispose();
                 PositionTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor),
-                    (int)(height * MultisampleFactor), false,SurfaceFormat.Vector4, DepthFormat.Depth24Stencil8);
+                    (int)(height * MultisampleFactor), false, SurfaceFormat.Vector4, DepthFormat.Depth24Stencil8);
                 NormalTarget?.Dispose();
                 NormalTarget = new RenderTarget2D(device, (int)(width * MultisampleFactor),
                     (int)(height * MultisampleFactor), false, SurfaceFormat.Vector4, DepthFormat.Depth24Stencil8);
@@ -231,7 +231,7 @@ namespace Spectrum.Framework.Graphics
                     effect.Projection = phase.Projection;
                     // TODO: Fix shadow map
                     effect.ShadowMap = shadowMap;
-                    MaterialData material = group.Properties.Material ?? MaterialData.Missing;
+                    MaterialData material = props.Material ?? MaterialData.Missing;
                     effect.MaterialDiffuse = material.DiffuseColor;
                     effect.Texture = material.DiffuseTexture;
                     effect.TextureMagFilter = material.DiffuseSampler.HasFlag(SamplerMode.Linear);
@@ -244,14 +244,18 @@ namespace Spectrum.Framework.Graphics
                             {
                                 foreach (var instance in group.InstanceData)
                                 {
-                                    effect.World = props.World.HasValue ? props.World.Value * instance.World : instance.World;
+                                    var world = props.World.HasValue ? props.World.Value * instance.World : instance.World;
+                                    effect.World = world;
+                                    props.DynamicDraw?.Invoke(new Batch3D.DynamicDrawArgs() { World = world, Group = group, Phase = phase });
                                     pass.Apply();
                                     Render(props.PrimitiveType, props.VertexBuffer, props.IndexBuffer, null);
                                 }
                             }
                             else
                             {
-                                effect.World = props.World ?? Matrix.Identity;
+                                var world = props.World ?? Matrix.Identity;
+                                effect.World = world;
+                                props.DynamicDraw?.Invoke(new Batch3D.DynamicDrawArgs() { World = world, Group = group, Phase = phase });
                                 // TODO (MAYBE): pass.Apply() is kind of expensive here, before doing fixed render tasks there was some batching over effect
                                 // consider maybe doing that again? Could sort render tasks and only pass.Apply() when changing properties
                                 pass.Apply();
@@ -318,8 +322,8 @@ namespace Spectrum.Framework.Graphics
         {
             BeginRender(camera);
 
-            using (DebugTiming.Render.Time("Update Shadow"))
-                UpdateShadowMap(renderGroups);
+            //using (DebugTiming.Render.Time("Update Shadow"))
+            //    UpdateShadowMap(renderGroups);
 
             //Begin rendering this to the Anti Aliasing texture
             var mainRenderTimer = DebugTiming.Render.Time("Main Render");

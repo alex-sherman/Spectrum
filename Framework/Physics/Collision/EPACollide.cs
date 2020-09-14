@@ -33,9 +33,6 @@ namespace Spectrum.Framework.Physics.Collision
 
             if (float.IsNaN(Distance))
                 Degenerate = true;
-            Points[0].Faces.Add(this);
-            Points[1].Faces.Add(this);
-            Points[2].Faces.Add(this);
         }
         public int IndexOf(EPAVertex vertex)
         {
@@ -55,7 +52,6 @@ namespace Spectrum.Framework.Physics.Collision
     }
     public class EPAVertex
     {
-        public List<EPAFace> Faces;
         public Vector3 Position;
         public Vector3 Position1;
         public Vector3 Position2;
@@ -64,11 +60,10 @@ namespace Spectrum.Framework.Physics.Collision
             Position = position;
             Position1 = position1;
             Position2 = position2;
-            Faces = new List<EPAFace>();
         }
         public override string ToString()
         {
-            return Position.ToString() + " (" + Position1.ToString() + ", " + Position2.ToString() + ")";
+            return $"{Position} ({Position1}, {Position2})";
         }
     }
     public class EPAEdge
@@ -105,12 +100,11 @@ namespace Spectrum.Framework.Physics.Collision
             normal = face.Normal;
             penetration = face.Distance;
             EPAVertex[] points = face.Points;
-            float u, v, w;
             Barycentric(normal * penetration,
                 points[0].Position,
                 points[1].Position,
                 points[2].Position,
-                out u, out v, out w);
+                out float u, out float v, out float w);
             point = points[0].Position1 * u + points[0].Position2 * u +
                 points[1].Position1 * v + points[1].Position2 * v +
                 points[2].Position1 * w + points[2].Position2 * w;
@@ -175,10 +169,6 @@ namespace Spectrum.Framework.Physics.Collision
                 {
                     if (openEdges.RemoveAll(edge1 => edge.Same(edge1)) == 0)
                         openEdges.Add(edge);
-                }
-                foreach (var point in face.Points)
-                {
-                    point.Faces.Remove(face);
                 }
                 faces.Remove(face);
             }
