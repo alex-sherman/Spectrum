@@ -44,19 +44,24 @@ namespace Spectrum.Framework.Entities
         }
         public static InitData<T> Prefab<T>(string name) where T : class
         {
-            if(prefabs.TryGetValue(name, out var initData))
+            if (prefabs.TryGetValue(name, out var initData))
             {
                 if (typeof(T) != initData.TypeData.Type) throw new InvalidCastException($"{typeof(T).Name} != {initData.TypeName}");
                 var output = new InitData<T>(initData.TypeData);
                 initData.CopyFieldsTo(output);
                 return output;
             }
+
+            var typeData = TypeHelper.Model.GetTypeAccessor(TypeHelper.Model.Types[name].Type);
+            if (typeData != null) return new InitData<T>(typeData);
+
             throw new KeyNotFoundException($"No InitData found for \"{name}\"");
         }
-        public static void Register(string name, InitData data)
+        public static InitData Register(string name, InitData data)
         {
-            prefabs[name] = data.ToImmutable();
+            var immutableData = prefabs[name] = data.ToImmutable();
             prefabs[name].Name = name;
+            return immutableData;
         }
         public static object Construct(string name)
         {
@@ -328,7 +333,7 @@ namespace Spectrum.Framework.Entities
             base.Set(name, value);
             return this;
         }
-        public InitData<T> Set<U>(Expression<Func<T,U>> lambda, U value)
+        public InitData<T> Set<U>(Expression<Func<T, U>> lambda, U value)
         {
             if (!(lambda.Body is MemberExpression member))
                 throw new InvalidOperationException("Must be member expression");
