@@ -51,9 +51,11 @@ namespace Spectrum.Framework.Entities
                 initData.CopyFieldsTo(output);
                 return output;
             }
-
-            var typeData = TypeHelper.Model.GetTypeAccessor(TypeHelper.Model.Types[name].Type);
-            if (typeData != null) return new InitData<T>(typeData);
+            if (TypeHelper.Model.Types.TryGetValue(name, out var typeData))
+            {
+                var typeAccessor = TypeHelper.Model.GetTypeAccessor(typeData.Type);
+                if (typeAccessor != null) return new InitData<T>(typeAccessor);
+            }
 
             throw new KeyNotFoundException($"No InitData found for \"{name}\"");
         }
