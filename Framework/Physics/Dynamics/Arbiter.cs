@@ -122,6 +122,11 @@ namespace Spectrum.Framework.Physics.Dynamics
         public List<Contact> ContactList = new List<Contact>();
 
         /// <summary>
+        /// Ignore collision between the two game objects, don't perform any arbitration
+        /// </summary>
+        public bool NoCollide = false;
+
+        /// <summary>
         /// </summary>
         public static ResourcePool<Arbiter> Pool = new ResourcePool<Arbiter>();
 
@@ -144,7 +149,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             lock (ContactList)
             {
                 Contact contact = Contact.Pool.GetNew();
-                contact.Initialize(system, Body1, Body2, ref point, ref normal, penetration, true, contactSettings);
+                contact.Initialize(system, Body1, Body2, ref point, ref normal, penetration, true, contactSettings,
+                    NoCollide || Body1.NoCollide || Body2.NoCollide);
                 ContactList.Add(contact);
                 if (this.ContactList.Count == 5)
                 {
@@ -181,7 +187,8 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             Debug.Assert(Body1 == contact.body1, "Body1 and Body2 not consistent.");
 
-            contact.Initialize(system, Body1, Body2, ref point, ref n, p, false, contactSettings);
+            contact.Initialize(system, Body1, Body2, ref point, ref n, p, false, contactSettings,
+                NoCollide || Body1.NoCollide || Body2.NoCollide);
 
         }
 

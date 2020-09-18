@@ -147,14 +147,11 @@ namespace Spectrum.Framework.Physics.Collision
         {
             Debug.Assert(entity1 != entity2, "CollisionSystem reports selfcollision. Something is wrong.");
 
-            Vector3 point, normal;
-            float penetration;
             bool output = false;
-            if (GetContact(entity1, entity2, out point, out normal, out penetration))
+            if (GetContact(entity1, entity2, out Vector3 point, out Vector3 normal, out float penetration))
             {
                 output = true;
-                if (this.CollisionDetected != null)
-                    this.CollisionDetected(entity1 as GameObject, entity2 as GameObject, point, normal, penetration);
+                CollisionDetected?.Invoke(entity1 as GameObject, entity2 as GameObject, point, normal, penetration);
             }
             return output;
         }

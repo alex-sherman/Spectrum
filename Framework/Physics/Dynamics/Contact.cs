@@ -369,8 +369,9 @@ namespace Spectrum.Framework.Physics.Dynamics
         /// <param name="n">The normal pointing to body2.</param>
         /// <param name="penetration">The estimated penetration depth.</param>
         public void Initialize(CollisionSystem system, GameObject body1, GameObject body2, ref Vector3 point, ref Vector3 n,
-            float penetration, bool newContact, ContactSettings settings)
+            float penetration, bool newContact, ContactSettings settings, bool noCollide)
         {
+            this.noCollide = noCollide;
             this.system = system;
             this.body1 = body1; this.body2 = body2;
             this.normal = n; normal.Normalize();
@@ -392,7 +393,6 @@ namespace Spectrum.Framework.Physics.Dynamics
             // Material Properties
             if (newContact)
             {
-                noCollide = body1.NoCollide || body2.NoCollide;
                 treatBody1AsStatic = body1.IsStatic;
                 treatBody2AsStatic = body2.IsStatic;
 
@@ -421,11 +421,7 @@ namespace Spectrum.Framework.Physics.Dynamics
                 }
 
             }
-
             this.settings = settings;
-
-
-
         }
     }
 }

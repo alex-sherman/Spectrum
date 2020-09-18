@@ -296,28 +296,34 @@ namespace Spectrum.Framework.Entities
         public InitData(params object[] args) : base(typeof(T).Name, args) { }
         public InitData(Expression<Func<T>> exp) : base(typeof(T).Name)
         {
-            if (!(exp.Body is MemberInitExpression init)) throw new ArgumentException("Expression must be a member initializer");
-
-            Fields = init.Bindings.ToDictionary(b => b.Member.Name, b =>
+            NewExpression newExpression = null;
+            if (exp.Body is MemberInitExpression init)
             {
-                if (b is MemberAssignment assign)
+                newExpression = init.NewExpression;
+                Fields = init.Bindings.ToDictionary(b => b.Member.Name, b =>
                 {
-                    try
+                    if (b is MemberAssignment assign)
                     {
-                        if (assign.Expression is UnaryExpression convert && convert.NodeType == ExpressionType.Convert)
-                            return new Primitive(convert.Operand.GetConstantValue());
-                        return new Primitive(assign.Expression.GetConstantValue());
+                        try
+                        {
+                            if (assign.Expression is UnaryExpression convert && convert.NodeType == ExpressionType.Convert)
+                                return new Primitive(convert.Operand.GetConstantValue());
+                            return new Primitive(assign.Expression.GetConstantValue());
+                        }
+                        catch (ArgumentException e) { throw new ArgumentException($"Invalid member assignment for {b.Member.Name}", e); }
                     }
-                    catch (ArgumentException e) { throw new ArgumentException($"Invalid member assignment for {b.Member.Name}", e); }
-                }
-                else if (b is MemberListBinding bind)
-                {
-                    throw new NotImplementedException();
-                    // TODO
-                }
-                throw new ArgumentException("All member bindings must be assignments");
-            });
-            Args = init.NewExpression.Arguments.Select(e => new Primitive(e.GetConstantValue())).ToArray();
+                    else if (b is MemberListBinding bind)
+                    {
+                        throw new NotImplementedException();
+                        // TODO
+                    }
+                    throw new ArgumentException("All member bindings must be assignments");
+                });
+            }
+            else if (exp.Body is NewExpression) newExpression = exp.Body as NewExpression;
+            else throw new ArgumentException("Expression must be a member initializer");
+
+            Args = newExpression.Arguments.Select(e => new Primitive(e.GetConstantValue())).ToArray();
         }
         new public InitData<T> Clone()
         {

@@ -17,6 +17,7 @@ using Spectrum.Framework.Content;
 using Spectrum.Framework.Graphics.Animation;
 using Replicate;
 using TwoMGFX;
+using Spectrum.Framework.Physics;
 
 namespace Spectrum.Framework.Entities
 {
@@ -156,11 +157,12 @@ namespace Spectrum.Framework.Entities
         {
             if (Model != null) Shape = new BoxShape(ModelBounds);
         }
-        public virtual void Collide(GameObject other, Vector3 point, Vector3 normal, float penetration) => OnCollide?.Invoke(other, point, normal, penetration);
+        public virtual bool Collide(GameObject other, Vector3 point, Vector3 normal, float penetration)
+        {
+            OnCollide?.Invoke(other, point, normal, penetration);
+            return true;
+        }
         public virtual void EndCollide(GameObject other) => OnEndCollide?.Invoke(other);
-
-
-
 
         public bool EnableSpeculativeContacts { get; set; }
 
