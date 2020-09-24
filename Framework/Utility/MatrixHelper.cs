@@ -53,23 +53,5 @@ namespace Spectrum.Framework
                 (float)jobj[2],
                 (float)jobj[3]).ToMatrix();
         }
-        public static Matrix RotationFromDirection(Vector3 vDirection)
-        {
-            vDirection = -vDirection.Normal();
-            Vector3 vUp = Vector3.Up;
-            if (vDirection.X == 0 && vDirection.Z == 0)
-                vUp = Vector3.Left;
-            Vector3 vRight = vUp.Cross(vDirection).Normal();
-            vUp = vDirection.Cross(vRight).Normal();
-            Matrix mBasis = new Matrix(vRight.X, vRight.Y, vRight.Z, 0.0f,
-                                        vUp.X, vUp.Y, vUp.Z, 0.0f,
-                                        vDirection.X, vDirection.Y, vDirection.Z, 0.0f,
-                                        0.0f, 0.0f, 0.0f, 1.0f);
-            return mBasis;
-        }
-        public static Quaternion QuaternionFromDirection(Vector3 vDirection)
-        {
-            return RotationFromDirection(vDirection).ToQuaternion();
-        }
     }
 }

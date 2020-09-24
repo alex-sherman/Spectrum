@@ -87,7 +87,7 @@ namespace Spectrum.Framework.Graphics
         public void DrawLine(Vector3 start, Vector3 end, Color color, float width = 0.1f)
         {
             DrawPart(linePart, Matrix.CreateScale(width, width,
-                (end - start).Length) * MatrixHelper.RotationFromDirection(end - start) * Matrix.CreateTranslation(start),
+                (end - start).Length) * Matrix.CreateRotationFromDirection(end - start) * Matrix.CreateTranslation(start),
                 new MaterialData() { DiffuseColor = color });
         }
         public struct DynamicDrawArgs

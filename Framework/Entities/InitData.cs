@@ -42,27 +42,38 @@ namespace Spectrum.Framework.Entities
         {
             get { return prefabs; }
         }
-        public static InitData<T> Prefab<T>(string name) where T : class
+        public static InitData Get(string name)
         {
             if (prefabs.TryGetValue(name, out var initData))
             {
-                if (typeof(T) != initData.TypeData.Type) throw new InvalidCastException($"{typeof(T).Name} != {initData.TypeName}");
-                var output = new InitData<T>(initData.TypeData);
-                initData.CopyFieldsTo(output);
-                return output;
+                return initData;
             }
             if (TypeHelper.Model.Types.TryGetValue(name, out var typeData))
             {
                 var typeAccessor = TypeHelper.Model.GetTypeAccessor(typeData.Type);
-                if (typeAccessor != null) return new InitData<T>(typeAccessor);
+                if (typeAccessor != null) return new InitData(typeAccessor);
             }
 
             throw new KeyNotFoundException($"No InitData found for \"{name}\"");
+        }
+        public static InitData<T> Get<T>(string name = null) where T : class
+        {
+            var initData = Get(name ?? typeof(T).Name);
+            if (!typeof(T).IsAssignableFrom(initData.TypeData.Type)) throw new InvalidCastException($"{typeof(T).Name} != {initData.TypeName}");
+            var output = new InitData<T>(initData.TypeData);
+            initData.CopyFieldsTo(output);
+            return output;
         }
         public static InitData Register(string name, InitData data)
         {
             var immutableData = prefabs[name] = data.ToImmutable();
             prefabs[name].Name = name;
+            return immutableData;
+        }
+        public static InitData<T> Register<T>(string name, InitData<T> data) where T : class
+        {
+            var immutableData = data.ToImmutable();
+            Register(name, (InitData)immutableData);
             return immutableData;
         }
         public static object Construct(string name)
@@ -77,6 +88,11 @@ namespace Spectrum.Framework.Entities
         public string FullPath { get; set; }
         public string TypeName => TypeData.Type.Name;
         public Primitive[] Args = new Primitive[0];
+        public InitData SetArgs(params object[] args)
+        {
+            Args = args.Select(obj => new Primitive(obj)).ToArray();
+            return this;
+        }
         /// <summary>
         /// Once stored, all fields are set via reference. This may lead
         /// to strange side effects if GameObjects mutate field values that were
@@ -92,7 +108,7 @@ namespace Spectrum.Framework.Entities
             TypeData = TypeHelper.Model.GetTypeAccessor(TypeHelper.Model.Types[type].Type);
             if (TypeData == null)
                 throw new KeyNotFoundException($"Could not find type {type} in TypeData lookup");
-            Args = args.Select(obj => new Primitive(obj)).ToArray();
+            SetArgs(args);
         }
         [ProtoIgnore]
         [JsonIgnore]
@@ -105,10 +121,6 @@ namespace Spectrum.Framework.Entities
                 return null;
             }
             object output = TypeData.Construct(Args.Select(prim => prim.Object).ToArray());
-            foreach (var member in TypeData.Members.Values.Where(member => !member.Info.IsStatic && member.Info.GetAttribute<PreloadedContentAttribute>() != null))
-            {
-                member.SetValue(output, ContentHelper.LoadType(member.Type, member.Info.GetAttribute<PreloadedContentAttribute>().Path));
-            }
             Apply(output, true);
             return output;
         }
@@ -346,6 +358,11 @@ namespace Spectrum.Framework.Entities
             if (!(lambda.Body is MemberExpression member))
                 throw new InvalidOperationException("Must be member expression");
             return Set(member.Member.Name, value);
+        }
+        new public InitData<T> SetArgs(params object[] args)
+        {
+            base.SetArgs(args);
+            return this;
         }
         new public InitData<T> Unset(string name)
         {

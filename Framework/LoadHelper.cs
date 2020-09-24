@@ -35,11 +35,23 @@ namespace Spectrum.Framework
                 Serialization.RegisterType(type);
                 var typeData = TypeHelper.RegisterType(type, plugin);
                 var accessor = TypeHelper.Model.GetTypeAccessor(type);
+                var initData = new InitData(accessor);
+                var preloadedMembers = accessor.Type.GetCustomAttributes<ClassContentAttribute>().Select(preload => (accessor.Members[preload.Member], preload));
+                foreach ((var member, var preload) in preloadedMembers)
+                {
+                    initData.Set(member.Info.Name, preload.Path);
+                }
+                foreach (var member in accessor.Members.Values.Where(member => !member.Info.IsStatic && member.Info.GetAttribute<MemberContentAttribute>() != null))
+                {
+                    var preload = member.Info.GetAttribute<MemberContentAttribute>();
+                    initData.Set(member.Info.Name, preload.Path);
+                }
+                InitData.Register(type.Name, initData);
                 foreach (var member in accessor.Members.Values.Where(m => m.Info.IsStatic))
                 {
-                    var preload = member.Info.GetAttribute<PreloadedContentAttribute>();
+                    var preload = member.Info.GetAttribute<MemberContentAttribute>();
                     if (preload == null) continue;
-                    object content = ContentHelper.LoadType(preload.Type ?? member.Type, preload.Path);
+                    object content = ContentHelper.LoadType(member.Type, preload.Path);
                     member.SetValue(null, content);
                 }
             }

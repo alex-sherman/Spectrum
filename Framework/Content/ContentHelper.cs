@@ -103,11 +103,13 @@ namespace Spectrum.Framework.Content
             return load.Invoke(null, new object[] { path, true });
         }
 
+        private HashSet<(Type, string)> failedLoads = new HashSet<(Type, string)>();
         public T LoadRelative<T>(string name, bool usePrefix, bool refreshCache = false) where T : class
         {
             if (Content == null) return null;
             Type t = typeof(T);
             var path = name.Replace('/', '\\');
+            if (!refreshCache && failedLoads.Contains((t, path))) return null;
             var root = Content.RootDirectory;
             if (ContentParsers.TryGetValue(t, out var parser))
             {
@@ -129,11 +131,12 @@ namespace Spectrum.Framework.Content
                     catch (Exception e)
                     {
                         DebugPrinter.Print($"Failed to load {name}: {e.Message}");
-                        return null;
+                        break;
                     }
                 }
+                DebugPrinter.Print(string.Format("File not found {0}", name));
             }
-            DebugPrinter.Print(string.Format("File not found {0}", name));
+            failedLoads.Add((t, path));
             return null;
         }
     }

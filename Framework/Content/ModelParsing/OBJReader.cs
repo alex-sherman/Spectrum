@@ -59,14 +59,14 @@ namespace Spectrum.Framework.Content.ModelParsing
                         break;
                     case "Kd":
                         // Apply gamme correction here because OBJs?
-                        data.DiffuseColor = new Color(v3pow(v3(splitted), 1 / 2.5));
+                        data.DiffuseColor = new Color(v3pow(v3(splitted), .45));
                         break;
                     case "map_Kd":
                         data.DiffuseTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);
                         break;
                     case "Ks":
                         // Apply gamme correction here because OBJs?
-                        data.SpecularColor = new Color(v3pow(v3(splitted), 1 / 2.5));
+                        data.SpecularColor = new Color(v3pow(v3(splitted), .45));
                         break;
                     case "map_Ks":
                         //data.specularTexture = ContentHelper.Load<Texture2D>(Path.Combine(dir, splitted[1]), false);
@@ -82,6 +82,7 @@ namespace Spectrum.Framework.Content.ModelParsing
             var part = DrawablePart.From(vertices, indices);
             part.material = material;
             part.effect = new SpectrumEffect();
+            part.permanentTransform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             modelData.parts[groupName + "_" + meshPartId] = part;
             meshPartId++;
         }

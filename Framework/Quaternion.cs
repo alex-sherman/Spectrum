@@ -90,6 +90,11 @@ namespace Spectrum.Framework
             float cos = (float)Math.Cos(half);
             return new Quaternion(axis.X * sin, axis.Y * sin, axis.Z * sin, cos);
         }
+        // TODO: Should be able to skip going to matrix
+        public static Quaternion CreateFromDirection(Vector3 direction)
+        {
+            return Matrix.CreateRotationFromDirection(direction).ToQuaternion();
+        }
         public Matrix ToMatrix()
         {
             float x2 = X * X;
