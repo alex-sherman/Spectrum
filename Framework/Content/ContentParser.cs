@@ -31,7 +31,7 @@ namespace Spectrum.Framework.Content
             T data = cachedData[path];
             return data == null ? default(U) : SafeCopy(data);
         }
-        string TryExtensions(string path)
+        protected virtual string ResolvePath(string path, string name)
         {
             if (File.Exists(path)) return path;
             if (Extensions != null)
@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Content
             try
             {
                 using (DebugTiming.Content.Time(GetType().Name))
-                    cachedData[path] = LoadData(TryExtensions(path), name);
+                    cachedData[path] = LoadData(ResolvePath(path, name), name);
             }
             catch (FileNotFoundException)
             {

@@ -26,7 +26,7 @@ namespace Spectrum.Framework.Graphics
     public class GraphicsEngine
     {
         public static RasterizerState Clip;
-        private static GraphicsDevice device;
+        private static GraphicsDevice device => SpectrumGame.Game.GraphicsDevice;
         public static float darkness = 1f;
         public static bool wireFrame = false;
         public static SpriteBatch spriteBatch;
@@ -54,11 +54,13 @@ namespace Spectrum.Framework.Graphics
             get { return _msFactor; }
             set { _msFactor = value; if (Width != 0 && Height != 0) ResetOnResize(Width, Height); }
         }
-
+        static GraphicsEngine()
+        {
+            UpdateRasterizer();
+        }
         public static void Initialize()
         {
             textureFieldInfo = typeof(RenderTarget2D).GetField("_texture", BindingFlags.Instance | BindingFlags.NonPublic);
-            device = SpectrumGame.Game.GraphicsDevice;
 
             Clip = new RasterizerState()
             {
@@ -71,7 +73,6 @@ namespace Spectrum.Framework.Graphics
             shadowMap = new RenderTarget2D(device, 4096, 4096, false, SurfaceFormat.Single, DepthFormat.Depth24Stencil8);
             if (SpecVR.Running)
                 GenerateVRTargets();
-            UpdateRasterizer();
         }
         static void GenerateVRTargets()
         {

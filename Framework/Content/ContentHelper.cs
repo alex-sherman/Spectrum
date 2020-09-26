@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Spectrum.Framework.Content
 {
@@ -62,7 +63,7 @@ namespace Spectrum.Framework.Content
                 string[] split = name.Split('@');
                 Plugin plugin;
                 if (SpectrumGame.Game.Plugins.TryGetValue(split[0], out plugin))
-                    return plugin.Content.LoadRelative<T>(split[1], true);
+                    return plugin.Content.LoadRelative<T>(name, true);
                 else throw new FileNotFoundException(@"No plugin found named {split[0]}");
             }
             return (T)Single.LoadRelative<T>(name, usePrefix);
@@ -108,7 +109,7 @@ namespace Spectrum.Framework.Content
         {
             if (Content == null) return null;
             Type t = typeof(T);
-            var path = name.Replace('/', '\\');
+            var path = new Regex(@"(.*@)?(.+)").Match(name).Groups[2].Value.Replace('/', '\\');
             if (!refreshCache && failedLoads.Contains((t, path))) return null;
             var root = Content.RootDirectory;
             if (ContentParsers.TryGetValue(t, out var parser))
