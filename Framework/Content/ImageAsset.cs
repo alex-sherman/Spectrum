@@ -12,9 +12,11 @@ namespace Spectrum.Framework.Content
     public class ImageAsset
     {
         public static readonly ImageAsset Blank;
+        public static readonly ImageAsset Missing;
         static ImageAsset()
         {
             Blank = new ImageAsset(ContentHelper.Blank);
+            Missing = new ImageAsset(ContentHelper.Missing);
         }
         public SvgDocument SVG = null;
         public Texture2D Texture = null;

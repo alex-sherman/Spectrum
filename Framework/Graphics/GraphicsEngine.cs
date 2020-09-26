@@ -301,7 +301,8 @@ namespace Spectrum.Framework.Graphics
         /// <summary>
         /// Renders the provided groups to the render target with no post processing
         /// </summary>
-        public static void RenderSimple(ICamera camera, IEnumerable<RenderCall> renderGroups, RenderTarget2D target)
+        public static void RenderSimple(ICamera camera, IEnumerable<RenderCall> renderGroups,
+            RenderTarget2D target, Color clearColor = default)
         {
             BeginRender(camera);
             device.SetRenderTarget(target);
