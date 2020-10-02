@@ -158,19 +158,29 @@ namespace Spectrum.Framework.Entities
         private object Call(object obj, string name, params object[] args)
         {
             var method = TypeData.Methods[name];
-            if (method != null)
+            if (method == null)
             {
-                var methodArgs = method.GetParameters();
-                if (args.Length != methodArgs.Length) { return null; }
-                var coercedArgs = new List<object>();
-                foreach (var argPair in methodArgs.Zip(args, (a, b) => new Tuple<Type, object>(a.ParameterType, b)))
+                DebugPrinter.PrintOnce($"Method not found {TypeData.Name}.{name}");
+                return null;
+            }
+            var methodArgs = method.GetParameters();
+            var coercedArgs = methodArgs.Select((param, i) =>
+            {
+                if (i < args.Length)
                 {
-                    object coerced;
-                    if (!Coerce(argPair.Item1, argPair.Item2, out coerced))
-                        return null;
-                    coercedArgs.Add(coerced);
+                    if (!Coerce(param.ParameterType, args[i], out object coerced)) return null;
+                    return coerced;
                 }
-                return method.Invoke(obj, coercedArgs.ToArray());
+                if (param.HasDefaultValue) return param.DefaultValue;
+                return null;
+            }).ToArray();
+            try
+            {
+                return method.Invoke(obj, coercedArgs);
+            }
+            catch (Exception e)
+            {
+                DebugPrinter.Print($"Exception encountered calling {TypeData.Name}.{name}: {e}");
             }
             return null;
         }
@@ -178,35 +188,38 @@ namespace Spectrum.Framework.Entities
         public static bool TryCast(Type type, object value, out object output)
         {
             output = value;
+            Type from = value.GetType();
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = type.GetGenericArguments()[0];
-            if (value == null || type.IsAssignableFrom(value.GetType()))
+            if (value == null || type.IsAssignableFrom(from))
                 return true;
-
-            // The next to checks might be super slow, consider caching or removing them
-            // if it becomes a problem
-            if (PrimitiveTypeMap.Contains(type))
+            try
             {
-                if (type.IsSubclassOf(typeof(Enum)) && value is int)
-                    output = Enum.ToObject(type, (int)value);
-                else
-                    output = Convert.ChangeType(value, type);
-                return true;
+                // The next to checks might be super slow, consider caching or removing them
+                // if it becomes a problem
+                if (PrimitiveTypeMap.Contains(type))
+                {
+                    if (type.IsSubclassOf(typeof(Enum)) && value is int)
+                        output = Enum.ToObject(type, (int)value);
+                    else
+                        output = Convert.ChangeType(value, type);
+                    return true;
+                }
+                var key = new Tuple<Type, Type>(from, type);
+                if (!castMethodCache.TryGetValue(key, out MethodInfo method))
+                {
+                    method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
+                        .Union(type.GetMethods(BindingFlags.Public | BindingFlags.Static))
+                        .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == from && m.ReturnType == type).FirstOrDefault();
+                    castMethodCache[key] = method;
+                }
+                if (method != null)
+                {
+                    output = method.Invoke(null, new object[] { value });
+                    return true;
+                }
             }
-            Type from = value.GetType();
-            var key = new Tuple<Type, Type>(from, type);
-            if (!castMethodCache.TryGetValue(key, out MethodInfo method))
-            {
-                method = value.GetType().GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .Union(type.GetMethods(BindingFlags.Public | BindingFlags.Static))
-                    .Where(m => m.Name == "op_Implicit" && m.GetParameters()[0].ParameterType == value.GetType() && m.ReturnType == type).FirstOrDefault();
-                castMethodCache[key] = method;
-            }
-            if (method != null)
-            {
-                output = method.Invoke(null, new object[] { value });
-                return true;
-            }
+            catch (Exception e) { DebugPrinter.PrintOnce($"Failed to coerce {from} to {type}: {e}"); }
             return false;
         }
         public static bool Coerce(Type type, object value, out object output)

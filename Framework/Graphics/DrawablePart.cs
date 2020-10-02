@@ -68,21 +68,22 @@ namespace Spectrum.Framework.Graphics
         private static int LastReferenceID = 0;
         public int ReferenceID { get; private set; }
         public MaterialData material = new MaterialData();
-        public Matrix permanentTransform = Matrix.Identity;
+        internal Matrix permanentTransform = Matrix.Identity;
         public Matrix transform = Matrix.Identity;
         public SpectrumEffect effect;
         public VertexBuffer VBuffer;
         public IndexBuffer IBuffer;
         public PrimitiveType primType = PrimitiveType.TriangleList;
         List<ICommonTex> vertices = null;
+        List<uint> indices = null;
         public JBBox Bounds
         {
             get
             {
                 JBBox output = JBBox.SmallBox;
-                foreach (var vert in vertices)
+                var selectedVerts = indices == null ? vertices : indices.Select(i => vertices[(int)i % vertices.Count]);
+                foreach (var vert in selectedVerts)
                     output.AddPoint(permanentTransform * transform * vert.Position);
-
                 return output;
             }
         }
@@ -105,6 +106,7 @@ namespace Spectrum.Framework.Graphics
                 VBuffer = VertexHelper.MakeVertexBuffer(vertices),
                 IBuffer = VertexHelper.MakeIndexBuffer(indices),
                 vertices = vertices.Cast<ICommonTex>().ToList(),
+                indices = indices,
             };
             return part;
         }
@@ -116,12 +118,21 @@ namespace Spectrum.Framework.Graphics
                 VBuffer = VertexHelper.MakeVertexBuffer(vertices),
                 IBuffer = VertexHelper.MakeIndexBuffer(indices),
                 vertices = vertices.Cast<ICommonTex>().ToList(),
+                indices = indices.Select<ushort, uint>(i => i).ToList(),
             };
             return part;
         }
         public DrawablePart CreateReference()
         {
-            return new DrawablePart(VBuffer, IBuffer) { ReferenceID = ReferenceID, effect = effect.Clone() as SpectrumEffect, material = material, permanentTransform = permanentTransform, vertices = vertices };
+            return new DrawablePart(VBuffer, IBuffer)
+            {
+                ReferenceID = ReferenceID,
+                effect = effect.Clone() as SpectrumEffect,
+                material = material,
+                permanentTransform = permanentTransform,
+                vertices = vertices,
+                indices = indices,
+            };
         }
         public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer)
             : this()

@@ -153,9 +153,23 @@ namespace Spectrum.Framework.Entities
                 dirtyPhysics = true;
             }
         }
-        public void ShapeFromModelBounds()
+        public void ShapeFromModelBounds(bool separateParts = false)
         {
-            if (Model != null) Shape = new BoxShape(ModelBounds);
+            if (Model != null)
+            {
+                if (!separateParts)
+                    Shape = new BoxShape(ModelBounds);
+                else
+                {
+                    var shapes = Model.MeshParts.Values.Select<DrawablePart, Shape>(p =>
+                    {
+                        var box = p.Bounds;
+                        box.Transform(ref ModelTransform);
+                        return new BoxShape(box);
+                    }).ToList();
+                    Shape = new ListMultishape(shapes);
+                }
+            }
         }
         public virtual bool Collide(GameObject other, Vector3 point, Vector3 normal, float penetration)
         {
