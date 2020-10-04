@@ -16,15 +16,15 @@ namespace Spectrum.Framework
     {
         public static ReplicationModel Model = TypeUtil.Model;
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
-
+        static ReplicateTypeAttribute MakeReplicateAttribute() => new ReplicateTypeAttribute();
         public static TypeData RegisterType(Type type, Plugin plugin)
         {
             // Laziness to avoid marking up every type with ReplicateType
-            var typeData = Model.Add(type, type.GetCustomAttribute<ReplicateTypeAttribute>(false) ?? new ReplicateTypeAttribute());
+            var typeData = Model.Add(type, type.GetCustomAttribute<ReplicateTypeAttribute>(false) ?? MakeReplicateAttribute());
             // Reinitialize if it was added by another call and has no ReplicateType
             if (typeData.TypeAttribute == null)
             {
-                typeData.TypeAttribute = new ReplicateTypeAttribute();
+                typeData.TypeAttribute = MakeReplicateAttribute();
                 typeData.InitializeMembers();
                 Model.ClearTypeAccessorCache();
             }

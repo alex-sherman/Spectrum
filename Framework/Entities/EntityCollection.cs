@@ -23,7 +23,7 @@ namespace Spectrum.Framework.Entities
             lock (this)
             {
                 if (Map.ContainsKey(entity.ID))
-                    throw new InvalidOperationException("An Enttiy with that ID has already been added to the collection");
+                    throw new InvalidOperationException("An Entity with that ID has already been added to the collection");
                 Map[entity.ID] = entity;
                 int i;
                 for (i = 0; i < updatedSorted.Count - 1 && updatedSorted[i].UpdateOrder < entity.UpdateOrder; i++) { }

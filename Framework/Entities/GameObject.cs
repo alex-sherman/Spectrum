@@ -242,9 +242,12 @@ namespace Spectrum.Framework.Entities
         /// The world matrix for the purposes of drawing the game object
         /// </summary>
         public Matrix World => ModelTransform * orientation.ToMatrix() * Matrix.CreateTranslation(position);
+        [Replicate]
         public MaterialData Material;
+        [Replicate]
         public Texture2D Texture { get => Material?.DiffuseTexture; set => (Material ?? (Material = new MaterialData())).DiffuseTexture = value; }
         public Batch3D.DrawOptions DrawOptions;
+        [Replicate]
         public SpecModel Model;
         public JBBox ModelBounds
         {

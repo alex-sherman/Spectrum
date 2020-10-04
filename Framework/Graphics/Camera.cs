@@ -13,6 +13,21 @@ namespace Spectrum.Framework.Graphics
         Matrix Transform { get; set; }
         void UpdateProjection(int width, int height);
     }
+    public static class CameraExtensions
+    {
+        public static Vector2 Unproject(this ICamera camera, Rectangle bounds, Point point)
+        {
+            Vector2 vector = new Vector2
+            {
+                X = 2f * (point.X - bounds.X) / bounds.Width - 1,
+                Y = 1 - 2f * (point.Y - bounds.Y) / bounds.Height,
+            };
+            Matrix inverse = (Matrix.Identity * camera.View * camera.Projection).Invert();
+            var result = inverse * vector;
+            float W = vector.X * inverse.M14 + vector.Y * inverse.M24 + inverse.M44;
+            return result / W;
+        }
+    }
     public class Camera : ICamera, ITransform
     {
         public Matrix Projection { get; set; } = Matrix.Identity;
@@ -88,8 +103,7 @@ namespace Spectrum.Framework.Graphics
 
             Vector3 farPoint = SpectrumGame.Game.GraphicsDevice.Viewport.Unproject(farsource, Projection, View, world);
 
-            Vector3 direction = farPoint - nearPoint;
-            direction.Normalize();
+            Vector3 direction = (farPoint - nearPoint).Normal();
             return new Ray(nearPoint, direction);
         }
 

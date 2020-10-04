@@ -22,6 +22,7 @@ namespace Spectrum.Framework
             var length = Length;
             X /= length; Y /= length;
         }
+        public Vector2 Normal() => this / Length;
         public Vector2 Transform(Matrix matrix) => new Vector2((X * matrix.M11) + (Y * matrix.M21) + matrix.M41, (X * matrix.M12) + (Y * matrix.M22) + matrix.M42);
         public Vector2 Rotate(float r)
         {
@@ -56,6 +57,10 @@ namespace Spectrum.Framework
         public static implicit operator Vector2(Microsoft.Xna.Framework.Vector2 vector)
         {
             return new Vector2(vector.X, vector.Y);
+        }
+        public override string ToString()
+        {
+            return $"{X:0.00},{Y:0.00}";
         }
     }
 }

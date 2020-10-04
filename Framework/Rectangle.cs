@@ -27,7 +27,13 @@ namespace Spectrum.Framework
             return new Rectangle(x, y,
                 Math.Min(Right, other.Right) - x, Math.Min(Bottom, other.Bottom) - y);
         }
+        public bool Intersects(Rectangle other)
+        {
+            return other.X < X + Width && other.X + other.Width > X
+                && other.Y < Y + Height && other.Y + other.Height > Y;
+        }
         public bool Contains(Point p) => Left <= p.X && p.X <= Right && Top <= p.Y && p.Y <= Bottom;
+        public Rectangle Translate(Point p) => new Rectangle(X + p.X, Y + p.Y, Width, Height);
         /// <summary>
         /// Scales the source rectangle (and optionally centers it) to the destination rectangle while maintaining the original aspect ratio.
         /// The crop paremeter determines whether to scale up (overflowing and requiring a crop) or down (requiring no crop).

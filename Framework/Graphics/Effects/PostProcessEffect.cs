@@ -84,5 +84,6 @@ namespace Spectrum.Framework.Graphics
             get => effect.Parameters["hbaoSamples"].GetValueVector3Array().Cast<Vector3>().ToArray();
             set => effect.Parameters["hbaoSamples"].SetValue(value.Select(v => (Microsoft.Xna.Framework.Vector3)v).ToArray());
         }
+        public static bool Enabled = true;
     }
 }

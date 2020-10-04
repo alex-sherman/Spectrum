@@ -11,8 +11,10 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Entities
 {
+    [ReplicateType]
     public class GameObject2D : Entity
     {
+        [ReplicateIgnore]
         public static readonly DrawablePart GameObject2DPart;
         static GameObject2D()
         {
@@ -38,7 +40,7 @@ namespace Spectrum.Framework.Entities
             base.Draw(gameTime);
             if (Texture != null)
             {
-                Batch3D.Current.DrawPart(GameObject2DPart, CreateTexTransform(Bounds) * World, new MaterialData() { DiffuseTexture = Texture.GetTexture(Bounds), DiffuseColor = Color });
+                Batch3D.Current.DrawPart(GameObject2DPart, CreateTexTransform(Bounds) * World, new MaterialData() { DiffuseTexture = Texture.GetTexture(Bounds), DiffuseColor = Color, DisableLighting = true });
             }
         }
 

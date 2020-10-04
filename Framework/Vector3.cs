@@ -100,7 +100,7 @@ namespace Spectrum.Framework
         public static implicit operator Vector3(Microsoft.Xna.Framework.Vector3 vector) => new Vector3(vector.X, vector.Y, vector.Z);
         public override string ToString()
         {
-            return $"<{X:0.00},{Y:0.00},{Z:0.00}>";
+            return $"{X:0.00},{Y:0.00},{Z:0.00}";
         }
     }
 }

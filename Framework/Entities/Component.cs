@@ -1,4 +1,5 @@
-﻿using Spectrum.Framework.Input;
+﻿using Replicate;
+using Spectrum.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,13 @@ namespace Spectrum.Framework.Entities
     }
     public class Component
     {
+        [ReplicateIgnore]
         public Entity E { get; set; }
         public virtual void Initialize(Entity e) { E = e; }
     }
     public class Component<T> : Component
     {
+        [ReplicateIgnore]
         public T P { get; set; }
         public override void Initialize(Entity e)
         {

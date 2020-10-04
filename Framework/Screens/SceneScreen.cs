@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Screens
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }
-        protected virtual IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics).Inject(Manager.Physics.CollisionSystem);
+        protected virtual IDisposable Inject() => Context.Create(Batch).Inject(Manager.Physics).Inject(Manager.Physics.CollisionSystem).Inject(this);
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
