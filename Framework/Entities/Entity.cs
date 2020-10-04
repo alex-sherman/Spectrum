@@ -46,11 +46,15 @@ namespace Spectrum.Framework.Entities
         {
             return Components.Where(c => c is T).Cast<T>().FirstOrDefault();
         }
+        public void SetData<T>(string key, T value)
+        {
+            InitData.Data[key] = new Primitive(value);
+        }
         public T Data<T>(string key)
         {
             if (InitData.Data.TryGetValue(key, out Primitive output) && output.Object is T tOutput)
                 return tOutput;
-            return default(T);
+            return default;
         }
         public T Data<T>(string key, T ifMissing)
         {

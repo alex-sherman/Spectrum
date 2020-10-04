@@ -29,7 +29,9 @@ namespace Spectrum.Framework
             var sin = Math.Sin(r); var cos = Math.Cos(r);
             return new Vector2((float)(X * cos - Y * sin), (float)(X * sin + Y * cos));
         }
-        public static float Dot(Vector2 a, Vector2 b) => a.X * b.X + a.Y * b.Y;
+        [Obsolete]
+        public static float Dot(Vector2 a, Vector2 b) => a.Dot(b);
+        public float Dot(Vector2 b) => X * b.X + Y * b.Y;
         public override bool Equals(object obj) => obj is Vector2 vector && Equals(vector);
         public bool Equals(Vector2 other) => X == other.X && Y == other.Y;
         public override int GetHashCode()

@@ -16,6 +16,8 @@ namespace Spectrum.Framework
         public int Width { get; set; }
         public int Height { get; set; }
         public int Top => Y;
+        public int YMax => Y + Height;
+        public int YMin => Y;
         public int Right => X + Width;
         public int Bottom => Y + Height;
         public int Left => X;

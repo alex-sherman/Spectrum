@@ -120,7 +120,8 @@ namespace Spectrum.Framework.Graphics
         Quaternion ITransform.Orientation => Quaternion.Identity;
         public void UpdateProjection(int width, int height)
         {
-            Projection = Matrix.CreateScale(2f / width, 2f / height, -1);
+            var scale = height / 1700f;
+            Projection = Matrix.CreateScale(scale / width, scale / height , -1);
         }
     }
 }

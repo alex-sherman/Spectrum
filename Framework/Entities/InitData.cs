@@ -251,8 +251,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual InitData SetData(string key, object value)
         {
-            if (Immutable)
-                return Clone().SetData(key, value);
+            if (Immutable) return Clone().SetData(key, value);
             Data[key] = new Primitive(value);
             return this;
         }
@@ -262,30 +261,26 @@ namespace Spectrum.Framework.Entities
                 DebugPrinter.PrintOnce($"No such field {TypeData.Name}.{name}");
             else
             {
-                if (Immutable)
-                    return Clone().Set(name, value);
+                if (Immutable) return Clone().Set(name, value);
                 Fields[name] = new Primitive(value);
             }
             return this;
         }
         public virtual InitData Unset(string name)
         {
-            if (Immutable)
-                return Clone().Unset(name);
+            if (Immutable) return Clone().Unset(name);
             Fields.Remove(name);
             return this;
         }
         public virtual InitData Call(string name, params object[] args)
         {
-            if (Immutable)
-                return Clone().Call(name, args);
+            if (Immutable) return Clone().Call(name, args);
             FunctionCalls.Add(new FunctionCall(name, false, args));
             return this;
         }
         public virtual InitData CallOnce(string name, params object[] args)
         {
-            if (Immutable)
-                return Clone().CallOnce(name, args);
+            if (Immutable) return Clone().CallOnce(name, args);
             FunctionCalls.Add(new FunctionCall(name, true, args));
             return this;
         }
@@ -358,11 +353,13 @@ namespace Spectrum.Framework.Entities
         }
         new public InitData<T> SetData(string key, object value)
         {
+            if (Immutable) return Clone().SetData(key, value);
             base.SetData(key, value);
             return this;
         }
         new public InitData<T> Set(string name, object value)
         {
+            if (Immutable) return Clone().Set(name, value);
             base.Set(name, value);
             return this;
         }
@@ -370,25 +367,30 @@ namespace Spectrum.Framework.Entities
         {
             if (!(lambda.Body is MemberExpression member))
                 throw new InvalidOperationException("Must be member expression");
+            if (Immutable) return Clone().Set(member.Member.Name, value);
             return Set(member.Member.Name, value);
         }
         new public InitData<T> SetArgs(params object[] args)
         {
+            if (Immutable) return Clone().SetArgs(args);
             base.SetArgs(args);
             return this;
         }
         new public InitData<T> Unset(string name)
         {
+            if (Immutable) return Clone().Unset(name);
             base.Unset(name);
             return this;
         }
         new public InitData<T> Call(string name, params object[] args)
         {
+            if (Immutable) return Clone().Call(name, args);
             base.Call(name, args);
             return this;
         }
         new public InitData<T> CallOnce(string name, params object[] args)
         {
+            if (Immutable) return Clone().CallOnce(name, args);
             base.CallOnce(name, args);
             return this;
         }
