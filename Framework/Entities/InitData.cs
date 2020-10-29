@@ -76,6 +76,12 @@ namespace Spectrum.Framework.Entities
             Register(name, (InitData)immutableData);
             return immutableData;
         }
+        public static InitData<T> Register<T>(string name, Expression<Func<T>> exp) where T : class
+        {
+            var immutableData = new InitData<T>(exp).ToImmutable();
+            Register(name, (InitData)immutableData);
+            return immutableData;
+        }
         public static object Construct(string name)
         {
             if (!prefabs.ContainsKey(name)) return null;
@@ -363,7 +369,7 @@ namespace Spectrum.Framework.Entities
             base.Set(name, value);
             return this;
         }
-        public InitData<T> Set<U>(Expression<Func<T, U>> lambda, U value)
+        public InitData<T> Set<U>(Expression<Func<T, U>> lambda, object value)
         {
             if (!(lambda.Body is MemberExpression member))
                 throw new InvalidOperationException("Must be member expression");
