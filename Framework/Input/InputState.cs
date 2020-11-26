@@ -101,7 +101,11 @@ namespace Spectrum.Framework.Input
                 DebugPrinter.PrintOnce("Binding not found " + bindingName);
                 return false;
             }
-            return binding.Options.Any(button => IsKeyDown(button));
+            return IsKeyDown(binding);
+        }
+        public bool IsKeyDown(KeyBinding binding, bool consultConsumed = true)
+        {
+            return binding.Options.Any(button => IsKeyDown(button, consultConsumed));
         }
         public bool IsKeyDown(KeyBind button, bool consultConsumed = true)
         {
@@ -124,10 +128,14 @@ namespace Spectrum.Framework.Input
         }
         public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo = null)
             => IsKeyDown(bindingName, playerInfo) && !Last.IsKeyDown(bindingName, playerInfo);
+        public bool IsNewKeyPress(KeyBinding binding, bool consultConsumed = true)
+            => IsKeyDown(binding, consultConsumed) && !Last.IsKeyDown(binding, consultConsumed);
         public bool IsNewKeyPress(KeyBind button, bool consultConsumed = true)
             => (!consultConsumed || !consumedKeys.ContainsKey(button)) && IsKeyDown(button, false) && !Last.IsKeyDown(button, false);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
             => !IsKeyDown(bindingName, playerInfo) && Last.IsKeyDown(bindingName, playerInfo);
+        public bool IsNewKeyRelease(KeyBinding binding, bool consultConsumed = true)
+            => !IsKeyDown(binding, consultConsumed) && Last.IsKeyDown(binding, consultConsumed);
         public bool IsNewKeyRelease(KeyBind button, bool consultConsumed = true)
             => (!consultConsumed || !consumedKeys.ContainsKey(button)) && !IsKeyDown(button, false) && Last.IsKeyDown(button, false);
         public float GetAxis1D(string axisName, PlayerInformation playerInfo = null)

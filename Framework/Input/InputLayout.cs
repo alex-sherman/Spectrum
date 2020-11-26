@@ -41,5 +41,14 @@ namespace Spectrum.Framework.Input
         {
             Profiles[profile].Add(binding, option);
         }
+
+        public void AddBindClass(Type type)
+        {
+            foreach (var field in type.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+            {
+                if (field.FieldType != typeof(KeyBinding)) continue;
+                KeyBindings[field.Name] = (KeyBinding)field.GetValue(null);
+            }
+        }
     }
 }
