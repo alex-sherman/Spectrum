@@ -6,20 +6,34 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework
 {
-    public class Context<T> : IDisposable
+    public class Context<T> : Context
     {
         private Context() { }
         private T Previous;
-        private IDisposable next;
-        public void Dispose()
+        public override void Dispose()
         {
             Current = Previous;
-            next?.Dispose();
+            base.Dispose();
         }
         public static T Current { get; private set; }
+        public static Context<T> Create(T value)
+        {
+            var result = new Context<T>() { Previous = Current };
+            Current = value;
+            return result;
+        }
+    }
+    public class Context : IDisposable
+    {
+        private IDisposable next;
+        public virtual void Dispose()
+        {
+            next?.Dispose();
+        }
+        public static Context<U> Create<U>(U value) => Context<U>.Create(value);
         public Context<U> Inject<U>(U value)
         {
-            var result = Context.Create(value);
+            var result = Create(value);
             result.next = this;
             return result;
         }
@@ -29,15 +43,5 @@ namespace Spectrum.Framework
             next = disposable;
             return this;
         }
-        public static Context<T> Create(T value)
-        {
-            var result = new Context<T>() { Previous = Current };
-            Current = value;
-            return result;
-        }
-    }
-    public static class Context
-    {
-        public static Context<U> Create<U>(U value) => Context<U>.Create(value);
     }
 }
