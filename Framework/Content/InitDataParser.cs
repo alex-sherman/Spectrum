@@ -22,6 +22,7 @@ namespace Spectrum.Framework.Content
             using (var reader = new StreamReader(File.OpenRead(path)))
             {
                 var output = JConvert.Deserialize<InitData>(reader.ReadToEnd()).ToImmutable();
+                if (output.Name == null) output.Name = name;
                 output.Path = name;
                 output.FullPath = path;
                 return output;

@@ -112,7 +112,7 @@ namespace Spectrum.Framework.JSON
             else
                 output = (InitData)objectType.GetConstructor(new Type[] { typeof(object[]) })
                     .Invoke(new object[] { new object[] { } });
-            output.Name = (string)jobj["@Name"];
+            if (jobj.ContainsKey("@Name")) output.Name = (string)jobj["@Name"];
             ParseCalls(jobj, true, output);
             ParseCalls(jobj, false, output);
             ParseData(jobj, output);
