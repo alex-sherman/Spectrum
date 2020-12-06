@@ -20,13 +20,14 @@ namespace Spectrum.Framework.JSON
             string key = callOnce ? "@CallOnce" : "@Call";
             if (jobj.TryGetValue(key, out JToken calls))
             {
-                if (calls.Type != JTokenType.Object)
+                if (calls.Type != JTokenType.Array)
                     throw new InvalidDataException($"Expected field {key} to be an object");
-                JObject callsObj = (JObject)calls;
-                foreach (var call in callsObj)
+                JArray callsArray = (JArray)calls;
+                foreach (var callEntry in callsArray)
                 {
-                    if (call.Value.Type != JTokenType.Array)
-                        throw new InvalidDataException(string.Format("Expected field {0}.{1} to be an array", key, call.Key));
+                    if (!(callEntry is JObject callJObj) || callJObj.Count > 1)
+                        throw new InvalidDataException($"Expected field {callEntry}.{key} to be an object with one key/value");
+                    var call = ((IEnumerable<KeyValuePair<string, JToken>>)callJObj).First();
                     var callArgs = ((JArray)call.Value).Select(callArg => ParseValue(callArg, null)).ToArray();
                     if (callOnce)
                         output.CallOnce(call.Key, args: callArgs);

@@ -171,9 +171,9 @@ namespace Spectrum.Framework.Entities
                         if (updateable.Enabled)
                         {
                             updateable.Update(gameTime);
-                            if (tickOneTimer >= 1000)
+                            if (tickOneTimer >= 1)
                                 updateable.TickOne();
-                            if (tickTenthTimer >= 100)
+                            if (tickTenthTimer >= .1f)
                                 updateable.TickTenth();
                         }
                         else
@@ -187,8 +187,8 @@ namespace Spectrum.Framework.Entities
                     Remove(destroy.ID);
                 }
             }
-            if (tickOneTimer >= 1000) tickOneTimer = 0;
-            if (tickTenthTimer >= 100) tickTenthTimer = 0;
+            if (tickOneTimer >= 1) tickOneTimer = 0;
+            if (tickTenthTimer >= .1f) tickTenthTimer = 0;
         }
         public void Draw(float gameTime)
         {

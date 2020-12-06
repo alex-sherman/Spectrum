@@ -154,6 +154,7 @@
   <PropertyGroup>
     <CustomBuildAfterTargets>Compile</CustomBuildAfterTargets>
     <CustomBuildBeforeTargets>Link</CustomBuildBeforeTargets>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <Import Project="mgfx.targets.xml" />
 </Project>
