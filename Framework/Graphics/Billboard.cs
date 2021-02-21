@@ -31,7 +31,7 @@ namespace Spectrum.Framework.Graphics
         public Billboard()
         {
             DrawOptions.DisableInstancing = true;
-            IsStatic = true;
+            isStatic = true;
             NoCollide = true;
         }
         public override void Initialize()

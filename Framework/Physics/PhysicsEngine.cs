@@ -566,7 +566,7 @@ namespace Spectrum.Framework.Physics
         {
             foreach (GameObject body in Collidables)
             {
-                if (!body.IsStatic && body.IsActive)// && !(body as Character != null && (body as Character).IsOnGround))
+                if (!body.isStatic && body.IsActive)// && !(body as Character != null && (body as Character).IsOnGround))
                 {
                     body.linearVelocity += body.force * body.inverseMass * timestep;
                     body.angularVelocity += body.invInertiaWorld * (body.torque * timestep);
@@ -626,7 +626,7 @@ namespace Spectrum.Framework.Physics
             {
                 foreach (GameObject body in Collidables)
                 {
-                    if (body.IsStatic || !body.IsActive) continue;
+                    if (body.isStatic || !body.IsActive) continue;
                     threadManager.AddTask(IntegrateCallback, body);
                 }
 
@@ -636,7 +636,7 @@ namespace Spectrum.Framework.Physics
             {
                 foreach (GameObject body in Collidables)
                 {
-                    if (body.IsStatic || !body.IsActive) continue;
+                    if (body.isStatic || !body.IsActive) continue;
                     IntegrateCallback(body);
                 }
             }

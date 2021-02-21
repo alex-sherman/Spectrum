@@ -24,7 +24,7 @@ namespace Spectrum.Framework.Graphics
         int numVertices = 32;
         public Water()
         {
-            IsStatic = true;
+            isStatic = true;
             AllowReplicate = false;
         }
         public override void Initialize()

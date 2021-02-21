@@ -82,7 +82,15 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// Static objects cannot move, but may still collide
         /// </summary>
-        public bool IsStatic;
+        public bool IsStatic
+        {
+            get => isStatic;
+            set {
+                isStatic = value;
+                if (value) IslandManager.MakeBodyStatic(this);
+            }
+        }
+        internal bool isStatic;
 
         /// <summary>
         /// Disables collision handling for the object, the OnCollide event is still called
@@ -290,7 +298,7 @@ namespace Spectrum.Framework.Entities
         public override void Initialize()
         {
             base.Initialize();
-            if (!IsStatic && ReplicationData != null)
+            if (!isStatic && ReplicationData != null)
             {
                 ReplicationData.SetInterpolator<Vector3>("Position", (w, current, target) => Vector3.Lerp(current, target, w));
                 //ReplicationData.SetInterpolator<Quaternion>("Orientation", (w, current, target) => Quaternion.Slerp(current, target, w));
@@ -304,7 +312,7 @@ namespace Spectrum.Framework.Entities
         protected bool dirtyPhysics = true;
         public void PhysicsUpdate(float timestep)
         {
-            if (!IsStatic || dirtyPhysics)
+            if (!isStatic || dirtyPhysics)
             {
                 dirtyPhysics = false;
                 //TODO: This might be useful to cache on the object if its needed elsewhere
@@ -389,7 +397,7 @@ namespace Spectrum.Framework.Entities
                 boundingBox.Max += position;
                 Batch3D.Current.DrawJBBox(boundingBox, Color.Black);
                 //GraphicsEngine.DrawCircle(position, 3, Color.Red, spriteBatch);
-                if (!IsStatic)
+                if (!isStatic)
                 {
                     Batch3D.Current.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
                     foreach (var arbiter in arbiters.Where(arb => !arb.Body1.NoCollide && !arb.Body2.NoCollide))

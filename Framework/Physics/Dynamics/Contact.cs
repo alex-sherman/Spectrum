@@ -393,8 +393,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             // Material Properties
             if (newContact)
             {
-                treatBody1AsStatic = body1.IsStatic;
-                treatBody2AsStatic = body2.IsStatic;
+                treatBody1AsStatic = body1.isStatic;
+                treatBody2AsStatic = body2.isStatic;
 
                 accumulatedNormalImpulse = 0.0f;
                 accumulatedTangentImpulse = 0.0f;

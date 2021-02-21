@@ -312,7 +312,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <returns>Returns true if both are static or inactive.</returns>
         public bool CheckBothStaticOrInactive(GameObject entity1, GameObject entity2)
         {
-            return entity1.IsStatic && entity2.IsStatic;
+            return entity1.isStatic && entity2.isStatic;
         }
 
         /// <summary>

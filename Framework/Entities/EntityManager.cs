@@ -12,6 +12,7 @@ using Spectrum.Framework.Network.Surrogates;
 using Spectrum.Framework.Physics.Collision;
 using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Input;
+using System.Linq.Expressions;
 
 namespace Spectrum.Framework.Entities
 {
@@ -210,6 +211,7 @@ namespace Spectrum.Framework.Entities
                 }
             }
         }
+        public T Create<T>(Expression<Func<T>> exp) where T : Entity => CreateEntity<T>(new InitData<T>(exp));
         public T Create<T>(params object[] args) where T : Entity
         {
             return CreateEntity(InitData.Get<T>().SetArgs(args)) as T;

@@ -6,6 +6,7 @@ using Spectrum.Framework.Physics.Dynamics;
 using Spectrum.Framework.Physics.Dynamics.Constraints;
 using System.Collections.ObjectModel;
 using Spectrum.Framework.Entities;
+using System.Diagnostics;
 
 namespace Spectrum.Framework.Physics.Collision
 {
@@ -86,7 +87,7 @@ namespace Spectrum.Framework.Physics.Collision
             RemoveConnection(constraint.body1, constraint.body2);
         }
 
-        public void MakeBodyStatic(GameObject body)
+        public static void MakeBodyStatic(GameObject body)
         {
             // A static body doesn't have any connections.
             body.connections.Clear();
@@ -101,7 +102,6 @@ namespace Spectrum.Framework.Physics.Collision
                     Pool.GiveBack(body.island);
                 }
             }
-
             body.island = null;
         }
 
@@ -122,17 +122,12 @@ namespace Spectrum.Framework.Physics.Collision
 
             if (body.island != null)
             {
-                System.Diagnostics.Debug.Assert(body.island.islandManager == this,
+                Debug.Assert(body.island.islandManager == this,
                     "IslandManager Inconsistency.",
                     "IslandManager doesn't own the Island.");
 
-                //TODO: This went off once after removing an entity, figure out
-                // what went wrong
-
-                // the body should now form an island on his own.
-                // thats okay, but since static bodies dont have islands
-                // remove this island.
-                System.Diagnostics.Debug.Assert(body.island.bodies.Count == 1,
+                // May be caused by a body becoming static, static bodies don't have islands
+                Debug.Assert(body.island.bodies.Count == 1,
                 "IslandManager Inconsistency.",
                 "Removed all connections of a body - body is still in a non single Island.");
 
@@ -165,11 +160,11 @@ namespace Spectrum.Framework.Physics.Collision
 
         private void AddConnection(GameObject body1, GameObject body2)
         {
-            System.Diagnostics.Debug.Assert(!(body1.IsStatic && body2.IsStatic),
+            System.Diagnostics.Debug.Assert(!(body1.isStatic && body2.isStatic),
                 "IslandManager Inconsistency.",
                 "Arbiter detected between two static objects.");
 
-            if (body1.IsStatic) // <- only body1 is static
+            if (body1.isStatic) // <- only body1 is static
             {
                 if (body2.island == null)
                 {
@@ -181,7 +176,7 @@ namespace Spectrum.Framework.Physics.Collision
                     islands.Add(newIsland);
                 }
             }
-            else if (body2 == null || body2.IsStatic) // <- only body2 is static
+            else if (body2 == null || body2.isStatic) // <- only body2 is static
             {
                 if (body1.island == null)
                 {
@@ -204,15 +199,15 @@ namespace Spectrum.Framework.Physics.Collision
 
         private void RemoveConnection(GameObject body1, GameObject body2)
         {
-            if (body1.IsStatic) // <- only body1 is static
+            if (body1.isStatic) // <- only body1 is static
             {
                 body2.connections.Remove(body1);
             }
-            if (body2.IsStatic) // <- only body2 is static
+            if (body2.isStatic) // <- only body2 is static
             {
                 body1.connections.Remove(body2);
             }
-            if(!body1.IsStatic && !body2.IsStatic) // <- both are !static
+            if(!body1.isStatic && !body2.isStatic) // <- both are !static
             {
                 // TODO: This got hit once
                 System.Diagnostics.Debug.Assert(body1.island == body2.island,
@@ -250,7 +245,7 @@ namespace Spectrum.Framework.Physics.Collision
             while (leftSearchQueue.Count > 0 && rightSearchQueue.Count > 0)
             {
                 GameObject currentNode = leftSearchQueue.Dequeue();
-                if (!currentNode.IsStatic)
+                if (!currentNode.isStatic)
                 {
                     for (int i = 0; i < currentNode.connections.Count; i++)
                     {
@@ -272,7 +267,7 @@ namespace Spectrum.Framework.Physics.Collision
                 }
 
                 currentNode = rightSearchQueue.Dequeue();
-                if (!currentNode.IsStatic)
+                if (!currentNode.isStatic)
                 {
 
                     for (int i = 0; i < currentNode.connections.Count; i++)
@@ -433,11 +428,6 @@ namespace Spectrum.Framework.Physics.Collision
 
                 islands.Add(island);
             }
-
         }
-
-
-
-
     }
 }
