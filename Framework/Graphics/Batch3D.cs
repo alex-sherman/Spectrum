@@ -55,7 +55,7 @@ namespace Spectrum.Framework.Graphics
             call.InstanceBuffer = null;
             return call.InstanceData?.Remove(key.Instance) ?? false;
         }
-        public void DrawJBBox(JBBox box, Color color, float width = 0.1f)
+        public void DrawJBBox(JBBox box, Color color, float width = 0.02f)
         {
             Vector3 corner1 = new Vector3(box.Min.X, box.Min.Y, box.Min.Z);
             Vector3 corner2 = new Vector3(box.Min.X, box.Min.Y, box.Max.Z);
@@ -84,7 +84,7 @@ namespace Spectrum.Framework.Graphics
             DrawLine(corner3, corner7, color, width);
             DrawLine(corner4, corner8, color, width);
         }
-        public void DrawLine(Vector3 start, Vector3 end, Color color, float width = 0.1f)
+        public void DrawLine(Vector3 start, Vector3 end, Color color, float width = 0.02f)
         {
             DrawPart(linePart, Matrix.CreateScale(width, width,
                 (end - start).Length) * Matrix.CreateRotationFromDirection(end - start) * Matrix.CreateTranslation(start),

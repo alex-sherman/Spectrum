@@ -212,6 +212,7 @@ namespace Spectrum.Framework.Entities
             }
         }
         public T Create<T>(Expression<Func<T>> exp) where T : Entity => CreateEntity<T>(new InitData<T>(exp));
+        [Obsolete]
         public T Create<T>(params object[] args) where T : Entity
         {
             return CreateEntity(InitData.Get<T>().SetArgs(args)) as T;
