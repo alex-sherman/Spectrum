@@ -263,9 +263,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual InitData Set(string name, object value)
         {
-            if (TypeData[name] == null)
-                DebugPrinter.PrintOnce($"No such field {TypeData.Name}.{name}");
-            else
+            if (ValidateField(name))
             {
                 if (Immutable) return Clone().Set(name, value);
                 Fields[name] = new Primitive(value);
@@ -315,9 +313,20 @@ namespace Spectrum.Framework.Entities
             Immutable = true;
             return this;
         }
+        protected bool ValidateField(string field)
+        {
+            if (TypeData[field] == null)
+            {
+                DebugPrinter.PrintOnce($"No such field {TypeData.Name}.{field}");
+                return false;
+            }
+            return true;
+        }
     }
     public class InitData<T> : InitData where T : class
     {
+        private T single;
+        public T Single => single ??= Construct();
         internal InitData(TypeAccessor typeData) : base(typeData) { }
         public InitData(params object[] args) : base(typeof(T).Name, args) { }
         public InitData(Expression<Func<T>> exp) : base(typeof(T).Name)
@@ -326,7 +335,7 @@ namespace Spectrum.Framework.Entities
             if (exp.Body is MemberInitExpression init)
             {
                 newExpression = init.NewExpression;
-                Fields = init.Bindings.ToDictionary(b => b.Member.Name, b =>
+                Fields = init.Bindings.Where(b => ValidateField(b.Member.Name)).ToDictionary(b => b.Member.Name, b =>
                 {
                     if (b is MemberAssignment assign)
                     {

@@ -19,7 +19,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         public ListMultishape(List<Shape> shapes)
         {
-            if(shapes.Any((Shape shape) => (shape is Multishape)))
+            if (shapes.Any((Shape shape) => (shape is Multishape)))
             {
                 throw new ArgumentException("Cannot use Multishapes in a ListMultishape");
             }
@@ -28,6 +28,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
         public void Add(Shape shape)
         {
+            if (shape == null) throw new ArgumentNullException(nameof(shape));
             Shapes.Add(shape);
             UpdateShape();
         }
