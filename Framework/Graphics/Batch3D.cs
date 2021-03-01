@@ -46,7 +46,7 @@ namespace Spectrum.Framework.Graphics
         {
             RenderProperties properties = new RenderProperties(part, part.permanentTransform, material,
                 effect, options.DisableDepthBuffer, options.DisableShadow, options.DynamicDraw);
-            world = part.transform * world;
+            world = part.Transform * world;
             var value = UpdateRenderDict(properties, world, fixedBatched);
             return new RenderCallKey(properties, value);
         }
@@ -131,7 +131,7 @@ namespace Spectrum.Framework.Graphics
         {
             RenderProperties properties = new RenderProperties(part, part.permanentTransform, material, effect,
                 options.DisableDepthBuffer, options.DisableShadow, options.DynamicDraw);
-            world = part.transform * world;
+            world = part.Transform * world;
             if (options.DisableInstancing)
                 dynamicNonBatched.Add(new RenderCall(properties, world));
             else
