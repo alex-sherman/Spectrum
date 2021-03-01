@@ -122,12 +122,14 @@ namespace Spectrum.Framework.Graphics
             };
             return part;
         }
+        // TODO: some of these fields should be readonly, since creating a reference and modifying them will break batching
         public DrawablePart CreateReference()
         {
             return new DrawablePart(VBuffer, IBuffer)
             {
                 ReferenceID = ReferenceID,
                 effect = effect.Clone() as SpectrumEffect,
+                primType = primType,
                 material = material,
                 permanentTransform = permanentTransform,
                 vertices = vertices,

@@ -308,6 +308,7 @@ namespace Spectrum.Framework.Entities
             CopyFieldsTo(output);
             return output;
         }
+        // TODO: Should this return an ImmutableInitData? Could simplify usage of `Single`
         public InitData ToImmutable()
         {
             Immutable = true;

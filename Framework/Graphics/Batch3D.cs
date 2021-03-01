@@ -40,12 +40,20 @@ namespace Spectrum.Framework.Graphics
         private RenderDict fixedBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private RenderDict dynamicBatched = new RenderDict((key) => new RenderCall(key) { InstanceData = new HashSet<InstanceData>() }, true);
         private List<RenderCall> dynamicNonBatched = new List<RenderCall>();
+        private List<Batch3D> subBatches = new List<Batch3D>();
         public RenderCallKey RegisterDraw(
             DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null, DrawOptions options = default)
         {
-            RenderProperties properties = new RenderProperties(part, null, material, effect, options.DisableDepthBuffer, options.DisableShadow, options.DynamicDraw);
+            RenderProperties properties = new RenderProperties(part, part.permanentTransform, material,
+                effect, options.DisableDepthBuffer, options.DisableShadow, options.DynamicDraw);
+            world = part.transform * world;
             var value = UpdateRenderDict(properties, world, fixedBatched);
             return new RenderCallKey(properties, value);
+        }
+        public List<RenderCallKey> RegisterModel(SpecModel model, Matrix world, DrawOptions options = default)
+        {
+            if (model == null) return new List<RenderCallKey>();
+            return model.MeshParts.Values.Select(p => RegisterDraw(p, world, options: options)).ToList();
         }
         public bool UnregisterDraw(RenderCallKey key)
         {
@@ -54,6 +62,13 @@ namespace Spectrum.Framework.Graphics
             call.InstanceBuffer?.Dispose();
             call.InstanceBuffer = null;
             return call.InstanceData?.Remove(key.Instance) ?? false;
+        }
+        public bool UnregisterDraws(List<RenderCallKey> keys)
+        {
+            bool removed = false;
+            foreach (var key in keys)
+                removed |= UnregisterDraw(key);
+            return removed;
         }
         public void DrawJBBox(JBBox box, Color color, float width = 0.02f)
         {
@@ -111,6 +126,7 @@ namespace Spectrum.Framework.Graphics
                 DrawPart(part, world, material, options: options);
             }
         }
+        public void DrawBatch(Batch3D batch) => subBatches.Add(batch);
         public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null, DrawOptions options = default)
         {
             RenderProperties properties = new RenderProperties(part, part.permanentTransform, material, effect,
@@ -144,7 +160,8 @@ namespace Spectrum.Framework.Graphics
                 group.Squash();
             foreach (var group in fixedBatched.Values.Where(group => group.InstanceBuffer == null))
                 group.Squash();
-            return fixedBatched.Values.Union(dynamicBatched.Values).Union(dynamicNonBatched);
+            return fixedBatched.Values.Union(dynamicBatched.Values).Union(dynamicNonBatched)
+                .Union(subBatches.SelectMany(b => b.GetRenderTasks(gameTime)));
         }
         public void ClearRenderTasks()
         {
@@ -152,6 +169,7 @@ namespace Spectrum.Framework.Graphics
                 batch.InstanceBuffer?.Dispose();
             dynamicBatched.Clear();
             dynamicNonBatched.Clear();
+            subBatches.Clear();
         }
     }
 }

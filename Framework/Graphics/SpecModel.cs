@@ -18,6 +18,7 @@ namespace Spectrum.Framework.Graphics
         public string Name { get; private set; }
         public AnimationData Animations { get; set; }
         public SkinningData SkinningData { get; protected set; }
+        private static int _modelIndex = 0;
         private int _partIndex = 0;
 
         public Dictionary<string, DrawablePart> MeshParts { get; private set; }
@@ -28,6 +29,7 @@ namespace Spectrum.Framework.Graphics
         }
         public SpecModel()
         {
+            Name = $"model_{_modelIndex++}";
             Path = null;
             MeshParts = new Dictionary<string, DrawablePart>();
             Materials = new Dictionary<string, MaterialData>();
@@ -61,8 +63,7 @@ namespace Spectrum.Framework.Graphics
         /// <param name="part"></param>
         public void Add(DrawablePart part)
         {
-            MeshParts["part_" + _partIndex] = part;
-            _partIndex++;
+            MeshParts[$"part_{_partIndex++}"] = part;
         }
         public void Update(float dt)
         {
