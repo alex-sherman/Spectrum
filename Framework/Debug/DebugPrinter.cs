@@ -38,6 +38,7 @@ namespace Spectrum.Framework
             }
         }
         public static HashSet<string> onceMessages = new HashSet<string>();
+        public static Dictionary<string, string> showMessages = new Dictionary<string, string>();
         private static List<string> strings = new List<string>();
         private static List<IDebug> objects = new List<IDebug>();
         public static IDebug display(Func<string> text = null, Action<float> draw = null)
@@ -69,11 +70,24 @@ namespace Spectrum.Framework
                 onceMessages.Add(msg);
             }
         }
-        public static void Print(string msg)
+        public static void Show(string msg)
+        {
+            showMessages[GetStackString()] = msg;
+        }
+        private static StackFrame GetStackFrame()
         {
             StackFrame sf; int sfi = 1;
             while ((sf = new StackFrame(sfi, true)).GetMethod().DeclaringType == typeof(DebugPrinter))
                 sfi++;
+            return sf;
+        }
+        private static string GetStackString()
+        {
+            var sf = GetStackFrame();
+            return $"{(sf.GetFileName() ?? "").Split('\\').Last()}:{sf.GetFileLineNumber()}";
+        }
+        public static void Print(string msg)
+        {
             lock (strings)
             {
                 if (strings.Count > 20)
@@ -83,8 +97,7 @@ namespace Spectrum.Framework
                 string[] msgStrings = msg.Split('\n');
                 for (int i = 0; i < msgStrings.Length; i++)
                 {
-                    string filename = sf.GetFileName();
-                    var line = string.Format("{2} ({0}): {1}", sf.GetFileLineNumber(), msgStrings[i], (filename ?? "").Split('\\').Last());
+                    string line = $"{GetStackString()}: {msgStrings[i]}";
                     try
                     {
                         File.AppendAllText("output.log", line + "\n");
@@ -134,30 +147,38 @@ namespace Spectrum.Framework
 
             if (SpectrumGame.Game.Debug)
             {
-                Vector2 offset = (Vector2)Rect.TopLeft;
-                spritebatch.DrawString(Font, "Debug:", Vector2.Zero + offset, FontColor, LayerDepth);
+                Vector2 topLeft = (Vector2)Rect.TopLeft;
+                spritebatch.DrawString(Font, "Debug:", Vector2.Zero + topLeft, FontColor, LayerDepth);
                 float strSize = Font.LineSpacing;
+                Vector2 offset = topLeft;
                 lock (strings)
                 {
                     if (strings.Count > 0)
                     {
-                        strSize = Font.MeasureString(strings[0]).Y;
                         for (int i = 0; i < strings.Count; i++)
                         {
-                            spritebatch.DrawString(Font, strings[i], new Vector2(0, (i + 1) * strSize) + offset, FontColor, LayerDepth);
+                            offset.Y += strSize;
+                            spritebatch.DrawString(Font, strings[i], offset, FontColor, LayerDepth);
                         }
                     }
+                }
+                offset = topLeft;
+                offset.Y += strSize * 10;
+                foreach (var kvp in showMessages)
+                {
+                    offset.Y += strSize;
+                    spritebatch.DrawString(Font, $"{kvp.Key}: {kvp.Value}", offset, Color.Black, LayerDepth);
                 }
                 float curPos = 0;
                 for (int i = 0; i < objects.Count; i++)
                 {
                     string toPrint = objects[i].Debug();
-                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (11) * strSize) + offset, Color.Black, LayerDepth);
+                    spritebatch.DrawString(Font, toPrint, new Vector2(0, curPos + (21) * strSize) + topLeft, Color.Black, LayerDepth);
                     curPos += Font.MeasureString(toPrint.ToString()).Y;
                 }
                 DrawTimes(2, spritebatch, gameTime, LayerDepth);
-
             }
+            showMessages.Clear();
         }
     }
 }
