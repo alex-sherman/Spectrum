@@ -93,6 +93,10 @@ namespace Spectrum.Framework
         {
             return new Vector3(Math.Max(a.X, b.X), Math.Max(a.Y, b.Y), Math.Max(a.Z, b.Z));
         }
+        public Vector3 Abs()
+        {
+            return new Vector3(X * Math.Sign(X), Y * Math.Sign(Y), Z * Math.Sign(Z));
+        }
         public static Vector3 Lerp(Vector3 a, Vector3 b, float w) => a * (1 - w) + b * w;
         public float Length => (float)Math.Pow(LengthSquared, 0.5);
         public float LengthSquared => (float)(Math.Pow(X, 2) + Math.Pow(Y, 2) + Math.Pow(Z, 2));

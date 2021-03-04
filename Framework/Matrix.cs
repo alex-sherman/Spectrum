@@ -551,6 +551,13 @@ namespace Spectrum.Framework
                                         0.0f, 0.0f, 0.0f, 1.0f);
             return mBasis;
         }
+
+        public static Matrix CreateYawRotationFromDirection(Vector3 vDirection)
+        {
+            vDirection.Y = 0;
+            return CreateRotationFromDirection(vDirection);
+        }
+
         public Quaternion ToQuaternion()
         {
             Quaternion quaternion = new Quaternion();
