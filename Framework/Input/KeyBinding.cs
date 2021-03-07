@@ -79,5 +79,7 @@ namespace Spectrum.Framework.Input
         {
             Options.Add(option);
         }
+        public bool IsPressed() => InputState.Current.IsKeyDown(this);
+        public bool IsNewPress() => InputState.Current.IsNewKeyPress(this);
     }
 }
