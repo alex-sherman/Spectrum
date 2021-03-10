@@ -99,7 +99,7 @@ namespace Spectrum.Framework.Graphics
         }
         public void Squash()
         {
-            if (InstanceBuffer != null && InstanceData.Skip(1).Any())
+            if (InstanceBuffer == null && InstanceData.Skip(1).Any())
                 InstanceBuffer = VertexHelper.MakeInstanceBuffer(InstanceData.Select(instance => instance.World).ToArray());
         }
     }

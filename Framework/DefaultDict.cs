@@ -93,15 +93,7 @@ namespace Spectrum.Framework
             }
         }
 
-        public bool Remove(TKey key)
-        {
-            if (internalDict.Keys.Contains(key))
-            {
-                internalDict.Remove(key);
-                return true;
-            }
-            return false;
-        }
+        public bool Remove(TKey key) => internalDict.Remove(key);
         public DefaultDict<TKey, TValue> Copy()
         {
             DefaultDict<TKey, TValue> output = new DefaultDict<TKey, TValue>() { internalDict = new Dictionary<TKey, TValue>(internalDict) };

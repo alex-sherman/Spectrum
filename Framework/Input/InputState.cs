@@ -87,10 +87,15 @@ namespace Spectrum.Framework.Input
             }
             if (!DisableCursorState)
                 RawMouse.Update();
-            consumedKeys.SetFrom(consumedKeys.Where(kvp => kvp.Value && IsKeyDown(kvp.Key, false)).ToDictionary(kvp => kvp.Key, kvp => kvp.Value));
+            foreach (var kvp in consumedKeys.ToList())
+            {
+                // Clear when the key is up and either we only consumed the press OR the release has passed as well
+                if (!IsKeyDown(kvp.Key, false) && (!kvp.Value || !IsNewKeyRelease(kvp.Key, false)))
+                    consumedKeys.Remove(kvp.Key);
+            }
         }
         public void ConsumeInput(KeyBind key, bool hold)
-            => consumedKeys[key] = hold;
+            => consumedKeys[key] |= hold;
         public bool IsConsumed(KeyBind key)
             => consumedKeys.ContainsKey(key);
         public bool IsKeyDown(string bindingName, PlayerInformation playerInfo = null)
@@ -129,13 +134,13 @@ namespace Spectrum.Framework.Input
         public bool IsNewKeyPress(string bindingName, PlayerInformation playerInfo = null)
             => IsKeyDown(bindingName, playerInfo) && !Last.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyPress(KeyBinding binding, bool consultConsumed = true)
-            => IsKeyDown(binding, consultConsumed) && !Last.IsKeyDown(binding, consultConsumed);
+            => binding.Options.Any(b => IsNewKeyPress(b, consultConsumed));
         public bool IsNewKeyPress(KeyBind button, bool consultConsumed = true)
             => (!consultConsumed || !consumedKeys.ContainsKey(button)) && IsKeyDown(button, false) && !Last.IsKeyDown(button, false);
         public bool IsNewKeyRelease(string bindingName, PlayerInformation playerInfo = null)
             => !IsKeyDown(bindingName, playerInfo) && Last.IsKeyDown(bindingName, playerInfo);
         public bool IsNewKeyRelease(KeyBinding binding, bool consultConsumed = true)
-            => !IsKeyDown(binding, consultConsumed) && Last.IsKeyDown(binding, consultConsumed);
+            => binding.Options.Any(b => IsNewKeyRelease(b, consultConsumed));
         public bool IsNewKeyRelease(KeyBind button, bool consultConsumed = true)
             => (!consultConsumed || !consumedKeys.ContainsKey(button)) && !IsKeyDown(button, false) && Last.IsKeyDown(button, false);
         public float GetAxis1D(string axisName, PlayerInformation playerInfo = null)

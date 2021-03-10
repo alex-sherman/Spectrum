@@ -23,6 +23,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 if (OnClick != null && MouseInside(input))
                 {
                     OnClick(this);
+                    input.ConsumeInput(new KeyBind(0), true);
                     return true;
                 }
                 return false;
@@ -32,6 +33,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 if (OnRightClick != null && MouseInside(input))
                 {
                     OnRightClick(this);
+                    input.ConsumeInput(new KeyBind(1), true);
                     return true;
                 }
                 return false;

@@ -238,7 +238,7 @@ namespace Spectrum.Framework.Screens
                     if (inputHandler.Value.Handler(input))
                     {
                         otherTookInput = true;
-                        input.ConsumeInput(inputHandler.Key, inputHandler.Value.PressType == KeyPressType.Hold);
+                        input.ConsumeInput(inputHandler.Key, false);
                     }
                 }
             }
