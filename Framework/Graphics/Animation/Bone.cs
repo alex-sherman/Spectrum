@@ -8,64 +8,67 @@ namespace Spectrum.Framework.Graphics.Animation
 {
     public class Bone
     {
-        public string id;
-        public List<Bone> children;
-        public Bone parent;
-        public Matrix defaultRotation;
-        public Matrix defaultTranslation;
-        public Matrix inverseBindPose;
-        private Matrix _transform;
-        public Matrix transform
+        public string Id;
+        public List<Bone> Children;
+        public Bone Parent;
+        public Matrix DefaultRotation;
+        public Matrix DefaultTranslation;
+        public Matrix BindPose;
+        public Matrix InverseBindPose;
+        private Matrix transform;
+        public Matrix Transform
         {
-            get { return _transform; }
-            set { SetDirty(); _transform = value; }
+            get { return transform; }
+            set { SetDirty(); transform = value; }
         }
-        private Matrix _withParentTransform;
+        private Matrix withParentTransform;
         private bool dirty = true;
         private void SetDirty()
         {
             dirty = true;
-            foreach (var child in children)
+            foreach (var child in Children)
             {
                 child.SetDirty();
             }
         }
-        public Matrix withParentTransform
+        public Matrix WithParentTransform
         {
             get
             {
                 if (dirty)
                 {
-                    _withParentTransform = transform * (parent != null ? parent.withParentTransform : Matrix.Identity);
+                    withParentTransform = Transform * (Parent != null ? Parent.WithParentTransform : Matrix.Identity);
                     dirty = false;
                 }
-                return _withParentTransform;
+                return withParentTransform;
             }
         }
-        public Matrix absoluteTransform { get { return inverseBindPose * withParentTransform; } }
+        public Matrix DeltaTransform => InverseBindPose * WithParentTransform;
 
         public Bone(string id, Bone parent)
         {
-            this.parent = parent;
-            children = new List<Bone>();
-            defaultRotation = Matrix.Identity;
-            defaultTranslation = Matrix.Identity;
-            inverseBindPose = Matrix.Identity;
-            transform = Matrix.Identity;
-            this.id = id;
+            Parent = parent;
+            Children = new List<Bone>();
+            DefaultRotation = Matrix.Identity;
+            DefaultTranslation = Matrix.Identity;
+            BindPose = Matrix.Identity;
+            InverseBindPose = Matrix.Identity;
+            Transform = Matrix.Identity;
+            Id = id;
         }
 
         public Bone Clone(Dictionary<string, Bone> bones, Bone parent = null)
         {
-            Bone output = new Bone(id, parent);
-            output.defaultRotation = defaultRotation;
-            output.defaultTranslation = defaultTranslation;
-            output.inverseBindPose = inverseBindPose;
-            output._transform = _transform;
-            bones[id] = output;
-            foreach (var child in children)
+            Bone output = new Bone(Id, parent);
+            output.DefaultRotation = DefaultRotation;
+            output.DefaultTranslation = DefaultTranslation;
+            output.BindPose = BindPose;
+            output.InverseBindPose = InverseBindPose;
+            output.transform = transform;
+            bones[Id] = output;
+            foreach (var child in Children)
             {
-                output.children.Add(child.Clone(bones, output));
+                output.Children.Add(child.Clone(bones, output));
             }
             return output;
         }

@@ -249,7 +249,7 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// The world matrix for the purposes of drawing the game object
         /// </summary>
-        public Matrix World => ModelTransform * orientation.ToMatrix() * Matrix.CreateTranslation(position);
+        public Matrix World => orientation.ToMatrix() * Matrix.CreateTranslation(position);
         [Replicate]
         public MaterialData Material;
         [Replicate]
@@ -375,7 +375,7 @@ namespace Spectrum.Framework.Entities
             {
                 foreach (var part in Model)
                 {
-                    Batch3D.Current.DrawPart(part, World, Material, options: DrawOptions);
+                    Batch3D.Current.DrawPart(part, ModelTransform * World, Material, options: DrawOptions);
                 }
             }
         }

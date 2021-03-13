@@ -90,7 +90,7 @@ namespace Spectrum.Framework.Graphics.Animation
                     if (!SkinningData.Bones.ContainsKey(kvp.Key)) continue;
                     Bone currentBone = SkinningData.Bones[kvp.Key];
 
-                    Matrix translation = currentBone.defaultTranslation;
+                    Matrix translation = currentBone.DefaultTranslation;
                     if (translations.ContainsKey(kvp.Key))
                     {
                         var translation1 = translations[kvp.Key];
@@ -106,7 +106,7 @@ namespace Spectrum.Framework.Graphics.Animation
                             translation = translation1.Translation.Value * (1 - w) + translation2.Translation.Value * w;
                         }
                     }
-                    Matrix rotation = currentBone.defaultRotation;
+                    Matrix rotation = currentBone.DefaultRotation;
                     if (rotations.ContainsKey(kvp.Key))
                     {
                         var rotation1 = rotations[kvp.Key];
@@ -122,7 +122,7 @@ namespace Spectrum.Framework.Graphics.Animation
                             rotation = rotation1.Rotation.Value * (1 - w) + rotation2.Rotation.Value * w;
                         }
                     }
-                    currentBone.transform = rotation * translation;
+                    currentBone.Transform = rotation * translation;
                 }
             }
         }

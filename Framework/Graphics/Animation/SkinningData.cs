@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Graphics.Animation
         {
             foreach (Bone bone in Bones.Values)
             {
-                bone.transform = bone.defaultRotation * bone.defaultTranslation;
+                bone.Transform = bone.DefaultRotation * bone.DefaultTranslation;
             }
         }
 

@@ -41,7 +41,7 @@ namespace Spectrum.Framework.Graphics
         {
             for (int i = 0; i < BoneTransforms.Count(); i++)
             {
-                BoneTransforms[i] = SkinningData.Bones[BoneNames[i]].absoluteTransform;
+                BoneTransforms[i] = SkinningData.Bones[BoneNames[i]].DeltaTransform;
             }
         }
         public override Effect Clone()

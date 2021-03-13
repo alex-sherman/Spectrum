@@ -212,7 +212,8 @@ namespace Spectrum.Framework.Content.ModelParsing
 
             foreach (Bone bone in output.Bones.Values)
             {
-                bone.inverseBindPose = bone.withParentTransform.Invert();
+                bone.BindPose = bone.WithParentTransform;
+                bone.InverseBindPose = bone.WithParentTransform.Invert();
             }
             return output;
         }
@@ -220,28 +221,28 @@ namespace Spectrum.Framework.Content.ModelParsing
         private Bone JObjToBone(JToken rootNode, Dictionary<string, Bone> bones, Bone parent = null)
         {
             Bone rootBone = new Bone((string)rootNode["id"], parent);
-            bones[rootBone.id] = rootBone;
+            bones[rootBone.Id] = rootBone;
 
             JArray rotation = (JArray)rootNode["rotation"];
             if (rotation != null)
             {
-                rootBone.defaultRotation = MatrixHelper.CreateRotation(rotation);
+                rootBone.DefaultRotation = MatrixHelper.CreateRotation(rotation);
             }
 
             JArray translation = (JArray)rootNode["translation"];
             if (translation != null)
             {
-                rootBone.defaultTranslation *= MatrixHelper.CreateTranslation(translation);
+                rootBone.DefaultTranslation *= MatrixHelper.CreateTranslation(translation);
             }
 
-            rootBone.transform = rootBone.defaultRotation * rootBone.defaultTranslation;
+            rootBone.Transform = rootBone.DefaultRotation * rootBone.DefaultTranslation;
 
             JToken children = rootNode["children"];
             if (children != null)
             {
                 foreach (JToken child in children)
                 {
-                    rootBone.children.Add(JObjToBone(child, bones, rootBone));
+                    rootBone.Children.Add(JObjToBone(child, bones, rootBone));
                 }
             }
 

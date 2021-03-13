@@ -227,6 +227,17 @@ namespace Spectrum.Framework
                 M33 = M33
             };
         }
+        public Matrix NoScale()
+        {
+            var a = new Vector3(M11, M12, M13).Normal();
+            var b = new Vector3(M21, M22, M23).Normal();
+            var c = new Vector3(M31, M32, M33).Normal();
+            var output = this;
+            output.M11 = a.X; output.M12 = a.Y; output.M13 = a.Z;
+            output.M21 = b.X; output.M22 = b.Y; output.M23 = b.Z;
+            output.M31 = c.X; output.M32 = c.Y; output.M33 = c.Z;
+            return output;
+        }
         public Matrix Invert()
         {
             Matrix m = this;
