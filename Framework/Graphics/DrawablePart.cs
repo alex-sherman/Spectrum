@@ -68,7 +68,6 @@ namespace Spectrum.Framework.Graphics
         private static int LastReferenceID = 0;
         public int ReferenceID { get; private set; }
         public MaterialData material = new MaterialData();
-        internal Matrix permanentTransform = Matrix.Identity;
         public Matrix Transform = Matrix.Identity;
         public SpectrumEffect effect;
         public VertexBuffer VBuffer;
@@ -83,7 +82,7 @@ namespace Spectrum.Framework.Graphics
                 JBBox output = JBBox.SmallBox;
                 var selectedVerts = indices == null ? vertices : indices.Select(i => vertices[(int)i % vertices.Count]);
                 foreach (var vert in selectedVerts)
-                    output.AddPoint(permanentTransform * Transform * vert.Position);
+                    output.AddPoint(Transform * vert.Position);
                 return output;
             }
         }
@@ -131,7 +130,6 @@ namespace Spectrum.Framework.Graphics
                 effect = effect,
                 primType = primType,
                 material = material,
-                permanentTransform = permanentTransform,
                 vertices = vertices,
                 indices = indices,
             };

@@ -10,9 +10,9 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Content.ModelParsing
 {
-    class OBJReader : IModelReader
+    static class OBJReader
     {
-        private void ParseFile(string path, Action<string> linehandler)
+        private static void ParseFile(string path, Action<string> linehandler)
         {
             using (var reader = new StreamReader(path))
             {
@@ -41,7 +41,7 @@ namespace Spectrum.Framework.Content.ModelParsing
         {
             return new Vector2(float.Parse(split[offset]), 1 - float.Parse(split[offset + 1]));
         }
-        public void LoadMaterial(string path, Dictionary<string, MaterialData> materialLookup)
+        public static void LoadMaterial(string path, Dictionary<string, MaterialData> materialLookup)
         {
             MaterialData data = null;
             var dir = Path.GetDirectoryName(path);
@@ -77,16 +77,15 @@ namespace Spectrum.Framework.Content.ModelParsing
             });
             materialLookup[data.Id] = data;
         }
-        void FinishPart(ref int meshPartId, ModelParserCache modelData, string groupName, List<CommonTex> vertices, List<uint> indices, MaterialData material)
+        static void FinishPart(ref int meshPartId, ModelParserCache modelData, string groupName, List<CommonTex> vertices, List<uint> indices, MaterialData material)
         {
             var part = DrawablePart.From(vertices, indices);
             part.material = material;
             part.effect = new SpectrumEffect();
-            part.permanentTransform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
             modelData.parts[groupName + "_" + meshPartId] = part;
             meshPartId++;
         }
-        public ModelParserCache LoadData(string path, string name)
+        public static ModelParserCache LoadData(string path, string name)
         {
             var modelData = new ModelParserCache(name, path);
             List<Vector3> positions = new List<Vector3>();

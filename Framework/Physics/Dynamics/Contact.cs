@@ -48,7 +48,7 @@ namespace Spectrum.Framework.Physics.Dynamics
         internal float bias = 0.25f;
         internal float minVelocity = 0.001f;
         internal float allowedPenetration = 0.01f;
-        internal float breakThreshold = 0.05f;
+        internal float breakThreshold = 0.01f;
         internal float slipThresholdSquared = 0.01f;
 
         internal MaterialCoefficientMixingType materialMode = MaterialCoefficientMixingType.TakeMinimum;

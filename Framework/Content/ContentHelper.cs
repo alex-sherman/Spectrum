@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Spectrum.Framework.Audio;
+using Spectrum.Framework.Content.ModelParsing;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Graphics.Animation;

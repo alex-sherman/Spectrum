@@ -44,7 +44,7 @@ namespace Spectrum.Framework.Graphics
         public RenderCallKey RegisterDraw(
             DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null, DrawOptions options = default)
         {
-            RenderProperties properties = new RenderProperties(part, part.permanentTransform, material,
+            RenderProperties properties = new RenderProperties(part, null, material,
                 effect, options.DisableDepthBuffer, options.DisableShadow, options.DynamicDraw);
             world = part.Transform * world;
             var value = UpdateRenderDict(properties, world, fixedBatched);
@@ -129,7 +129,7 @@ namespace Spectrum.Framework.Graphics
         public void DrawBatch(Batch3D batch) => subBatches.Add(batch);
         public void DrawPart(DrawablePart part, Matrix world, MaterialData material = null, SpectrumEffect effect = null, DrawOptions options = default)
         {
-            RenderProperties properties = new RenderProperties(part, part.permanentTransform, material, effect,
+            RenderProperties properties = new RenderProperties(part, null, material, effect,
                 options.DisableDepthBuffer, options.DisableShadow, options.DynamicDraw);
             world = part.Transform * world;
             if (options.DisableInstancing)

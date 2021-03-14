@@ -86,4 +86,19 @@ namespace Spectrum.Framework.Content
         public CachedContentParser() { }
         public CachedContentParser(params string[] extensions) : base(extensions) { }
     }
+    public abstract class MultiContentParser<T, U> : CachedContentParser<T, U> where T : class
+    {
+        public delegate T Parser(string path, string name);
+        private Dictionary<string, Parser> Parsers;
+        public MultiContentParser(Dictionary<string, Parser> parsers)
+            :base(parsers.Keys.ToArray())
+        {
+            Parsers = parsers;
+        }
+        protected override T LoadData(string path, string name)
+        {
+            var extension = Path.GetExtension(path).Substring(1);
+            return Parsers[extension](path, name);
+        }
+    }
 }

@@ -14,9 +14,9 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Content.ModelParsing
 {
-    class G3DJReader : IModelReader
+    static class G3DJReader
     {
-        public ModelParserCache LoadData(string path, string name)
+        public static ModelParserCache LoadModel(string path, string name)
         {
             ModelParserCache modelData = new ModelParserCache(name, path);
             JObject jobj;
@@ -46,7 +46,6 @@ namespace Spectrum.Framework.Content.ModelParsing
                     VertexHelper.ComputeTangents(vertices, indices);
                     IndexBuffer ibuffer = VertexHelper.MakeIndexBuffer(indices);
                     var part = DrawablePart.From(vertices, indices);
-                    part.permanentTransform = Matrix.CreateFromYawPitchRoll((float)Math.PI, 0, 0);
                     modelData.parts[(string)meshPart["id"]] = part;
                 }
             }
@@ -54,7 +53,7 @@ namespace Spectrum.Framework.Content.ModelParsing
             modelData.materials = ReadMaterials(modelData.Directory, jobj);
             if (jobj["animations"] != null)
             {
-                modelData.animations = AnimationParser.GetAnimations(jobj);
+                modelData.animations = LoadAnimation(jobj);
             }
             foreach (var node in ((JArray)jobj["nodes"]).Where(node => node["parts"] != null))
             {
@@ -66,7 +65,7 @@ namespace Spectrum.Framework.Content.ModelParsing
             return modelData;
         }
 
-        private void parseNode(JToken node, ModelParserCache data, Dictionary<string, DrawablePart> parts)
+        private static void parseNode(JToken node, ModelParserCache data, Dictionary<string, DrawablePart> parts)
         {
             foreach (JToken nodePart in node["parts"])
             {
@@ -159,7 +158,7 @@ namespace Spectrum.Framework.Content.ModelParsing
             return vertex;
         }
 
-        public Dictionary<string, MaterialData> ReadMaterials(string directory, JObject jobj)
+        public static Dictionary<string, MaterialData> ReadMaterials(string directory, JObject jobj)
         {
             Dictionary<string, MaterialData> output = new Dictionary<string, MaterialData>();
             if (jobj["materials"] != null)
@@ -201,7 +200,7 @@ namespace Spectrum.Framework.Content.ModelParsing
             }
         }
 
-        public SkinningData GetSkinningData(JObject jobj)
+        public static SkinningData GetSkinningData(JObject jobj)
         {
             JToken armature = ((JArray)jobj["nodes"]).FirstOrDefault(node => (string)node["id"] == "Armature");
             if (armature == null) return null;
@@ -218,7 +217,7 @@ namespace Spectrum.Framework.Content.ModelParsing
             return output;
         }
 
-        private Bone JObjToBone(JToken rootNode, Dictionary<string, Bone> bones, Bone parent = null)
+        private static Bone JObjToBone(JToken rootNode, Dictionary<string, Bone> bones, Bone parent = null)
         {
             Bone rootBone = new Bone((string)rootNode["id"], parent);
             bones[rootBone.Id] = rootBone;
@@ -247,6 +246,50 @@ namespace Spectrum.Framework.Content.ModelParsing
             }
 
             return rootBone;
+        }
+
+        public static AnimationData LoadAnimation(string path, string name)
+        {
+            JsonTextReader reader = new JsonTextReader(new StreamReader(path));
+            JObject jobj = JObject.Load(reader);
+            return LoadAnimation(jobj);
+        }
+        public static AnimationData LoadAnimation(JObject jobj)
+        {
+            AnimationData output = new AnimationData();
+            foreach (JToken animationNode in (JArray)jobj["animations"])
+            {
+                List<Keyframe> keyframes = new List<Keyframe>();
+                foreach (JToken boneNode in animationNode["bones"])
+                {
+                    foreach (JToken keyFrameNode in boneNode["keyframes"])
+                    {
+                        Matrix? rotation = null;
+                        Matrix? translation = null;
+                        JToken rotationNode = keyFrameNode["rotation"];
+                        if (rotationNode != null)
+                            rotation = MatrixHelper.CreateRotation(rotationNode);
+                        JToken translationNode = keyFrameNode["translation"];
+                        if (translationNode != null)
+                            translation = MatrixHelper.CreateTranslation(translationNode);
+                        keyframes.Add(new Keyframe((string)boneNode["boneId"], ((float)keyFrameNode["keytime"]) / 1000.0f, rotation, translation));
+                    }
+                }
+                keyframes.Sort(delegate (Keyframe x, Keyframe y)
+                {
+                    return x.Time.CompareTo(y.Time);
+                });
+                foreach (var keyframe in keyframes)
+                {
+
+                    keyframe.NextTranslation = keyframes.Find((kf) => kf.Time > keyframe.Time && kf.Translation.HasValue && kf.Bone == keyframe.Bone);
+                    keyframe.NextRotation = keyframes.Find((kf) => kf.Time > keyframe.Time && kf.Rotation.HasValue && kf.Bone == keyframe.Bone);
+                }
+                float duration = keyframes.Last().Time;
+                string animName = (string)animationNode["id"];
+                output[animName] = new AnimationClip(animName, duration, keyframes);
+            }
+            return output;
         }
     }
 }

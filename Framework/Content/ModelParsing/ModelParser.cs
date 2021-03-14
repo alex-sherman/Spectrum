@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Spectrum.Framework.Content
+namespace Spectrum.Framework.Content.ModelParsing
 {
     interface IModelReader
     {
@@ -47,22 +47,14 @@ namespace Spectrum.Framework.Content
             Weight = weight;
         }
     }
-    class ModelParser : CachedContentParser<ModelParserCache, SpecModel>
+    class ModelParser : MultiContentParser<ModelParserCache, SpecModel>
     {
-        public static Dictionary<string, IModelReader> ModelReaders = new Dictionary<string, IModelReader>()
-        {
-            {"g3dj", new G3DJReader()},
-            {"obj", new OBJReader()}
-        };
-        public ModelParser() : base(ModelReaders.Keys.ToArray())
+        public ModelParser() : base(new Dictionary<string, Parser>() {
+            { "g3dj", G3DJReader.LoadModel },
+            { "obj", OBJReader.LoadData },
+        })
         {
             Prefix = "Models";
-        }
-
-        protected override ModelParserCache LoadData(string path, string name)
-        {
-            var extension = Path.GetExtension(path).Substring(1);
-            return ModelReaders[extension].LoadData(path, name);
         }
 
         protected override SpecModel SafeCopy(ModelParserCache data)
