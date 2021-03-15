@@ -32,9 +32,10 @@ namespace Spectrum.Framework.Graphics.Animation
     {
         #region Fields
         // Information about the currently playing animation clip.
-        AnimationClip currentClipValue;
+        AnimationClip clip;
+        bool loop;
         float currentTimeValue;
-        public string DefaultClip = "Default";
+        public string DefaultClip = "Idle";
         private Dictionary<string, Keyframe> translations = new Dictionary<string, Keyframe>();
         private Dictionary<string, Keyframe> rotations = new Dictionary<string, Keyframe>();
         IAnimationSource animationSource;
@@ -46,30 +47,28 @@ namespace Spectrum.Framework.Graphics.Animation
             this.animationSource = animationSource;
         }
 
-        public string CurrentClip()
-        {
-            return currentClipValue?.Name;
-        }
+        public string CurrentClip() => clip?.Name;
 
-        public void StartClip(string animation)
+        public void StartClip(string animation, bool loop = false)
         {
-            StartClip(animationSource?.GetAnimation(animation));
+            StartClip(animationSource?.GetAnimation(animation), loop);
         }
 
         /// <summary>
         /// Starts decoding the specified animation clip.
         /// </summary>
-        public void StartClip(AnimationClip clip)
+        public void StartClip(AnimationClip clip, bool loop)
         {
-            currentClipValue = clip;
+            this.clip = clip;
+            this.loop = loop;
 
             if (clip == null) return;
 
             currentTimeValue = 0;
             animationSource?.GetSkinningData()?.ToDefault();
 
-            translations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
-            rotations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+            translations = this.clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+            rotations = this.clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
             Update(0);
         }
 
@@ -82,10 +81,10 @@ namespace Spectrum.Framework.Graphics.Animation
             if (animationSource == null)
                 return;
             SkinningData SkinningData = animationSource.GetSkinningData();
-            if (SkinningData != null && currentClipValue != null)
+            UpdateTime(time);
+            if (SkinningData != null && clip != null)
             {
-                UpdateTime(time, SkinningData);
-                foreach (var kvp in currentClipValue.Keyframes)
+                foreach (var kvp in clip.Keyframes)
                 {
                     if (!SkinningData.Bones.ContainsKey(kvp.Key)) continue;
                     Bone currentBone = SkinningData.Bones[kvp.Key];
@@ -127,18 +126,22 @@ namespace Spectrum.Framework.Graphics.Animation
             }
         }
 
-        private void UpdateTime(float time, SkinningData SkinningData)
+        private void UpdateTime(float time)
         {
-            if (currentClipValue.Duration == 0) { return; }
+            if (clip == null || clip.Duration == 0) { return; }
             currentTimeValue += time;
-            if (currentTimeValue > currentClipValue.Duration)
+            if (currentTimeValue > clip.Duration)
             {
-                currentTimeValue -= currentClipValue.Duration;
-                if (currentClipValue != null)
+                if (loop)
                 {
-                    translations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
-                    rotations = currentClipValue.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+                    currentTimeValue -= clip.Duration;
+                    if (clip != null)
+                    {
+                        translations = clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+                        rotations = clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+                    }
                 }
+                else StartClip(DefaultClip, true);
             }
         }
     }

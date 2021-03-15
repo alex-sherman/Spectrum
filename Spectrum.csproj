@@ -145,6 +145,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Replicate" Version="0.1.6" />
   </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
 
   <PropertyGroup>
     <CustomBuildAfterTargets>ClCompile</CustomBuildAfterTargets>
