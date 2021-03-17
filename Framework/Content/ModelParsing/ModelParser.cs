@@ -63,6 +63,9 @@ namespace Spectrum.Framework.Content.ModelParsing
             foreach (KeyValuePair<string, DrawablePart> part in data.parts)
             {
                 parts[part.Key] = part.Value.CreateReference();
+                // TODO: If SkinnedEffect handled instancing correctly this could be avoided
+                if (data.skinningData != null)
+                    parts[part.Key].effect = parts[part.Key].effect.Clone() as SpectrumEffect;
             }
             SpecModel model = new SpecModel(data.Name, data.FileName, parts, data.materials, data.skinningData?.Clone())
             {

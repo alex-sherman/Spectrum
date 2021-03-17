@@ -194,10 +194,11 @@ namespace Spectrum.Framework.Entities
         public static bool TryCast(Type type, object value, out object output)
         {
             output = value;
+            if (value == null) return true;
             Type from = value.GetType();
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
                 type = type.GetGenericArguments()[0];
-            if (value == null || type.IsAssignableFrom(from))
+            if (type.IsAssignableFrom(from))
                 return true;
             try
             {
