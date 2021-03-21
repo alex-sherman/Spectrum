@@ -38,7 +38,9 @@ namespace Spectrum.Framework.Entities
         public Matrix inertia;
         public Matrix invInertia;
 
+        public Matrix inertiaWorld;
         public Matrix invInertiaWorld;
+        public Vector3 inertiaOrigin;
         public Quaternion orientation;
         [Replicate]
         public Quaternion Orientation
@@ -85,7 +87,8 @@ namespace Spectrum.Framework.Entities
         public bool IsStatic
         {
             get => isStatic;
-            set {
+            set
+            {
                 isStatic = value;
                 if (value) IslandManager.MakeBodyStatic(this);
             }
@@ -158,6 +161,8 @@ namespace Spectrum.Framework.Entities
                     invInertia = inertia.Invert();
                     inverseMass = 1.0f / Shape.mass;
                 }
+                else
+                    inertiaOrigin = Vector3.Zero;
                 dirtyPhysics = true;
             }
         }
@@ -323,15 +328,16 @@ namespace Spectrum.Framework.Entities
 
                 if (Shape != null)
                 {
-
                     // Given: Orientation, Inertia
                     Shape.GetBoundingBox(ref orientationMat, out boundingBox);
                     boundingBox.Min += position;
                     boundingBox.Min = Vector3.Min(boundingBox.Min, boundingBox.Min + linearVelocity * timestep);
                     boundingBox.Max += position;
                     boundingBox.Max = Vector3.Max(boundingBox.Max, boundingBox.Max + linearVelocity * timestep);
+                    inertiaOrigin = orientation * Shape.geomCen;
                 }
                 invInertiaWorld = invOrientationMat * invInertia * orientationMat;
+                inertiaWorld = inertia * orientationMat;
             }
         }
         #endregion
@@ -400,18 +406,19 @@ namespace Spectrum.Framework.Entities
                 if (!isStatic)
                 {
                     Batch3D.Current.DrawLine(position, position + Velocity * 1 / 60f * 10, Color.Blue);
+                    Batch3D.Current.DrawLine(position, position + angularVelocity, Color.Red);
                     foreach (var arbiter in arbiters.Where(arb => !arb.Body1.NoCollide && !arb.Body2.NoCollide))
                     {
                         foreach (var contact in arbiter.ContactList)
                         {
-                            var myPosition = contact.body1 == this ? contact.Position1 : contact.Position2;
-                            var otherPosition = contact.body1 == this ? contact.Position2 : contact.Position1;
+                            var body1 = contact.body1 == this;
+                            var position = body1 ? contact.Position1 : contact.Position2;
                             //GraphicsEngine.DrawCircle(myPosition, 3, Color.Yellow, SpectrumGame.Game.Root.SpriteBatch);
                             //GraphicsEngine.DrawCircle(otherPosition, 3, Color.HotPink, SpectrumGame.Game.Root.SpriteBatch);
-                            Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal, "orange");
-                            Batch3D.Current.DrawLine(myPosition, myPosition - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
-                            Batch3D.Current.DrawLine(myPosition, myPosition + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
-                            Batch3D.Current.DrawLine(myPosition, myPosition + contact.tangent * contact.accumulatedTangentImpulse, Color.Red);
+                            Batch3D.Current.DrawLine(position, position - contact.normal, "orange");
+                            Batch3D.Current.DrawLine(position, position - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
+                            Batch3D.Current.DrawLine(position, position + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
+                            Batch3D.Current.DrawLine(position, position + (body1 ? contact.lastAngularBody1 : contact.lastAngularBody2) * 100, "pink");
                         }
                     }
                 }

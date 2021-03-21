@@ -130,12 +130,15 @@ namespace Spectrum.Framework.Physics.LinearMath
             result.M11 = Math.Abs(matrix.M11);
             result.M12 = Math.Abs(matrix.M12);
             result.M13 = Math.Abs(matrix.M13);
+            result.M14 = Math.Abs(matrix.M14);
             result.M21 = Math.Abs(matrix.M21);
             result.M22 = Math.Abs(matrix.M22);
             result.M23 = Math.Abs(matrix.M23);
+            result.M24 = Math.Abs(matrix.M24);
             result.M31 = Math.Abs(matrix.M31);
             result.M32 = Math.Abs(matrix.M32);
             result.M33 = Math.Abs(matrix.M33);
+            result.M34 = Math.Abs(matrix.M34);
         }
         #endregion
     }
