@@ -603,6 +603,7 @@ namespace Spectrum.Framework.Physics
 
             Quaternion dorn = new Quaternion(axis.X, axis.Y, axis.Z, (float)Math.Cos(angle * timestep * 0.5f));
             body.orientation = (dorn * body.orientation).Normal();
+            body.position += body.linearVelocity * timestep + body.inertiaOrigin - dorn * body.inertiaOrigin;
 
             // TODO: Don't think this damping takes into acount a non-fixed timestep?
             if ((body.Damping & GameObject.DampingType.Linear) != 0)

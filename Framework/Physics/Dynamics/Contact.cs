@@ -85,6 +85,9 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         internal float accumulatedNormalImpulse = 0.0f;
         internal float accumulatedTangentImpulse = 0.0f;
+        internal Vector3 lastJ;
+        internal Vector3 lastAngularBody1;
+        internal Vector3 lastAngularBody2;
 
         internal float slip = 0.0f;
         internal float initialPen = 0.0f;
@@ -168,9 +171,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             accumulatedNormalImpulse = 0;
             accumulatedTangentImpulse = -dynamicFriction;
             if (noCollide) return;
-            float e = Restitution;
-            Vector3 dv = body2.angularVelocity.Cross(relativePos2) + body2.linearVelocity;
-            dv -= body1.angularVelocity.Cross(relativePos1) + body1.linearVelocity;
+            Vector3 dv = body2.linearVelocity;
+            dv -= body1.linearVelocity;
             float dvNormalScalar = Vector3.Dot(dv, normal);
             Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
@@ -180,13 +182,13 @@ namespace Spectrum.Framework.Physics.Dynamics
 
             massNormal = InertiaInDirection(normal);
             massTangent = InertiaInDirection(tangent);
-            accumulatedNormalImpulse = -(e + 1) * massNormal * dvNormalScalar;
+            accumulatedNormalImpulse = -(1 + Restitution) * massNormal * dvNormalScalar;
             // TODO: Tangent force should be a function of the normal force or something and not just fixed
-            Vector3 J = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
-            ApplyImpulse(J / contactCount);
+            lastJ = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
+            ApplyImpulse(lastJ / contactCount);
             if (Penetration > settings.allowedPenetration)
             {
-                ApplyPush((Penetration - settings.allowedPenetration) * normal / contactCount);
+                ApplyPush((Penetration - settings.allowedPenetration) * normal / contactCount * 0.8f);
             }
         }
 
@@ -209,13 +211,13 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             Debug.Assert(!(float.IsNaN(impulse.X) || float.IsNaN(impulse.Y) || float.IsNaN(impulse.Z)));
             Vector3 rotationImpulse = impulse;
-            if (!treatBody1AsStatic && !treatBody2AsStatic)
+            if (treatBody1AsStatic || treatBody2AsStatic)
             {
                 impulse /= 2;
-                if (!body1.IgnoreRotation && !body2.IgnoreRotation)
-                    rotationImpulse /= 2;
-
+                rotationImpulse /= 2;
             }
+            else if (!body1.IgnoreRotation || !body2.IgnoreRotation)
+                rotationImpulse /= 2;
 
             if (!treatBody1AsStatic)
             {
@@ -225,60 +227,65 @@ namespace Spectrum.Framework.Physics.Dynamics
 
                 if (!body1.IgnoreRotation)
                 {
-                    float num0, num1, num2;
-                    num0 = relativePos1.Y * rotationImpulse.Z - relativePos1.Z * rotationImpulse.Y;
-                    num1 = relativePos1.Z * rotationImpulse.X - relativePos1.X * rotationImpulse.Z;
-                    num2 = relativePos1.X * rotationImpulse.Y - relativePos1.Y * rotationImpulse.X;
+                    Vector3 torqueImpulse = (relativePos1 - body1.inertiaOrigin).Cross(rotationImpulse);
+                    Vector3 angularDelta = body1.invInertiaWorld * torqueImpulse;
+                    body1.angularVelocity -= (lastAngularBody1 = angularDelta);
+                    //float num0, num1, num2;
+                    //num0 = relativePos1.Y * rotationImpulse.Z - relativePos1.Z * rotationImpulse.Y;
+                    //num1 = relativePos1.Z * rotationImpulse.X - relativePos1.X * rotationImpulse.Z;
+                    //num2 = relativePos1.X * rotationImpulse.Y - relativePos1.Y * rotationImpulse.X;
 
-                    float num3 =
-                        (((num0 * body1.invInertiaWorld.M11) +
-                        (num1 * body1.invInertiaWorld.M21)) +
-                        (num2 * body1.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body1.invInertiaWorld.M12) +
-                        (num1 * body1.invInertiaWorld.M22)) +
-                        (num2 * body1.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body1.invInertiaWorld.M13) +
-                        (num1 * body1.invInertiaWorld.M23)) +
-                        (num2 * body1.invInertiaWorld.M33));
+                    //float num3 =
+                    //    (((num0 * body1.invInertiaWorld.M11) +
+                    //    (num1 * body1.invInertiaWorld.M21)) +
+                    //    (num2 * body1.invInertiaWorld.M31));
+                    //float num4 =
+                    //    (((num0 * body1.invInertiaWorld.M12) +
+                    //    (num1 * body1.invInertiaWorld.M22)) +
+                    //    (num2 * body1.invInertiaWorld.M32));
+                    //float num5 =
+                    //    (((num0 * body1.invInertiaWorld.M13) +
+                    //    (num1 * body1.invInertiaWorld.M23)) +
+                    //    (num2 * body1.invInertiaWorld.M33));
 
-                    body1.angularVelocity.X -= num3;
-                    body1.angularVelocity.Y -= num4;
-                    body1.angularVelocity.Z -= num5;
+                    //body1.angularVelocity.X -= num3;
+                    //body1.angularVelocity.Y -= num4;
+                    //body1.angularVelocity.Z -= num5;
                 }
             }
 
             if (!treatBody2AsStatic)
             {
-
                 body2.linearVelocity.X += (impulse.X * body2.inverseMass);
                 body2.linearVelocity.Y += (impulse.Y * body2.inverseMass);
                 body2.linearVelocity.Z += (impulse.Z * body2.inverseMass);
 
                 if (!body2.IgnoreRotation)
                 {
-                    float num0, num1, num2;
-                    num0 = relativePos2.Y * rotationImpulse.Z - relativePos2.Z * rotationImpulse.Y;
-                    num1 = relativePos2.Z * rotationImpulse.X - relativePos2.X * rotationImpulse.Z;
-                    num2 = relativePos2.X * rotationImpulse.Y - relativePos2.Y * rotationImpulse.X;
+                    Vector3 torqueImpulse = (relativePos2 - body2.inertiaOrigin).Cross(rotationImpulse);
+                    Vector3 angularDelta = body2.invInertiaWorld * torqueImpulse;
+                    body2.angularVelocity += (lastAngularBody2 = angularDelta);
+                    //float num0, num1, num2;
+                    //num0 = relativePos2.Y * rotationImpulse.Z - relativePos2.Z * rotationImpulse.Y;
+                    //num1 = relativePos2.Z * rotationImpulse.X - relativePos2.X * rotationImpulse.Z;
+                    //num2 = relativePos2.X * rotationImpulse.Y - relativePos2.Y * rotationImpulse.X;
 
-                    float num3 =
-                        (((num0 * body2.invInertiaWorld.M11) +
-                        (num1 * body2.invInertiaWorld.M21)) +
-                        (num2 * body2.invInertiaWorld.M31));
-                    float num4 =
-                        (((num0 * body2.invInertiaWorld.M12) +
-                        (num1 * body2.invInertiaWorld.M22)) +
-                        (num2 * body2.invInertiaWorld.M32));
-                    float num5 =
-                        (((num0 * body2.invInertiaWorld.M13) +
-                        (num1 * body2.invInertiaWorld.M23)) +
-                        (num2 * body2.invInertiaWorld.M33));
+                    //float num3 =
+                    //    (((num0 * body2.invInertiaWorld.M11) +
+                    //    (num1 * body2.invInertiaWorld.M21)) +
+                    //    (num2 * body2.invInertiaWorld.M31));
+                    //float num4 =
+                    //    (((num0 * body2.invInertiaWorld.M12) +
+                    //    (num1 * body2.invInertiaWorld.M22)) +
+                    //    (num2 * body2.invInertiaWorld.M32));
+                    //float num5 =
+                    //    (((num0 * body2.invInertiaWorld.M13) +
+                    //    (num1 * body2.invInertiaWorld.M23)) +
+                    //    (num2 * body2.invInertiaWorld.M33));
 
-                    body2.angularVelocity.X += num3;
-                    body2.angularVelocity.Y += num4;
-                    body2.angularVelocity.Z += num5;
+                    //body2.angularVelocity.X += num3;
+                    //body2.angularVelocity.Y += num4;
+                    //body2.angularVelocity.Z += num5;
                 }
             }
             Debug.Assert(!(float.IsNaN(body1.linearVelocity.X) || float.IsNaN(body1.linearVelocity.Y) || float.IsNaN(body1.linearVelocity.Z)));
@@ -296,13 +303,14 @@ namespace Spectrum.Framework.Physics.Dynamics
                 body1.position -= push;
                 //if (!body1.IgnoreRotation)
                 //{
-                //    Vector3 axis = Vector3.Cross(push, relativePos1);
-                //    double angle = Math.Asin(axis.Length() / push.Length() / relativePos1.Length());
+                //    Vector3 axis = push.Cross(relativePos1);
+                //    var l = Math.Max(-1, Math.Min(1, axis.Length / push.Length / relativePos1.Length));
+                //    double angle = Math.Asin(l);
                 //    Debug.Assert(!double.IsNaN(angle));
                 //    if (angle != 0)
                 //    {
                 //        axis.Normalize();
-                //        body1.orientation = Quaternion.Concatenate(body1.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle/2));
+                //        body1.orientation = Quaternion.Concatenate(body1.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle / 2));
                 //    }
                 //}
             }
@@ -311,8 +319,9 @@ namespace Spectrum.Framework.Physics.Dynamics
                 body2.position += push;
                 //if (!body2.IgnoreRotation)
                 //{
-                //    Vector3 axis = Vector3.Cross(push, relativePos2);
-                //    double angle = Math.Asin(axis.Length() / push.Length() / relativePos2.Length());
+                //    Vector3 axis = push.Cross(relativePos2);
+                //    var l = Math.Max(-1, Math.Min(1, axis.Length / push.Length / relativePos2.Length));
+                //    double angle = Math.Asin(l);
                 //    Debug.Assert(!double.IsNaN(angle));
                 //    if (angle != 0)
                 //    {
@@ -327,32 +336,29 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             float kNormal = 0.0f;
 
-            Vector3 rantra = Vector3.Zero;
             if (!treatBody1AsStatic)
             {
                 //TODO: This is completely wrong and should use the inertia provided by the shape
-                kNormal += body1.inverseMass;
+                kNormal += 1/body1.inverseMass;
                 if (!body1.IgnoreRotation)
                 {
-                    rantra = relativePos1.Cross(direction);
-                    rantra = body1.invInertiaWorld * rantra;
-                    rantra = rantra.Cross(relativePos1);
-                    kNormal += rantra.X * direction.X + rantra.Y * direction.Y + rantra.Z * direction.Z;
+                    var angularPart = body1.inertiaWorld * relativePos1
+                        .Cross(direction)
+                        .Cross(relativePos1);
+                    kNormal += angularPart.Dot(direction);
                 }
 
             }
 
-            Vector3 rbntrb = Vector3.Zero;
             if (!treatBody2AsStatic)
             {
-                kNormal += body2.inverseMass;
-
+                kNormal += 1/body2.inverseMass;
                 if (!body2.IgnoreRotation)
                 {
-                    rbntrb = relativePos2.Cross(direction);
-                    rbntrb = body2.invInertiaWorld * rbntrb;
-                    rbntrb = rbntrb.Cross(relativePos2);
-                    kNormal += rbntrb.X * direction.X + rbntrb.Y * direction.Y + rbntrb.Z * direction.Z;
+                    var angularPart = body2.inertiaWorld * relativePos2
+                        .Cross(direction)
+                        .Cross(relativePos2);
+                    kNormal += angularPart.Dot(direction);
                 }
             }
 
