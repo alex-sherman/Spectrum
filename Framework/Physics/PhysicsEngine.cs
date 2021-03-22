@@ -437,10 +437,6 @@ namespace Spectrum.Framework.Physics
             currentLinearDampFactor = (float)Math.Pow(linearDamping, timestep);
 
             sw.Reset(); sw.Start();
-            IntegrateForces();
-            sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
-
-            sw.Reset(); sw.Start();
             Integrate(multithread);
             sw.Stop(); debugTimes[(int)DebugType.Integrate] = sw.Elapsed.TotalMilliseconds;
 
@@ -459,6 +455,10 @@ namespace Spectrum.Framework.Physics
             sw.Reset(); sw.Start();
             CheckDeactivation();
             sw.Stop(); debugTimes[(int)DebugType.DeactivateBodies] = sw.Elapsed.TotalMilliseconds;
+
+            sw.Reset(); sw.Start();
+            IntegrateForces();
+            sw.Stop(); debugTimes[(int)DebugType.IntegrateForces] = sw.Elapsed.TotalMilliseconds;
         }
 
         public void Update(float gameTime)

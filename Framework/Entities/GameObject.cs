@@ -139,8 +139,8 @@ namespace Spectrum.Framework.Entities
             }
         }
 
-        public CollisionIsland island;
-        public float inverseMass;
+        internal CollisionIsland island;
+        internal float inverseMass;
 
         public Vector3 force, torque;
 
