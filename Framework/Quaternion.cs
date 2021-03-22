@@ -14,6 +14,7 @@ namespace Spectrum.Framework
         public float Z { get; set; }
         public float W { get; set; }
         public Quaternion(float x, float y, float z, float w) { X = x; Y = y; Z = z; W = w; }
+        public Quaternion(Vector3 v, float w) { X = v.X; Y = v.Y; Z = v.Z; W = w; }
         public static Quaternion operator *(Quaternion a, Quaternion b)
         {
             return new Quaternion
@@ -94,6 +95,15 @@ namespace Spectrum.Framework
         public static Quaternion CreateFromDirection(Vector3 direction)
         {
             return Matrix.CreateRotationFromDirection(direction).ToQuaternion();
+        }
+        /// <summary>
+        /// Returns a quaternion representing the arc from a to b
+        /// </summary>
+        public static Quaternion CreateFromVectors(Vector3 a, Vector3 b)
+        {
+            var cross = a.Cross(b);
+            return new Quaternion(cross, a.LengthSquared * b.LengthSquared + a.Dot(b))
+                .Normal();
         }
         public Matrix ToMatrix()
         {
