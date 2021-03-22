@@ -413,11 +413,11 @@ namespace Spectrum.Framework.Entities
                         {
                             var body1 = contact.body1 == this;
                             var position = body1 ? contact.Position1 : contact.Position2;
+                            var normal = contact.normal * (body1 ? 1 : -1);
                             //GraphicsEngine.DrawCircle(myPosition, 3, Color.Yellow, SpectrumGame.Game.Root.SpriteBatch);
                             //GraphicsEngine.DrawCircle(otherPosition, 3, Color.HotPink, SpectrumGame.Game.Root.SpriteBatch);
-                            Batch3D.Current.DrawLine(position, position - contact.normal, "orange");
-                            Batch3D.Current.DrawLine(position, position - contact.normal * contact.Penetration, contact.Penetration < 0 ? Color.Red : Color.Blue);
-                            Batch3D.Current.DrawLine(position, position + contact.normal * contact.accumulatedNormalImpulse, Color.Green);
+                            Batch3D.Current.DrawLine(position, position - normal * contact.Penetration, "orange");
+                            Batch3D.Current.DrawLine(position, position - normal * contact.accumulatedNormalImpulse, Color.Green);
                             Batch3D.Current.DrawLine(position, position + (body1 ? contact.lastAngularBody1 : contact.lastAngularBody2) * 100, "pink");
                         }
                     }

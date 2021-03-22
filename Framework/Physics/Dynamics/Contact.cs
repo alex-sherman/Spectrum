@@ -77,6 +77,9 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         internal GameObject body1, body2;
 
+        /// <summary>
+        /// Normal and tangent from the perspective of body1
+        /// </summary>
         internal Vector3 normal, tangent;
 
         internal Vector3 realRelPos1, realRelPos2;
@@ -168,27 +171,29 @@ namespace Spectrum.Framework.Physics.Dynamics
 
         public void NewIterate(float contactCount)
         {
-            accumulatedNormalImpulse = 0;
             accumulatedTangentImpulse = -dynamicFriction;
             if (noCollide) return;
-            Vector3 dv = body2.linearVelocity;
-            dv -= body1.linearVelocity;
-            float dvNormalScalar = Vector3.Dot(dv, normal);
+            Vector3 dv = body2.angularVelocity.Cross(relativePos2 - body2.inertiaOrigin) + body2.linearVelocity;
+            dv -= body1.angularVelocity.Cross(relativePos1 - body1.inertiaOrigin) + body1.linearVelocity;
+            float dvNormalScalar = dv.Dot(normal);
             Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
             tangent = dvTangent;
             if (tangent.LengthSquared > 0)
-                tangent.Normalize();
+                tangent = tangent.Normal();
 
-            massNormal = InertiaInDirection(normal);
-            massTangent = InertiaInDirection(tangent);
-            accumulatedNormalImpulse = -(1 + Restitution) * massNormal * dvNormalScalar;
+            massNormal = 1 / InertiaInDirection(normal);
+            massTangent = 1 / InertiaInDirection(tangent);
+            //accumulatedNormalImpulse += (p1 - p2).Dot(normal);
+            accumulatedNormalImpulse *= 0;
+            accumulatedNormalImpulse += -(1 + Restitution) * massNormal * dvNormalScalar;
+            accumulatedNormalImpulse = Math.Max(0, accumulatedNormalImpulse);
             // TODO: Tangent force should be a function of the normal force or something and not just fixed
             lastJ = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
-            ApplyImpulse(lastJ / contactCount);
-            if (Penetration > settings.allowedPenetration)
+            ApplyImpulse(lastJ);
+            if (Penetration > 0)
             {
-                ApplyPush((Penetration - settings.allowedPenetration) * normal / contactCount * 0.8f);
+                ApplyPush((Penetration) * normal / contactCount * 0.5f);
             }
         }
 
@@ -292,6 +297,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             Debug.Assert(!(float.IsNaN(body2.linearVelocity.X) || float.IsNaN(body2.linearVelocity.Y) || float.IsNaN(body2.linearVelocity.Z)));
         }
 
+        // TODO: Apply inverse mass and inertia to pushes
         public void ApplyPush(Vector3 push)
         {
             if (push.LengthSquared == 0)
@@ -301,68 +307,56 @@ namespace Spectrum.Framework.Physics.Dynamics
             if (!treatBody1AsStatic)
             {
                 body1.position -= push;
-                //if (!body1.IgnoreRotation)
-                //{
-                //    Vector3 axis = push.Cross(relativePos1);
-                //    var l = Math.Max(-1, Math.Min(1, axis.Length / push.Length / relativePos1.Length));
-                //    double angle = Math.Asin(l);
-                //    Debug.Assert(!double.IsNaN(angle));
-                //    if (angle != 0)
-                //    {
-                //        axis.Normalize();
-                //        body1.orientation = Quaternion.Concatenate(body1.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle / 2));
-                //    }
-                //}
+                if (!body1.IgnoreRotation)
+                {
+                    var a = (relativePos1 - body1.inertiaOrigin);
+                    var b = a - push;
+                    body1.orientation *= Quaternion.CreateFromVectors(a, b);
+                }
             }
             if (!treatBody2AsStatic)
             {
                 body2.position += push;
-                //if (!body2.IgnoreRotation)
-                //{
-                //    Vector3 axis = push.Cross(relativePos2);
-                //    var l = Math.Max(-1, Math.Min(1, axis.Length / push.Length / relativePos2.Length));
-                //    double angle = Math.Asin(l);
-                //    Debug.Assert(!double.IsNaN(angle));
-                //    if (angle != 0)
-                //    {
-                //        axis.Normalize();
-                //        body2.orientation = Quaternion.Concatenate(body2.orientation, Quaternion.CreateFromAxisAngle(axis, -(float)angle / 2));
-                //    }
-                //}
+                if (!body2.IgnoreRotation)
+                {
+                    var a = (relativePos2 - body2.inertiaOrigin);
+                    var b = a + push;
+                    body2.orientation *= Quaternion.CreateFromVectors(a, b);
+                }
             }
+        }
+
+        private float TotalMass()
+        {
+            return treatBody1AsStatic ? 0 : body1.inverseMass
+                + (treatBody2AsStatic ? 0 : body2.inverseMass);
+        }
+
+        private float AngularInertiaInDirection(Vector3 direction)
+        {
+            float inertiaInDirection = 0.0f;
+
+            if (!treatBody1AsStatic && !body1.IgnoreRotation)
+            {
+                var angularPart = (body1.invInertiaWorld * (relativePos1 - body1.inertiaOrigin))
+                    .Cross(direction)
+                    .Cross(relativePos1 - body1.inertiaOrigin);
+                inertiaInDirection += angularPart.Dot(direction);
+            }
+
+            if (!treatBody2AsStatic && !body2.IgnoreRotation)
+            {
+                var angularPart = (body2.invInertiaWorld * (relativePos2 - body2.inertiaOrigin))
+                    .Cross(direction)
+                    .Cross(relativePos2 - body2.inertiaOrigin);
+                inertiaInDirection += angularPart.Dot(direction);
+            }
+            return inertiaInDirection;
         }
 
         private float InertiaInDirection(Vector3 direction)
         {
-            float kNormal = 0.0f;
-
-            if (!treatBody1AsStatic)
-            {
-                //TODO: This is completely wrong and should use the inertia provided by the shape
-                kNormal += 1/body1.inverseMass;
-                if (!body1.IgnoreRotation)
-                {
-                    var angularPart = body1.inertiaWorld * relativePos1
-                        .Cross(direction)
-                        .Cross(relativePos1);
-                    kNormal += angularPart.Dot(direction);
-                }
-
-            }
-
-            if (!treatBody2AsStatic)
-            {
-                kNormal += 1/body2.inverseMass;
-                if (!body2.IgnoreRotation)
-                {
-                    var angularPart = body2.inertiaWorld * relativePos2
-                        .Cross(direction)
-                        .Cross(relativePos2);
-                    kNormal += angularPart.Dot(direction);
-                }
-            }
-
-            return 1.0f / kNormal;
+            return AngularInertiaInDirection(direction) + TotalMass();
         }
 
         /// <summary>
