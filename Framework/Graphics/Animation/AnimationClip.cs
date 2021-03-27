@@ -25,11 +25,12 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Constructs a new animation clip object.
         /// </summary>
-        public AnimationClip(string name, float duration, List<Keyframe> keyframes)
+        public AnimationClip(string name, float duration, Dictionary<string, Keyframe<Vector3>> translations, Dictionary<string, Keyframe<Quaternion>> rotations)
         {
             Name = name;
             Duration = duration;
-            Keyframes = keyframes.GroupBy((kf) => kf.Bone).ToDictionary((g) => g.Key, (g) => g.OrderBy((kf) => kf.Time).ToList());
+            Translations = translations;
+            Rotations = rotations;
         }
 
 
@@ -52,6 +53,7 @@ namespace Spectrum.Framework.Graphics.Animation
         /// Gets a combined list containing all the keyframes for all bones,
         /// sorted by time.
         /// </summary>
-        public Dictionary<string, List<Keyframe>> Keyframes { get; private set; }
+        public Dictionary<string, Keyframe<Vector3>> Translations { get; private set; }
+        public Dictionary<string, Keyframe<Quaternion>> Rotations { get; private set; }
     }
 }

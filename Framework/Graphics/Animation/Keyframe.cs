@@ -17,17 +17,15 @@ namespace Spectrum.Framework.Graphics.Animation
     /// <summary>
     /// Describes the position of a single bone at a single point in time.
     /// </summary>
-    public class Keyframe
+    public class Keyframe<T>
     {
         /// <summary>
         /// Constructs a new keyframe object.
         /// </summary>
-        public Keyframe(string bone, float time, Matrix? rotation, Matrix? translation)
+        public Keyframe(float time, T transform)
         {
-            Bone = bone;
             Time = time;
-            Rotation = rotation;
-            Translation = translation;
+            Value = transform;
         }
 
 
@@ -38,13 +36,6 @@ namespace Spectrum.Framework.Graphics.Animation
         {
         }
 
-
-        /// <summary>
-        /// Gets the index of the target bone that is animated by this keyframe.
-        /// </summary>
-        public string Bone { get; private set; }
-
-
         /// <summary>
         /// Gets the time offset from the start of the animation to this keyframe.
         /// </summary>
@@ -54,9 +45,21 @@ namespace Spectrum.Framework.Graphics.Animation
         /// <summary>
         /// Gets the bone transform for this keyframe.
         /// </summary>
-        public Matrix? Rotation { get; private set; }
-        public Matrix? Translation { get; private set; }
-        public Keyframe NextRotation;
-        public Keyframe NextTranslation;
+        public T Value { get; private set; }
+        public Keyframe<T> Next;
+    }
+    public static class KeyframeExtensions
+    {
+        public static T LerpTo<T>(this Keyframe<T> head, float time, T start, Func<T, T, float, T> lerp)
+        {
+            while (head.Next != null && time > head.Next.Time)
+                head = head.Next;
+            if (head?.Next != null)
+            {
+                float w = (time - head.Time) / (head.Next.Time - head.Time);
+                return lerp(head.Value, head.Next.Value, w);
+            }
+            return start;
+        }
     }
 }
