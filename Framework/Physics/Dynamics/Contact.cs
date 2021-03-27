@@ -192,6 +192,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             // TODO: Tangent force should be a function of the normal force or something and not just fixed
             lastJ = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
             ApplyImpulse(lastJ);
+            ApplyPush(Penetration * normal / contactCount);
         }
 
         /// <summary>
@@ -249,31 +250,11 @@ namespace Spectrum.Framework.Physics.Dynamics
         {
             if (push.LengthSquared == 0)
                 return;
-            var pushDir = push.Normal();
-            var totalInertia = InertiaInDirection(pushDir);
+            var totalMass = TotalMass();
             if (!treatBody1AsStatic)
-            {
-                if (!body1.IgnoreRotation)
-                {
-                    var a = (relativePos1 - body1.inertiaOrigin);
-                    var b = a - push / 2;
-                    body1.orientation *= Quaternion.CreateFromVectors(a, b);
-                    body1.position -= push / 2;
-                }
-                else { body1.position -= push; }
-            }
+                body1.position -= push * body1.inverseMass / totalMass;
             if (!treatBody2AsStatic)
-            {
-                body2.position += push * body2.inverseMass / totalInertia;
-                if (!body2.IgnoreRotation)
-                {
-                    var a = (relativePos2 - body2.inertiaOrigin);
-                    var b = a + push / 2;
-                    body2.orientation *= Quaternion.CreateFromVectors(a, b);
-                    body2.position += push / 2;
-                }
-                else { body1.position += push; }
-            }
+                body2.position += push * body2.inverseMass / totalMass;
         }
 
         private float TotalMass()
