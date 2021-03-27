@@ -24,6 +24,38 @@ namespace Spectrum.Framework.Graphics.Animation
         AnimationClip GetAnimation(string name);
         SkinningData GetSkinningData();
     }
+    // TODO: Add weights and transitions or something
+    class AnimationLayer
+    {
+        public bool Loop;
+        public float Time;
+        public AnimationClip Clip;
+        public bool UpdateTime(float dt)
+        {
+            if (Clip == null || Clip.Duration == 0) { return false; }
+            Time += dt;
+            if (Time > Clip.Duration && Loop)
+                Time -= Clip.Duration;
+            if (Time > Clip.Duration) return true;
+            return false;
+        }
+        public void Apply(SkinningData skinningData)
+        {
+            if (Clip == null) return;
+            foreach (var bone in new HashSet<string>(Clip.Translations.Keys.Union(Clip.Rotations.Keys)))
+            {
+                if (!skinningData.Bones.ContainsKey(bone)) continue;
+                Bone currentBone = skinningData.Bones[bone];
+
+                if (Clip.Translations.TryGetValue(bone, out var translations))
+                    currentBone.Translation =
+                        translations.LerpTo(Time, currentBone.Translation, (a, b, w) => a * (1 - w) + b * w);
+                if (Clip.Rotations.TryGetValue(bone, out var rotations))
+                    currentBone.Rotation = rotations.LerpTo(Time, currentBone.Rotation, Quaternion.Slerp);
+                // TODO: I think this can be combined into one operation
+            }
+        }
+    }
     /// <summary>
     /// The animation player is in charge of decoding bone position
     /// matrices from an animation clip.
@@ -32,14 +64,10 @@ namespace Spectrum.Framework.Graphics.Animation
     {
         #region Fields
         // Information about the currently playing animation clip.
-        AnimationClip clip;
-        bool loop;
-        float currentTimeValue;
+        AnimationLayer Base;
+        List<AnimationLayer> layers = new List<AnimationLayer>();
         public string DefaultClip = "Idle";
-        private Dictionary<string, Keyframe> translations = new Dictionary<string, Keyframe>();
-        private Dictionary<string, Keyframe> rotations = new Dictionary<string, Keyframe>();
         IAnimationSource animationSource;
-
         #endregion
 
         public AnimationPlayer(IAnimationSource animationSource)
@@ -47,7 +75,7 @@ namespace Spectrum.Framework.Graphics.Animation
             this.animationSource = animationSource;
         }
 
-        public string CurrentClip() => clip?.Name;
+        public string CurrentClip() => Base?.Clip?.Name;
 
         public void StartClip(string animation, bool loop = false)
         {
@@ -59,17 +87,25 @@ namespace Spectrum.Framework.Graphics.Animation
         /// </summary>
         public void StartClip(AnimationClip clip, bool loop)
         {
-            this.clip = clip;
-            this.loop = loop;
-
-            if (clip == null) return;
-
-            currentTimeValue = 0;
-            animationSource?.GetSkinningData()?.ToDefault();
-
-            translations = this.clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
-            rotations = this.clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
+            if (clip == null)
+            {
+                Base = null;
+                return;
+            }
+            Base = new AnimationLayer() { Clip = clip, Loop = loop, Time = 0 };
             Update(0);
+        }
+
+        public void StartLayer(string animation)
+        {
+            var clip = animationSource?.GetAnimation(animation);
+            if (clip != null)
+                StartLayer(clip);
+        }
+
+        public void StartLayer(AnimationClip clip)
+        {
+            layers.Add(new AnimationLayer() { Clip = clip, Time = 0, Loop = false });
         }
 
 
@@ -80,69 +116,23 @@ namespace Spectrum.Framework.Graphics.Animation
         {
             if (animationSource == null)
                 return;
-            SkinningData SkinningData = animationSource.GetSkinningData();
+            SkinningData skin = animationSource.GetSkinningData();
             UpdateTime(time);
-            if (SkinningData != null && clip != null)
+            if (skin != null)
             {
-                foreach (var kvp in clip.Keyframes)
-                {
-                    if (!SkinningData.Bones.ContainsKey(kvp.Key)) continue;
-                    Bone currentBone = SkinningData.Bones[kvp.Key];
-
-                    Matrix translation = currentBone.DefaultTranslation;
-                    if (translations.ContainsKey(kvp.Key))
-                    {
-                        var translation1 = translations[kvp.Key];
-                        while (translation1.NextTranslation != null && currentTimeValue > translation1.NextTranslation.Time)
-                        {
-                            translation1 = translation1.NextTranslation;
-                            translations[kvp.Key] = translation1;
-                        }
-                        var translation2 = translations[kvp.Key].NextTranslation;
-                        if (translation1 != null && translation2 != null)
-                        {
-                            float w = (currentTimeValue - translation1.Time) / (translation2.Time - translation1.Time);
-                            translation = translation1.Translation.Value * (1 - w) + translation2.Translation.Value * w;
-                        }
-                    }
-                    Matrix rotation = currentBone.DefaultRotation;
-                    if (rotations.ContainsKey(kvp.Key))
-                    {
-                        var rotation1 = rotations[kvp.Key];
-                        while (rotation1.NextRotation != null && currentTimeValue > rotation1.NextRotation.Time)
-                        {
-                            rotation1 = rotation1.NextRotation;
-                            rotations[kvp.Key] = rotation1;
-                        }
-                        var rotation2 = rotations[kvp.Key].NextRotation;
-                        if (rotation1 != null && rotation2 != null)
-                        {
-                            float w = (currentTimeValue - rotation1.Time) / (rotation2.Time - rotation1.Time);
-                            rotation = rotation1.Rotation.Value * (1 - w) + rotation2.Rotation.Value * w;
-                        }
-                    }
-                    currentBone.Transform = rotation * translation;
-                }
+                skin.ToDefault();
+                Base?.Apply(skin);
+                foreach (var layer in layers)
+                    layer.Apply(skin);
             }
         }
 
-        private void UpdateTime(float time)
+        private void UpdateTime(float dt)
         {
-            if (clip == null || clip.Duration == 0) { return; }
-            currentTimeValue += time;
-            if (currentTimeValue > clip.Duration)
-            {
-                if (loop)
-                {
-                    currentTimeValue -= clip.Duration;
-                    if (clip != null)
-                    {
-                        translations = clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
-                        rotations = clip.Keyframes.ToDictionary((kvp) => kvp.Key, (kvp) => kvp.Value.First());
-                    }
-                }
-                else StartClip(DefaultClip, true);
-            }
+            if (Base?.UpdateTime(dt) ?? true) StartClip(DefaultClip, true);
+            for (int i = 0; i < layers.Count;)
+                if (layers[i].UpdateTime(dt)) layers.RemoveAt(i);
+                else i++;
         }
     }
 }

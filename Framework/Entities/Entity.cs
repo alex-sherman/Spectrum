@@ -157,5 +157,11 @@ namespace Spectrum.Framework.Entities
         public virtual void Draw(float gameTime) { }
         public virtual void TickTenth() { }
         public virtual void TickOne() { }
+        public override string ToString()
+        {
+            if (InitData == null)
+                return base.ToString();
+            return $"{InitData.Name}: {ID}";
+        }
     }
 }

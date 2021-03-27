@@ -224,7 +224,8 @@ namespace Spectrum.Framework.Entities
         public Entity CreateEntity(InitData data)
         {
             Entity e = Construct(data);
-            AddEntity(e);
+            if (e != null)
+                AddEntity(e);
             return e;
         }
         public Entity CreateEntityType(string typeName)

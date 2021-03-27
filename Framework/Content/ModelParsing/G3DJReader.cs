@@ -224,17 +224,14 @@ namespace Spectrum.Framework.Content.ModelParsing
 
             JArray rotation = (JArray)rootNode["rotation"];
             if (rotation != null)
-            {
-                rootBone.DefaultRotation = MatrixHelper.CreateRotation(rotation);
-            }
+                rootBone.DefaultRotation = rotation.ToQuaternion();
 
             JArray translation = (JArray)rootNode["translation"];
             if (translation != null)
-            {
-                rootBone.DefaultTranslation *= MatrixHelper.CreateTranslation(translation);
-            }
+                rootBone.DefaultTranslation += translation.ToVector3();
 
-            rootBone.Transform = rootBone.DefaultRotation * rootBone.DefaultTranslation;
+            rootBone.Rotation = rootBone.DefaultRotation;
+            rootBone.Translation = rootBone.DefaultTranslation;
 
             JToken children = rootNode["children"];
             if (children != null)
@@ -254,40 +251,42 @@ namespace Spectrum.Framework.Content.ModelParsing
             JObject jobj = JObject.Load(reader);
             return LoadAnimation(jobj);
         }
+        private static Dictionary<string, Keyframe<T>> SortKeyframes<T>(DefaultDict<string, List<Keyframe<T>>> keyframeSet)
+        {
+            foreach (var keyframes in keyframeSet.Values)
+                keyframes.Sort((x, y) => x.Time.CompareTo(y.Time));
+            foreach (var keyframes in keyframeSet.Values)
+                for (int i = 0; i < keyframes.Count - 1; i++)
+                    keyframes[i].Next = keyframes[i + 1];
+            return keyframeSet.ToDictionary(r => r.Key, r => r.Value.First());
+        }
         public static AnimationData LoadAnimation(JObject jobj)
         {
             AnimationData output = new AnimationData();
             foreach (JToken animationNode in (JArray)jobj["animations"])
             {
-                List<Keyframe> keyframes = new List<Keyframe>();
+                DefaultDict<string, List<Keyframe<Quaternion>>> rotations = new DefaultDict<string, List<Keyframe<Quaternion>>>(() => new List<Keyframe<Quaternion>>(), true);
+                DefaultDict<string, List<Keyframe<Vector3>>> translations = new DefaultDict<string, List<Keyframe<Vector3>>>(() => new List<Keyframe<Vector3>>(), true);
                 foreach (JToken boneNode in animationNode["bones"])
                 {
                     foreach (JToken keyFrameNode in boneNode["keyframes"])
                     {
-                        Matrix? rotation = null;
-                        Matrix? translation = null;
                         JToken rotationNode = keyFrameNode["rotation"];
                         if (rotationNode != null)
-                            rotation = MatrixHelper.CreateRotation(rotationNode);
+                            rotations[(string)boneNode["boneId"]].Add(new Keyframe<Quaternion>((float)keyFrameNode["keytime"] / 1000.0f, rotationNode.ToQuaternion()));
                         JToken translationNode = keyFrameNode["translation"];
                         if (translationNode != null)
-                            translation = MatrixHelper.CreateTranslation(translationNode);
-                        keyframes.Add(new Keyframe((string)boneNode["boneId"], ((float)keyFrameNode["keytime"]) / 1000.0f, rotation, translation));
+                            translations[(string)boneNode["boneId"]].Add(new Keyframe<Vector3>((float)keyFrameNode["keytime"] / 1000.0f, translationNode.ToVector3()));
                     }
                 }
-                keyframes.Sort(delegate (Keyframe x, Keyframe y)
-                {
-                    return x.Time.CompareTo(y.Time);
-                });
-                foreach (var keyframe in keyframes)
-                {
 
-                    keyframe.NextTranslation = keyframes.Find((kf) => kf.Time > keyframe.Time && kf.Translation.HasValue && kf.Bone == keyframe.Bone);
-                    keyframe.NextRotation = keyframes.Find((kf) => kf.Time > keyframe.Time && kf.Rotation.HasValue && kf.Bone == keyframe.Bone);
-                }
-                float duration = keyframes.Last().Time;
+                float duration = rotations.Values.SelectMany(k => k.Select(r => r.Time))
+                    .Union(translations.Values.SelectMany(k => k.Select(r => r.Time)))
+                    .Max();
                 string animName = (string)animationNode["id"];
-                output[animName] = new AnimationClip(animName, duration, keyframes);
+                output[animName] = new AnimationClip(animName, duration,
+                    SortKeyframes(translations),
+                    SortKeyframes(rotations));
             }
             return output;
         }

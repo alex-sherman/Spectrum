@@ -11,35 +11,46 @@ namespace Spectrum.Framework.Graphics.Animation
         public string Id;
         public List<Bone> Children;
         public Bone Parent;
-        public Matrix DefaultRotation;
-        public Matrix DefaultTranslation;
+        public Quaternion DefaultRotation;
+        public Vector3 DefaultTranslation;
         public Matrix BindPose;
         public Matrix InverseBindPose;
-        private Matrix transform;
-        public Matrix Transform
+        private Quaternion rotation;
+        public Quaternion Rotation
         {
-            get { return transform; }
-            set { SetDirty(); transform = value; }
+            get => rotation;
+            set { SetDirty(); rotation = value; }
         }
+        private Vector3 translation;
+        public Vector3 Translation
+        {
+            get => translation;
+            set { SetDirty(); translation = value; }
+        }
+        private Matrix transform;
+
         private Matrix withParentTransform;
         private bool dirty = true;
         private void SetDirty()
         {
             dirty = true;
             foreach (var child in Children)
-            {
                 child.SetDirty();
+        }
+        private void ResolveDirty()
+        {
+            if (dirty)
+            {
+                transform = rotation.ToMatrix() * Matrix.CreateTranslation(translation);
+                withParentTransform = transform * (Parent != null ? Parent.WithParentTransform : Matrix.Identity);
+                dirty = false;
             }
         }
         public Matrix WithParentTransform
         {
             get
             {
-                if (dirty)
-                {
-                    withParentTransform = Transform * (Parent != null ? Parent.WithParentTransform : Matrix.Identity);
-                    dirty = false;
-                }
+                ResolveDirty();
                 return withParentTransform;
             }
         }
@@ -49,11 +60,10 @@ namespace Spectrum.Framework.Graphics.Animation
         {
             Parent = parent;
             Children = new List<Bone>();
-            DefaultRotation = Matrix.Identity;
-            DefaultTranslation = Matrix.Identity;
+            DefaultRotation = Quaternion.Identity;
+            DefaultTranslation = Vector3.Zero;
             BindPose = Matrix.Identity;
             InverseBindPose = Matrix.Identity;
-            Transform = Matrix.Identity;
             Id = id;
         }
 

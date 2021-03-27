@@ -15,6 +15,7 @@ namespace Spectrum.Framework
         public float W { get; set; }
         public Quaternion(float x, float y, float z, float w) { X = x; Y = y; Z = z; W = w; }
         public Quaternion(Vector3 v, float w) { X = v.X; Y = v.Y; Z = v.Z; W = w; }
+        public float Dot(Quaternion other) => X * other.X + Y * other.Y + Z * other.Z + W * other.W;
         public static Quaternion operator *(Quaternion a, Quaternion b)
         {
             return new Quaternion
@@ -145,6 +146,32 @@ namespace Spectrum.Framework
                 Z = ((z2 * W) + (Z * w2)) + ((x2 * Y) - (y2 * X)),
                 W = (w2 * W) - (((x2 * X) + (y2 * Y)) + (z2 * Z))
             };
+        }
+        public static Quaternion Slerp(Quaternion a, Quaternion b, float w)
+        {
+            float bWeight;
+            float aWeight;
+            Quaternion quaternion = new Quaternion();
+            float dot = a.Dot(b);
+            int dotSign = Math.Sign(dot);
+            dot *= dotSign;
+            if (dot > 0.999999f)
+            {
+                aWeight = 1f - w;
+                bWeight = w * dotSign;
+            }
+            else
+            {
+                float num5 = (float)Math.Acos(dot);
+                float num6 = (float)(1.0 / Math.Sin(num5));
+                aWeight = (float)Math.Sin((1f - w) * num5) * num6;
+                bWeight = dotSign * (float)Math.Sin(w * num5) * num6;
+            }
+            quaternion.X = (aWeight * a.X) + (bWeight * b.X);
+            quaternion.Y = (aWeight * a.Y) + (bWeight * b.Y);
+            quaternion.Z = (aWeight * a.Z) + (bWeight * b.Z);
+            quaternion.W = (aWeight * a.W) + (bWeight * b.W);
+            return quaternion;
         }
     }
 }

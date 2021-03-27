@@ -38,20 +38,28 @@ namespace Spectrum.Framework
             output[2, 1] = -1;
             return output;
         }
-        public static Matrix CreateTranslation(JToken jobj)
+        public static Vector3 ToVector3(this JToken jobj)
         {
-            return Matrix.CreateTranslation(
-                        (float)jobj[0],
-                        (float)jobj[1],
-                        (float)jobj[2]);
+            return new Vector3(
+                (float)jobj[0],
+                (float)jobj[1],
+                (float)jobj[2]);
         }
-        public static Matrix CreateRotation(JToken jobj)
+        public static Matrix ToTranslationMatrix(this JToken jobj)
+        {
+            return Matrix.CreateTranslation(jobj.ToVector3());
+        }
+        public static Matrix ToRotationMatrix(this JToken jobj)
+        {
+            return jobj.ToQuaternion().ToMatrix();
+        }
+        public static Quaternion ToQuaternion(this JToken jobj)
         {
             return new Quaternion(
                 (float)jobj[0],
                 (float)jobj[1],
                 (float)jobj[2],
-                (float)jobj[3]).ToMatrix();
+                (float)jobj[3]);
         }
     }
 }

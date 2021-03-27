@@ -334,7 +334,8 @@ namespace Spectrum.Framework.Graphics
             device.SetRenderTargets(AATarget, PositionTarget, NormalTarget);
             device.Clear(clearColor);
             device.Clear(ClearOptions.DepthBuffer, Color.Black, 1, 0);
-            RenderQueue(sceneRenderPhase, renderGroups);
+            var listGroups = renderGroups.ToList();
+            RenderQueue(sceneRenderPhase, listGroups);
             //Clear the screen and perform anti aliasing
             using (DebugTiming.Render.Time("Post Process"))
             {
