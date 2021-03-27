@@ -108,7 +108,6 @@ namespace Spectrum.Framework.Graphics.Animation
             layers.Add(new AnimationLayer() { Clip = clip, Time = 0, Loop = false });
         }
 
-
         /// <summary>
         /// Advances the current animation position.
         /// </summary>
