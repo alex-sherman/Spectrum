@@ -179,7 +179,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             Vector3 dvNormal = normal * dvNormalScalar;
             Vector3 dvTangent = dv - dvNormal;
             tangent = dvTangent;
-            if (tangent.LengthSquared > 0)
+            if (tangent.LengthSquared > 1e-9)
                 tangent = tangent.Normal();
 
             massNormal = 1 / InertiaInDirection(normal);

@@ -41,6 +41,7 @@ namespace Spectrum.Framework.Graphics.Animation
         {
             if (dirty)
             {
+                // TODO: I think this can be combined into one operation
                 transform = rotation.ToMatrix() * Matrix.CreateTranslation(translation);
                 withParentTransform = transform * (Parent != null ? Parent.WithParentTransform : Matrix.Identity);
                 dirty = false;

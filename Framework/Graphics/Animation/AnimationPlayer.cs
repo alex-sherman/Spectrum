@@ -25,13 +25,17 @@ namespace Spectrum.Framework.Graphics.Animation
         SkinningData GetSkinningData();
     }
     // TODO: Add weights and transitions or something
-    class AnimationLayer
+    public class AnimationLayer
     {
         public bool Loop;
+        public bool Paused;
         public float Time;
         public AnimationClip Clip;
+        public bool Removing { get; private set; }
+        public void Remove() => Removing = true;
         public bool UpdateTime(float dt)
         {
+            if (Paused) return false;
             if (Clip == null || Clip.Duration == 0) { return false; }
             Time += dt;
             if (Time > Clip.Duration && Loop)
@@ -52,7 +56,6 @@ namespace Spectrum.Framework.Graphics.Animation
                         translations.LerpTo(Time, currentBone.Translation, (a, b, w) => a * (1 - w) + b * w);
                 if (Clip.Rotations.TryGetValue(bone, out var rotations))
                     currentBone.Rotation = rotations.LerpTo(Time, currentBone.Rotation, Quaternion.Slerp);
-                // TODO: I think this can be combined into one operation
             }
         }
     }
@@ -96,16 +99,19 @@ namespace Spectrum.Framework.Graphics.Animation
             Update(0);
         }
 
-        public void StartLayer(string animation)
+        public AnimationLayer StartLayer(string animation)
         {
             var clip = animationSource?.GetAnimation(animation);
             if (clip != null)
-                StartLayer(clip);
+                return StartLayer(clip);
+            return null;
         }
 
-        public void StartLayer(AnimationClip clip)
+        public AnimationLayer StartLayer(AnimationClip clip)
         {
-            layers.Add(new AnimationLayer() { Clip = clip, Time = 0, Loop = false });
+            var layer = new AnimationLayer() { Clip = clip, Time = 0, Loop = false };
+            layers.Add(layer);
+            return layer;
         }
 
         /// <summary>
@@ -121,6 +127,7 @@ namespace Spectrum.Framework.Graphics.Animation
             {
                 skin.ToDefault();
                 Base?.Apply(skin);
+                layers.RemoveAll(l => l.Removing);
                 foreach (var layer in layers)
                     layer.Apply(skin);
             }
