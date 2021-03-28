@@ -153,9 +153,13 @@ namespace Spectrum.Framework.Entities
         #endregion
         public void Update(float gameTime)
         {
+            if (Paused) return;
+            Step(gameTime);
+        }
+        public void Step(float gameTime)
+        {
             var fullUpdateables = Entities.UpdateSorted.Where(e => e.Enabled && e is IFullUpdate).Cast<IFullUpdate>().ToList();
             var updateables = Entities.UpdateSorted.Where(e => e.Enabled).ToList();
-            if (Paused) { return; }
             using (DebugTiming.Main.Time("Physics"))
                 Physics.Update(gameTime);
 

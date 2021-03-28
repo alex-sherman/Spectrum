@@ -245,7 +245,6 @@ namespace Spectrum.Framework.Physics.Dynamics
             Debug.Assert(!(float.IsNaN(body2.linearVelocity.X) || float.IsNaN(body2.linearVelocity.Y) || float.IsNaN(body2.linearVelocity.Z)));
         }
 
-        // TODO: Apply inverse mass and inertia to pushes
         public void ApplyPush(Vector3 push)
         {
             if (push.LengthSquared == 0)
