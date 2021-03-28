@@ -47,7 +47,8 @@ namespace Spectrum.Framework.Screens
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }
-        protected virtual Context Context() => Framework.Context.Create(Batch).Inject(Manager.Physics).Inject(Manager.Physics.CollisionSystem).Inject(this);
+        protected virtual Context Context() => Framework.Context.Create(Batch).Inject(Manager.Physics)
+            .Inject(Manager.Physics.CollisionSystem).Inject(Manager).Inject(this);
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
