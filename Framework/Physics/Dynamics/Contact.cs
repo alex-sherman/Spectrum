@@ -192,7 +192,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             // TODO: Tangent force should be a function of the normal force or something and not just fixed
             lastJ = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
             ApplyImpulse(lastJ);
-            ApplyPush(Penetration * normal / contactCount);
+            if (Penetration > settings.allowedPenetration)
+                ApplyPush((Penetration - settings.allowedPenetration) * normal / contactCount);
         }
 
         /// <summary>
