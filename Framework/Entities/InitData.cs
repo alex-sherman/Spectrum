@@ -140,7 +140,7 @@ namespace Spectrum.Framework.Entities
                     if (Coerce(info.Type, field.Value.Object, out var coercedValue))
                         info.SetValue(target, coercedValue);
                     else
-                        DebugPrinter.PrintOnce($"Failed to coerce {info.Type.Name}.{field.Key}");
+                        DebugPrinter.PrintOnce($"Failed to coerce {TypeData.Name}.{field.Key}");
                 }
                 catch (Exception e)
                 {

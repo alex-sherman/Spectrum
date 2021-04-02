@@ -14,7 +14,6 @@ namespace Spectrum.Framework.JSON
 {
     class JInitDataConverter : JsonConverter
     {
-
         static void ParseCalls(Dictionary<string, JToken> jobj, bool callOnce, InitData output)
         {
             string key = callOnce ? "@CallOnce" : "@Call";
@@ -57,6 +56,8 @@ namespace Spectrum.Framework.JSON
                 case JTokenType.Null:
                 case JTokenType.None:
                     return null;
+                case JTokenType.Object when (token as JObject).ContainsKey("@TypeName"):
+                    return ParseInitData(token, typeof(InitData<>).MakeGenericType(new Type[] { targetType }));
                 case JTokenType.Object:
                 case JTokenType.Array:
                     return JConvert.Deserialize(token, targetType);
@@ -102,7 +103,9 @@ namespace Spectrum.Framework.JSON
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var token = JToken.ReadFrom(reader);
+            return ParseInitData(JToken.ReadFrom(reader), objectType);
+        }
+        public static object ParseInitData(JToken token, Type objectType) {
             if (token.Type == JTokenType.Null)
                 return null;
             Dictionary<string, JToken> jobj =
