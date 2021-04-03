@@ -620,7 +620,6 @@ namespace Spectrum.Framework.Physics
         }
         #endregion
 
-
         private void Integrate(bool multithread)
         {
             if (multithread)

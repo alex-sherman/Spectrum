@@ -17,7 +17,7 @@ using System.Linq.Expressions;
 namespace Spectrum.Framework.Entities
 {
     public delegate void EntityMessageHandler(NetID peerID, Entity entity, NetMessage message);
-    public class EntityManager : IEnumerable<Entity>
+    public class EntityManager
     {
         public event Action<Entity> OnEntityAdded;
         public event Action<Entity> OnEntityRemoved;
@@ -232,14 +232,6 @@ namespace Spectrum.Framework.Entities
                 AddEntity(e);
             return e;
         }
-        public Entity CreateEntityType(string typeName)
-        {
-            return CreateEntity(new InitData(typeName));
-        }
-        public Entity CreatePrefab(string prefab)
-        {
-            return CreateEntity(InitData.Prefabs[prefab]);
-        }
         /// <summary>
         /// Calls the constructor for the Entity, but does not initialize it or add it to the EntityManager
         /// </summary>
@@ -283,32 +275,27 @@ namespace Spectrum.Framework.Entities
                     Remove(entity.ID);
             }
         }
-
         public Entity Find(Guid id)
         {
             if (Entities.Map.ContainsKey(id))
                 return Entities.Map[id];
             return null;
         }
-
         public IEnumerable<T> FindAll<T>()
         {
             return Entities.UpdateSorted.Where(e => e is T).Cast<T>();
         }
-
         public IEnumerable<Entity> FindByPrefab(string prefab)
         {
             return initDataLookup[prefab];
         }
-
-        public IEnumerator<Entity> GetEnumerator()
+        // TODO: Use an octree or something
+        public IEnumerable<T> FindNearest<T>(Vector3 position, Func<T, bool> predicate = null) where T : GameObject
         {
-            return Entities.UpdateSorted.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return Entities.UpdateSorted.GetEnumerator();
+            return Entities.All
+                .Select(e => e as T)
+                .Where(go => go != null && (predicate?.Invoke(go) ?? true))
+                .OrderBy(go => (go.Position - position).LengthSquared);
         }
     }
 }

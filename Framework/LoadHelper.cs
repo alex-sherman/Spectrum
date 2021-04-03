@@ -81,7 +81,7 @@ namespace Spectrum.Framework
                     entity.InitData = prefab.Value;
                 }
             }
-            foreach (var entity in manager)
+            foreach (var entity in manager.Entities.All)
                 entity.Reload();
         }
 

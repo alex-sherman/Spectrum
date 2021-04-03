@@ -174,7 +174,11 @@ namespace Spectrum.Framework.Entities
             {
                 if (i < args.Length)
                 {
-                    if (!Coerce(param.ParameterType, args[i], out object coerced)) return null;
+                    if (!Coerce(param.ParameterType, args[i], out object coerced))
+                    {
+                        DebugPrinter.PrintOnce($"Failed to coerce argument {i} while calling {name}");
+                        return null;
+                    }
                     return coerced;
                 }
                 if (param.HasDefaultValue) return param.DefaultValue;

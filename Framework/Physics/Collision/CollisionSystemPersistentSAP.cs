@@ -340,9 +340,7 @@ namespace Spectrum.Framework.Physics.Collision
 
                 swapOrder = !swapOrder;
             }
-
             threadManager.Execute();
-
         }
 
         private void DetectCallback(object obj)
@@ -381,7 +379,6 @@ namespace Spectrum.Framework.Physics.Collision
                     }
                 }
             }
-
             return result;
         }
 
@@ -440,10 +437,6 @@ namespace Spectrum.Framework.Physics.Collision
                 return (GJKCollide.Raycast(body.Shape, body.Orientation, body.InvOrientation, body.Position, body.Velocity,
                     rayOrigin, rayDirection, out fraction, out normal));
             }
-
-
         }
-
-
     }
 }

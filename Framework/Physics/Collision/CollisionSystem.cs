@@ -321,7 +321,7 @@ namespace Spectrum.Framework.Physics.Collision
         /// <param name="entity1">The first body.</param>
         /// <param name="entity2">The second body.</param>
         /// <returns>Returns true if an intersection occours.</returns>
-        public bool CheckBoundingBoxes(ICollidable entity1, ICollidable entity2)
+        public static bool CheckBoundingBoxes(ICollidable entity1, ICollidable entity2)
         {
             if (entity1.Shape == null || entity2.Shape == null) return false;
             JBBox box1 = entity1.BoundingBox;
@@ -330,6 +330,23 @@ namespace Spectrum.Framework.Physics.Collision
             return ((((box1.Max.Z >= box2.Min.Z) && (box1.Min.Z <= box2.Max.Z)) &&
                 ((box1.Max.Y >= box2.Min.Y) && (box1.Min.Y <= box2.Max.Y))) &&
                 ((box1.Max.X >= box2.Min.X) && (box1.Min.X <= box2.Max.X)));
+        }
+
+        /// <summary>
+        /// Gets the maximum separation between the AABB of two rigid bodies.
+        /// </summary>
+        /// <param name="entity1">The first body.</param>
+        /// <param name="entity2">The second body.</param>
+        /// <returns>Returns maximum separating distance (negative if intersecting).</returns>
+        public static float CheckSeparation(ICollidable entity1, ICollidable entity2)
+        {
+            if (entity1.Shape == null || entity2.Shape == null) return float.MaxValue;
+            JBBox box1 = entity1.BoundingBox;
+            JBBox box2 = entity2.BoundingBox;
+            double x = Math.Max(box2.Min.X - box1.Max.X, box1.Min.X - box2.Max.X);
+            double y = Math.Max(box2.Min.Y - box1.Max.Y, box1.Min.Y - box2.Max.Y);
+            double z = Math.Max(box2.Min.Z - box1.Max.Z, box1.Min.Z - box2.Max.Z);
+            return (float)Math.Max(Math.Max(x, y), z);
         }
 
         /// <summary>

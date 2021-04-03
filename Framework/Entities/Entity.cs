@@ -161,7 +161,7 @@ namespace Spectrum.Framework.Entities
         {
             if (InitData == null)
                 return base.ToString();
-            return $"{InitData.Name}: {ID}";
+            return $"{InitData.Name ?? InitData.TypeName}: {ID}";
         }
     }
 }
