@@ -19,6 +19,7 @@ namespace Spectrum.Framework.Audio
         {
             AudioDecoder audioDecoder = new AudioDecoder(stream);
             WaveFormat = audioDecoder.WaveFormat;
+            // TODO: This is super slow but copying the stream/list doesn't seem to satisfy SharpDX
             Samples = audioDecoder.GetSamples().Select(sample =>
             {
                 var output = new DataPointer(SharpDX.Utilities.AllocateMemory(sample.Size), sample.Size);

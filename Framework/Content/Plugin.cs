@@ -94,7 +94,8 @@ namespace Spectrum.Framework.Content
 
         public List<Type> GetLoadableTypes()
         {
-            return assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Entity)) || type.GetCustomAttributes(false).Any(attr => attr is LoadableType)).ToList();
+            return assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Entity))
+            || type.GetCustomAttributes(false).Any(attr => attr is LoadableTypeAttribute)).ToList();
         }
     }
 }

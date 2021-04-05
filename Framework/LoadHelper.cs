@@ -17,7 +17,12 @@ using Spectrum.Framework.Screens;
 namespace Spectrum.Framework
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class LoadableType : System.Attribute { }
+    public class LoadableTypeAttribute : Attribute
+    {
+        public string Name;
+        public LoadableTypeAttribute(string name) { Name = name; }
+        public LoadableTypeAttribute() { }
+    }
 
     public class LoadHelper
     {
@@ -46,7 +51,8 @@ namespace Spectrum.Framework
                     var preload = member.Info.GetAttribute<MemberContentAttribute>();
                     initData.Set(member.Info.Name, preload.Path);
                 }
-                InitData.Register(type.Name, initData);
+                var prefabName = type.GetCustomAttribute<LoadableTypeAttribute>()?.Name ?? type.Name;
+                InitData.Register(prefabName, initData);
                 foreach (var member in accessor.Members.Values.Where(m => m.Info.IsStatic))
                 {
                     var preload = member.Info.GetAttribute<MemberContentAttribute>();
