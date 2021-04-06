@@ -69,7 +69,7 @@ namespace Spectrum.Framework.VR
                 Position = UsedTransform.Apply(Offset?.Apply(Vector3.Zero) ?? Vector3.Zero);
                 Orientation = UsedTransform.Orientation;
                 if (Offset != null)
-                    Orientation *= Offset.Orientation;
+                    Orientation *= Offset.Rotation;
                 PhysicsUpdate(dt);
             }
             if (Cursor != null)

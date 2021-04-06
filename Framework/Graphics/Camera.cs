@@ -28,7 +28,7 @@ namespace Spectrum.Framework.Graphics
             return result / W;
         }
     }
-    public class Camera : ICamera, ITransform
+    public class Camera : ICamera
     {
         public Matrix Projection { get; set; } = Matrix.Identity;
 
@@ -40,8 +40,10 @@ namespace Spectrum.Framework.Graphics
                 0.1f, 10000);
         }
         public virtual Vector3 Position { get; set; }
+        Vector3 ITransform.Position => Position;
         public Quaternion Orientation;
         Quaternion ITransform.Orientation => Orientation;
+        Vector3 ITransform.Scale => Vector3.One;
         public Matrix Transform { get; set; } = Matrix.Identity;
         /// TODO: Retrieve these values from rotation?
         public float Yaw
@@ -118,6 +120,7 @@ namespace Spectrum.Framework.Graphics
         public Matrix Transform { get; set; } = Matrix.Identity;
         Vector3 ITransform.Position => new Vector3(Position.X, Position.Y, 1);
         Quaternion ITransform.Orientation => Quaternion.Identity;
+        Vector3 ITransform.Scale => Vector3.One;
         public void UpdateProjection(int width, int height)
         {
             var scale = height / 1700f;

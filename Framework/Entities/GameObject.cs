@@ -57,6 +57,7 @@ namespace Spectrum.Framework.Entities
             get { return position; }
             set { dirtyPhysics = true; position = value; }
         }
+        Vector3 ITransform.Scale => Vector3.One;
         public object PositionInterpolator(float w, object value)
         {
             return null;
@@ -177,7 +178,8 @@ namespace Spectrum.Framework.Entities
                     var shapes = Model.MeshParts.Values.Select<DrawablePart, Shape>(p =>
                     {
                         var box = p.Bounds;
-                        box.Transform(ref ModelTransform);
+                        var t = ModelTransform.LocalWorld;
+                        box.Transform(ref t);
                         return new BoxShape(box);
                     }).ToList();
                     Shape = new ListMultishape(shapes);
@@ -269,13 +271,14 @@ namespace Spectrum.Framework.Entities
                 if (Model == null)
                     return new JBBox();
                 var output = Model.Bounds;
-                output.Transform(ref ModelTransform);
+                var t = ModelTransform.LocalWorld;
+                output.Transform(ref t);
                 return output;
             }
         }
 
         [Replicate]
-        public Matrix ModelTransform = Matrix.Identity;
+        public Transform ModelTransform;
         // TODO: Should be a component
         public AnimationPlayer AnimationPlayer;
         public AnimationClip GetAnimation(string name)
@@ -298,6 +301,7 @@ namespace Spectrum.Framework.Entities
             invOrientation = orientation = Quaternion.Identity;
             inverseMass = 1.0f;
             material = new Material();
+            ModelTransform = new Transform() { Parent = this };
         }
 
         public override void Initialize()
@@ -381,7 +385,7 @@ namespace Spectrum.Framework.Entities
             {
                 foreach (var part in Model)
                 {
-                    Batch3D.Current.DrawPart(part, ModelTransform * World, Material, options: DrawOptions);
+                    Batch3D.Current.DrawPart(part, ModelTransform.LocalWorld * World, Material, options: DrawOptions);
                 }
             }
         }

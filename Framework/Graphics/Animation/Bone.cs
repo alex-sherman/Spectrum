@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Spectrum.Framework.Graphics.Animation
 {
-    public class Bone
+    public class Bone : ITransform
     {
         public string Id;
         public List<Bone> Children;
@@ -27,6 +27,10 @@ namespace Spectrum.Framework.Graphics.Animation
             get => translation;
             set { SetDirty(); translation = value; }
         }
+        Vector3 ITransform.Position { get { ResolveDirty(); return (withParentTransform).Translation; } }
+        // TODO: This could be like the above and pull out a rotation from the matrix
+        Quaternion ITransform.Orientation => Parent != null ? Rotation.Concat(((ITransform)Parent).Orientation) : Rotation;
+        Vector3 ITransform.Scale => Vector3.One;
         private Matrix transform;
 
         private Matrix withParentTransform;
@@ -43,7 +47,7 @@ namespace Spectrum.Framework.Graphics.Animation
             {
                 // TODO: I think this can be combined into one operation
                 transform = rotation.ToMatrix() * Matrix.CreateTranslation(translation);
-                withParentTransform = transform * (Parent != null ? Parent.WithParentTransform : Matrix.Identity);
+                withParentTransform = Parent == null ? transform : transform * Parent.WithParentTransform;
                 dirty = false;
             }
         }
