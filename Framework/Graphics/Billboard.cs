@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Graphics
 {
-    public class Billboard : GameObject
+    public static class Billboard
     {
         public static readonly DrawablePart BillboardPart;
         static Billboard()
@@ -27,28 +27,16 @@ namespace Spectrum.Framework.Graphics
             });
             BillboardPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
-        public Vector2 Size = Vector2.One;
-        public Billboard()
-        {
-            DrawOptions.DisableInstancing = true;
-            isStatic = true;
-            NoCollide = true;
-        }
-        public override void Initialize()
-        {
-            base.Initialize();
-            Shape = new BoxShape(new Vector3(Size.X, Size.Y, 0));
-        }
-        public void Draw(Matrix world)
+        public static void Draw(Matrix world, Vector2 size, MaterialData material)
         {
             Batch3D.Current.DrawPart(
                 BillboardPart,
-                Matrix.CreateScale(Size.X, Size.Y, 0) * world,
-                Material,
-                options: DrawOptions
+                Matrix.CreateScale(size.X, size.Y, 0) * world,
+                material
             );
         }
-        public static void DrawBillboard(Vector3 position, Vector2 size, MaterialData material, Vector3 offset = default)
+        public static void Draw(Vector3 position, Vector2 size,
+            MaterialData material, Vector3 offset = default)
         {
             Batch3D.Current.DrawPart(
                 BillboardPart,
@@ -59,20 +47,12 @@ namespace Spectrum.Framework.Graphics
                     DisableInstancing = true,
                     DynamicDraw = (args) =>
                     {
-                        var view = args.Phase.View;
                         args.Group.Properties.Effect.World = args.World *
-                            Matrix.CreateRotationY(-view.ToQuaternion().Yaw()) *
+                            Matrix.CreateRotationY(-args.Phase.View.ToQuaternion().Yaw()) *
                             Matrix.CreateTranslation(position);
                     }
-
                 }
             );
-        }
-        public override void Draw(float gameTime)
-        {
-            base.Draw(gameTime);
-            if (Material != null)
-                Draw(World);
         }
     }
 }

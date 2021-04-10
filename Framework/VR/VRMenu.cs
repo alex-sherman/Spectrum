@@ -13,7 +13,7 @@ using Spectrum.Framework.Input;
 
 namespace Spectrum.Framework.VR
 {
-    public class VRMenu : Billboard
+    public class VRMenu : GameObject
     {
         public Vector3? HitPosition { get; protected set; }
         public Matrix CameraTransform = Matrix.Identity;
@@ -30,6 +30,7 @@ namespace Spectrum.Framework.VR
         public InputState InputState = new InputState(true);
         public bool FreezePosition = false;
         public Action<CursorState, InputState> FillCursorState;
+        public Vector2 Size;
         public override bool DrawEnabled
         {
             get => base.DrawEnabled;
@@ -78,7 +79,7 @@ namespace Spectrum.Framework.VR
                 InputState.CursorState = new CursorState() { P = new Point(-1, -1), buttons = new bool[16] };
             Root.Update(dt, InputState);
             Root.Draw(dt);
-            Draw(World * CameraTransform);
+            Billboard.Draw(World * CameraTransform, Size, Material);
             if (Cursor != null && HitPosition.HasValue)
             {
                 var basePosition = CameraTransform * Cursor.Position;

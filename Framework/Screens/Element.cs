@@ -350,16 +350,16 @@ namespace Spectrum.Framework.Screens
             {
                 X = bounds.X + Margin.Left.Measure(bounds.Width) + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.X ?? 0)),
                 Y = bounds.Y + Margin.Top.Measure(bounds.Height) + (Positioning == PositionType.Absolute ? 0 : (Parent?.Rect.Y ?? 0)),
-                Width = Math.Max(0, Width.Measure(bounds.Width, ContentWidth) + Padding.WidthTotal(bounds.Width)),
-                Height = Math.Max(0, Height.Measure(bounds.Height, ContentHeight) + Padding.HeightTotal(bounds.Height)),
+                Width = Math.Max(0, Width.Measure(bounds.Width, ContentWidth)),
+                Height = Math.Max(0, Height.Measure(bounds.Height, ContentHeight)),
             };
             // Accounts for Padding
             Rect = new Rectangle()
             {
                 X = Bounds.X + Padding.Left.Measure(bounds.Width),
                 Y = Bounds.Y + Padding.Top.Measure(bounds.Height),
-                Width = Math.Max(0, Width.Measure(bounds.Width, ContentWidth)),
-                Height = Math.Max(0, Height.Measure(bounds.Height, ContentHeight)),
+                Width = Math.Max(0, Width.Measure(bounds.Width, ContentWidth) - Padding.WidthTotal(bounds.Width)),
+                Height = Math.Max(0, Height.Measure(bounds.Height, ContentHeight) - Padding.HeightTotal(bounds.Height)),
             };
             if (ZDetach || Parent == null)
                 Clipped = Bounds;
@@ -443,6 +443,11 @@ namespace Spectrum.Framework.Screens
                 element.Parent = null;
                 element.Root = null;
             }
+        }
+        public void Clear()
+        {
+            while (_children.Count > 0)
+                RemoveElement(Children[0]);
         }
 
         public virtual bool Toggle(bool? show = null)

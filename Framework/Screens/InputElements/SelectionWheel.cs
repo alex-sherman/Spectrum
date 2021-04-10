@@ -1,5 +1,8 @@
-﻿using Spectrum.Framework;
+﻿using Microsoft.Xna.Framework.Graphics;
+using Spectrum.Framework;
 using Spectrum.Framework.Content;
+using Spectrum.Framework.Graphics;
+using Spectrum.Framework.Input;
 using Spectrum.Framework.Screens;
 using Spectrum.Framework.VR;
 using Svg;
@@ -11,25 +14,33 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework.Screens.InputElements
 {
-    public class SelectionWheel : VRMenu
+    public class SelectionWheel
     {
         public int SquareSize = 400;
         public float OR = 200;
         public float IR = 120;
         public int Count = 4;
+        public Point RenderTargetSize = new Point(400, 400);
+        public Vector2 Size = new Vector2(0.2f, 0.2f);
+        public Transform Transform = new Transform();
+        public RootElement Root = new RootElement();
         double halfAngle;
         Element[] highlightElements;
+        MaterialData material;
         string SVGVec(Vector2 vector)
         {
             return string.Format("{0} {1}", vector.X.ToString("n5"), vector.Y.ToString("n5"));
         }
-        public override void Initialize()
+        public SelectionWheel()
         {
-            RenderTargetSize = new Point(400, 400);
+            Root.Target = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, RenderTargetSize.X, RenderTargetSize.Y);
+            material = new MaterialData() { DiffuseTexture = Root.Target };
+            Root.Initialize();
+        }
+        public void ResetElements()
+        {
+            Root.Clear();
             var viewBox = new SvgViewBox(-SquareSize / 2, -SquareSize / 2, SquareSize, SquareSize);
-            Size = new Vector2(0.2f, 0.2f);
-            Offset = new Transform(Vector3.Up * 0.02f + Vector3.Backward * 0.1f);
-            base.Initialize();
             highlightElements = new Element[Count];
             halfAngle = Math.PI / Count;
             for (int i = 0; i < Count; i++)
@@ -45,7 +56,7 @@ namespace Spectrum.Framework.Screens.InputElements
                 {
                     Fill = new SvgColourServer(System.Drawing.Color.White),
                     ShapeRendering = SvgShapeRendering.CrispEdges,
-                    PathData = SvgPathBuilder.Parse(arcPath)
+                    PathData = SvgPathBuilder.Parse(arcPath),
                 };
                 var angleC = halfAngle * i * 2 - Math.PI / 2;
                 var childCenter = new Vector2((float)Math.Cos(angleC) * (OR + IR) / 2, (float)Math.Sin(angleC) * (OR + IR) / 2) + new Vector2(SquareSize) / 2;
@@ -68,6 +79,12 @@ namespace Spectrum.Framework.Screens.InputElements
                 arcElement.Background = new ImageAsset() { SVG = highlightSvg };
                 Root.AddElement(arcElement);
             }
+        }
+        public void Draw()
+        {
+            Root.Update(0, InputState.Current);
+            Root.Draw(0);
+            Billboard.Draw(Transform.World(), Size, material);
         }
         public int GetIndex(float angle)
         {
