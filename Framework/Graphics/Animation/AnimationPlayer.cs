@@ -99,17 +99,17 @@ namespace Spectrum.Framework.Graphics.Animation
             Update(0);
         }
 
-        public AnimationLayer StartLayer(string animation)
+        public AnimationLayer StartLayer(string animation, bool loop = false)
         {
             var clip = animationSource?.GetAnimation(animation);
             if (clip != null)
-                return StartLayer(clip);
+                return StartLayer(clip, loop);
             return null;
         }
 
-        public AnimationLayer StartLayer(AnimationClip clip)
+        public AnimationLayer StartLayer(AnimationClip clip, bool loop = false)
         {
-            var layer = new AnimationLayer() { Clip = clip, Time = 0, Loop = false };
+            var layer = new AnimationLayer() { Clip = clip, Time = 0, Loop = loop };
             layers.Add(layer);
             return layer;
         }

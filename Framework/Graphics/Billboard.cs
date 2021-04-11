@@ -20,18 +20,17 @@ namespace Spectrum.Framework.Graphics
         {
             BillboardPart = DrawablePart.From(new List<CommonTex>()
             {
-                new CommonTex(new Vector3(-0.5f, -0.5f, 0), Vector3.UnitY, new Vector2(0,1)),
-                new CommonTex(new Vector3(0.5f, -0.5f, 0), Vector3.UnitY, new Vector2(1, 1)),
-                new CommonTex(new Vector3(-0.5f,  0.5f, 0), Vector3.UnitY, new Vector2(0, 0)),
-                new CommonTex(new Vector3(0.5f,  0.5f, 0), Vector3.UnitY, new Vector2(1, 0))
+                new CommonTex(new Vector3(-0.5f, -0.5f, 0), Vector3.Backward, new Vector2(0,1)),
+                new CommonTex(new Vector3(0.5f, -0.5f, 0), Vector3.Backward, new Vector2(1, 1)),
+                new CommonTex(new Vector3(-0.5f,  0.5f, 0), Vector3.Backward, new Vector2(0, 0)),
+                new CommonTex(new Vector3(0.5f,  0.5f, 0), Vector3.Backward, new Vector2(1, 0))
             });
-            BillboardPart.effect = new SpectrumEffect() { LightingEnabled = false };
         }
         public static void Draw(Matrix world, Vector2 size, MaterialData material)
         {
             Batch3D.Current.DrawPart(
                 BillboardPart,
-                Matrix.CreateScale(size.X, size.Y, 0) * world,
+                Matrix.CreateScale(size.X, size.Y, 1) * world,
                 material
             );
         }
@@ -40,7 +39,7 @@ namespace Spectrum.Framework.Graphics
         {
             Batch3D.Current.DrawPart(
                 BillboardPart,
-                Matrix.Create(offset, new Vector3(size.X, size.Y, 0)),
+                Matrix.Create(offset, new Vector3(size.X, size.Y, 1)),
                 material,
                 options: new Batch3D.DrawOptions()
                 {

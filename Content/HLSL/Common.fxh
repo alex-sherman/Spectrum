@@ -55,22 +55,27 @@ sampler shadowMapSampler = sampler_state
     AddressV = clamp;
 };
 
-float4 PSLighting(float4 color, CommonVSOut vsout) {
+float4 PSLighting(float4 color, CommonVSOut vsout)
+{
     float4 output = color;
-    if (lightingEnabled) {
-        output.rgb = (float3)0;
+    if (lightingEnabled)
+    {
+        output.rgb = (float3) 0;
         float3 normal;
-        if(UseNormalMap) {
+        if (UseNormalMap)
+        {
             float3 normalTex = 2 * tex2D(normalMap, vsout.textureCoordinate).rgb - 1;
             normal = vsout.normal * normalTex.b;
             normal += vsout.tangent * normalTex.r;
             normal += vsout.binormal * normalTex.g;
         }
-        else {
+        else
+        {
             normal = vsout.normal;
         }
         float diffuseMagnitude = max(0, dot(normalize(normal), normalize(lightPosition - vsout.worldPosition)));
-        if(UseShadowMap) {
+        if (UseShadowMap)
+        {
             vsout.Pos2DAsSeenByLight /= vsout.Pos2DAsSeenByLight.w;
             float2 shadowCoord = vsout.Pos2DAsSeenByLight.xy;
             shadowCoord.y *= -1;
@@ -89,8 +94,9 @@ float4 PSLighting(float4 color, CommonVSOut vsout) {
     }
     return output;
 }
-CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
-    CommonPSOut output = (CommonPSOut)0;
+CommonPSOut PSReturn(float4 color, CommonVSOut vsout)
+{
+    CommonPSOut output = (CommonPSOut) 0;
     output.color = color;
     output.position.xyz = vsout.worldPosition;
     output.position.a = 1;
@@ -98,14 +104,22 @@ CommonPSOut PSReturn(float4 color, CommonVSOut vsout) {
     output.normal.a = 1;
     return output;
 }
-float3 VSCalculateLight(float3 normal, float3 worldPosition){
+float3 VSCalculateLight(float3 normal, float3 worldPosition)
+{
     float3 lightDirection = worldPosition - lightPosition;
-        lightDirection.y *= -1;
-    return (.2+.8*clamp(dot(normalize(lightDirection), normal),0,1));
+    lightDirection.y *= -1;
+    return (.2 + .8 * clamp(dot(normalize(lightDirection), normal), 0, 1));
 }
-void DoClip(CommonVSOut vsout){
-    if(Clip) { clip(vsout.clipDistance); }
-    if(vsout.fog >=.99f){ clip(-1); }
+void DoClip(CommonVSOut vsout)
+{
+    if (Clip)
+    {
+        clip(vsout.clipDistance);
+    }
+    if (vsout.fog >= .99f)
+    {
+        clip(-1);
+    }
 }
 CommonPSOut ApplyTexture(CommonVSOut vsout)
 {

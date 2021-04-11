@@ -21,9 +21,9 @@ uniform extern texture Transparency;
 uniform bool UseTransparency = false;
 uniform float4 diffuseColor = float4(1, 1, 1, 1);
 uniform float4 materialDiffuse = float4(1, 0, 1, 1);
-uniform float3 ambientLightColor = float3(0.2,.2,.2);
-uniform float3 diffuseLightColor = float3(0.8,0.8,0.8);
-uniform float3 specularLightColor = float3(1,1,1);
+uniform float3 ambientLightColor = float3(0.2, .2, .2);
+uniform float3 diffuseLightColor = float3(0.8, 0.8, 0.8);
+uniform float3 specularLightColor = float3(1, 1, 1);
 bool lightingEnabled = true;
 Texture2D<float> ShadowMapTexture;
 
@@ -36,7 +36,7 @@ struct CommonVSInput
 };
 struct CommonVSOut
 {
-    float4 position  : SV_Position;
+    float4 position : SV_Position;
     float3 normal : NORMAL0;
     float3 tangent : TANGENT0;
     float3 binormal : TANGENT1;
@@ -46,32 +46,34 @@ struct CommonVSOut
     float clipDistance : TEXCOORD2;
     float depth : TEXCOORD3;
     float4 color : COLOR0;
-    float fog	: COLOR1;
+    float fog : COLOR1;
 };
 struct CommonPSOut
 {
     float4 color : COLOR0;
     float4 position : COLOR1;
-    float4 normal: COLOR2;
+    float4 normal : COLOR2;
 };
 
-float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout){
-    vsout = (CommonVSOut)0;
+float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout)
+{
+    vsout = (CommonVSOut) 0;
     float4 HworldPosition = mul(vin.Position, world);
     HworldPosition.w = 1;
     vsout.worldPosition = HworldPosition.xyz;
     vsout.position = mul(mul(HworldPosition, view), proj);
-    vsout.depth = length(vsout.worldPosition-cameraPosition);
-    vsout.fog = clamp(1-(fogDistance-fogWidth-vsout.depth)/fogWidth,0,1);
+    vsout.depth = length(vsout.worldPosition - cameraPosition);
+    vsout.fog = clamp(1 - (fogDistance - fogWidth - vsout.depth) / fogWidth, 0, 1);
     vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
     vsout.Pos2DAsSeenByLight = mul(HworldPosition, ShadowViewProjection);
     vsout.textureCoordinate = vin.TextureCoordinate + DiffuseTextureOffset;
-    vsout.normal = normalize(mul(vin.normal, world));
-    vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3)world));
+    vsout.normal = normalize(mul(vin.normal, (float3x3) world));
+    vsout.tangent = vin.tangent == 0 ? 0 : normalize(mul(vin.tangent, (float3x3) world));
     vsout.binormal = cross(vsout.tangent, vsout.normal);
     return HworldPosition;
 }
-float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout) {
+float4 CommonVS(CommonVSInput vin, out CommonVSOut vsout)
+{
     return CommonVS(vin, world, vsout);
 }
 CommonVSOut Transform(CommonVSInput input)

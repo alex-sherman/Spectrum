@@ -20,6 +20,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public float OR = 200;
         public float IR = 120;
         public int Count = 4;
+        public int? Index { get; private set; }
         public Point RenderTargetSize = new Point(400, 400);
         public Vector2 Size = new Vector2(0.2f, 0.2f);
         public Transform Transform = new Transform();
@@ -34,7 +35,7 @@ namespace Spectrum.Framework.Screens.InputElements
         public SelectionWheel()
         {
             Root.Target = new RenderTarget2D(SpectrumGame.Game.GraphicsDevice, RenderTargetSize.X, RenderTargetSize.Y);
-            material = new MaterialData() { DiffuseTexture = Root.Target };
+            material = new MaterialData() { DiffuseTexture = Root.Target, DisableLighting = true };
             Root.Initialize();
         }
         public void ResetElements()
@@ -74,6 +75,7 @@ namespace Spectrum.Framework.Screens.InputElements
                         Right = (int)(SquareSize - childCenter.X - offset)
                     },
                 };
+                arcElement.AddTag("selection-wheel-arc");
                 var highlightSvg = new SvgDocument() { ViewBox = viewBox };
                 highlightSvg.Children.Add(arc);
                 arcElement.Background = new ImageAsset() { SVG = highlightSvg };
@@ -88,27 +90,34 @@ namespace Spectrum.Framework.Screens.InputElements
         }
         public int GetIndex(float angle)
         {
-            return ((int)Math.Ceiling(2 * Count - ((angle - Math.PI / 2) / halfAngle + 1) / 2)) % Count;
+            return (2 * Count - (int)Math.Ceiling((angle - Math.PI / 2) / halfAngle / 2 - 0.5)) % Count;
         }
         public Element GetElement(int index)
         {
             return highlightElements[index];
         }
-        public void Highlight(int index)
-        {
-            Highlight(null);
-            highlightElements[index].AddTag("highlight");
-        }
-        public void Highlight(bool[] highlight)
+        public void Highlight(int? index)
         {
             foreach (var ele in highlightElements)
                 ele.RemoveTag("highlight");
-            if (highlight == null) return;
-            for (int i = 0; i < highlightElements.Length && i < highlight.Length; i++)
-            {
-                if (highlight[i])
-                    highlightElements[i].AddTag("highlight");
-            }
+            if (index == null) return;
+            highlightElements[index.Value].AddTag("highlight");
+        }
+        public int? UpdateFromCursor(ref Vector2 cursor)
+        {
+            cursor += new Vector2(InputState.Current.CursorState.DX, InputState.Current.CursorState.DY);
+            InputState.Current.CursorState.DX = 0;
+            InputState.Current.CursorState.DY = 0;
+            int? index;
+            if (Count == 0) return null;
+            if (cursor.LengthSquared > 20000)
+                cursor *= (float)Math.Sqrt(20000 / cursor.LengthSquared);
+            if (cursor.LengthSquared > 10000)
+                index = GetIndex((float)Math.Atan2(-cursor.Y, cursor.X));
+            else
+                index = null;
+            Highlight(index);
+            return index;
         }
     }
 }
