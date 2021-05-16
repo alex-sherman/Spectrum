@@ -29,6 +29,7 @@ namespace Spectrum.Framework.Graphics
         }
         public override void Initialize()
         {
+            Model = new SpecModel();
             base.Initialize();
             waterV = new VertexBuffer(SpectrumGame.Game.GraphicsDevice, VertexPositionTexture.VertexDeclaration, numVertices * numVertices, BufferUsage.WriteOnly);
             float[,] heights = new float[numVertices, numVertices];

@@ -44,17 +44,7 @@ sampler snow = sampler_state
 //----------------------------------------------------MultiTex-----------------------------------
 struct MultiTex_VS_OUT
 {
-    float4 position  : SV_Position;
-    float3 normal        : NORMAL0;
-    float3 tangent : TANGENT0;
-    float3 binormal : TANGENT1;
-    float3 worldPosition : POSITION1;
-    float2 textureCoordinate : TEXCOORD0;
-    float4 Pos2DAsSeenByLight : TEXCOORD1;
-    float clipDistance : TEXCOORD2;
-    float depth : TEXCOORD3;
-    float color : COLOR0;
-    float fog : COLOR1;
+    CommonVSOut common;
     float4 blend : TEXCOORD4;
     float4 depthBlend : TEXCOORD5;
 };
@@ -70,22 +60,21 @@ struct MultiTex_VS_IN
 };
 MultiTex_VS_OUT TransformMulti(MultiTex_VS_IN vin)
 {
-    MultiTex_VS_OUT Out = (MultiTex_VS_OUT)0;
+    MultiTex_VS_OUT output = (MultiTex_VS_OUT)0;
     vin.Position = lerp(vin.Position, vin.Position2, VertexBlend);
-    float4 worldPosition = CommonVS((CommonVSInput)vin, (CommonVSOut)Out);
-    Out.blend = lerp(vin.blend, vin.blend2, VertexBlend);
+    float4 worldPosition = CommonVS((CommonVSInput) vin, output.common);
+    output.blend = lerp(vin.blend, vin.blend2, VertexBlend);
     float blendDistance1 = 100;
-    Out.depthBlend.x = clamp((Out.depth - blendDistance1) / blendDistance1, 0, 1);
-    return Out;
+    output.depthBlend.x = clamp((output.common.depth - blendDistance1) / blendDistance1, 0, 1);
+    return output;
 }
 CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
 {
-    DoClip((CommonVSOut)vsout);
     float4 toReturn = (float4)0;
     float texw = vsout.blend.x;
     float lodw = vsout.depthBlend.x;
-    float2 coorda = vsout.textureCoordinate * 2;
-    float2 coordb = vsout.textureCoordinate / 4;
+    float2 coorda = vsout.common.textureCoordinate * 2;
+    float2 coordb = vsout.common.textureCoordinate / 4;
     float3 sampled = 0;
     sampled += tex2D(sand, coorda) * vsout.blend[0] * (1 - vsout.depthBlend.x);
     sampled += tex2D(sand, coordb) * vsout.blend[0] * vsout.depthBlend.x;
@@ -97,10 +86,10 @@ CommonPSOut ApplyMultiTexture(MultiTex_VS_OUT vsout)
     sampled += tex2D(snow, coordb) * vsout.blend[3] * vsout.depthBlend.x;
     toReturn.rgb = sampled;
 
-    toReturn.rgb = lerp(toReturn.rgb, (float4)0, vsout.fog);
-    toReturn.a = 1 - vsout.fog;
-    toReturn = PSLighting(toReturn, (CommonVSOut)vsout);
-    return PSReturn(toReturn, (CommonVSOut)vsout);
+    toReturn.rgb = lerp(toReturn.rgb, (float3)0, vsout.common.fog);
+    toReturn.a = 1 - vsout.common.fog;
+    toReturn = PSLighting(toReturn, vsout.common);
+    return PSReturn(toReturn, vsout.common);
 }
 technique Standard
 {
