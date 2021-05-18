@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using ProtoBuf;
 using ProtoBuf.Meta;
+using Replicate;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Network.Surrogates;
@@ -78,10 +79,11 @@ namespace Spectrum.Framework.Network
             }
             PrimitiveSurrogate.RegisterType(type);
         }
-        public static T Copy<T>(T obj) where T : class
+        public static T Copy<T>(T obj) where T : class, new()
         {
             if (obj == null) return null;
-            return Serializer.NonGeneric.DeepClone(obj) as T;
+            var accessor = TypeUtil.Model.GetTypeAccessor(obj.GetType());
+            return TypeUtil.CopyToRaw(obj, accessor, null, accessor) as T;
         }
     }
 }

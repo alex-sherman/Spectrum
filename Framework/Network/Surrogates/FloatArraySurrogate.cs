@@ -1,4 +1,5 @@
 ﻿using ProtoBuf;
+using Replicate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,11 +11,11 @@ namespace Spectrum.Framework.Network.Surrogates
     [ProtoContract]
     public class FloatArraySurrogate
     {
-        [ProtoMember(1)]
+        [Replicate]
         int width;
-        [ProtoMember(2)]
+        [Replicate]
         int height;
-        [ProtoMember(3)]
+        [Replicate]
         float[] buffer;
         public FloatArraySurrogate(int width, int height)
         {
