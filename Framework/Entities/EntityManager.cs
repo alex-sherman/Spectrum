@@ -19,6 +19,7 @@ namespace Spectrum.Framework.Entities
     public delegate void EntityMessageHandler(NetID peerID, Entity entity, NetMessage message);
     public class EntityManager
     {
+        public static EntityManager Current => Context<EntityManager>.Current;
         public event Action<Entity> OnEntityAdded;
         public event Action<Entity> OnEntityRemoved;
         private DefaultDict<string, HashSet<Entity>> initDataLookup = new DefaultDict<string, HashSet<Entity>>(() => new HashSet<Entity>(), true);

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Spectrum.Framework
@@ -15,7 +16,8 @@ namespace Spectrum.Framework
             Current = Previous;
             base.Dispose();
         }
-        public static T Current { get; private set; }
+        private static AsyncLocal<T> current = new AsyncLocal<T>();
+        public static T Current { get => current.Value; private set => current.Value = value; }
         public static Context<T> Create(T value)
         {
             var result = new Context<T>() { Previous = Current };
