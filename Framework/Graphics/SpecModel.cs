@@ -67,11 +67,9 @@ namespace Spectrum.Framework.Graphics
         }
         public void Update(float dt)
         {
-            foreach (var part in MeshParts.Values)
-            {
-                if (SkinningData != null)
+            if (SkinningData != null)
+                foreach (var part in MeshParts.Values)
                     (part.effect as SpectrumSkinnedEffect)?.UpdateBoneTransforms(SkinningData);
-            }
         }
 
         public IEnumerator<DrawablePart> GetEnumerator()

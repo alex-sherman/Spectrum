@@ -28,6 +28,8 @@ namespace Spectrum.Framework.Entities
         public EntityCollection Entities;
         public readonly PhysicsEngine Physics;
         public bool Paused = false;
+        private float deferredBudget = 0.001f;
+        private List<Action> deferredActions = new List<Action>();
         public EntityManager()
         {
             Entities = new EntityCollection();

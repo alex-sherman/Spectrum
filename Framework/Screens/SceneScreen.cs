@@ -21,6 +21,7 @@ namespace Spectrum.Framework.Screens
         public EntityManager Manager = SpectrumGame.Game.EntityManager;
         public Batch3D Batch = new Batch3D();
         public RenderTarget2D RenderTarget;
+        private Scheduler Scheduler = new Scheduler();
         public ICamera Camera;
         private bool _captureMouse = false;
         public bool CaptureMouse
@@ -48,7 +49,8 @@ namespace Spectrum.Framework.Screens
             Height = ElementSize.WrapFill;
         }
         protected virtual Context Context() => Framework.Context.Create(Batch).Inject(Manager.Physics)
-            .Inject(Manager.Physics.CollisionSystem).Inject(Manager).Inject(this);
+            .Inject(Manager.Physics.CollisionSystem).Inject(Manager).Inject(this)
+            .Inject(Scheduler);
         public override void Layout(Rectangle bounds)
         {
             base.Layout(bounds);
@@ -101,6 +103,7 @@ namespace Spectrum.Framework.Screens
                 using (Context())
                 {
                     Manager.Update(dt);
+                    Scheduler.Update(dt);
                     base.Update(dt);
                 }
             }

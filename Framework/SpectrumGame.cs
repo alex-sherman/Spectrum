@@ -54,6 +54,7 @@ namespace Spectrum.Framework
         public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
         public EntityManager EntityManager { get; set; }
         public MultiplayerService MP { get; set; }
+        private Scheduler Scheduler = new Scheduler();
         public RootElement Root { get; private set; }
         private Point mousePosition;
         protected uint SteamAppID = 0;
@@ -81,6 +82,8 @@ namespace Spectrum.Framework
             WindowForm.AutoScaleMode = AutoScaleMode.None;
             WinUtil.SetProcessDpiAwareness(WinUtil.ProcessDPIAwareness.Per_Monitor_DPI_Aware);
             IsFixedTimeStep = false;
+            // Creates an ambient Scheduler
+            Context<Scheduler>.Create(Scheduler);
         }
 
         private void LoadSettings(FileStream stream)
@@ -218,7 +221,7 @@ namespace Spectrum.Framework
             }
             if (SpecVR.Running)
                 SpecVR.PollEvents();
-            SpecTime.Update(gameTime.DT());
+            Scheduler.Update(gameTime.DT());
             InputState.Current.Update(gameTime.DT());
             Root.Update(gameTime.DT(), InputState.Current);
             base.Update(gameTime);
