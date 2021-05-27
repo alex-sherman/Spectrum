@@ -75,17 +75,15 @@ namespace Spectrum.Framework.Graphics
         public PrimitiveType primType = PrimitiveType.TriangleList;
         List<ICommonTex> vertices = null;
         List<uint> indices = null;
-        public JBBox Bounds
+        private void computeBounds()
         {
-            get
-            {
-                JBBox output = JBBox.SmallBox;
-                var selectedVerts = indices == null ? vertices : indices.Select(i => vertices[(int)i % vertices.Count]);
-                foreach (var vert in selectedVerts)
-                    output.AddPoint(Transform * vert.Position);
-                return output;
-            }
+            bounds = JBBox.SmallBox;
+            var selectedVerts = indices == null ? vertices : indices.Select(i => vertices[(int)i % vertices.Count]);
+            foreach (var vert in selectedVerts)
+                bounds.AddPoint(Transform * vert.Position);
         }
+        private JBBox bounds;
+        public JBBox Bounds => bounds;
         public static DrawablePart From<T>(List<T> vertices) where T : struct, ICommonTex
         {
             DrawablePart part = new DrawablePart
@@ -95,6 +93,7 @@ namespace Spectrum.Framework.Graphics
                 primType = PrimitiveType.TriangleStrip,
                 vertices = vertices.Cast<ICommonTex>().ToList(),
             };
+            part.computeBounds();
             return part;
         }
         public static DrawablePart From<T>(List<T> vertices, List<uint> indices) where T : struct, ICommonTex
@@ -107,6 +106,7 @@ namespace Spectrum.Framework.Graphics
                 vertices = vertices.Cast<ICommonTex>().ToList(),
                 indices = indices,
             };
+            part.computeBounds();
             return part;
         }
         public static DrawablePart From<T>(List<T> vertices, List<ushort> indices) where T : struct, ICommonTex
@@ -119,19 +119,22 @@ namespace Spectrum.Framework.Graphics
                 vertices = vertices.Cast<ICommonTex>().ToList(),
                 indices = indices.Select<ushort, uint>(i => i).ToList(),
             };
+            part.computeBounds();
             return part;
         }
         // TODO: some of these fields should be readonly, since creating a reference and modifying them will break batching
         public DrawablePart CreateReference()
         {
-            return new DrawablePart(VBuffer, IBuffer)
+            return new DrawablePart(ReferenceID)
             {
-                ReferenceID = ReferenceID,
+                VBuffer = VBuffer,
+                IBuffer = IBuffer,
                 effect = effect,
                 primType = primType,
                 material = material,
                 vertices = vertices,
                 indices = indices,
+                bounds = bounds,
             };
         }
         public DrawablePart(VertexBuffer vBuffer, IndexBuffer iBuffer)
@@ -140,6 +143,7 @@ namespace Spectrum.Framework.Graphics
             VBuffer = vBuffer;
             IBuffer = iBuffer;
         }
+        private DrawablePart(int referenceId) { ReferenceID = referenceId; }
         public DrawablePart() { ReferenceID = LastReferenceID++; }
     }
 }
