@@ -10,9 +10,12 @@ namespace Spectrum.Framework.Entities
 {
     public class EntityCollection
     {
-        public Dictionary<Guid, Entity> Map = new Dictionary<Guid, Entity>();
+        public readonly Dictionary<Guid, Entity> Map = new Dictionary<Guid, Entity>();
+        public readonly Dictionary<Guid, Entity> Compacted = new Dictionary<Guid, Entity>();
         private List<Entity> updatedSorted = new List<Entity>();
         private List<Entity> drawSorted = new List<Entity>();
+        public event Action<Entity> OnEntityAdded;
+        public event Action<Entity> OnEntityRemoved;
         public IEnumerable<Entity> UpdateSorted { get { lock (this) { return updatedSorted.Where(e => !e.Destroying); } } }
         public IEnumerable<Entity> DrawSorted { get { lock (this) { return drawSorted.Where(e => !e.Destroying); } } }
         public IEnumerable<Entity> Destroying { get { lock (this) { return Map.Values.Where(e => e.Destroying); } } }
@@ -25,26 +28,37 @@ namespace Spectrum.Framework.Entities
                 if (Map.ContainsKey(entity.ID))
                     throw new InvalidOperationException("An Entity with that ID has already been added to the collection");
                 Map[entity.ID] = entity;
-                int i;
-                for (i = 0; i < updatedSorted.Count - 1 && updatedSorted[i].UpdateOrder < entity.UpdateOrder; i++) { }
-                updatedSorted.Insert(i, entity);
-                drawSorted.Insert(drawSorted.Count(check => check.DrawOrder < entity.DrawOrder), entity);
+                int updateIndex = updatedSorted.TakeWhile(e => e.UpdateOrder < entity.UpdateOrder).Count();
+                updatedSorted.Insert(updateIndex, entity);
+                int drawIndex = drawSorted.TakeWhile(e => e.DrawOrder < entity.DrawOrder).Count();
+                drawSorted.Insert(drawIndex, entity);
+                OnEntityAdded?.Invoke(entity);
             }
+        }
+        public void Compact(Entity entity)
+        {
+            Remove(entity.ID);
+            Compacted[entity.ID] = entity;
         }
         public Entity Remove(Guid entityID)
         {
             lock (this)
             {
-                if (Map.ContainsKey(entityID))
+                Entity entity = null;
+                if (Compacted.ContainsKey(entityID))
                 {
-                    Entity entity = Map[entityID];
+                    entity = Compacted[entityID];
+                }
+                else if (Map.ContainsKey(entityID))
+                {
+                    entity = Map[entityID];
                     Map.Remove(entityID);
                     updatedSorted.Remove(entity);
                     drawSorted.Remove(entity);
-                    entity.Destroy();
-                    return entity;
+                    OnEntityRemoved?.Invoke(entity);
                 }
-                return null;
+                entity?.Destroy();
+                return entity;
             }
         }
     }

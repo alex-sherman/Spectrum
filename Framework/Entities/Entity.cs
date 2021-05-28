@@ -80,6 +80,7 @@ namespace Spectrum.Framework.Entities
         public int DrawOrder { get; protected set; }
         public bool Enabled { get; set; }
         public virtual bool DrawEnabled { get; set; }
+        public bool Compacted { get; set; }
         [ReplicateIgnore]
         public bool Destroying { get; private set; }
         public event Action OnDestroy;
@@ -109,6 +110,7 @@ namespace Spectrum.Framework.Entities
         [ReplicateRPC]
         public virtual void Destroy()
         {
+            if (Destroying) return;
             RPC("Destroy");
             Enabled = false;
             Destroying = true;

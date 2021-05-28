@@ -20,22 +20,16 @@ namespace Spectrum.Framework.Entities
     public class EntityManager
     {
         public static EntityManager Current => Context<EntityManager>.Current;
-        public event Action<Entity> OnEntityAdded;
-        public event Action<Entity> OnEntityRemoved;
         private DefaultDict<string, HashSet<Entity>> initDataLookup = new DefaultDict<string, HashSet<Entity>>(() => new HashSet<Entity>(), true);
         private float tickTenthTimer = 100;
         private float tickOneTimer = 1000;
-        public EntityCollection Entities;
-        public readonly PhysicsEngine Physics;
+        public EntityCollection Entities = new EntityCollection();
+        public readonly PhysicsEngine Physics = new PhysicsEngine(new CollisionSystemPersistentSAP());
         public bool Paused = false;
-        private float deferredBudget = 0.001f;
-        private List<Action> deferredActions = new List<Action>();
         public EntityManager()
         {
-            Entities = new EntityCollection();
-            Physics = new PhysicsEngine(new CollisionSystemPersistentSAP());
-            OnEntityAdded += (entity) => { if (entity is GameObject go) Physics.AddBody(go); };
-            OnEntityRemoved += (entity) =>
+            Entities.OnEntityAdded += (entity) => { if (entity is GameObject go) Physics.AddBody(go); };
+            Entities.OnEntityRemoved += (entity) =>
             {
                 if (entity is GameObject go)
                     Physics.RemoveBody(go);
@@ -254,9 +248,11 @@ namespace Spectrum.Framework.Entities
         public Entity AddEntity(Entity entity)
         {
             entity.Manager = this;
-            Entities.Add(entity);
             entity.Initialize();
-            OnEntityAdded?.Invoke(entity);
+            if (entity.Compacted)
+                Entities.Compact(entity);
+            else
+                Entities.Add(entity);
             if (entity.InitData?.Name != null)
                 initDataLookup[entity.InitData.Name].Add(entity);
             return entity;
@@ -265,7 +261,6 @@ namespace Spectrum.Framework.Entities
         {
             Entity removed = Entities.Remove(ID);
             if (removed == null) return null;
-            OnEntityRemoved?.Invoke(removed);
             if (removed.InitData?.Name != null)
                 initDataLookup[removed.InitData.Name].Remove(removed);
             return removed;
