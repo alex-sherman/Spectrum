@@ -456,9 +456,9 @@ namespace Spectrum.Framework
                 M31 = right.Z,
                 M32 = up.Z,
                 M33 = backward.Z,
-                M41 = -Vector3.Dot(right, cameraPosition),
-                M42 = -Vector3.Dot(up, cameraPosition),
-                M43 = -Vector3.Dot(backward, cameraPosition),
+                M41 = -right.Dot(cameraPosition),
+                M42 = -up.Dot(cameraPosition),
+                M43 = -backward.Dot(cameraPosition),
                 M44 = 1f
             };
         }

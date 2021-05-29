@@ -9,8 +9,6 @@ namespace Spectrum.Framework.Screens.InputElements
 {
     public class TextElement : Element
     {
-        private int measuredWidth;
-        private int measuredHeight;
         private int contentWidth;
         private int contentHeight;
         private bool _dirty = false;

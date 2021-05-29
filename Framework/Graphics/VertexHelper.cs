@@ -20,9 +20,9 @@ namespace Spectrum.Framework.Graphics
         {
             for (int i = 0; i < indices.Count; i += 3)
             {
-                T v0 = vertices[(int)indices[i]];
-                T v1 = vertices[(int)indices[i + 1]];
-                T v2 = vertices[(int)indices[i + 2]];
+                T v0 = vertices[indices[i]];
+                T v1 = vertices[indices[i + 1]];
+                T v2 = vertices[indices[i + 2]];
 
                 // Edges of the triangle : postion delta
                 Vector3 deltaPos1 = v1.Position - v0.Position;
@@ -32,14 +32,13 @@ namespace Spectrum.Framework.Graphics
                 Vector2 deltaUV1 = v1.TextureCoordinate - v0.TextureCoordinate;
                 Vector2 deltaUV2 = v2.TextureCoordinate - v0.TextureCoordinate;
                 float r = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X);
-                Vector3 tangent = (deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r;
-                tangent.Normalize();
+                Vector3 tangent = ((deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r).Normal();
                 v0.Tangent = tangent;
                 v1.Tangent = tangent;
                 v2.Tangent = tangent;
-                vertices[(int)indices[i]] = v0;
-                vertices[(int)indices[i + 1]] = v1;
-                vertices[(int)indices[i + 2]] = v2;
+                vertices[indices[i]] = v0;
+                vertices[indices[i + 1]] = v1;
+                vertices[indices[i + 2]] = v2;
             }
         }
         public static DynamicVertexBuffer MakeInstanceBuffer(Matrix[] worlds)
@@ -154,8 +153,7 @@ namespace Spectrum.Framework.Graphics
                 deriv = height - heights[x, y + 1];
             }
             normal.Z = deriv;
-            normal.Normalize();
-            return normal;
+            return normal.Normal();
         }
     }
 }

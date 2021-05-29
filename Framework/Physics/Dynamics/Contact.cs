@@ -96,19 +96,12 @@ namespace Spectrum.Framework.Physics.Dynamics
         internal float initialPen = 0.0f;
 
         private float staticFriction, dynamicFriction;
-        private float friction = 0.0f;
 
         private float massNormal = 0.0f, massTangent = 0.0f;
-        private float restitutionBias = 0.0f;
-
-        private bool newContact = false;
 
         private bool treatBody1AsStatic = false;
         private bool treatBody2AsStatic = false;
         private bool noCollide = false;
-
-        float lostSpeculativeBounce = 0.0f;
-        float speculativeVelocity = 0.0f;
 
         /// <summary>
         /// A contact resource pool.
@@ -116,22 +109,8 @@ namespace Spectrum.Framework.Physics.Dynamics
         public static readonly ResourcePool<Contact> Pool =
             new ResourcePool<Contact>();
 
-        private float lastTimeStep = float.PositiveInfinity;
-
         #region Properties
         public float Restitution { get; set; }
-
-        public float StaticFriction
-        {
-            get { return staticFriction; }
-            set { staticFriction = value; }
-        }
-
-        public float DynamicFriction
-        {
-            get { return dynamicFriction; }
-            set { dynamicFriction = value; }
-        }
 
         /// <summary>
         /// The first body involved in the contact.
@@ -190,6 +169,7 @@ namespace Spectrum.Framework.Physics.Dynamics
             accumulatedNormalImpulse += -(1 + Restitution) * massNormal * dvNormalScalar;
             accumulatedNormalImpulse = Math.Max(0, accumulatedNormalImpulse);
             // TODO: Tangent force should be a function of the normal force or something and not just fixed
+            // TODO: Also should be a function of tangent mass?
             lastJ = normal * accumulatedNormalImpulse + accumulatedTangentImpulse * tangent;
             ApplyImpulse(lastJ);
             if (Penetration > settings.allowedPenetration)
@@ -300,12 +280,8 @@ namespace Spectrum.Framework.Physics.Dynamics
             this.noCollide = noCollide;
             this.system = system;
             this.body1 = body1; this.body2 = body2;
-            this.normal = n; normal.Normalize();
+            this.normal = n.Normal();
             this.p1 = point + penetration * normal / 2; this.p2 = point - penetration * normal / 2;
-            //this.p1 = point1;
-            //this.p2 = point2;
-
-            this.newContact = newContact;
 
             relativePos1 = p1 - body1.position;
             relativePos2 = p2 - body2.position;
@@ -324,8 +300,6 @@ namespace Spectrum.Framework.Physics.Dynamics
 
                 accumulatedNormalImpulse = 0.0f;
                 accumulatedTangentImpulse = 0.0f;
-
-                lostSpeculativeBounce = 0.0f;
 
                 switch (settings.MaterialCoefficientMixing)
                 {

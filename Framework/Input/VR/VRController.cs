@@ -102,19 +102,21 @@ namespace Spectrum.Framework.Input
         private bool CheckFlag(bool touched, VRButton check)
         {
             var flags = touched ? TouchedButtons : PressedButtons;
+            Vector2 checkDir;
             switch (check)
             {
                 case VRButton.DPad_Up:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitY) > Math.Cos(Math.PI / 4);
+                    checkDir = Vector2.UnitY; break;
                 case VRButton.DPad_Down:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitY) > Math.Cos(Math.PI / 4);
+                    checkDir = -Vector2.UnitY; break;
                 case VRButton.DPad_Left:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, -Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                    checkDir = -Vector2.UnitX; break;
                 case VRButton.DPad_Right:
-                    return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Vector2.Dot(Axis0Direction, Vector2.UnitX) > Math.Cos(Math.PI / 4);
+                    checkDir = Vector2.UnitX; break;
                 default:
                     return CheckFlagRaw(flags, check);
             }
+            return CheckFlag(touched, VRButton.SteamVR_Touchpad) && Axis0Direction.Dot(checkDir) > Math.Cos(Math.PI / 4);
         }
         private bool CheckFlagRaw(ulong flags, VRButton check) => (flags & ((1ul) << (int)check)) != 0;
         private void SetFlagRaw(ref ulong flags, VRButton check, bool value)

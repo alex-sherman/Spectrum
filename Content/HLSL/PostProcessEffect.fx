@@ -63,7 +63,7 @@ float getDepth(float2 coord)
 float3 Blur(float3 color, float2 texCoord, float blurFactor, float centerWeight = -1)
 {
 	float3 output = (float3) 0;
-	if (blurFactor == 0)
+	if (blurFactor == 0 || blurSigma == 0)
 	{
 		return color;
 	}

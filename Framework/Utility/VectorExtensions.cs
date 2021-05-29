@@ -19,15 +19,15 @@ namespace Spectrum.Framework
         }
         public static bool IsInSameDirection(this Vector3 vector, Vector3 otherVector)
         {
-            return Vector3.Dot(vector, otherVector) > 0;
+            return vector.Dot(otherVector) > 0;
         }
         public static bool IsInOppositeDirection(this Vector3 vector, Vector3 otherVector)
         {
-            return Vector3.Dot(vector, otherVector) < 0;
+            return vector.Dot(otherVector) < 0;
         }
         public static Vector3 Project(this Vector3 source, Vector3 normal)
         {
-            return Vector3.Dot(source, normal) * normal;
+            return source.Dot(normal) * normal;
         }
         public static Vector3 ProjectUnto(this Vector3 source, Vector3 planeNormal)
         {

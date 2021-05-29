@@ -85,11 +85,11 @@ namespace Spectrum.Framework.Physics.Collision
         static void Barycentric(Vector3 p, Vector3 a, Vector3 b, Vector3 c, out float u, out float v, out float w)
         {
             Vector3 v0 = b - a, v1 = c - a, v2 = p - a;
-            float d00 = Vector3.Dot(v0, v0);
-            float d01 = Vector3.Dot(v0, v1);
-            float d11 = Vector3.Dot(v1, v1);
-            float d20 = Vector3.Dot(v2, v0);
-            float d21 = Vector3.Dot(v2, v1);
+            float d00 = v0.Dot(v0);
+            float d01 = v0.Dot(v1);
+            float d11 = v1.Dot(v1);
+            float d20 = v2.Dot(v0);
+            float d21 = v2.Dot(v1);
             float denom = d00 * d11 - d01 * d01;
             v = (d11 * d20 - d01 * d21) / denom;
             w = (d00 * d21 - d01 * d20) / denom;
@@ -145,7 +145,7 @@ namespace Spectrum.Framework.Physics.Collision
                 s1 = g1.Position;
                 s2 = g2.Position;
                 Vector3 s = s2 - s1;
-                penetration = Vector3.Dot(normal, s);
+                penetration = normal.Dot(s);
                 if (penetration - faces[0].Distance < 0.001)
                     break;
                 SimplexInsert(faces, vertices, new EPAVertex(s, s1, s2));
@@ -158,7 +158,7 @@ namespace Spectrum.Framework.Physics.Collision
         }
         private static void SimplexInsert(List<EPAFace> faces, List<EPAVertex> vertices, EPAVertex newVertex)
         {
-            var visibleFaces = faces.Where(face => Vector3.Dot(newVertex.Position, face.Normal) > face.Distance).ToList();
+            var visibleFaces = faces.Where(face => newVertex.Position.Dot(face.Normal) > face.Distance).ToList();
 
             //Remove all the faces, and keep track of the vertices we've affected
             //since they're on the, now open, edge we'll add the new faces on

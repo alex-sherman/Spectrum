@@ -225,8 +225,7 @@ namespace Spectrum.Framework.Entities
         }
         public virtual IEnumerable<RenderCallKey> GetFixedRenderCalls()
         {
-            return Model?.MeshParts.Values.Select(part => Batch3D.Current.RegisterDraw(part, World, Material, options: DrawOptions)
-               /*, disableInstancing: DisableInstancing);*/);
+            return Model?.MeshParts.Values.Select(part => Batch3D.Current.RegisterDraw(part, World, Material, options: DrawOptions));
         }
         public override void Reload()
         {

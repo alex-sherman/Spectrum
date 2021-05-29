@@ -184,22 +184,19 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
                     tri2.n2 = tri.n2;
                     tri3.n3 = tri.n3;
 
-                    Vector3 n = 0.5f * (tri.n1 + tri.n2);
-                    n.Normalize();
+                    Vector3 n = (tri.n1 + tri.n2).Normal();
 
                     tri1.n2 = n;
                     tri2.n1 = n;
                     tri4.n3 = n;
 
-                    n = 0.5f * (tri.n2 + tri.n3);
-                    n.Normalize();
+                    n = (tri.n2 + tri.n3).Normal();
 
                     tri2.n3 = n;
                     tri3.n2 = n;
                     tri4.n1 = n;
 
-                    n = 0.5f * (tri.n3 + tri.n1);
-                    n.Normalize();
+                    n = (tri.n3 + tri.n1).Normal();
 
                     tri1.n3 = n;
                     tri3.n1 = n;

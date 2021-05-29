@@ -250,14 +250,14 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
             Vector3 expandVector = direction.Normal() * sphericalExpansion;
 
             int minIndex = 0;
-            float min = Vector3.Dot(points[0], direction);
-            float dot = Vector3.Dot(points[1], direction);
+            float min = points[0].Dot(direction);
+            float dot = points[1].Dot(direction);
             if (dot > min)
             {
                 min = dot;
                 minIndex = 1;
             }
-            dot = Vector3.Dot(points[2], direction);
+            dot = points[2].Dot(direction);
             if (dot > min)
             {
                 min = dot;
@@ -267,16 +267,14 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
             if(retrievingInformation)
             {
-                Vector3 sectionNormal = (points[0] - points[1]).Cross(points[0] - points[2]);
-                sectionNormal.Normalize();
-                dot = Vector3.Dot(direction, sectionNormal);
+                Vector3 sectionNormal = (points[0] - points[1]).Cross(points[0] - points[2]).Normal();
+                dot = direction.Dot(sectionNormal);
                 //This is necessary to avoid floating point rounding errors when the direction
                 //and normal are in almost identical directions
                 if (Math.Abs(dot) < (0.9f))
                 {
                     Vector3 normalD = sectionNormal * dot;
-                    Vector3 planarExpansionDirection = direction - normalD;
-                    planarExpansionDirection.Normalize();
+                    Vector3 planarExpansionDirection = (direction - normalD).Normal();
                     planarExpansionDirection *= scaleXZ * planarExpansion;
                     result += planarExpansionDirection;
                 }

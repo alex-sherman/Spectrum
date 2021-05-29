@@ -64,6 +64,7 @@ float4 CommonVS(CommonVSInput vin, float4x4 world, out CommonVSOut vsout)
     vsout.position = mul(mul(HworldPosition, view), proj);
     vsout.depth = length(vsout.worldPosition - cameraPosition);
     vsout.fog = clamp(1 - (fogDistance - fogWidth - vsout.depth) / fogWidth, 0, 1);
+    // TODO: This isn't right
     vsout.clipDistance = dot(vsout.worldPosition, ClipPlane);
     vsout.Pos2DAsSeenByLight = mul(HworldPosition, ShadowViewProjection);
     vsout.textureCoordinate = vin.TextureCoordinate + DiffuseTextureOffset;

@@ -80,7 +80,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
 
             for (int i = 0; i < vertices.Count; i++)
             {
-                dotProduct = Vector3.Dot(vertices[i], direction);
+                dotProduct = vertices[i].Dot(direction);
                 if (dotProduct > maxDotProduct)
                 {
                     maxDotProduct = dotProduct;

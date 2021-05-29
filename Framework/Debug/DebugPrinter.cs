@@ -108,16 +108,9 @@ namespace Spectrum.Framework
                 }
             }
         }
-        [Obsolete("Use Print(string) instead")]
-        public static void print(string msg, params object[] args)
-        {
-            if (args.Length > 0)
-                msg = String.Format(msg, args);
-            Print(msg);
-        }
         string fform(double d)
         {
-            return String.Format("{0:0.00}", d);
+            return $"{d:0.00}";
         }
         private float averageFPS = 0;
         private void DrawTimes(int startLine, SpriteBatch spritebatch, float dt, float layer)

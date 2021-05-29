@@ -59,7 +59,7 @@ namespace Spectrum.Framework.Physics.Collision
             result.Position += position;
             result.ExtrudedPosition = orientation * result.Position;
             result.ExtrudedPosition += position;
-            if (Vector3.Dot(velocity, direction) > 0)
+            if (velocity.Dot(direction) > 0)
             {
                 result.ExtrudedPosition += velocity * Timestep;
             }
@@ -131,7 +131,8 @@ namespace Spectrum.Framework.Physics.Collision
             simplexSolver.ComputePoints(out p1, out p2);
 
             if (normal.LengthSquared > JMath.Epsilon * JMath.Epsilon)
-                normal.Normalize();
+                normal = normal.Normal();
+            else normal = Vector3.Zero;
 
             simplexSolverPool.GiveBack(simplexSolver);
 
@@ -185,7 +186,7 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 //Get our next simplex point toward the origin.
                 if (direction.LengthSquared > 0)
-                    direction.Normalize();
+                    direction = direction.Normal();
                 negativeDirection = -direction;
                 SupportMapTransformed(support1, ref orientation1, ref position1, ref velocity1, ref negativeDirection, out g1);
                 SupportMapTransformed(support2, ref orientation2, ref position2, ref velocity2, ref direction, out g2);
@@ -347,11 +348,11 @@ namespace Spectrum.Framework.Physics.Collision
                 p = result.Position;
                 w = x - p;
 
-                float VdotW = Vector3.Dot(v, w);
+                float VdotW = v.Dot(w);
 
                 if (VdotW > 0.0f)
                 {
-                    VdotR = Vector3.Dot(v, r);
+                    VdotR = v.Dot(r);
 
                     if (VdotR >= -JMath.Epsilon)
                     {
@@ -407,11 +408,11 @@ namespace Spectrum.Framework.Physics.Collision
                 if (simplexSolver.NumVertices == 3)
                 {
                     normal = (simplexSolver.PointsW[1] - simplexSolver.PointsW[0]).Cross(simplexSolver.PointsW[2] - simplexSolver.PointsW[0]);
-                    if (Vector3.Dot(normal, direction) > 0)
+                    if (normal.Dot(direction) > 0)
                         normal *= -1;
                 }
             }
-            normal.Normalize();
+            normal = normal.Normal();
 
             simplexSolverPool.GiveBack(simplexSolver);
 
@@ -678,7 +679,7 @@ namespace Spectrum.Framework.Physics.Collision
 
                             Vector3 diff = from * (-1);
                             Vector3 v = to - from;
-                            float t = Vector3.Dot(v, diff);
+                            float t = v.Dot(diff);
 
                             if (t > 0)
                             {
@@ -795,8 +796,8 @@ namespace Spectrum.Framework.Physics.Collision
                 Vector3 ab = b - a;
                 Vector3 ac = c - a;
                 Vector3 ap = p - a;
-                float d1 = Vector3.Dot(ab, ap);
-                float d2 = Vector3.Dot(ac, ap);
+                float d1 = ab.Dot(ap);
+                float d2 = ac.Dot(ap);
                 if (d1 <= 0f && d2 <= 0f)
                 {
                     result.ClosestPointOnSimplex = a;
@@ -807,8 +808,8 @@ namespace Spectrum.Framework.Physics.Collision
 
                 // Check if P in vertex region outside B
                 Vector3 bp = p - b;
-                float d3 = Vector3.Dot(ab, bp);
-                float d4 = Vector3.Dot(ac, bp);
+                float d3 = ab.Dot(bp);
+                float d4 = ac.Dot(bp);
                 if (d3 >= 0f && d4 <= d3)
                 {
                     result.ClosestPointOnSimplex = b;
@@ -832,8 +833,8 @@ namespace Spectrum.Framework.Physics.Collision
 
                 // Check if P in vertex region outside C
                 Vector3 cp = p - c;
-                float d5 = Vector3.Dot(ab, cp);
-                float d6 = Vector3.Dot(ac, cp);
+                float d5 = ab.Dot(cp);
+                float d6 = ac.Dot(cp);
                 if (d6 >= 0f && d5 <= d6)
                 {
                     result.ClosestPointOnSimplex = c;
@@ -888,8 +889,8 @@ namespace Spectrum.Framework.Physics.Collision
             {
                 Vector3 normal = (b - a).Cross(c - a);
 
-                float signp = Vector3.Dot(p - a, normal); // [AP AB AC]
-                float signd = Vector3.Dot(d - a, normal); // [AD AB AC]
+                float signp = (p - a).Dot(normal); // [AP AB AC]
+                float signd = (d - a).Dot(normal); // [AD AB AC]
 
                 // Points on opposite sides if expression signs are opposite
                 return signp * signd < 0f;
