@@ -37,10 +37,15 @@ namespace Spectrum.Framework
                 draw?.Invoke(dt);
             }
         }
-        public static HashSet<string> onceMessages = new HashSet<string>();
-        public static Dictionary<string, string> showMessages = new Dictionary<string, string>();
-        private static List<string> strings = new List<string>();
-        private static List<IDebug> objects = new List<IDebug>();
+        private struct ShowMessage
+        {
+            public string Messsage;
+            public double Time;
+        }
+        static HashSet<string> onceMessages = new HashSet<string>();
+        static Dictionary<string, ShowMessage> showMessages = new Dictionary<string, ShowMessage>();
+        static List<string> strings = new List<string>();
+        static List<IDebug> objects = new List<IDebug>();
         public static IDebug display(Func<string> text = null, Action<float> draw = null)
         {
             IDebug output = new DebugHolder(text, draw);
@@ -72,7 +77,7 @@ namespace Spectrum.Framework
         }
         public static void Show(string msg)
         {
-            showMessages[GetStackString()] = msg;
+            showMessages[GetStackString()] = new ShowMessage() { Messsage = msg, Time = DebugTiming.Now() };
         }
         private static StackFrame GetStackFrame()
         {
@@ -160,7 +165,7 @@ namespace Spectrum.Framework
                 foreach (var kvp in showMessages)
                 {
                     offset.Y += strSize;
-                    spritebatch.DrawString(Font, $"{kvp.Key}: {kvp.Value}", offset, Color.Black, LayerDepth);
+                    spritebatch.DrawString(Font, $"{kvp.Key}: {kvp.Value.Messsage}", offset, Color.Black, LayerDepth);
                 }
                 float curPos = 0;
                 for (int i = 0; i < objects.Count; i++)
@@ -171,7 +176,8 @@ namespace Spectrum.Framework
                 }
                 DrawTimes(2, spritebatch, gameTime, LayerDepth);
             }
-            showMessages.Clear();
+            var now = DebugTiming.Now();
+            showMessages = showMessages.Where(kvp => kvp.Value.Time > now - 5).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
         }
     }
 }

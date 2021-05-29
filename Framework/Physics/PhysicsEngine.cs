@@ -353,8 +353,7 @@ namespace Spectrum.Framework.Physics
             if (body == null) throw new ArgumentNullException("body", "body can't be null.");
             if (Collidables.Contains(body)) throw new ArgumentException("The body was already added to the world.", "body");
 
-            this.CollisionSystem.AddEntity(body);
-
+            CollisionSystem.AddEntity(body);
             Collidables.Add(body);
         }
 

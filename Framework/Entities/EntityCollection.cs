@@ -37,8 +37,29 @@ namespace Spectrum.Framework.Entities
         }
         public void Compact(Entity entity)
         {
-            Remove(entity.ID);
-            Compacted[entity.ID] = entity;
+            lock (this)
+            {
+                if (Map.ContainsKey(entity.ID))
+                    RemoveFromMap(entity.ID);
+                Compacted[entity.ID] = entity;
+            }
+        }
+        public void Uncompact(Entity entity)
+        {
+            lock (this)
+            {
+                Compacted.Remove(entity.ID);
+                Add(entity);
+            }
+        }
+        private Entity RemoveFromMap(Guid entityID)
+        {
+            var entity = Map[entityID];
+            Map.Remove(entityID);
+            updatedSorted.Remove(entity);
+            drawSorted.Remove(entity);
+            OnEntityRemoved?.Invoke(entity);
+            return entity;
         }
         public Entity Remove(Guid entityID)
         {
@@ -48,16 +69,10 @@ namespace Spectrum.Framework.Entities
                 if (Compacted.ContainsKey(entityID))
                 {
                     entity = Compacted[entityID];
+                    Compacted.Remove(entityID);
                 }
                 else if (Map.ContainsKey(entityID))
-                {
-                    entity = Map[entityID];
-                    Map.Remove(entityID);
-                    updatedSorted.Remove(entity);
-                    drawSorted.Remove(entity);
-                    OnEntityRemoved?.Invoke(entity);
-                }
-                entity?.Destroy();
+                    entity = RemoveFromMap(entityID);
                 return entity;
             }
         }
