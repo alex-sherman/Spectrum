@@ -12,18 +12,20 @@ namespace Spectrum.Framework.Network
 {
     public class MultiplayerReceiver
     {
-        private NetworkStream netStream;
-        private TcpClient client;
-        private Connection conn;
+        private NetworkStream NetStream;
+        private TcpClient Client;
+        private Connection Connection;
         public bool Running { get; private set; }
         public MultiplayerReceiver(Connection conn)
         {
-            this.conn = conn;
-            this.client = conn.client;
-            this.netStream = client.GetStream();
+            Connection = conn;
+            Client = conn.Client;
+            NetStream = Client.GetStream();
             //new AsyncListenData(ListenForControlData).BeginInvoke(null, this);
-            Thread receiverThread = new Thread(new ThreadStart(ListenForControlData));
-            receiverThread.IsBackground = true;
+            Thread receiverThread = new Thread(new ThreadStart(ListenForControlData))
+            {
+                IsBackground = true
+            };
             Running = true;
             receiverThread.Start();
         }
@@ -32,20 +34,20 @@ namespace Spectrum.Framework.Network
             try
             {
                 DateTime lastHeard = DateTime.Now;
-                netStream.ReadTimeout = 10000;
+                NetStream.ReadTimeout = 10000;
                 byte[] guidBuffer = new byte[16];
-                while (Running && client.Connected)
+                while (Running && Client.Connected)
                 {
-                    byte comType = (byte)netStream.ReadByte();
-                    NetMessage header = new NetMessage(netStream);
-                    conn.PeerID = header.Read<NetID>();
-                    NetMessage message = ReadFromControlStream(netStream);
+                    byte comType = (byte)NetStream.ReadByte();
+                    NetMessage header = new NetMessage(NetStream);
+                    Connection.PeerID = header.Read<NetID>();
+                    NetMessage message = ReadFromControlStream(NetStream);
                     switch (comType)
                     {
                         case 255:
                             throw new InvalidDataException("Bad data from host");
                         default:
-                            conn.MPService.ReceiveMessage(comType, conn.PeerID, message);
+                            Connection.MPService.ReceiveMessage(comType, Connection.PeerID, message);
                             break;
                     }
                     lastHeard = DateTime.Now;
@@ -66,7 +68,7 @@ namespace Spectrum.Framework.Network
             byte testBytes = (byte)netStream.ReadByte();
             if (testBytes != 255)
             {
-                this.conn.Terminate();
+                this.Connection.Terminate();
             }
             return messageOut;
         }

@@ -349,7 +349,7 @@ namespace Spectrum.Framework.Network
                 {
                     foreach (Connection conn in connectedPeers.Values)
                     {
-                        IPEndPoint endpoint = (IPEndPoint)conn.client.Client.RemoteEndPoint;
+                        IPEndPoint endpoint = (IPEndPoint)conn.Client.Client.RemoteEndPoint;
                         endpoint.Port = conn.RemoteDataPort;
                         udpSender.SendMessage(endpoint, userType, message);
                     }
@@ -359,7 +359,7 @@ namespace Spectrum.Framework.Network
                     Connection conn = connectedPeers[peerDestination];
                     if (conn != null)
                     {
-                        IPEndPoint endpoint = (IPEndPoint)conn.client.Client.RemoteEndPoint;
+                        IPEndPoint endpoint = (IPEndPoint)conn.Client.Client.RemoteEndPoint;
                         endpoint.Port = conn.RemoteDataPort;
                         udpSender.SendMessage(endpoint, userType, message);
                     }

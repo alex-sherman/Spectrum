@@ -47,7 +47,7 @@ namespace Spectrum.Framework.Network
         {
             get { return !TimedOut && _running; }
         }
-        public TcpClient client;
+        public TcpClient Client;
         public MultiplayerService MPService;
         private MultiplayerSender Sender;
         private MultiplayerReceiver Receiver;
@@ -87,7 +87,7 @@ namespace Spectrum.Framework.Network
         public Connection(MultiplayerService mp, TcpClient client, HandshakeStage stage, Action<bool> callback = null)
         {
             if (client == null) { throw new ArgumentNullException(); }
-            this.client = client;
+            this.Client = client;
             lock (this)
             {
                 Receiver = new MultiplayerReceiver(this);
@@ -169,8 +169,8 @@ namespace Spectrum.Framework.Network
             PeerID = message.Read<NetID>();
             PeerNick = message.Read<string>();
             RemoteDataPort = message.Read<int>();
-            if (client != null)
-                RemoteIP = (client.Client.RemoteEndPoint as IPEndPoint).Address;
+            if (Client != null)
+                RemoteIP = (Client.Client.RemoteEndPoint as IPEndPoint).Address;
             NetMessage ipMessage = message.Read<NetMessage>();
             if (ipMessage != null)
             {
@@ -298,8 +298,8 @@ namespace Spectrum.Framework.Network
                         Sender.Terminate();
                     }
                 }
-                if (client != null)
-                    client.Close();
+                if (Client != null)
+                    Client.Close();
             }
         }
 

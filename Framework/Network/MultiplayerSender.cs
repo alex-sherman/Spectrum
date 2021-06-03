@@ -28,7 +28,7 @@ namespace Spectrum.Framework.Network
             this.conn = conn;
             timer = new Timer(new TimerCallback(SendKeepAlive), null, 1000, 1000);
             dataQueue = new Queue<QueueItem>();
-            this.client = conn.client;
+            this.client = conn.Client;
             if (client != null)
                 this.netStream = client.GetStream();
             Running = true;
