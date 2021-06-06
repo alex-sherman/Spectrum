@@ -1,3 +1,6 @@
 [submodule "Dependencies"]
 	path = Dependencies
 	url = https://github.com/alex-sherman/spectrumdependencies
+[submodule "Replicate"]
+	path = Replicate
+	url = https://github.com/alex-sherman/Replicate

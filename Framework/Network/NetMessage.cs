@@ -2,6 +2,8 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using ProtoBuf;
+using Replicate;
+using Replicate.Serialization;
 using Spectrum.Framework.Entities;
 using System;
 using System.Collections;
@@ -22,6 +24,7 @@ namespace Spectrum.Framework.Network
 
     }
     [ProtoContract]
+    [ReplicateType]
     public class NetMessage
     {
         [ProtoMember(1)]
@@ -85,21 +88,19 @@ namespace Spectrum.Framework.Network
 
         public void Write<T>(T obj)
         {
-            Serializer.SerializeWithLengthPrefix<T>(stream, obj, PrefixStyle.Fixed32);
+            Serialization.BinarySerializer.Serialize(obj, stream);
         }
         public void WriteType(object obj)
         {
-            Serializer.NonGeneric.SerializeWithLengthPrefix(stream, obj, PrefixStyle.Fixed32, 0);
+            Serialization.BinarySerializer.Serialize(obj.GetType(), obj, stream);
         }
         public T Read<T>()
         {
-            return Serializer.DeserializeWithLengthPrefix<T>(stream, PrefixStyle.Fixed32);
+            return Serialization.BinarySerializer.Deserialize<T>(stream);
         }
         public object Read(Type type)
         {
-            object output;
-            bool success = Serializer.NonGeneric.TryDeserializeWithLengthPrefix(stream, PrefixStyle.Fixed32, typeNumber => type, out output);
-            return success ? output : null;
+            return Serialization.BinarySerializer.Deserialize(type, stream);
         }
     }
 }

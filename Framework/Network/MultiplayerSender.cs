@@ -106,7 +106,7 @@ namespace Spectrum.Framework.Network
         private void SendKeepAlive(object state)
         {
             if (conn.ConnectionStage != HandshakeStage.Completed) return;
-            List<NetID> peerGuids = conn.MPService.connectedPeers.Keys.ToList();
+            List<NetID> peerGuids = conn.MPService.ConnectedPeers.Keys.ToList();
             NetMessage message = new NetMessage();
             message.Write(peerGuids.Count);
             foreach (NetID guid in peerGuids)

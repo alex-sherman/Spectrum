@@ -56,6 +56,7 @@ namespace Spectrum.Framework.Network
     }
     public class MultiplayerService : IDebug
     {
+        public static MultiplayerService Current => Context<MultiplayerService>.Current;
         public const uint MAX_MSG_SIZE = 70000;
 
         #region Steam Stuff
@@ -80,14 +81,14 @@ namespace Spectrum.Framework.Network
         private Dictionary<byte, List<NetMessageHandler>> userMessageHandlers = new Dictionary<byte, List<NetMessageHandler>>();
         private List<MultiplayerMessage> receivedMessages = new List<MultiplayerMessage>();
         internal List<Connection> allConnections = new List<Connection>();
-        private Dictionary<NetID, Connection> _connectedPeers = new Dictionary<NetID, Connection>();
-        public Dictionary<NetID, Connection> connectedPeers
+        private Dictionary<NetID, Connection> connectedPeers = new Dictionary<NetID, Connection>();
+        public Dictionary<NetID, Connection> ConnectedPeers
         {
             get
             {
                 lock (this)
                 {
-                    return _connectedPeers.ToDictionary(entry => entry.Key,
+                    return connectedPeers.ToDictionary(entry => entry.Key,
                                    entry => entry.Value);
                 }
             }
@@ -119,7 +120,7 @@ namespace Spectrum.Framework.Network
         private List<TcpListener> serverListeners = new List<TcpListener>();
         public ReplyWaiter HandshakeWaiter;
         public bool Listening { get { return serverListeners != null; } }
-        public bool Connected { get { return connectedPeers.Values.Count > 0; } }
+        public bool Connected { get { return ConnectedPeers.Values.Count > 0; } }
         private INatDevice NatDevice = null;
         private IPAddress _natIP = null;
         public bool HasNat { get { return NatDevice != null; } }
@@ -128,7 +129,7 @@ namespace Spectrum.Framework.Network
         public string Nick { get; private set; }
         public string GetPeerNick(NetID peer)
         {
-            return connectedPeers[peer].PeerNick;
+            return ConnectedPeers[peer].PeerNick;
         }
 
         public MultiplayerService(NetID ID, string nick)
@@ -173,27 +174,9 @@ namespace Spectrum.Framework.Network
             ListenPort = ((IPEndPoint)udpClient.Client.LocalEndPoint).Port;
             udpSender = new UDPSender(ID, udpClient);
             udpReceiver = new UDPReceiver(this, udpClient);
-            bool natSuccess = false;
-            if (HasNat)
-            {
-                try
-                {
-                    NatDevice.CreatePortMap(new Mapping(Protocol.Tcp, ListenPort, ListenPort));
-                    NatDevice.CreatePortMap(new Mapping(Protocol.Udp, ListenPort, ListenPort));
-                    natSuccess = true;
-                }
-                catch { }
-            }
-            if (!natSuccess)
-            {
-                DebugPrinter.Print("Could not forward port using UpNP");
-            }
-            foreach (IPAddress ip in GetLocalIP())
-            {
-                TcpListener toAdd = new TcpListener(ip, ListenPort);
-                toAdd.Start();
-                serverListeners.Add(toAdd);
-            }
+            TcpListener toAdd = new TcpListener(new IPAddress(0L), ListenPort);
+            toAdd.Start();
+            serverListeners.Add(toAdd);
             while (true)
             {
                 try
@@ -288,10 +271,7 @@ namespace Spectrum.Framework.Network
         }
         private void HandleTermination(NetID peer, NetMessage message)
         {
-            lock(_connectedPeers)
-            {
-                _connectedPeers.Remove(peer);
-            }
+            RemoveClient(peer);
         }
         private void HandleKeepAlive(NetID peer, NetMessage message)
         {
@@ -305,7 +285,7 @@ namespace Spectrum.Framework.Network
             }
             List<NetID> missingPeers = peerGuids.ToList();
             missingPeers.Remove(ID);
-            foreach (NetID knownPeer in connectedPeers.Keys)
+            foreach (NetID knownPeer in ConnectedPeers.Keys)
             {
                 missingPeers.Remove(knownPeer);
             }
@@ -329,14 +309,14 @@ namespace Spectrum.Framework.Network
             {
                 if (peerDestination == default(NetID))
                 {
-                    foreach (Connection conn in connectedPeers.Values)
+                    foreach (Connection conn in ConnectedPeers.Values)
                     {
                         conn.SendMessage(userType, message);
                     }
                 }
                 else
                 {
-                    Connection conn = connectedPeers[peerDestination];
+                    Connection conn = ConnectedPeers[peerDestination];
                     if (conn != null) { conn.SendMessage(userType, message); }
                 }
             }
@@ -347,7 +327,7 @@ namespace Spectrum.Framework.Network
             {
                 if (peerDestination == default(NetID))
                 {
-                    foreach (Connection conn in connectedPeers.Values)
+                    foreach (Connection conn in ConnectedPeers.Values)
                     {
                         IPEndPoint endpoint = (IPEndPoint)conn.Client.Client.RemoteEndPoint;
                         endpoint.Port = conn.RemoteDataPort;
@@ -356,7 +336,7 @@ namespace Spectrum.Framework.Network
                 }
                 else
                 {
-                    Connection conn = connectedPeers[peerDestination];
+                    Connection conn = ConnectedPeers[peerDestination];
                     if (conn != null)
                     {
                         IPEndPoint endpoint = (IPEndPoint)conn.Client.Client.RemoteEndPoint;
@@ -375,9 +355,7 @@ namespace Spectrum.Framework.Network
             {
                 peer.Update(time);
                 if (!peer.Running)
-                {
-                    RemoveClient(peer);
-                }
+                    RemoveClient(peer.PeerID);
             }
             lock (receivedMessages)
             {
@@ -397,17 +375,18 @@ namespace Spectrum.Framework.Network
                     {
                         foreach (NetMessageHandler handler in handlers)
                         {
+                            received.Message.stream.Position = 0;
 #if !DEBUG
                             try
                             {
-                                handler(received.PeerID, Serialization.Copy(received.Message));
+                                handler(received.PeerID, received.Message);
                             }
                             catch (Exception e)
                             {
-                               DebugPrinter.print("Message handler " + received.MessageType + " failed: " + e.Message);
+                               DebugPrinter.Print("Message handler " + received.MessageType + " failed: " + e.Message);
                             }
 #else
-                                handler(received.PeerID, Serialization.Copy(received.Message));
+                            handler(received.PeerID, received.Message);
 #endif
                         }
                     }
@@ -419,18 +398,21 @@ namespace Spectrum.Framework.Network
             lock (receivedMessages) { receivedMessages.Add(new MultiplayerMessage(messageType, peerGuid, message)); }
         }
 
-        public void RemoveClient(Connection conn)
+        public void RemoveClient(NetID peer)
         {
             lock (this)
             {
-                DebugPrinter.Print("Peer disconnected " + conn.RemoteIP);
-                _connectedPeers.Remove(conn.PeerID);
-                if (OnPeerLeft != null)
-                    OnPeerLeft(new PeerEventArgs(conn.PeerID));
-                lock (allConnections)
-                    allConnections.Remove(conn);
-                conn.Terminate();
-                ReplyWaiter.PeerRemoved(conn.PeerID);
+                if (connectedPeers.TryGetValue(peer, out var conn))
+                {
+                    DebugPrinter.Print("Peer disconnected " + conn.RemoteIP);
+                    connectedPeers.Remove(conn.PeerID);
+                    if (OnPeerLeft != null)
+                        OnPeerLeft(new PeerEventArgs(conn.PeerID));
+                    lock (allConnections)
+                        allConnections.Remove(conn);
+                    conn.Terminate();
+                    ReplyWaiter.PeerRemoved(conn.PeerID);
+                }
             }
         }
         public bool AddClient(Connection conn)
@@ -442,9 +424,9 @@ namespace Spectrum.Framework.Network
                     DebugPrinter.Print("Attempted to add a connection that hasn't handshaken yet");
                     return false;
                 }
-                if (!_connectedPeers.ContainsKey(conn.PeerID))
+                if (!connectedPeers.ContainsKey(conn.PeerID))
                 {
-                    _connectedPeers[conn.PeerID] = conn;
+                    connectedPeers[conn.PeerID] = conn;
                     if (OnPeerJoined != null)
                         OnPeerJoined(new PeerEventArgs(conn.PeerID));
                     return true;
@@ -469,24 +451,16 @@ namespace Spectrum.Framework.Network
                     serverListener.Stop();
                 }
             }
-            foreach (Connection conn in connectedPeers.Values)
+            foreach (Connection conn in ConnectedPeers.Values)
             {
                 conn.Terminate();
-            }
-            if (HasNat && ListenPort != -1)
-            {
-                try
-                {
-                    NatDevice.DeletePortMap(new Mapping(Protocol.Tcp, ListenPort, ListenPort));
-                }
-                catch { }
             }
         }
 
         public string Debug()
         {
             string output = "";
-            foreach (Connection conn in connectedPeers.Values)
+            foreach (Connection conn in ConnectedPeers.Values)
             {
                 output += "" + conn.PeerID + "\n";
             }

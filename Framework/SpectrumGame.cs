@@ -53,11 +53,11 @@ namespace Spectrum.Framework
 
         public Dictionary<string, Plugin> Plugins = new Dictionary<string, Plugin>();
         public EntityManager EntityManager { get; set; }
-        public MultiplayerService MP { get; set; }
         private Scheduler Scheduler = new Scheduler();
         public RootElement Root { get; private set; }
         private Point mousePosition;
         protected uint SteamAppID = 0;
+        public NetID ID { get; protected set; }
         public static readonly bool UsingSteam =
 #if STEAM
             true;
@@ -65,9 +65,8 @@ namespace Spectrum.Framework
             false;
 #endif
 
-        public SpectrumGame(Guid? guid = null, string nick = "Player")
+        public SpectrumGame(Guid? guid = null)
         {
-            NetID ID;
 #if STEAM
             if (!SteamAPI.Init())
                 throw new Exception("Steam init failed!");
@@ -77,7 +76,6 @@ namespace Spectrum.Framework
 #endif
             Game = this;
             Graphics = new GraphicsDeviceManager(this);
-            MP = new MultiplayerService(ID, nick);
             WindowForm = (Form)Form.FromHandle(Window.Handle);
             WindowForm.AutoScaleMode = AutoScaleMode.None;
             WinUtil.SetProcessDpiAwareness(WinUtil.ProcessDPIAwareness.Per_Monitor_DPI_Aware);
@@ -190,7 +188,6 @@ namespace Spectrum.Framework
         {
             AudioManager.Shutdown();
             SaveSettings(File.OpenWrite("save.dat"));
-            MP.Dispose();
             if (UsingSteam)
             {
                 SteamAPI.Shutdown();

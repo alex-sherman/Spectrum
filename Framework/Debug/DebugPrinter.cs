@@ -77,7 +77,8 @@ namespace Spectrum.Framework
         }
         public static void Show(string msg)
         {
-            showMessages[GetStackString()] = new ShowMessage() { Messsage = msg, Time = DebugTiming.Now() };
+            lock (showMessages)
+                showMessages[GetStackString()] = new ShowMessage() { Messsage = msg, Time = DebugTiming.Now() };
         }
         private static StackFrame GetStackFrame()
         {
@@ -162,11 +163,12 @@ namespace Spectrum.Framework
                 }
                 offset = topLeft;
                 offset.Y += strSize * 10;
-                foreach (var kvp in showMessages)
-                {
-                    offset.Y += strSize;
-                    spritebatch.DrawString(Font, $"{kvp.Key}: {kvp.Value.Messsage}", offset, Color.Black, LayerDepth);
-                }
+                lock (showMessages)
+                    foreach (var kvp in showMessages)
+                    {
+                        offset.Y += strSize;
+                        spritebatch.DrawString(Font, $"{kvp.Key}: {kvp.Value.Messsage}", offset, Color.Black, LayerDepth);
+                    }
                 float curPos = 0;
                 for (int i = 0; i < objects.Count; i++)
                 {
@@ -177,7 +179,12 @@ namespace Spectrum.Framework
                 DrawTimes(2, spritebatch, gameTime, LayerDepth);
             }
             var now = DebugTiming.Now();
-            showMessages = showMessages.Where(kvp => kvp.Value.Time > now - 5).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            lock (showMessages)
+            {
+                var toRemove = showMessages.Where(kvp => kvp.Value.Time < now - 5).ToList();
+                foreach (var remove in toRemove)
+                    showMessages.Remove(remove.Key);
+            }
         }
     }
 }

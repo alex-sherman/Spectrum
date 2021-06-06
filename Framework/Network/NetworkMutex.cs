@@ -68,7 +68,7 @@ namespace Spectrum.Framework.Network
             {
                 counter++;
                 if (localRequest != null) { throw new Exception("Tried to request the same network mutex twice"); }
-                localRequest = new QEntry(counter, MPService.ID, MPService.connectedPeers.Keys.ToArray());
+                localRequest = new QEntry(counter, MPService.ID, MPService.ConnectedPeers.Keys.ToArray());
                 SendRequest(name, counter);
             }
             localRequest.replyWaiter.WaitReplies();
@@ -134,7 +134,7 @@ namespace Spectrum.Framework.Network
             NetID id = peerGuid;
             string name = message.Read<string>();
             int time = message.Read<int>();
-            QEntry reply = new QEntry(time, id, MPService.connectedPeers.Keys.ToArray());
+            QEntry reply = new QEntry(time, id, MPService.ConnectedPeers.Keys.ToArray());
             NetworkMutex mut;
             lock (Mutexes)
             {

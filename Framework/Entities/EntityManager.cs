@@ -35,7 +35,7 @@ namespace Spectrum.Framework.Entities
                     Physics.RemoveBody(go);
             };
         }
-        private void RegisterCallbacks()
+        public void RegisterCallbacks()
         {
             HandshakeHandler entitySender = new HandshakeHandler(
                     delegate (NetID peerGuid, NetMessage message)
@@ -67,9 +67,9 @@ namespace Spectrum.Framework.Entities
                 );
             Handshake.RegisterHandshakeHandler(HandshakeStage.PartialResponse, entitySender);
             Handshake.RegisterHandshakeHandler(HandshakeStage.Completed, entitySender);
-            //mpService.RegisterMessageCallback(FrameworkMessages.EntityCreation, (peer, message) => HandleEntityCreation(peer, message));
-            //mpService.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
-            //mpService.RegisterMessageCallback(FrameworkMessages.EntityReplication, HandleEntityReplication);
+            MultiplayerService.Current.RegisterMessageCallback(FrameworkMessages.EntityCreation, (peer, message) => HandleEntityCreation(peer, message));
+            MultiplayerService.Current.RegisterMessageCallback(FrameworkMessages.ShowCreate, HandleShowCreate);
+            MultiplayerService.Current.RegisterMessageCallback(FrameworkMessages.EntityReplication, HandleEntityReplication);
         }
 
         #region Network Functions
@@ -118,11 +118,11 @@ namespace Spectrum.Framework.Entities
         }
         public void SendEntityReplication(Entity entity, NetID peer)
         {
-            //NetMessage replicationMessage = new NetMessage();
-            //replicationMessage.Write(entity.ID);
-            //replicationMessage.Write(1);
-            //entity.ReplicationData?.WriteReplicationData(replicationMessage);
-            //mpService.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
+            NetMessage replicationMessage = new NetMessage();
+            replicationMessage.Write(entity.ID);
+            replicationMessage.Write(1);
+            entity.ReplicationData?.WriteReplicationData(replicationMessage);
+            MultiplayerService.Current.SendMessage(FrameworkMessages.EntityReplication, replicationMessage);
         }
         public void HandleEntityReplication(NetID peerGuid, NetMessage message)
         {

@@ -1,4 +1,5 @@
 ﻿using ProtoBuf;
+using Replicate;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,10 +10,11 @@ using System.Threading.Tasks;
 namespace Spectrum.Framework.Network.Surrogates
 {
     [ProtoContract]
-    class StreamSurrogate
+    [ReplicateType]
+    public class StreamSurrogate
     {
         [ProtoMember(1)]
-        byte[] buffer;
+        public byte[] buffer;
         public static implicit operator StreamSurrogate(MemoryStream stream)
         {
             if (stream == null) return null;

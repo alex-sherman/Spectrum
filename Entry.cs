@@ -29,7 +29,7 @@ namespace Spectrum
             }
             catch (Exception e)
             {
-                DebugPrinter.print(e.ToString());
+                DebugPrinter.Print(e.ToString());
             }
 #endif
         }

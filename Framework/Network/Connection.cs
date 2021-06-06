@@ -18,7 +18,7 @@ namespace Spectrum.Framework.Network
     }
     public class Connection
     {
-        public const float PEERTIMEOUT = 10.0f;
+        public const float PEERTIMEOUT = 1000.0f;
         private float PeerTimeOut = PEERTIMEOUT;
         public bool TimedOut
         {
@@ -134,7 +134,7 @@ namespace Spectrum.Framework.Network
                     break;
                 case HandshakeStage.AckBegin:
                     List<NetMessage> peerMessages = new List<NetMessage>();
-                    foreach (Connection conn in MPService.connectedPeers.Values)
+                    foreach (Connection conn in MPService.ConnectedPeers.Values)
                     {
                         NetMessage peerMessage = new NetMessage();
                         peerMessage.Write(conn.PeerID);

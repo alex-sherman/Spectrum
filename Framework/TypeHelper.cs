@@ -14,6 +14,7 @@ namespace Spectrum.Framework
 {
     public class TypeHelper
     {
+        // TODO: Is using this model a good idea?
         public static ReplicationModel Model = TypeUtil.Model;
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
         static ReplicateTypeAttribute MakeReplicateAttribute() => new ReplicateTypeAttribute();

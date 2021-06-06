@@ -3,6 +3,8 @@ using Newtonsoft.Json.Linq;
 using ProtoBuf;
 using ProtoBuf.Meta;
 using Replicate;
+using Replicate.MetaData;
+using Replicate.Serialization;
 using Spectrum.Framework.Entities;
 using Spectrum.Framework.Graphics;
 using Spectrum.Framework.Network.Surrogates;
@@ -21,6 +23,7 @@ namespace Spectrum.Framework.Network
     public class Serialization
     {
         public static RuntimeTypeModel Model = RuntimeTypeModel.Default;
+        public static readonly BinaryGraphSerializer BinarySerializer = new BinaryGraphSerializer(TypeHelper.Model);
         public static void InitSurrogates()
         {
             Model.AutoCompile = false;
@@ -47,6 +50,7 @@ namespace Spectrum.Framework.Network
             TypeHelper.Model.Add(typeof(Vector2)).AddMember("X").AddMember("Y");
             TypeHelper.Model.Add(typeof(Vector3)).AddMember("X").AddMember("Y").AddMember("Z");
             TypeHelper.Model.Add(typeof(Rectangle)).AddMember("X").AddMember("Y").AddMember("Width").AddMember("Height");
+            TypeHelper.Model.Add(typeof(MemoryStream)).SetSurrogate(new Surrogate(typeof(StreamSurrogate)));
             Model.Add(typeof(Vector3), true);
             Model[typeof(Vector3)].Add("X").Add("Y").Add("Z");
             Model.Add(typeof(Point3), true);
@@ -82,7 +86,7 @@ namespace Spectrum.Framework.Network
         public static T Copy<T>(T obj) where T : class, new()
         {
             if (obj == null) return null;
-            var accessor = TypeUtil.Model.GetTypeAccessor(obj.GetType());
+            var accessor = TypeHelper.Model.GetTypeAccessor(obj.GetType());
             return TypeUtil.CopyToRaw(obj, accessor, null, accessor) as T;
         }
     }

@@ -1,4 +1,5 @@
 ﻿using ProtoBuf;
+using Replicate;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,12 +7,10 @@ using System.Text;
 
 namespace Spectrum.Framework.Network
 {
-    [ProtoContract]
+    [ReplicateType]
     public struct NetID : IComparable
     {
-        [ProtoMember(1)]
         public ulong? SteamID;
-        [ProtoMember(2)]
         public Guid? Guid;
 
         public static bool operator >(NetID lhs, NetID rhs)
@@ -50,17 +49,12 @@ namespace Spectrum.Framework.Network
             if(obj is NetID)
             {
                 NetID other = (NetID)obj;
-                return other.Guid == this.Guid && other.SteamID == this.SteamID;
+                return other.Guid == Guid && other.SteamID == SteamID;
             }
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            if (Guid == null)
-                return SteamID.GetHashCode();
-            return Guid.GetHashCode();
-        }
+        public override int GetHashCode() => Guid?.GetHashCode() ?? SteamID.GetHashCode();
 
         public int CompareTo(object obj)
         {
@@ -82,6 +76,12 @@ namespace Spectrum.Framework.Network
                 return 0;
             }
             throw new ArgumentException("Cannot compare to anything but NetID");
+        }
+        public override string ToString()
+        {
+            if (Guid.HasValue) return Guid.Value.ToString();
+            else if (SteamID.HasValue) return $"Steam: {SteamID.Value}";
+            return "null";
         }
     }
 }

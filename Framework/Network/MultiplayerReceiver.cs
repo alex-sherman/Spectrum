@@ -45,7 +45,7 @@ namespace Spectrum.Framework.Network
                     switch (comType)
                     {
                         case 255:
-                            throw new InvalidDataException("Bad data from host");
+                            throw new InvalidDataException($"Bad data from host: {Connection.PeerID}");
                         default:
                             Connection.MPService.ReceiveMessage(comType, Connection.PeerID, message);
                             break;
@@ -54,7 +54,7 @@ namespace Spectrum.Framework.Network
                 }
             }
             catch (InvalidDataException) { }
-            catch (System.IO.IOException) { }
+            catch (IOException) { }
             catch (NullReferenceException) { }
             finally
             {
@@ -68,7 +68,8 @@ namespace Spectrum.Framework.Network
             byte testBytes = (byte)netStream.ReadByte();
             if (testBytes != 255)
             {
-                this.Connection.Terminate();
+                DebugPrinter.Print($"Bad data from host: {Connection.PeerID}");
+                Connection.Terminate();
             }
             return messageOut;
         }
