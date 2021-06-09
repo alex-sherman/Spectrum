@@ -48,7 +48,7 @@ namespace Spectrum.Framework.Screens
             Width = ElementSize.WrapFill;
             Height = ElementSize.WrapFill;
         }
-        protected virtual Context Context() => Framework.Context.Create(Batch).Inject(Manager.Physics)
+        protected virtual Context MakeContext() => Context.Create(Batch).Inject(Manager.Physics)
             .Inject(Manager.Physics.CollisionSystem).Inject(Manager).Inject(this)
             .Inject(Scheduler);
         public override void Layout(Rectangle bounds)
@@ -65,10 +65,11 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.ResetOnResize(bounds.Width, bounds.Height);
             }
         }
+        private Context context;
         public override void Initialize()
         {
-            using (Context())
-                base.Initialize();
+            context = MakeContext();
+            base.Initialize();
         }
         public override void Draw(float gameTime, SpriteBatch spriteBatch)
         {
@@ -78,7 +79,7 @@ namespace Spectrum.Framework.Screens
                 GraphicsEngine.Camera = Camera;
                 using (DebugTiming.Main.Time("Draw"))
                 {
-                    using (Context().Inject(spriteBatch))
+                    using (Context.Create(spriteBatch))
                     {
                         Manager.Draw(gameTime);
                         var renderGroups = Batch3D.Current.GetRenderTasks(gameTime);
@@ -100,27 +101,21 @@ namespace Spectrum.Framework.Screens
                 //TODO: Fix multiplayer update
                 //using (DebugTiming.Main.Time("MPCallback"))
                 //    SpectrumGame.Game.MP.MakeCallbacks(gameTime);
-                using (Context())
-                {
-                    Manager.Update(dt);
-                    Scheduler.Update(dt);
-                    base.Update(dt);
-                }
+                Manager.Update(dt);
+                Scheduler.Update(dt);
+                base.Update(dt);
             }
         }
 
         public override bool HandleInput(bool otherTookInput, InputState input)
         {
-            using (Context())
+            bool output = base.HandleInput(otherTookInput, input);
+            if (CaptureMouse)
             {
-                bool output = base.HandleInput(otherTookInput, input);
-                if (CaptureMouse)
-                {
-                    Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
-                                  SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
-                }
-                return output;
+                Mouse.SetPosition(SpectrumGame.Game.GraphicsDevice.Viewport.Width / 2,
+                              SpectrumGame.Game.GraphicsDevice.Viewport.Height / 2);
             }
+            return output;
         }
     }
 }

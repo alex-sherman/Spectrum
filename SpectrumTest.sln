@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29201.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpectrumTest", "Test\SpectrumTest.csproj", "{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpectrumTest", "Test\SpectrumTest.csproj", "{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spectrum", "Spectrum.csproj", "{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spectrum", "Spectrum.csproj", "{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Replicate", "Replicate\Replicate\Replicate.csproj", "{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,8 +24,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Release|Any CPU.Build.0 = Release|Any CPU
@@ -37,8 +39,8 @@ Global
 		{A0E47731-9C8A-4E7A-9A47-4D868E6365FF}.Steam-Debug|x86.ActiveCfg = Debug|Any CPU
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Debug|x86.Build.0 = Debug|Any CPU
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -53,6 +55,24 @@ Global
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|x86.ActiveCfg = Debug|Any CPU
 		{D3521A21-B301-4FDC-A1B5-D5BE4CE1B01E}.Steam-Debug|x86.Build.0 = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Debug|x86.Build.0 = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Release|x86.ActiveCfg = Release|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Release|x86.Build.0 = Release|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Steam-Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Steam-Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Steam-Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Steam-Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Steam-Debug|x86.ActiveCfg = Debug|Any CPU
+		{C51A67AB-2B0F-44E2-A744-76D06BD6F6C4}.Steam-Debug|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

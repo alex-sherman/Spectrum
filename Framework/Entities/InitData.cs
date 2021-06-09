@@ -19,6 +19,7 @@ using System.Text;
 namespace Spectrum.Framework.Entities
 {
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
+    [ReplicateType]
     public struct FunctionCall
     {
         public string Name;
@@ -34,6 +35,7 @@ namespace Spectrum.Framework.Entities
     }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
     [LoadableType]
+    [ReplicateType]
     public class InitData
     {
         #region Prefabs
@@ -92,7 +94,11 @@ namespace Spectrum.Framework.Entities
         public string Name;
         public string Path { get; set; }
         public string FullPath { get; set; }
-        public string TypeName => TypeData.Type.Name;
+        public string TypeName
+        {
+            get => TypeData?.Type.Name;
+            private set => TypeData = TypeHelper.Model.GetTypeAccessor(TypeHelper.Model.Types[value].Type);
+        }
         public Primitive[] Args = new Primitive[0];
         public InitData SetArgs(params object[] args)
         {
@@ -108,16 +114,19 @@ namespace Spectrum.Framework.Entities
         // TODO: This should be readonly
         public Dictionary<string, Primitive> Data = new Dictionary<string, Primitive>();
         public List<FunctionCall> FunctionCalls = new List<FunctionCall>();
-        internal InitData(TypeAccessor typeData) { TypeData = typeData; }
+        // For serialization only
+        protected InitData() { }
+        internal InitData(TypeAccessor typeAccessor) { TypeData = typeAccessor; }
         public InitData(string type, params object[] args)
         {
-            TypeData = TypeHelper.Model.GetTypeAccessor(TypeHelper.Model.Types[type].Type);
+            TypeName = type;
             if (TypeData == null)
                 throw new KeyNotFoundException($"Could not find type {type} in TypeData lookup");
             SetArgs(args);
         }
         [ProtoIgnore]
         [JsonIgnore]
+        [ReplicateIgnore]
         public TypeAccessor TypeData;
         public object Construct()
         {
@@ -329,10 +338,14 @@ namespace Spectrum.Framework.Entities
             return true;
         }
     }
+    [ReplicateType]
     public class InitData<T> : InitData where T : class
     {
         private T single;
+        [ReplicateIgnore]
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         public T Single => single ??= Construct();
+        private InitData() { }
         internal InitData(TypeAccessor typeData) : base(typeData) { }
         public InitData(params object[] args) : base(typeof(T).Name, args) { }
         public InitData(Expression<Func<T>> exp) : base(typeof(T).Name)

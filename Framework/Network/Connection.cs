@@ -167,6 +167,7 @@ namespace Spectrum.Framework.Network
             HandshakeStage ReceivedStage = (HandshakeStage)message.Read<int>();
             ConnectionStage = ReceivedStage;
             PeerID = message.Read<NetID>();
+            DebugPrinter.Print($"Connection({PeerID}): Stage {ReceivedStage}");
             PeerNick = message.Read<string>();
             RemoteDataPort = message.Read<int>();
             if (Client != null)

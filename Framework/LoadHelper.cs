@@ -37,7 +37,6 @@ namespace Spectrum.Framework
             TypeHelper.RegisterType(typeof(ElementStyle), null);
             foreach (Type type in plugin.GetLoadableTypes())
             {
-                Serialization.RegisterType(type);
                 var typeData = TypeHelper.RegisterType(type, plugin);
                 var accessor = TypeHelper.Model.GetTypeAccessor(type);
                 var initData = new InitData(accessor);
@@ -46,14 +45,15 @@ namespace Spectrum.Framework
                 {
                     initData.Set(member.Info.Name, preload.Path);
                 }
-                foreach (var member in accessor.Members.Values.Where(member => !member.Info.IsStatic && member.Info.GetAttribute<MemberContentAttribute>() != null))
+                foreach (var member in accessor.Members.Values)
                 {
                     var preload = member.Info.GetAttribute<MemberContentAttribute>();
+                    if (preload == null) continue;
                     initData.Set(member.Info.Name, preload.Path);
                 }
                 var prefabName = type.GetCustomAttribute<LoadableTypeAttribute>()?.Name ?? type.Name;
                 InitData.Register(prefabName, initData);
-                foreach (var member in accessor.Members.Values.Where(m => m.Info.IsStatic))
+                foreach (var member in accessor.StaticMembers.Values)
                 {
                     var preload = member.Info.GetAttribute<MemberContentAttribute>();
                     if (preload == null) continue;

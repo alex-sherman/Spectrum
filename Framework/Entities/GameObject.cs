@@ -85,6 +85,7 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// Static objects cannot move, but may still collide
         /// </summary>
+        [Replicate]
         public bool IsStatic
         {
             get => isStatic;
@@ -99,6 +100,7 @@ namespace Spectrum.Framework.Entities
         /// <summary>
         /// Disables collision handling for the object, the OnCollide event is still called
         /// </summary>
+        [Replicate]
         public bool NoCollide;
 
         public bool affectedByGravity = true;
@@ -149,6 +151,7 @@ namespace Spectrum.Framework.Entities
 
         public int marker = 0;
         private Shape shape;
+        [Replicate]
         public Shape Shape
         {
             get => shape;
@@ -195,8 +198,11 @@ namespace Spectrum.Framework.Entities
 
         public bool EnableSpeculativeContacts { get; set; }
 
+        [ReplicateIgnore]
         public List<GameObject> connections = new List<GameObject>();
+        [ReplicateIgnore]
         public HashSet<Arbiter> arbiters = new HashSet<Arbiter>();
+        [ReplicateIgnore]
         public HashSet<Constraint> constraints = new HashSet<Constraint>();
 
         #endregion
@@ -276,7 +282,7 @@ namespace Spectrum.Framework.Entities
             }
         }
 
-        [Replicate]
+        // TODO: Transform is not serializable [Replicate]
         public Transform ModelTransform;
         // TODO: Should be a component
         public AnimationPlayer AnimationPlayer;

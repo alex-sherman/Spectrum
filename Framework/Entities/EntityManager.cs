@@ -40,7 +40,8 @@ namespace Spectrum.Framework.Entities
             HandshakeHandler entitySender = new HandshakeHandler(
                     delegate (NetID peerGuid, NetMessage message)
                     {
-                        IEnumerable<Entity> replicateable = Entities.UpdateSorted.Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid);
+                        IEnumerable<Entity> replicateable = Entities.UpdateSorted
+                            .Where(x => x.AllowReplicate && x.OwnerGuid != peerGuid).ToList();
                         message.Write(replicateable.Count());
                         foreach (Entity entity in replicateable)
                         {
@@ -56,13 +57,9 @@ namespace Spectrum.Framework.Entities
                         int count = message.Read<int>();
                         Entity[] entities = new Entity[count];
                         for (int i = 0; i < count; i++)
-                        {
                             entities[i] = HandleEntityCreation(peerGuid, message);
-                        }
                         for (int i = 0; i < count; i++)
-                        {
                             entities[i].ReplicationData?.ReadReplicationData(message);
-                        }
                     }
                 );
             Handshake.RegisterHandshakeHandler(HandshakeStage.PartialResponse, entitySender);

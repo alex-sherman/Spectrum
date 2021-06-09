@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using ProtoBuf;
+using Replicate;
+using Replicate.MetaData;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +16,8 @@ namespace Spectrum.Framework.Network.Surrogates
     public class Primitive
     {
         public object Object;
-        public Primitive(object obj = null)
+        public Primitive() { }
+        public Primitive(object obj)
         {
             if (obj is Enum)
                 obj = (int)obj;
@@ -22,25 +25,22 @@ namespace Spectrum.Framework.Network.Surrogates
         }
     }
     [ProtoContract(ImplicitFields = ImplicitFields.AllPublic)]
-    class PrimitiveSurrogate
+    [ReplicateType]
+    public class PrimitiveSurrogate
     {
-        private static Dictionary<int, Type> TypeMap = new Dictionary<int, Type>();
-        private static int LastTypeID = 1;
-        public int type;
+        public TypeId type;
         public byte[] buffer;
-
-        static BinaryFormatter binarySerializer = new BinaryFormatter();
 
         private object Object
         {
             get
             {
-                if (type == 0) return null;
+                if (type.Id.IsEmpty) return null;
                 MemoryStream stream = new MemoryStream(buffer);
-                var objType = TypeMap[type];
+                Type objType = TypeHelper.Model.GetType(type);
                 if (objType == typeof(JToken))
                     return (JToken)(JSONSurrogate)Serializer.NonGeneric.Deserialize(typeof(JSONSurrogate), stream);
-                return Serializer.NonGeneric.Deserialize(TypeMap[type], stream);
+                return Serialization.BinarySerializer.Deserialize(objType, stream);
             }
         }
         public static implicit operator PrimitiveSurrogate(Primitive obj)
@@ -48,34 +48,24 @@ namespace Spectrum.Framework.Network.Surrogates
             if (obj == null) return null;
             if (obj.Object != null)
             {
-                int type = GetID(obj.Object.GetType());
+                TypeId type = TypeHelper.Model.GetId(obj.Object.GetType());
                 MemoryStream buffer = new MemoryStream();
                 Serialize(buffer, obj.Object);
                 return new PrimitiveSurrogate() { type = type, buffer = buffer.ToArray() };
             }
-            return new PrimitiveSurrogate() { type = 0 };
+            return new PrimitiveSurrogate();
         }
         public static implicit operator Primitive(PrimitiveSurrogate obj)
         {
             if (obj == null) return null;
             return new Primitive(obj.Object);
         }
-        public static int GetID(Type type)
-        {
-            return TypeMap.Where(typeMap => type == typeMap.Value || type.IsSubclassOf(typeMap.Value))
-                .Select(typeMap => (int?)typeMap.Key).FirstOrDefault() ?? -1;
-        }
         public static MemoryStream Serialize(MemoryStream stream, object obj)
         {
             if (obj is JToken)
                 obj = (JSONSurrogate)(JToken)obj;
-            Serializer.NonGeneric.Serialize(stream, obj);
+            Serialization.BinarySerializer.Serialize(obj.GetType(), obj, stream);
             return stream;
-        }
-        public static void RegisterType(Type type)
-        {
-            TypeMap[LastTypeID] = type;
-            LastTypeID++;
         }
     }
 }

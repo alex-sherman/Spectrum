@@ -175,7 +175,6 @@ namespace Spectrum.Framework
             IsMouseVisible = true;
             Serialization.InitSurrogates();
             LoadHelper.LoadTypes();
-            Serialization.Model.CompileInPlace();
             GraphicsEngine.Initialize();
             Root = new RootElement();
         }

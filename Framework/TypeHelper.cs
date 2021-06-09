@@ -17,7 +17,7 @@ namespace Spectrum.Framework
         // TODO: Is using this model a good idea?
         public static ReplicationModel Model = TypeUtil.Model;
         private static DefaultDict<Type, Plugin> plugins = new DefaultDict<Type, Plugin>();
-        static ReplicateTypeAttribute MakeReplicateAttribute() => new ReplicateTypeAttribute();
+        static ReplicateTypeAttribute MakeReplicateAttribute() => new ReplicateTypeAttribute() { AutoMembers = AutoAdd.None };
         public static TypeData RegisterType(Type type, Plugin plugin)
         {
             // Laziness to avoid marking up every type with ReplicateType
