@@ -173,7 +173,7 @@ namespace Spectrum.Framework
             }
             LoadSettings(File.OpenRead(path));
             IsMouseVisible = true;
-            Serialization.InitSurrogates();
+            Serialization.Initialize();
             LoadHelper.LoadTypes();
             GraphicsEngine.Initialize();
             Root = new RootElement();

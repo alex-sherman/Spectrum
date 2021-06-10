@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace Spectrum.Framework.Network.Surrogates
 {
     [ProtoContract]
+    [ReplicateType]
     public class FloatArraySurrogate
     {
         [Replicate]
@@ -17,6 +18,7 @@ namespace Spectrum.Framework.Network.Surrogates
         int height;
         [Replicate]
         float[] buffer;
+        private FloatArraySurrogate() { }
         public FloatArraySurrogate(int width, int height)
         {
             this.width = width;

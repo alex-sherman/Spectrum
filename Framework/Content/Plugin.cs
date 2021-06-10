@@ -14,7 +14,7 @@ namespace Spectrum.Framework.Content
     {
         public const string BasePath = "Plugins";
         public ContentHelper Content { get; private set; }
-        private Assembly assembly;
+        public Assembly Assembly;
         public string Name { get; private set; }
         public Plugin()
         {
@@ -87,14 +87,14 @@ namespace Spectrum.Framework.Content
             else
                 output = new Plugin();
             output.Name = plugin;
-            output.assembly = assembly;
+            output.Assembly = assembly;
             output.Content = content;
             return output;
         }
 
         public List<Type> GetLoadableTypes()
         {
-            return assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Entity))
+            return Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Entity))
             || type.GetCustomAttributes(false).Any(attr => attr is LoadableTypeAttribute)).ToList();
         }
     }

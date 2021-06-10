@@ -34,7 +34,7 @@ namespace Spectrum.Framework
         }
         public static void RegisterTypes(Plugin plugin)
         {
-            TypeHelper.RegisterType(typeof(ElementStyle), null);
+            TypeHelper.Model.LoadTypes(plugin.Assembly);
             foreach (Type type in plugin.GetLoadableTypes())
             {
                 var typeData = TypeHelper.RegisterType(type, plugin);
@@ -110,6 +110,8 @@ namespace Spectrum.Framework
 
             foreach (var plugin in SpectrumGame.Game.Plugins.Values)
                 plugin.OnLoad();
+
+            TypeHelper.Model.Frozen = true;
         }
     }
 

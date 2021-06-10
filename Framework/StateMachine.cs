@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Replicate;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace Spectrum.Framework
 {
+    [ReplicateType]
     public class StateMachine
     {
         public delegate int Handler(int current, object e);
@@ -14,7 +16,7 @@ namespace Spectrum.Framework
         private Dictionary<Type, Handler> Defaults = new Dictionary<Type, Handler>();
         private Dictionary<(int, Type), Handler> Handlers
             = new Dictionary<(int, Type), Handler>();
-
+        private StateMachine() { }
         public StateMachine(int initial)
         {
             State = initial;

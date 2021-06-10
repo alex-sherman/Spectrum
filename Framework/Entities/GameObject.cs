@@ -21,6 +21,7 @@ using Spectrum.Framework.Physics;
 
 namespace Spectrum.Framework.Entities
 {
+    [ReplicateType(AutoMembers = AutoAdd.None)]
     public class GameObject : Entity, IDebug, IEquatable<GameObject>, IComparable<GameObject>, ICollidable, IAnimationSource, ITransform
     {
         #region Events
@@ -283,8 +284,10 @@ namespace Spectrum.Framework.Entities
         }
 
         // TODO: Transform is not serializable [Replicate]
+        [ReplicateIgnore]
         public Transform ModelTransform;
         // TODO: Should be a component
+        [ReplicateIgnore]
         public AnimationPlayer AnimationPlayer;
         public AnimationClip GetAnimation(string name)
         {

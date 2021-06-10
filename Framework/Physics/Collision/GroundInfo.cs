@@ -12,6 +12,7 @@ namespace Spectrum.Framework.Physics.Collision
         public GameObject Object { get; private set; }
         public Vector3 Normal { get; private set; }
         public Vector3 Point { get; private set; }
+        private CollisionInfo() { }
         public CollisionInfo(GameObject other, Vector3 point, Vector3 normal)
         {
             Point = point;

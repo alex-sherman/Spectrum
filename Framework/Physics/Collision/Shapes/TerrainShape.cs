@@ -26,10 +26,12 @@ using Spectrum.Framework.Physics.LinearMath;
 using Spectrum.Framework.Physics.Collision.Shapes;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
+using Replicate;
 #endregion
 
 namespace Spectrum.Framework.Physics.Collision.Shapes
 {
+    [ReplicateType]
     public class Float2DLerp
     {
         public float[,] HeightsA;
@@ -49,6 +51,7 @@ namespace Spectrum.Framework.Physics.Collision.Shapes
     /// <summary>
     /// Represents a terrain.
     /// </summary>
+    [ReplicateType]
     public class TerrainShape : Multishape
     {
         public Float2DLerp Heights;

@@ -24,7 +24,7 @@ namespace Spectrum.Framework.Network
     {
         public static readonly BinarySerializer BinarySerializer = new BinarySerializer(TypeHelper.Model);
         private static bool Initialized = false;
-        public static void InitSurrogates()
+        public static void Initialize()
         {
             if (Initialized)
                 return;
@@ -33,9 +33,12 @@ namespace Spectrum.Framework.Network
             TypeHelper.Model.Add(typeof(Vector3)).AddMember("X").AddMember("Y").AddMember("Z");
             TypeHelper.Model.Add(typeof(Rectangle)).AddMember("X").AddMember("Y").AddMember("Width").AddMember("Height");
             TypeHelper.Model.Add(typeof(MemoryStream)).SetSurrogate(new Surrogate(typeof(StreamSurrogate)));
+            TypeHelper.Model.Add(typeof(float[,])).SetSurrogate(new Surrogate(typeof(FloatArraySurrogate)));
             TypeHelper.Model.Add(typeof(Primitive)).SetSurrogate(typeof(PrimitiveSurrogate));
             TypeHelper.Model.Add(typeof(SpecModel)).SetSurrogate(typeof(ModelSurrogate));
             TypeHelper.Model.Add(typeof(Shape));
+            TypeHelper.Model.Add(typeof(BoxShape));
+            TypeHelper.Model.Add(typeof(CylinderShape));
         }
         public static T Copy<T>(T obj) where T : class, new()
         {
